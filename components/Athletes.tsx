@@ -8,7 +8,7 @@ const CARDS = [
     photo: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=1000&fit=crop&auto=format&q=85",
     tag: "Gain de temps",
     title: "Récupérez 5h\npar semaine",
-    desc: "L'administratif tourne seul. Vous faites ce pour quoi vous êtes payé : coacher.",
+    desc: "Réservations, paiements et factures générées automatiquement à chaque séance. Vous faites ce pour quoi vous êtes payé : coacher.",
   },
   {
     photo: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&h=1000&fit=crop&auto=format&q=85",

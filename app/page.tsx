@@ -2,11 +2,8 @@ import Navbar from "@/components/Navbar";
 import HeroScrollExperience from "@/components/HeroScrollExperience";
 import Problem from "@/components/Problem";
 import Athletes from "@/components/Athletes";
-import BookingLink from "@/components/BookingLink";
-import Testimonials from "@/components/Testimonials";
 import CoachDashboard from "@/components/CoachDashboard";
-import Comparison from "@/components/Comparison";
-import EFacture from "@/components/EFacture";
+import Testimonials from "@/components/Testimonials";
 import Pricing from "@/components/Pricing";
 import FAQ from "@/components/FAQ";
 import EarlyAccessForm from "@/components/EarlyAccessForm";
@@ -24,11 +21,8 @@ export default function Home() {
         <HeroScrollExperience />
         <Problem />
         <Athletes />
-        <BookingLink />
-        <Testimonials />
         <CoachDashboard />
-        <Comparison />
-        <EFacture />
+        <Testimonials />
         <Pricing />
         <FAQ />
         <EarlyAccessForm />
