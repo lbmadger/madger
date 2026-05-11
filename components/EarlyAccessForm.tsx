@@ -97,7 +97,7 @@ export default function EarlyAccessForm() {
               ))}
             </div>
             <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
-              <span style={{ color: "rgba(255,255,255,0.65)", fontWeight: 600 }}>27 coachs</span> testent déjà la bêta
+              <span style={{ color: "rgba(255,255,255,0.65)", fontWeight: 600 }}>Plusieurs coachs</span> testent déjà la bêta
             </p>
           </div>
 

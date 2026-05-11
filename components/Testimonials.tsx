@@ -43,18 +43,18 @@ export default function Testimonials() {
           transition={{ duration: 0.7 }}
           className="text-center flex flex-col items-center mb-14"
         >
-          <SectionLabel>Premiers testeurs</SectionLabel>
+          <SectionLabel>Bêta testeurs</SectionLabel>
           <h2
             className="font-extrabold text-white mb-4"
             style={{ fontSize: "clamp(28px, 4vw, 48px)", letterSpacing: "-0.035em", lineHeight: 1.06 }}
           >
-            Des coachs qui testent Madger<br />
+            Des coachs qui testent la bêta<br />
             <span style={{
               background: "linear-gradient(90deg, #CBFF03, #a8e600)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
-            }}>en avant-première.</span>
+            }}>pour vous.</span>
           </h2>
           <p className="text-text-muted text-base max-w-md mx-auto" style={{ lineHeight: 1.6 }}>
             Ils nous ont parlé de leurs galères. On construit Madger pour les résoudre.
@@ -103,16 +103,19 @@ export default function Testimonials() {
 
               {/* Author */}
               <div className="flex items-center gap-3 mt-6 pt-5" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-                <div style={{ width: 38, height: 38, borderRadius: "50%", overflow: "hidden", border: "2px solid rgba(255,255,255,0.08)", flexShrink: 0 }}>
+                <div style={{ width: 38, height: 38, borderRadius: "50%", overflow: "hidden", border: "2px solid rgba(203,255,3,0.2)", flexShrink: 0 }}>
                   <img
                     src={`https://images.unsplash.com/${t.photo}?w=100&h=100&fit=crop&auto=format&q=80`}
                     alt={t.name}
                     style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                   />
                 </div>
-                <div>
+                <div className="flex-1">
                   <div className="font-semibold text-white text-sm">{t.name}</div>
                   <div className="text-xs" style={{ color: "#5A5A5A" }}>{t.role}</div>
+                </div>
+                <div className="text-xs px-2 py-1 rounded-full" style={{ background: "rgba(203,255,3,0.06)", border: "1px solid rgba(203,255,3,0.15)", color: "#CBFF03", whiteSpace: "nowrap" }}>
+                  Teste la bêta
                 </div>
               </div>
             </motion.div>
