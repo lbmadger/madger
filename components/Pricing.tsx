@@ -301,7 +301,7 @@ export default function Pricing() {
                 whileHover={{ boxShadow: "0 0 30px rgba(203,255,3,0.5), 0 0 60px rgba(203,255,3,0.2)" }}
                 transition={{ duration: 0.2 }}
               >
-                {annual ? "Passer Pro — Annuel" : "Passer Pro"}
+                {annual ? "Passer Pro · Annuel" : "Passer Pro"}
               </motion.a>
 
               <div className="my-7" style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />

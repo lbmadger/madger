@@ -8,7 +8,7 @@ const testimonials = [
     photo: "photo-1534528741775-53994a69daeb",
     name: "Camille Rousseau",
     role: "Coach fitness · Lyon",
-    text: "Je jongle entre WhatsApp, Sumeria et Excel pour gérer mes séances. J'ai rejoint la bêta dès que j'ai vu que Madger centralisait tout — réservation, paiement et facture en une fois.",
+    text: "Je jongle entre WhatsApp, Sumeria et Excel pour gérer mes séances. J'ai rejoint la bêta dès que j'ai vu que Madger centralisait tout : réservation, paiement et facture en une fois.",
     tag: "Testeuse bêta",
   },
   {
@@ -22,7 +22,7 @@ const testimonials = [
     photo: "photo-1438761681033-6461ffad8d80",
     name: "Sarah Moreau",
     role: "Coach bien-être · Bordeaux",
-    text: "J'ai un site Wix qui date de 2021, aucun système de réservation en ligne. Avoir un lien pro à mettre dans ma bio Instagram qui permet de réserver et payer directement — c'est ce que j'attendais.",
+    text: "J'ai un site Wix qui date de 2021, aucun système de réservation en ligne. Avoir un lien pro à mettre dans ma bio Instagram qui permet de réserver et payer directement, c'est ce que j'attendais.",
     tag: "Testeuse bêta",
   },
 ];

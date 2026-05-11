@@ -7,7 +7,7 @@ const steps = [
   {
     num: "01",
     title: "Facture générée automatiquement",
-    desc: "Dès qu'un client paie sa séance, Madger génère une facture conforme au format légal exigé — numérotée, datée, avec toutes les mentions obligatoires.",
+    desc: "Dès qu'un client paie sa séance, Madger génère une facture conforme au format légal exigé : numérotée, datée, avec toutes les mentions obligatoires.",
   },
   {
     num: "02",
@@ -22,7 +22,7 @@ const steps = [
   {
     num: "04",
     title: "Prêt pour la réforme 2026",
-    desc: "La facturation électronique obligatoire entre en vigueur progressivement jusqu'en 2027. Madger est déjà conforme — vous n'avez rien à faire.",
+    desc: "La facturation électronique obligatoire entre en vigueur progressivement jusqu'en 2027. Madger est déjà conforme, vous n'avez rien à faire.",
   },
 ];
 

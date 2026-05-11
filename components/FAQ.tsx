@@ -11,11 +11,11 @@ const faqs = [
   },
   {
     q: "Faut-il avoir un statut auto-entrepreneur ou une entreprise ?",
-    a: "Non, pas obligatoirement pour commencer. Madger s'adapte à votre situation — auto-entrepreneur, SASU, association... Si vous êtes en cours de création, vous pouvez déjà mettre en place votre page et tester la plateforme.",
+    a: "Non, pas obligatoirement pour commencer. Madger s'adapte à votre situation : auto-entrepreneur, SASU, association... Si vous êtes en cours de création, vous pouvez déjà mettre en place votre page et tester la plateforme.",
   },
   {
     q: "Que se passe-t-il si un client veut annuler ?",
-    a: "Vous définissez votre politique d'annulation (délai, remboursement total ou partiel). Madger l'applique automatiquement. Le client voit les conditions avant de réserver — aucune surprise, aucune discussion gênante.",
+    a: "Vous définissez votre politique d'annulation (délai, remboursement total ou partiel). Madger l'applique automatiquement. Le client voit les conditions avant de réserver, aucune surprise, aucune discussion gênante.",
   },
   {
     q: "Stripe prend-il des frais en plus de la commission Madger ?",

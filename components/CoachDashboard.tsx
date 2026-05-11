@@ -139,15 +139,53 @@ export default function CoachDashboard() {
             }}>en un seul endroit.</span>
           </h2>
           <p className="text-text-muted text-lg max-w-lg mx-auto" style={{ lineHeight: 1.6 }}>
-            Réservations, paiements, clients, factures — tout est centralisé et automatisé.
+            Réservations, paiements, clients, factures : tout est centralisé et automatisé.
           </p>
         </motion.div>
 
-        {/* Scroll hint mobile */}
-        <p className="text-center text-xs mb-3 md:hidden" style={{ color: "#3A3A3A" }}>← Glisser pour voir le dashboard →</p>
+        {/* Mobile : stats + features simplifiées */}
+        <div className="md:hidden mb-8">
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            {[
+              { label: "Revenus ce mois", value: "1 240 €", delta: "+18 %", color: "#CBFF03" },
+              { label: "Séances ce mois", value: "24",      delta: "+4",    color: "#CBFF03" },
+              { label: "Clients actifs",  value: "12",      delta: "+2",    color: "#4ADE80" },
+              { label: "Taux remplissage",value: "87 %",    delta: "+5 pts",color: "#4ADE80" },
+            ].map(({ label, value, delta, color }) => (
+              <motion.div
+                key={label}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+                className="p-4 rounded-2xl"
+                style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.07)" }}
+              >
+                <div className="text-xs mb-2" style={{ color: "#5A5A5A" }}>{label}</div>
+                <div className="font-extrabold text-white text-2xl" style={{ letterSpacing: "-0.03em", lineHeight: 1 }}>{value}</div>
+                <div className="text-xs mt-1 font-semibold" style={{ color }}>↑ {delta}</div>
+              </motion.div>
+            ))}
+          </div>
+          <div className="flex flex-col gap-2">
+            {[
+              { icon: "✓", text: "Réservations & paiements en temps réel" },
+              { icon: "✓", text: "Factures générées automatiquement" },
+              { icon: "✓", text: "Rappels clients automatiques" },
+              { icon: "✓", text: "Messagerie intégrée" },
+              { icon: "✓", text: "Synchro Google Calendar" },
+              { icon: "✓", text: "0 % de commission en Pro" },
+            ].map(({ icon, text }) => (
+              <div key={text} className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <span style={{ color: "#CBFF03", fontWeight: 700, fontSize: 14 }}>{icon}</span>
+                <span className="text-sm" style={{ color: "#C0C0C0" }}>{text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
-        {/* Browser mockup — scrollable on mobile */}
-        <div style={{ overflowX: "auto", marginLeft: "-1.5rem", marginRight: "-1.5rem", paddingLeft: "1.5rem", paddingRight: "1.5rem", WebkitOverflowScrolling: "touch" }}>
+        {/* Desktop : browser mockup complet */}
+        <div className="hidden md:block" style={{ overflowX: "auto", marginLeft: "-1.5rem", marginRight: "-1.5rem", paddingLeft: "1.5rem", paddingRight: "1.5rem" }}>
         <motion.div
           initial={{ opacity: 0, y: 32 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -533,13 +571,13 @@ export default function CoachDashboard() {
         </motion.div>
         </div>
 
-        {/* Feature pills below mockup */}
+        {/* Feature pills below mockup — desktop only */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex flex-wrap justify-center gap-3 mt-10"
+          className="hidden md:flex flex-wrap justify-center gap-3 mt-10"
         >
           {[
             "Réservations en temps réel",

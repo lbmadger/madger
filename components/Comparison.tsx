@@ -74,20 +74,48 @@ export default function Comparison() {
             }}>les autres outils ?</span>
           </h2>
           <p className="text-text-muted text-base max-w-md mx-auto" style={{ lineHeight: 1.6 }}>
-            Calendly gère vos RDV. Madger gère votre activité — de la réservation à la facture conforme.
+            Calendly gère vos RDV. Madger gère votre activité : réservation, paiement et facture conforme.
           </p>
         </motion.div>
 
-        {/* Scroll hint mobile */}
-        <p className="text-center text-xs mb-3 md:hidden" style={{ color: "#3A3A3A" }}>← Glisser pour voir tout le tableau →</p>
+        {/* Mobile : liste simple Madger */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.6 }}
+          className="md:hidden"
+          style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(203,255,3,0.15)", background: "#141414" }}
+        >
+          <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(203,255,3,0.1)", background: "rgba(203,255,3,0.04)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#CBFF03" }}>Madger fait tout ça</span>
+            <span style={{ fontSize: 11, color: "#5A5A5A" }}>vs Calendly / sans outil</span>
+          </div>
+          {features.map((f, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 18px", borderBottom: i < features.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none", background: i % 2 === 0 ? "rgba(255,255,255,0.01)" : "transparent" }}>
+              <span style={{ fontSize: 13, color: "#C0C0C0" }}>{f.label}</span>
+              <div style={{ width: 22, height: 22, borderRadius: 7, background: "rgba(203,255,3,0.1)", border: "1px solid rgba(203,255,3,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginLeft: 12 }}>
+                <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                  <path d="M13.5 4.5l-7 7-3-3" stroke="#CBFF03" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+            </div>
+          ))}
+          <div style={{ padding: "14px 18px" }}>
+            <a href="#early-access" className="block w-full text-center py-3 rounded-xl text-black font-bold text-sm" style={{ background: "#CBFF03" }}>
+              Commencer gratuitement
+            </a>
+          </div>
+        </motion.div>
 
-        {/* Table — horizontal scroll on mobile */}
+        {/* Desktop : tableau complet */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.7, delay: 0.1 }}
-          style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}
+          className="hidden md:block"
+          style={{ overflowX: "auto" }}
         >
           <div style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(255,255,255,0.07)", minWidth: 520 }}>
             {/* Header */}
