@@ -144,7 +144,7 @@ export default function Pricing() {
                 </div>
               </div>
               <div style={{ minHeight: 110 }}>
-                <div className="font-extrabold text-white mb-1" style={{ fontSize: 52, letterSpacing: "-0.04em", lineHeight: 1 }}>
+                <div className="font-extrabold text-white mb-1" style={{ fontSize: "clamp(38px, 10vw, 52px)", letterSpacing: "-0.04em", lineHeight: 1 }}>
                   0 €
                 </div>
                 <div className="text-text-muted text-sm pt-1">
@@ -241,7 +241,7 @@ export default function Pricing() {
                     transition={{ duration: 0.22 }}
                   >
                     <div className="flex items-end gap-2 mb-1">
-                      <span className="font-extrabold text-white" style={{ fontSize: 52, letterSpacing: "-0.04em", lineHeight: 1 }}>
+                      <span className="font-extrabold text-white" style={{ fontSize: "clamp(38px, 10vw, 52px)", letterSpacing: "-0.04em", lineHeight: 1 }}>
                         {annualMonthly} €
                       </span>
                       <span className="text-text-muted text-lg mb-1">/ mois</span>
@@ -272,14 +272,14 @@ export default function Pricing() {
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.22 }}
                   >
-                    <div className="flex items-end gap-2 mb-2">
-                      <span className="font-extrabold text-white" style={{ fontSize: 52, letterSpacing: "-0.04em", lineHeight: 1 }}>
+                    <div className="flex flex-wrap items-end gap-x-2 gap-y-1 mb-2">
+                      <span className="font-extrabold text-white" style={{ fontSize: "clamp(38px, 10vw, 52px)", letterSpacing: "-0.04em", lineHeight: 1 }}>
                         {monthlyPrice} €
                       </span>
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
                         <span className="text-text-muted text-lg">/ mois</span>
                         <div
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium"
+                          className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap"
                           style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)", color: "#8A8A8A" }}
                         >
                           ou 490 €/an

@@ -78,13 +78,16 @@ export default function Comparison() {
           </p>
         </motion.div>
 
+        {/* Scroll hint mobile */}
+        <p className="text-center text-xs mb-3 md:hidden" style={{ color: "#3A3A3A" }}>← Glisser pour voir tout le tableau →</p>
+
         {/* Table — horizontal scroll on mobile */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-60px" }}
           transition={{ duration: 0.7, delay: 0.1 }}
-          style={{ overflowX: "auto" }}
+          style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}
         >
           <div style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(255,255,255,0.07)", minWidth: 520 }}>
             {/* Header */}

@@ -143,8 +143,11 @@ export default function CoachDashboard() {
           </p>
         </motion.div>
 
+        {/* Scroll hint mobile */}
+        <p className="text-center text-xs mb-3 md:hidden" style={{ color: "#3A3A3A" }}>← Glisser pour voir le dashboard →</p>
+
         {/* Browser mockup — scrollable on mobile */}
-        <div style={{ overflowX: "auto", marginLeft: "-1.5rem", marginRight: "-1.5rem", paddingLeft: "1.5rem", paddingRight: "1.5rem" }}>
+        <div style={{ overflowX: "auto", marginLeft: "-1.5rem", marginRight: "-1.5rem", paddingLeft: "1.5rem", paddingRight: "1.5rem", WebkitOverflowScrolling: "touch" }}>
         <motion.div
           initial={{ opacity: 0, y: 32 }}
           whileInView={{ opacity: 1, y: 0 }}

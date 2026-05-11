@@ -210,26 +210,26 @@ export default function BookingLink() {
                   ].map((s, i) => (
                     <div
                       key={i}
-                      className="flex items-center justify-between p-3 rounded-xl"
+                      className="flex items-center justify-between gap-2 p-3 rounded-xl"
                       style={{
                         background: i === 0 ? "rgba(203,255,3,0.05)" : "rgba(255,255,255,0.03)",
                         border: `1px solid ${i === 0 ? "rgba(203,255,3,0.2)" : "rgba(255,255,255,0.06)"}`,
                       }}
                     >
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-white">{s.name}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="text-sm font-semibold text-white leading-snug">{s.name}</span>
                           {s.tag && (
-                            <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{ background: i === 0 ? "rgba(203,255,3,0.15)" : "rgba(74,222,128,0.1)", color: i === 0 ? "#CBFF03" : "#4ADE80", border: `1px solid ${i === 0 ? "rgba(203,255,3,0.3)" : "rgba(74,222,128,0.2)"}` }}>
+                            <span className="text-xs px-2 py-0.5 rounded-full font-bold whitespace-nowrap" style={{ background: i === 0 ? "rgba(203,255,3,0.15)" : "rgba(74,222,128,0.1)", color: i === 0 ? "#CBFF03" : "#4ADE80", border: `1px solid ${i === 0 ? "rgba(203,255,3,0.3)" : "rgba(74,222,128,0.2)"}` }}>
                               {s.tag}
                             </span>
                           )}
                         </div>
                         <div className="text-xs mt-0.5" style={{ color: "#5A5A5A" }}>{s.duration}</div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className="font-bold text-sm" style={{ color: i === 0 ? "#4ADE80" : "#fff" }}>{s.price}</span>
-                        <div className="px-3 py-1.5 rounded-xl text-xs font-bold" style={{ background: i === 0 ? "#CBFF03" : "rgba(255,255,255,0.07)", color: i === 0 ? "#000" : "#fff" }}>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className="font-bold text-sm whitespace-nowrap" style={{ color: i === 0 ? "#4ADE80" : "#fff" }}>{s.price}</span>
+                        <div className="px-2.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap" style={{ background: i === 0 ? "#CBFF03" : "rgba(255,255,255,0.07)", color: i === 0 ? "#000" : "#fff" }}>
                           Réserver
                         </div>
                       </div>
