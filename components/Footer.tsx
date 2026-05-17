@@ -18,8 +18,7 @@ export default function Footer() {
           <div className="flex flex-wrap gap-7 text-sm">
             <a href="#fonctionnement" className="text-text-muted hover:text-white transition-colors duration-200">Fonctionnement</a>
             <a href="#dashboard" className="text-text-muted hover:text-white transition-colors duration-200">Dashboard</a>
-            <a href="#conformite" className="text-text-muted hover:text-white transition-colors duration-200">Conformité</a>
-            <a href="#tarifs" className="text-text-muted hover:text-white transition-colors duration-200">Tarifs</a>
+<a href="#tarifs" className="text-text-muted hover:text-white transition-colors duration-200">Tarifs</a>
             <a href="#early-access" className="text-text-muted hover:text-white transition-colors duration-200">Early access</a>
             <a href="mailto:contact@madger.app" className="text-text-muted hover:text-white transition-colors duration-200">Contact</a>
           </div>

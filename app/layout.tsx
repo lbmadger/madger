@@ -30,10 +30,6 @@ export const metadata: Metadata = {
     title: "Madger · L'app qui fait gagner du temps aux coachs",
     description: "Réservations, paiements et facturation automatique. Pensé pour les coachs en France.",
   },
-  icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
-  },
 };
 
 export default function RootLayout({
@@ -45,6 +41,7 @@ export default function RootLayout({
     <html lang="fr">
       <head>
         <script dangerouslySetInnerHTML={{ __html: `history.scrollRestoration = 'manual'; window.scrollTo(0, 0);` }} />
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

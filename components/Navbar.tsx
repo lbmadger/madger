@@ -35,10 +35,12 @@ export default function Navbar() {
   }, [open]);
 
   const glassStyle: React.CSSProperties = {
-    background: scrolled || open ? "rgba(10,10,10,0.82)" : "transparent",
-    backdropFilter: scrolled || open ? "blur(24px) saturate(180%)" : "none",
-    WebkitBackdropFilter: scrolled || open ? "blur(24px) saturate(180%)" : "none",
-    boxShadow: scrolled && !open ? "0 1px 0 rgba(255,255,255,0.045), 0 12px 40px rgba(0,0,0,0.45)" : "none",
+    background: scrolled || open
+      ? "rgba(5,5,5,0.96)"
+      : "linear-gradient(to bottom, rgba(5,5,5,0.72), transparent)",
+    backdropFilter: scrolled || open ? "blur(28px) saturate(180%)" : "blur(8px)",
+    WebkitBackdropFilter: scrolled || open ? "blur(28px) saturate(180%)" : "blur(8px)",
+    boxShadow: scrolled && !open ? "0 1px 0 rgba(255,255,255,0.06), 0 12px 40px rgba(0,0,0,0.6)" : "none",
     transition: "background 0.4s ease, box-shadow 0.4s ease, backdrop-filter 0.4s ease",
   };
 
@@ -49,7 +51,7 @@ export default function Navbar() {
 
         {/* Logo — square icon */}
         <a href="#" className="flex items-center flex-shrink-0" onClick={() => setOpen(false)}>
-          <MadgerLogo size={54} />
+          <MadgerLogo size={46} />
         </a>
 
         {/* Links desktop */}
@@ -189,7 +191,7 @@ export default function Navbar() {
                 className="text-center text-xs"
                 style={{ color: "#5A5A5A" }}
               >
-                Gratuit pendant la beta · Sans engagement
+                Inscriptions ouvertes · Sans engagement
               </motion.p>
             </div>
           </motion.div>

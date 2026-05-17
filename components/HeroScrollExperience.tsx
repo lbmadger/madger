@@ -359,8 +359,8 @@ export default function HeroScrollExperience() {
             transition={{ delay: 0.5 }}
           >
             <span className="flex items-center gap-1.5"><Check />Sans engagement</span>
-            <span className="hidden sm:flex items-center gap-1.5"><Check />Configuration en 10 minutes</span>
-            <span className="flex items-center gap-1.5"><Check />Gratuit pendant la beta</span>
+            <span className="hidden sm:flex items-center gap-1.5"><Check />Inscriptions ouvertes</span>
+            <span className="flex items-center gap-1.5"><Check />Bêta testeurs</span>
           </motion.div>
         </div>
 
