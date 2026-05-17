@@ -1,11 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 async function sendEmail({
   to,
   subject,
@@ -40,6 +35,12 @@ export async function POST(req: NextRequest) {
     if (!prenom || !nom || !email || !telephone || !type_coaching || !nb_clients || !defi) {
       return NextResponse.json({ error: "Champs manquants" }, { status: 400 });
     }
+
+    // Init Supabase à la demande (évite l'erreur de build si vars absentes)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
 
     // 1. Sauvegarde dans Supabase
     const { error: dbError } = await supabase.from("early_access").insert({
