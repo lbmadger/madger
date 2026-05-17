@@ -6,10 +6,40 @@ import MadgerLogo from "@/components/ui/MadgerLogo";
 
 export default function EarlyAccessForm() {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setSubmitted(true);
+    setLoading(true);
+    setError(null);
+
+    const form = e.currentTarget;
+    const data = {
+      prenom: (form.elements.namedItem("prenom") as HTMLInputElement).value,
+      nom: (form.elements.namedItem("nom") as HTMLInputElement).value,
+      email: (form.elements.namedItem("email") as HTMLInputElement).value,
+      telephone: (form.elements.namedItem("telephone") as HTMLInputElement).value,
+      type_coaching: (form.elements.namedItem("type_coaching") as HTMLSelectElement).value,
+      nb_clients: (form.elements.namedItem("nb_clients") as HTMLSelectElement).value,
+      instagram_site: (form.elements.namedItem("instagram_site") as HTMLInputElement).value,
+      defi: (form.elements.namedItem("defi") as HTMLTextAreaElement).value,
+    };
+
+    try {
+      const res = await fetch("/api/early-access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) throw new Error("Erreur serveur");
+      setSubmitted(true);
+    } catch {
+      setError("Une erreur est survenue. Réessaie ou écris-nous à bonjour@madger.app");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -115,6 +145,7 @@ export default function EarlyAccessForm() {
       <span className="text-xs font-medium" style={{ color: "#8A8A8A" }}>Prénom <span style={{ color: "#ef4444" }}>*</span></span>
       <input
         type="text"
+        name="prenom"
         placeholder="Prénom"
         required
         className="w-full px-5 py-3.5 rounded-xl text-white text-sm outline-none"
@@ -127,6 +158,7 @@ export default function EarlyAccessForm() {
       <span className="text-xs font-medium" style={{ color: "#8A8A8A" }}>Nom <span style={{ color: "#ef4444" }}>*</span></span>
       <input
         type="text"
+        name="nom"
         placeholder="Nom"
         required
         className="w-full px-5 py-3.5 rounded-xl text-white text-sm outline-none"
@@ -141,6 +173,7 @@ export default function EarlyAccessForm() {
     <span className="text-xs font-medium" style={{ color: "#8A8A8A" }}>Adresse email <span style={{ color: "#ef4444" }}>*</span></span>
     <input
       type="email"
+      name="email"
       placeholder="vous@exemple.com"
       required
       className="w-full px-5 py-3.5 rounded-xl text-white text-sm outline-none"
@@ -154,6 +187,7 @@ export default function EarlyAccessForm() {
     <span className="text-xs font-medium" style={{ color: "#8A8A8A" }}>Téléphone <span style={{ color: "#ef4444" }}>*</span></span>
     <input
       type="tel"
+      name="telephone"
       placeholder="+33 6 00 00 00 00"
       required
       className="w-full px-5 py-3.5 rounded-xl text-white text-sm outline-none"
@@ -166,6 +200,7 @@ export default function EarlyAccessForm() {
   <label className="flex flex-col gap-1.5">
     <span className="text-xs font-medium" style={{ color: "#8A8A8A" }}>Type de coaching <span style={{ color: "#ef4444" }}>*</span></span>
     <select
+      name="type_coaching"
       required
       defaultValue=""
       onChange={(e) => { e.target.style.color = e.target.value ? "#ffffff" : "#5A5A5A"; }}
@@ -195,6 +230,7 @@ export default function EarlyAccessForm() {
   <label className="flex flex-col gap-1.5">
     <span className="text-xs font-medium" style={{ color: "#8A8A8A" }}>Nombre de clients actifs <span style={{ color: "#ef4444" }}>*</span></span>
     <select
+      name="nb_clients"
       required
       defaultValue=""
       onChange={(e) => { e.target.style.color = e.target.value ? "#ffffff" : "#5A5A5A"; }}
@@ -223,6 +259,7 @@ export default function EarlyAccessForm() {
     <span className="text-xs font-medium" style={{ color: "#8A8A8A" }}>Instagram ou site <span style={{ color: "#5A5A5A" }}>(optionnel)</span></span>
     <input
       type="text"
+      name="instagram_site"
       placeholder="@votre_compte ou https://..."
       className="w-full px-5 py-3.5 rounded-xl text-white text-sm outline-none"
       style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff" }}
@@ -234,6 +271,7 @@ export default function EarlyAccessForm() {
   <label className="flex flex-col gap-1.5">
     <span className="text-xs font-medium" style={{ color: "#8A8A8A" }}>Votre principal défi dans la gestion de vos séances <span style={{ color: "#ef4444" }}>*</span></span>
     <textarea
+      name="defi"
       placeholder="Ex : je passe trop de temps sur les relances et la facturation…"
       required
       rows={3}
@@ -244,14 +282,18 @@ export default function EarlyAccessForm() {
     />
   </label>
 
+  {error && (
+    <p className="text-sm text-red-400 text-center">{error}</p>
+  )}
   <motion.button
     type="submit"
+    disabled={loading}
     className="w-full py-4 rounded-xl text-black font-semibold text-sm mt-2"
-    style={{ background: "#CBFF03" }}
-    whileHover={{ backgroundColor: "#ffffff", boxShadow: "0 0 30px rgba(203,255,3,0.3)" }}
-    whileTap={{ scale: 0.98 }}
+    style={{ background: "#CBFF03", opacity: loading ? 0.7 : 1 }}
+    whileHover={!loading ? { backgroundColor: "#ffffff", boxShadow: "0 0 30px rgba(203,255,3,0.3)" } : {}}
+    whileTap={!loading ? { scale: 0.98 } : {}}
   >
-    Rejoindre l'early access
+    {loading ? "Envoi en cours…" : "Rejoindre l'early access"}
   </motion.button>
 </motion.form>
             ) : (
