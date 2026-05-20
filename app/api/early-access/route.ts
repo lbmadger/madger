@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
               Ta demande d'early access a bien été reçue. Tu es maintenant sur la liste des premiers coachs à tester Madger.
             </p>
             <p style="margin:0 0 24px;font-size:15px;color:#444;line-height:1.7;">
-              On te contactera sous <strong>48h</strong> pour démarrer ton accès. En attendant, voilà ce qui t'attend :
+              On te contactera <strong>prochainement</strong> pour démarrer ton accès dès que Madger sera disponible. En attendant, voilà ce qui t'attend :
             </p>
 
             <!-- Features -->
