@@ -84,34 +84,95 @@ export async function POST(req: NextRequest) {
     // 3. Email de confirmation au coach
     await sendEmail({
       to: email,
-      subject: "Bienvenue dans l'early access Madger 🚀",
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #0A0A0A; color: #fff; border-radius: 12px;">
-          <div style="text-align: center; margin-bottom: 32px;">
-            <span style="font-size: 28px; font-weight: 900; color: #CBFF03; letter-spacing: -1px;">Madger</span>
-          </div>
-          <h1 style="font-size: 24px; font-weight: 800; margin-bottom: 16px;">
-            Bonjour ${prenom} 👋
-          </h1>
-          <p style="color: #A0A0A0; line-height: 1.7; margin-bottom: 16px;">
-            Ta demande d'accès anticipé a bien été reçue. Tu es maintenant sur la liste des premiers coachs à tester Madger.
-          </p>
-          <div style="background: #141414; border: 1px solid rgba(203,255,3,0.2); border-radius: 12px; padding: 20px; margin-bottom: 24px;">
-            <p style="color: #CBFF03; font-weight: 700; margin: 0 0 8px 0;">Ce qui t'attend :</p>
-            <ul style="color: #A0A0A0; line-height: 1.9; margin: 0; padding-left: 20px;">
-              <li>Accès au plan Pro offert pendant 6 mois (valeur 294€)</li>
-              <li>Réservations, paiements Stripe et facturation automatique</li>
-              <li>Ton lien coach à partager en bio Instagram</li>
-            </ul>
-          </div>
-          <p style="color: #A0A0A0; line-height: 1.7;">
-            On te contactera sous 48h pour démarrer ton test. En attendant, si tu as des questions, réponds directement à cet email.
-          </p>
-          <p style="margin-top: 32px; color: #5A5A5A; font-size: 12px;">
-            Madger · Tu reçois cet email car tu as rejoint la liste d'accès anticipé sur madger.app
-          </p>
-        </div>
-      `,
+      subject: `Bienvenue dans l'early access Madger, ${prenom}`,
+      html: `<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+
+        <!-- Header -->
+        <tr>
+          <td style="background:#0a0a0a;padding:28px 40px;text-align:center;">
+            <span style="font-size:26px;font-weight:900;color:#cbff03;letter-spacing:-1px;">Madger</span>
+          </td>
+        </tr>
+
+        <!-- Body -->
+        <tr>
+          <td style="padding:36px 40px 28px;">
+            <p style="margin:0 0 20px;font-size:20px;font-weight:700;color:#111;">Bonjour ${prenom} 👋</p>
+            <p style="margin:0 0 16px;font-size:15px;color:#444;line-height:1.7;">
+              Ta demande d'early access a bien été reçue. Tu es maintenant sur la liste des premiers coachs à tester Madger.
+            </p>
+            <p style="margin:0 0 24px;font-size:15px;color:#444;line-height:1.7;">
+              On te contactera sous <strong>48h</strong> pour démarrer ton accès. En attendant, voilà ce qui t'attend :
+            </p>
+
+            <!-- Features -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:10px;margin-bottom:28px;">
+              <tr><td style="padding:20px 24px;">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="padding:8px 0;font-size:14px;color:#222;border-bottom:1px solid #e5e7eb;">
+                      <span style="display:inline-block;width:24px;">🎁</span>
+                      <strong>Plan Pro offert 6 mois</strong> — valeur 294€
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 0;font-size:14px;color:#222;border-bottom:1px solid #e5e7eb;">
+                      <span style="display:inline-block;width:24px;">📅</span>
+                      Réservations et paiements Stripe automatiques
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 0;font-size:14px;color:#222;border-bottom:1px solid #e5e7eb;">
+                      <span style="display:inline-block;width:24px;">🧾</span>
+                      Facturation générée automatiquement
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:8px 0;font-size:14px;color:#222;">
+                      <span style="display:inline-block;width:24px;">🔗</span>
+                      Ton lien coach pro à partager en bio Instagram
+                    </td>
+                  </tr>
+                </table>
+              </td></tr>
+            </table>
+
+            <!-- CTA -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+              <tr><td align="center">
+                <a href="https://madger.app" style="display:inline-block;background:#cbff03;color:#000;font-size:14px;font-weight:700;padding:14px 32px;border-radius:100px;text-decoration:none;">
+                  Visiter madger.app →
+                </a>
+              </td></tr>
+            </table>
+
+            <p style="margin:0;font-size:14px;color:#666;line-height:1.6;">
+              Des questions ? Réponds directement à cet email, on est là.
+            </p>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="padding:20px 40px;border-top:1px solid #e5e7eb;text-align:center;">
+            <p style="margin:0;font-size:12px;color:#9ca3af;line-height:1.6;">
+              Tu reçois cet email car tu as rejoint la liste d'accès anticipé sur
+              <a href="https://madger.app" style="color:#9ca3af;">madger.app</a>
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
     });
 
     return NextResponse.json({ success: true });
