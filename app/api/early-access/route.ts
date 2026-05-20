@@ -1,4 +1,3 @@
-import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
 async function sendEmail({
@@ -36,30 +35,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Champs manquants" }, { status: 400 });
     }
 
-    // Init Supabase à la demande (évite l'erreur de build si vars absentes)
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-
-    // 1. Sauvegarde dans Supabase
-    const { error: dbError } = await supabase.from("early_access").insert({
-      prenom,
-      nom,
-      email,
-      telephone,
-      type_coaching,
-      nb_clients,
-      instagram_site: instagram_site || null,
-      defi,
-    });
-
-    if (dbError) {
-      console.error("Supabase error:", dbError);
-      return NextResponse.json({ error: "Erreur base de données" }, { status: 500 });
-    }
-
-    // 2. Email de notification à toi (fondateur)
+    // Email de notification à toi (fondateur)
     await sendEmail({
       to: process.env.FOUNDER_EMAIL!,
       subject: `🟢 Nouvelle inscription : ${prenom} ${nom}`,
