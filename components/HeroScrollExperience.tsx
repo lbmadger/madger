@@ -59,7 +59,7 @@ export default function HeroScrollExperience() {
 
   const dCtaRef = useRef<HTMLDivElement>(null);
   const mCtaRef = useRef<HTMLDivElement>(null);
-
+  const introSlateRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -113,6 +113,7 @@ export default function HeroScrollExperience() {
             scale: 1, rotateY: 0, rotateZ: 0, opacity: 1,
             duration: 3, ease: "power2.out",
           }, "intro")
+          .to(introSlateRef.current, { opacity: 0, y: -24, duration: 1.2, ease: "power2.in" }, "intro+=1.2")
           .to(dHeroRef.current, { opacity: 0, y: -20, duration: 1.2 }, "intro+=1.8");
 
         // 3 → 7: screen 0 (Profile) — step text appears
@@ -204,6 +205,7 @@ export default function HeroScrollExperience() {
             y: "0vh", scale: 0.82, rotateX: 0,
             duration: 1.5, ease: "power2.out",
           }, "intro")
+          .to(introSlateRef.current, { opacity: 0, y: -16, duration: 0.7, ease: "power2.in" }, "intro+=0.4")
           .to(mHeroRef.current, { opacity: 0, duration: 0.7 }, "intro+=0.8");
 
         // Écran 0 visible dès le début
@@ -468,6 +470,64 @@ export default function HeroScrollExperience() {
                   </a>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* ── INTRO SLATE — visible avant l'arrivée du téléphone ── */}
+          <div
+            ref={introSlateRef}
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              pointerEvents: "none",
+              zIndex: 1,
+            }}
+          >
+            {/* Stats en grille 2x2 */}
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "1px",
+              background: "rgba(255,255,255,0.06)",
+              borderRadius: 20,
+              overflow: "hidden",
+              border: "1px solid rgba(255,255,255,0.06)",
+            }}>
+              {[
+                { value: "5h", label: "récupérées / semaine" },
+                { value: "0€", label: "d'impayés" },
+                { value: "100%", label: "automatisé" },
+                { value: "1 lien", label: "pour tout gérer" },
+              ].map(({ value, label }) => (
+                <div key={label} style={{
+                  padding: "28px 32px",
+                  background: "rgba(255,255,255,0.025)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 6,
+                  minWidth: 140,
+                }}>
+                  <span style={{
+                    fontSize: "clamp(28px, 4vw, 42px)",
+                    fontWeight: 900,
+                    color: "#CBFF03",
+                    letterSpacing: "-0.04em",
+                    lineHeight: 1,
+                  }}>{value}</span>
+                  <span style={{
+                    fontSize: 12,
+                    color: "#5A5A5A",
+                    textAlign: "center",
+                    lineHeight: 1.4,
+                    maxWidth: 100,
+                  }}>{label}</span>
+                </div>
+              ))}
             </div>
           </div>
 
