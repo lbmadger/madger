@@ -6,32 +6,32 @@ import SectionLabel from "@/components/ui/SectionLabel";
 
 const faqs = [
   {
-    q: "Quelle est la différence entre Madger et Calendly ?",
-    a: "Calendly gère uniquement la prise de rendez-vous. Madger gère l'intégralité de votre activité : réservation, paiement Stripe au moment de la résa, facturation automatique conforme, rappels clients et dashboard complet. C'est pensé spécifiquement pour les coachs en France.",
+    q: "Quand Madger sera-t-il disponible ?",
+    a: "Madger est en cours de développement et sera lancé très prochainement. Les coachs qui rejoignent l'early access aujourd'hui seront les premiers à y accéder, avec le plan Pro offert pendant 6 mois. On vous prévient dès que c'est prêt.",
   },
   {
-    q: "Faut-il avoir un statut auto-entrepreneur ou une entreprise ?",
-    a: "Non, pas obligatoirement pour commencer. Madger s'adapte à votre situation : auto-entrepreneur, SASU, association... Si vous êtes en cours de création, vous pouvez déjà mettre en place votre page et tester la plateforme.",
+    q: "Comment fonctionne le lien coach ?",
+    a: "Vous obtenez une page personnalisée à votre nom — par exemple madger.app/marie. Vous la partagez en bio Instagram, en signature d'email, partout. Vos clients y voient vos offres, choisissent leur créneau et paient directement. Aucune installation, aucune friction.",
   },
   {
-    q: "Que se passe-t-il si un client veut annuler ?",
-    a: "Vous définissez votre politique d'annulation (délai, remboursement total ou partiel). Madger l'applique automatiquement. Le client voit les conditions avant de réserver, aucune surprise, aucune discussion gênante.",
+    q: "Mes clients doivent-ils créer un compte ?",
+    a: "Non. Vos clients réservent et paient en quelques clics, sans créer de compte. Ils reçoivent une confirmation et leur facture par email immédiatement. L'expérience est pensée pour être la plus simple possible de leur côté.",
   },
   {
-    q: "Stripe prend-il des frais en plus de la commission Madger ?",
-    a: "Stripe prélève 1,5 % + 0,25 € par transaction pour les cartes européennes. Ces frais sont standard et indépendants de Madger. Sur le plan Pro, la commission Madger passe à 0 %, donc vous ne payez que les frais Stripe.",
+    q: "Madger est-il adapté à mon type de coaching ?",
+    a: "Oui. Que vous soyez coach sportif, préparateur physique, coach bien-être, développement personnel ou business — Madger s'adapte à toutes les formes de coaching individuel. En présentiel, en visio ou les deux.",
+  },
+  {
+    q: "Comment fonctionne le paiement ?",
+    a: "Le paiement est encaissé au moment de la réservation via Stripe, la référence mondiale du paiement en ligne. Votre client paie par carte, Apple Pay ou Google Pay. Vous recevez l'argent directement sur votre compte bancaire. Aucun impayé possible.",
   },
   {
     q: "Mes données et celles de mes clients sont-elles sécurisées ?",
-    a: "Toutes les données sont hébergées en Europe (AWS eu-west). Les paiements transitent via Stripe (certifié PCI-DSS niveau 1). Nous ne revendons aucune donnée. Vous pouvez exporter ou supprimer vos données à tout moment.",
+    a: "Toutes les données sont hébergées en Europe. Les paiements transitent via Stripe, certifié PCI-DSS niveau 1 — le standard de sécurité le plus élevé. Nous ne revendons aucune donnée. Vous gardez le contrôle total.",
   },
   {
-    q: "Est-ce que Madger fonctionne pour les séances en visio ?",
-    a: "Oui. Vous pouvez proposer des séances en présentiel, en visio (avec lien Zoom ou Meet généré automatiquement) ou les deux. Votre client choisit au moment de la réservation.",
-  },
-  {
-    q: "Que se passe-t-il à la fin de la période early access ?",
-    a: "Les premiers coachs qui rejoignent bénéficient du plan Pro offert 6 mois. Ensuite, vous choisissez librement de continuer en Free (5 % de commission) ou de passer Pro (49 €/mois ou 490 €/an, 0 % de commission). Aucun engagement, résiliable à tout moment.",
+    q: "Puis-je gérer plusieurs types de séances ?",
+    a: "Oui. Vous créez autant d'offres que vous voulez : séance découverte, coaching individuel, suivi mensuel, pack séances… Chaque offre a son tarif, sa durée et ses disponibilités. Vos clients voient toutes vos offres et choisissent celle qui leur convient.",
   },
 ];
 
