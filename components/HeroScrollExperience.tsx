@@ -60,8 +60,6 @@ export default function HeroScrollExperience() {
   const dCtaRef = useRef<HTMLDivElement>(null);
   const mCtaRef = useRef<HTMLDivElement>(null);
 
-  // Floating intro chips
-  const introChipsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -99,9 +97,6 @@ export default function HeroScrollExperience() {
           pointerEvents: "none",
         });
 
-        // Chips: start visible, fade out as phone arrives
-        gsap.set(introChipsRef.current, { opacity: 1 });
-
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: sectionRef.current,
@@ -118,7 +113,6 @@ export default function HeroScrollExperience() {
             scale: 1, rotateY: 0, rotateZ: 0, opacity: 1,
             duration: 3, ease: "power2.out",
           }, "intro")
-          .to(introChipsRef.current, { opacity: 0, duration: 1, ease: "power2.in" }, "intro+=1.6")
           .to(dHeroRef.current, { opacity: 0, y: -20, duration: 1.2 }, "intro+=1.8");
 
         // 3 → 7: screen 0 (Profile) — step text appears
@@ -204,16 +198,12 @@ export default function HeroScrollExperience() {
           },
         });
 
-        // Chips visibles sur mobile aussi
-        gsap.set(introChipsRef.current, { opacity: 1 });
-
         // Intro rapide : settle dans la position finale
         tl.addLabel("intro", 0)
           .to(phoneWrapRef.current, {
             y: "0vh", scale: 0.82, rotateX: 0,
             duration: 1.5, ease: "power2.out",
           }, "intro")
-          .to(introChipsRef.current, { opacity: 0, duration: 0.6 }, "intro+=0.5")
           .to(mHeroRef.current, { opacity: 0, duration: 0.7 }, "intro+=0.8");
 
         // Écran 0 visible dès le début
@@ -479,51 +469,6 @@ export default function HeroScrollExperience() {
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* ── INTRO CHIPS — floating stats, visible before phone arrives ── */}
-          <div
-            ref={introChipsRef}
-            style={{
-              position: "absolute",
-              inset: 0,
-              pointerEvents: "none",
-              zIndex: 2,
-            }}
-          >
-            {[
-              { label: "5h récupérées / semaine", icon: "⚡", x: "62%", y: "22%", delay: "0s" },
-              { label: "Paiement à la réservation", icon: "💳", x: "58%", y: "42%", delay: "0.15s" },
-              { label: "Factures générées auto", icon: "🧾", x: "65%", y: "62%", delay: "0.3s" },
-              { label: "Votre lien coach pro", icon: "🔗", x: "54%", y: "78%", delay: "0.45s" },
-            ].map(({ label, icon, x, y, delay }) => (
-              <div
-                key={label}
-                style={{
-                  position: "absolute",
-                  left: x,
-                  top: y,
-                  transform: "translate(-50%, -50%)",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 7,
-                  padding: "9px 14px",
-                  borderRadius: 100,
-                  background: "rgba(20,20,20,0.85)",
-                  border: "1px solid rgba(203,255,3,0.18)",
-                  backdropFilter: "blur(12px)",
-                  animation: `chipFloat 3s ease-in-out infinite`,
-                  animationDelay: delay,
-                  boxShadow: "0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(203,255,3,0.06)",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                <span style={{ fontSize: 13 }}>{icon}</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#fff", letterSpacing: "-0.01em" }}>
-                  {label}
-                </span>
-              </div>
-            ))}
           </div>
 
           {/* ── PHONE — single instance, centered, GSAP moves it ── */}

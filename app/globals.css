@@ -105,12 +105,6 @@ a {
 .phone-scroll::-webkit-scrollbar-track { background: transparent; }
 .phone-scroll::-webkit-scrollbar-thumb { background: rgba(203,255,3,0.25); border-radius: 999px; }
 
-/* ── Floating chip animation (scroll intro) ─────────────── */
-@keyframes chipFloat {
-  0%, 100% { transform: translate(-50%, -50%) translateY(0px); }
-  50%       { transform: translate(-50%, -50%) translateY(-7px); }
-}
-
 /* ── Gradient border glow on hover ─────────────────────── */
 @keyframes border-glow {
   0%, 100% { opacity: 0.18; }
