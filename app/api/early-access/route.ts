@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
             <tr><td style="padding: 8px; color: #666;">Téléphone</td><td style="padding: 8px;">${telephone}</td></tr>
             <tr style="background: #f9f9f9;"><td style="padding: 8px; color: #666;">Type de coaching</td><td style="padding: 8px;">${type_coaching}</td></tr>
             <tr><td style="padding: 8px; color: #666;">Nb clients</td><td style="padding: 8px;">${nb_clients}</td></tr>
-            <tr style="background: #f9f9f9;"><td style="padding: 8px; color: #666;">Instagram/Site</td><td style="padding: 8px;">${instagram_site || "—"}</td></tr>
+            <tr style="background: #f9f9f9;"><td style="padding: 8px; color: #666;">Instagram/Site</td><td style="padding: 8px;">${instagram_site || "-"}</td></tr>
             <tr><td style="padding: 8px; color: #666; vertical-align: top;">Défi principal</td><td style="padding: 8px;">${defi}</td></tr>
           </table>
         </div>
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
                   <tr>
                     <td style="padding:8px 0;font-size:14px;color:#222;border-bottom:1px solid #e5e7eb;">
                       <span style="display:inline-block;width:24px;">🎁</span>
-                      <strong>Plan Pro offert 6 mois</strong> — valeur 294€
+                      <strong>Plan Pro offert 6 mois</strong> - valeur 294€
                     </td>
                   </tr>
                   <tr>

@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Madger — De la demande client à la facture encaissée";
+export const alt = "Madger - De la demande client à la facture encaissée";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -39,7 +39,7 @@ export default async function Image() {
           display: "flex",
         }} />
 
-        {/* Brackets coins — top left */}
+        {/* Brackets coins - top left */}
         <div style={{
           position: "absolute", top: 38, left: 46,
           width: 46, height: 46,
@@ -48,7 +48,7 @@ export default async function Image() {
           display: "flex",
         }} />
 
-        {/* Brackets coins — top right */}
+        {/* Brackets coins - top right */}
         <div style={{
           position: "absolute", top: 38, right: 46,
           width: 46, height: 46,
@@ -57,7 +57,7 @@ export default async function Image() {
           display: "flex",
         }} />
 
-        {/* Brackets coins — bottom left */}
+        {/* Brackets coins - bottom left */}
         <div style={{
           position: "absolute", bottom: 38, left: 46,
           width: 46, height: 46,
@@ -66,7 +66,7 @@ export default async function Image() {
           display: "flex",
         }} />
 
-        {/* Brackets coins — bottom right */}
+        {/* Brackets coins - bottom right */}
         <div style={{
           position: "absolute", bottom: 38, right: 46,
           width: 46, height: 46,

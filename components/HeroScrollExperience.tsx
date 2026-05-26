@@ -116,7 +116,7 @@ export default function HeroScrollExperience() {
           .to(introSlateRef.current, { opacity: 0, y: -24, duration: 1.2, ease: "power2.in" }, "intro+=1.2")
           .to(dHeroRef.current, { opacity: 0, y: -20, duration: 1.2 }, "intro+=1.8");
 
-        // 3 → 7: screen 0 (Profile) — step text appears
+        // 3 → 7: screen 0 (Profile) - step text appears
         tl.addLabel("phase0", 3)
           .to(dt0Ref.current, { opacity: 1, y: 0, duration: 1.2 }, "phase0");
 
@@ -144,7 +144,7 @@ export default function HeroScrollExperience() {
           .to(dt3Ref.current, { opacity: 1, y: 0, duration: 1.2 }, "phase3+=0.6")
           .to(phoneWrapRef.current, { x: "11vw", duration: 2.5, ease: "power1.inOut" }, "phase3");
 
-        // 19.5 → 22: final — phone moves to center + final text
+        // 19.5 → 22: final - phone moves to center + final text
         tl.addLabel("final", 19.5)
           .to(dt3Ref.current, { opacity: 0, y: -18, duration: 0.8 }, "final")
           .to(phoneWrapRef.current, {
@@ -253,7 +253,7 @@ export default function HeroScrollExperience() {
   return (
     <>
       {/* ══════════════════════════════════════════════════════
-          HERO — static intro section above the scroll experience
+          HERO - static intro section above the scroll experience
       ══════════════════════════════════════════════════════ */}
       <section className="relative min-h-screen flex flex-col items-center justify-center px-5 sm:px-6 pt-24 lg:pt-32 pb-28 overflow-hidden text-center">
         {/* Radial glow */}
@@ -392,7 +392,7 @@ export default function HeroScrollExperience() {
       </section>
 
       {/* ══════════════════════════════════════════════════════
-          SCROLL EXPERIENCE — 500vh, sticky 100vh
+          SCROLL EXPERIENCE - 500vh, sticky 100vh
       ══════════════════════════════════════════════════════ */}
       <section
         ref={sectionRef}
@@ -413,7 +413,7 @@ export default function HeroScrollExperience() {
             style={{ background: "radial-gradient(ellipse 65% 60% at 62% 50%, rgba(203,255,3,0.055), transparent 70%)" }}
           />
 
-          {/* ── DESKTOP text panel — left column (hidden on mobile) ── */}
+          {/* ── DESKTOP text panel - left column (hidden on mobile) ── */}
           <div
             className="hidden lg:flex absolute"
             style={{ left: 0, top: 0, bottom: 0, width: "44%", alignItems: "center", paddingLeft: "clamp(24px, 5vw, 72px)" }}
@@ -473,7 +473,7 @@ export default function HeroScrollExperience() {
             </div>
           </div>
 
-          {/* ── INTRO SLATE — visible avant l'arrivée du téléphone ── */}
+          {/* ── INTRO SLATE - visible avant l'arrivée du téléphone ── */}
           <div
             ref={introSlateRef}
             style={{
@@ -531,7 +531,7 @@ export default function HeroScrollExperience() {
             </div>
           </div>
 
-          {/* ── PHONE — single instance, centered, GSAP moves it ── */}
+          {/* ── PHONE - single instance, centered, GSAP moves it ── */}
           <div
             style={{
               position: "absolute",
@@ -554,7 +554,7 @@ export default function HeroScrollExperience() {
             </div>
           </div>
 
-          {/* ── MOBILE text panel — bottom center (hidden on desktop) ── */}
+          {/* ── MOBILE text panel - bottom center (hidden on desktop) ── */}
           <div
             className="flex lg:hidden"
             style={{
@@ -627,7 +627,7 @@ export default function HeroScrollExperience() {
 }
 
 /* ══════════════════════════════════════════════════════════
-   IPHONE FRAME — screens are stacked absolutely, GSAP controls opacity
+   IPHONE FRAME - screens are stacked absolutely, GSAP controls opacity
 ══════════════════════════════════════════════════════════ */
 interface IPhoneFrameProps {
   screen0Ref: React.RefObject<HTMLDivElement>;
@@ -671,7 +671,7 @@ function IPhoneFrame({ screen0Ref, screen1Ref, screen2Ref, screen3Ref }: IPhoneF
           {/* Dynamic Island */}
           <div style={{ position: "absolute", zIndex: 20, top: 14, left: "50%", transform: "translateX(-50%)", width: 108, height: 30, background: "#000", borderRadius: 20 }} />
 
-          {/* Status bar — time left, wifi + battery right (cellular bars removed) */}
+          {/* Status bar - time left, wifi + battery right (cellular bars removed) */}
           <div style={{ position: "absolute", zIndex: 10, top: 0, left: 0, right: 0, height: 52, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 22px" }}>
             <span style={{ fontSize: 11, fontWeight: 600, color: "#fff" }}>9:41</span>
             <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
@@ -688,7 +688,7 @@ function IPhoneFrame({ screen0Ref, screen1Ref, screen2Ref, screen3Ref }: IPhoneF
             </div>
           </div>
 
-          {/* Screens — stacked, opacity controlled by GSAP */}
+          {/* Screens - stacked, opacity controlled by GSAP */}
           <div ref={screen0Ref} style={{ position: "absolute", inset: 0 }}><ScreenProfile /></div>
           <div ref={screen1Ref} style={{ position: "absolute", inset: 0 }}><ScreenSeance /></div>
           <div ref={screen2Ref} style={{ position: "absolute", inset: 0 }}><ScreenPaiement /></div>

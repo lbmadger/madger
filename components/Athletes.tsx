@@ -72,7 +72,7 @@ export default function Athletes() {
               transition={{ duration: 0.75, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}
               whileHover={{ scale: 1.015 }}
             >
-              {/* Halo accent lime — émane derrière le sujet */}
+              {/* Halo accent lime - émane derrière le sujet */}
               <div
                 style={{
                   position: "absolute",
@@ -83,7 +83,7 @@ export default function Athletes() {
                 }}
               />
 
-              {/* Photo — luminosité pure pour effet cutout teinté marque */}
+              {/* Photo - luminosité pure pour effet cutout teinté marque */}
               <img
                 src={card.photo}
                 alt={card.title}

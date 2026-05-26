@@ -11,7 +11,7 @@ const faqs = [
   },
   {
     q: "Comment fonctionne le lien coach ?",
-    a: "Vous obtenez une page personnalisée à votre nom — par exemple madger.app/marie. Vous la partagez en bio Instagram, en signature d'email, partout. Vos clients y voient vos offres, choisissent leur créneau et paient directement. Aucune installation, aucune friction.",
+    a: "Vous obtenez une page personnalisée à votre nom - par exemple madger.app/marie. Vous la partagez en bio Instagram, en signature d'email, partout. Vos clients y voient vos offres, choisissent leur créneau et paient directement. Aucune installation, aucune friction.",
   },
   {
     q: "Mes clients doivent-ils créer un compte ?",
@@ -19,7 +19,7 @@ const faqs = [
   },
   {
     q: "Madger est-il adapté à mon type de coaching ?",
-    a: "Oui. Que vous soyez coach sportif, préparateur physique, coach bien-être, développement personnel ou business — Madger s'adapte à toutes les formes de coaching individuel. En présentiel, en visio ou les deux.",
+    a: "Oui. Que vous soyez coach sportif, préparateur physique, coach bien-être, développement personnel ou business - Madger s'adapte à toutes les formes de coaching individuel. En présentiel, en visio ou les deux.",
   },
   {
     q: "Comment fonctionne le paiement ?",
@@ -27,7 +27,7 @@ const faqs = [
   },
   {
     q: "Mes données et celles de mes clients sont-elles sécurisées ?",
-    a: "Toutes les données sont hébergées en Europe. Les paiements transitent via Stripe, certifié PCI-DSS niveau 1 — le standard de sécurité le plus élevé. Nous ne revendons aucune donnée. Vous gardez le contrôle total.",
+    a: "Toutes les données sont hébergées en Europe. Les paiements transitent via Stripe, certifié PCI-DSS niveau 1 - le standard de sécurité le plus élevé. Nous ne revendons aucune donnée. Vous gardez le contrôle total.",
   },
   {
     q: "Puis-je gérer plusieurs types de séances ?",

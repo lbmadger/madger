@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   description: "Réservations, paiements et facturation automatique en un seul lien. Pensé pour les coachs indépendants en France. Rejoignez l'early access.",
   keywords: ["coach", "application coach", "réservation séances", "facturation coach", "Stripe coach", "gestion clients coach", "early access"],
   openGraph: {
-    title: "Madger — De la demande client à la facture encaissée",
+    title: "Madger - De la demande client à la facture encaissée",
     description: "Un seul lien. Vos clients réservent, paient et reçoivent leur facture. Pensé pour les coachs en France.",
     url: "https://madger.app",
     siteName: "Madger",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Madger — De la demande client à la facture encaissée",
+    title: "Madger - De la demande client à la facture encaissée",
     description: "Un seul lien. Vos clients réservent, paient et reçoivent leur facture. Pensé pour les coachs en France.",
   },
 };

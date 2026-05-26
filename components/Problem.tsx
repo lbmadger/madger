@@ -6,9 +6,9 @@ import SectionLabel from "@/components/ui/SectionLabel";
 
 const PAINS = [
   { text: "Je passe plus de temps sur WhatsApp à caler des créneaux qu'à coacher" },
-  { text: "Relancer un client pour un paiement, c'est gênant — alors j'attends" },
+  { text: "Relancer un client pour un paiement, c'est gênant - alors j'attends" },
   { text: "En fin de mois, je rouvre Excel pour refaire les mêmes factures" },
-  { text: "Notion, Google Agenda, Stripe, Excel — tout dans des onglets séparés" },
+  { text: "Notion, Google Agenda, Stripe, Excel - tout dans des onglets séparés" },
 ];
 
 const handleSpotlight = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -71,7 +71,7 @@ export default function Problem() {
           </p>
         </motion.div>
 
-        {/* Pain points — compact, scannable */}
+        {/* Pain points - compact, scannable */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-3xl mx-auto">
           {PAINS.map((p, i) => (
             <motion.div

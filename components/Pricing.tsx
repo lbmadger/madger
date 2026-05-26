@@ -77,7 +77,7 @@ export default function Pricing() {
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8" style={{ background: "rgba(203,255,3,0.07)", border: "1px solid rgba(203,255,3,0.18)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-accent block" style={{ background: "#CBFF03" }} />
-            <span style={{ color: "#CBFF03", fontSize: 12, fontWeight: 600 }}>Early access — Plan Pro offert 6 mois pour les premiers membres</span>
+            <span style={{ color: "#CBFF03", fontSize: 12, fontWeight: 600 }}>Early access - Plan Pro offert 6 mois pour les premiers membres</span>
           </div>
 
           {/* ── Toggle mensuel / annuel ── */}
@@ -178,7 +178,7 @@ export default function Pricing() {
           {/* ── Pro ── wrapper pour badge flottant */}
           <div className="relative mt-8 md:mt-0" style={{ overflow: "visible" }}>
 
-            {/* Badge flottant — positionné par rapport au wrapper, pas la carte */}
+            {/* Badge flottant - positionné par rapport au wrapper, pas la carte */}
             <AnimatePresence>
               {annual ? (
                 <motion.div
