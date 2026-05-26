@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function StickyMobileCTA() {
   const [visible, setVisible] = useState(false);
   const [nearForm, setNearForm] = useState(false);
+  const [inScrollSection, setInScrollSection] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setVisible(window.scrollY > 400);
@@ -24,9 +25,20 @@ export default function StickyMobileCTA() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    const scrollEl = document.getElementById("fonctionnement");
+    if (!scrollEl) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setInScrollSection(entry.isIntersecting),
+      { threshold: 0.05 }
+    );
+    observer.observe(scrollEl);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <AnimatePresence>
-      {visible && !nearForm && (
+      {visible && !nearForm && !inScrollSection && (
         <motion.div
           initial={{ y: 80, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
