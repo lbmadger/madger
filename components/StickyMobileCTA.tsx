@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function StickyMobileCTA() {
   const [visible, setVisible] = useState(false);
+  const [nearForm, setNearForm] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setVisible(window.scrollY > 400);
@@ -12,9 +13,20 @@ export default function StickyMobileCTA() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    const formEl = document.getElementById("early-access");
+    if (!formEl) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setNearForm(entry.isIntersecting),
+      { threshold: 0.1 }
+    );
+    observer.observe(formEl);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <AnimatePresence>
-      {visible && (
+      {visible && !nearForm && (
         <motion.div
           initial={{ y: 80, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -30,11 +42,11 @@ export default function StickyMobileCTA() {
               boxShadow: "0 0 30px rgba(203,255,3,0.4), 0 8px 32px rgba(0,0,0,0.5)",
             }}
           >
-            <span>Rejoindre l'early access</span>
+            <span>Réserver ma place</span>
             <span style={{ fontSize: 16 }}>→</span>
           </a>
           <p className="text-center text-xs mt-2" style={{ color: "rgba(255,255,255,0.3)" }}>
-            Gratuit · Sans engagement
+            Plan Pro offert 6 mois · Sans engagement
           </p>
         </motion.div>
       )}

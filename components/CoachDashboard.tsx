@@ -130,7 +130,7 @@ export default function CoachDashboard() {
             className="font-extrabold text-white mb-4"
             style={{ fontSize: "clamp(28px, 4.5vw, 52px)", letterSpacing: "-0.035em", lineHeight: 1.06 }}
           >
-            Tout votre activité,<br />
+            Toute votre activité,<br />
             <span style={{
               background: "linear-gradient(90deg, #CBFF03, #a8e600)",
               WebkitBackgroundClip: "text",
@@ -259,7 +259,7 @@ export default function CoachDashboard() {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
                 <div>
                   <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>Bonjour, Marie 👋</div>
-                  <div style={{ fontSize: 10, color: "#5A5A5A", marginTop: 1 }}>Lundi 9 mai 2026 · 6 séances aujourd'hui</div>
+                  <div style={{ fontSize: 10, color: "#5A5A5A", marginTop: 1 }}>Lundi 25 mai 2026 · 6 séances aujourd'hui</div>
                 </div>
                 <div style={{ display: "flex", gap: 7, alignItems: "center" }}>
                   <div style={{ padding: "6px 12px", borderRadius: 8, background: "#CBFF03", fontSize: 10, fontWeight: 700, color: "#000", cursor: "pointer" }}>

@@ -308,8 +308,8 @@ export default function HeroScrollExperience() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
-            L'app qui fait gagner<br />
-            du{" "}<span className="text-shimmer">temps</span>{" "}aux coachs.
+            De la demande client<br />
+            à la <span className="text-shimmer">facture encaissée.</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -320,9 +320,9 @@ export default function HeroScrollExperience() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.22 }}
           >
-            Un seul lien pour gérer vos réservations, paiements et factures.
+            Un seul lien partagé. Vos clients réservent, paient et reçoivent leur facture.
             <br className="hidden sm:block" />
-            Vos clients réservent en quelques secondes, vous gardez le contrôle.
+            Vous, vous coachez.
           </motion.p>
 
           {/* CTAs */}
@@ -362,8 +362,8 @@ export default function HeroScrollExperience() {
             transition={{ delay: 0.5 }}
           >
             <span className="flex items-center gap-1.5"><Check />Sans engagement</span>
-            <span className="hidden sm:flex items-center gap-1.5"><Check />Inscriptions ouvertes</span>
-            <span className="flex items-center gap-1.5"><Check />Bêta testeurs</span>
+            <span className="hidden sm:flex items-center gap-1.5"><Check />Accès sélectionné manuellement</span>
+            <span className="flex items-center gap-1.5"><Check />Plan Pro offert 6 mois</span>
           </motion.div>
         </div>
 

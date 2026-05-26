@@ -5,9 +5,10 @@ import { motion, useInView, animate } from "framer-motion";
 import SectionLabel from "@/components/ui/SectionLabel";
 
 const PAINS = [
-  { icon: "💬", text: "Messages WhatsApp pour caler chaque séance" },
-  { icon: "💳", text: "Relances de paiement qui mettent mal à l'aise" },
-  { icon: "📊", text: "Factures dans Excel en fin de mois" },
+  { text: "Je passe plus de temps sur WhatsApp à caler des créneaux qu'à coacher" },
+  { text: "Relancer un client pour un paiement, c'est gênant — alors j'attends" },
+  { text: "En fin de mois, je rouvre Excel pour refaire les mêmes factures" },
+  { text: "Notion, Google Agenda, Stripe, Excel — tout dans des onglets séparés" },
 ];
 
 const handleSpotlight = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -62,20 +63,20 @@ export default function Problem() {
             className="font-bold text-white mb-4"
             style={{ fontSize: "clamp(18px, 2.5vw, 28px)", letterSpacing: "-0.02em" }}
           >
-            perdues chaque semaine en administratif
+            perdues en tâches administratives, en moyenne chaque semaine
           </div>
           <p className="text-text-muted max-w-xl mx-auto" style={{ fontSize: 16, lineHeight: 1.65 }}>
-            Messages pour caler des créneaux, relances de paiement, factures en fin de mois…
+            C'est ce que nous disent les coachs qu'on a rencontrés.
             Vous êtes coach, pas secrétaire.
           </p>
         </motion.div>
 
         {/* Pain points — compact, scannable */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-3xl mx-auto">
           {PAINS.map((p, i) => (
             <motion.div
               key={i}
-              className="spotlight-card flex items-center gap-3 px-5 py-4 rounded-2xl"
+              className="spotlight-card flex items-start gap-3 px-5 py-4 rounded-2xl"
               style={{
                 background: "#141414",
                 border: "1px solid rgba(255,255,255,0.07)",
@@ -86,8 +87,8 @@ export default function Problem() {
               transition={{ duration: 0.5, delay: 0.1 + i * 0.08 }}
               onMouseMove={handleSpotlight}
             >
-              <span style={{ fontSize: 20 }}>{p.icon}</span>
-              <span className="relative text-text-muted text-sm leading-snug" style={{ zIndex: 2 }}>
+              <span style={{ fontSize: 16, color: "rgba(255,255,255,0.15)", fontFamily: "Georgia, serif", lineHeight: 1, marginTop: 2, flexShrink: 0 }}>"</span>
+              <span className="relative text-text-muted text-sm leading-relaxed italic" style={{ zIndex: 2 }}>
                 {p.text}
               </span>
             </motion.div>

@@ -14,6 +14,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://madger.app"),
   title: "Madger · L'app qui fait gagner du temps aux coachs",
   description: "Réservations, paiements Stripe et facturation automatique en un seul outil. Pensé pour les coachs en France. Rejoignez l'early access gratuitement.",
   keywords: ["coach", "application coach", "réservation séances", "facturation coach", "Stripe coach", "gestion clients coach", "early access"],
@@ -24,11 +25,13 @@ export const metadata: Metadata = {
     siteName: "Madger",
     locale: "fr_FR",
     type: "website",
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Madger — L'app qui fait gagner du temps aux coachs" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Madger · L'app qui fait gagner du temps aux coachs",
     description: "Réservations, paiements et facturation automatique. Pensé pour les coachs en France.",
+    images: ["/og-image.png"],
   },
 };
 

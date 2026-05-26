@@ -14,7 +14,7 @@ const CARDS = [
     photo: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&h=1000&fit=crop&auto=format&q=85",
     tag: "Revenus sécurisés",
     title: "Payé avant\nla séance",
-    desc: "Stripe encaisse à la réservation. Fini les impayés et les relances embarrassantes.",
+    desc: "Le paiement est encaissé à la réservation. Plus jamais de relances à gérer.",
   },
   {
     photo: "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&h=1000&fit=crop&auto=format&q=85",

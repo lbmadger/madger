@@ -7,7 +7,7 @@ import SectionLabel from "@/components/ui/SectionLabel";
 const faqs = [
   {
     q: "Quand Madger sera-t-il disponible ?",
-    a: "Madger est en cours de développement et sera lancé très prochainement. Les coachs qui rejoignent l'early access aujourd'hui seront les premiers à y accéder, avec le plan Pro offert pendant 6 mois. On vous prévient dès que c'est prêt.",
+    a: "Madger est en phase d'accès anticipé. Les coachs qui s'inscrivent maintenant sont sélectionnés manuellement et accèdent en priorité au lancement, avec le plan Pro offert pendant 6 mois. On vous contacte directement dès que votre accès est prêt.",
   },
   {
     q: "Comment fonctionne le lien coach ?",
@@ -23,7 +23,7 @@ const faqs = [
   },
   {
     q: "Comment fonctionne le paiement ?",
-    a: "Le paiement est encaissé au moment de la réservation via Stripe, la référence mondiale du paiement en ligne. Votre client paie par carte, Apple Pay ou Google Pay. Vous recevez l'argent directement sur votre compte bancaire. Aucun impayé possible.",
+    a: "Le paiement est encaissé au moment de la réservation via Stripe. Votre client paie par carte, Apple Pay ou Google Pay. Vous recevez l'argent directement sur votre compte bancaire. Plus jamais de relances.",
   },
   {
     q: "Mes données et celles de mes clients sont-elles sécurisées ?",
@@ -138,8 +138,8 @@ export default function FAQ() {
           style={{ color: "#5A5A5A" }}
         >
           Une autre question ?{" "}
-          <a href="mailto:contact@madger.app" style={{ color: "#CBFF03", textDecoration: "none" }}>
-            contact@madger.app
+          <a href="mailto:bonjour@madger.app" style={{ color: "#CBFF03", textDecoration: "none" }}>
+            bonjour@madger.app
           </a>
         </motion.p>
       </div>

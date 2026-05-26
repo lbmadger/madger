@@ -33,7 +33,7 @@ const benefits = [
   },
   {
     title: "Planning unifié",
-    desc: "Synchronisé avec Google Calendar. Aucun doublon, aucun oubli.",
+    desc: "Synchronisé avec Google Calendar. Votre planning centralisé en un seul endroit.",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" width="20" height="20">
         <path d="M19 4H5C3.89 4 3 4.89 3 6V20C3 21.11 3.89 22 5 22H19C20.11 22 21 21.11 21 20V6C21 4.89 20.11 4 19 4ZM3 10H21M8 2V6M16 2V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />

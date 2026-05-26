@@ -40,7 +40,7 @@ export default function Pricing() {
 
   const monthlyPrice = 49;
   const annualTotal = 490;
-  const annualMonthly = Math.round(annualTotal / 12); // 40€/mois
+  const annualMonthly = Math.floor(annualTotal / 12); // 40€/mois
   const saving = monthlyPrice * 12 - annualTotal; // 98€ = ~2 mois
 
   return (
@@ -64,17 +64,21 @@ export default function Pricing() {
             className="font-extrabold text-white mb-5"
             style={{ fontSize: "clamp(32px, 4.5vw, 58px)", letterSpacing: "-0.035em", lineHeight: 1.04 }}
           >
-            Démarrez gratuitement.<br />
+            Transparent dès le départ.<br />
             <span style={{
               background: "linear-gradient(90deg, #CBFF03, #a8e600)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
-            }}>Passez Pro quand vous serez prêt.</span>
+            }}>Aucune surprise au lancement.</span>
           </h2>
-          <p className="text-text-muted text-lg max-w-lg mx-auto mb-10" style={{ lineHeight: 1.6 }}>
-            Aucun engagement. Vous restez libre de choisir le plan qui colle à votre rythme.
+          <p className="text-text-muted text-lg max-w-lg mx-auto mb-6" style={{ lineHeight: 1.6 }}>
+            Ces tarifs entrent en vigueur au lancement. Les membres early access bénéficient du plan Pro offert pendant 6 mois.
           </p>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8" style={{ background: "rgba(203,255,3,0.07)", border: "1px solid rgba(203,255,3,0.18)" }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-accent block" style={{ background: "#CBFF03" }} />
+            <span style={{ color: "#CBFF03", fontSize: 12, fontWeight: 600 }}>Early access — Plan Pro offert 6 mois pour les premiers membres</span>
+          </div>
 
           {/* ── Toggle mensuel / annuel ── */}
           <div

@@ -8,7 +8,7 @@ const features = [
   { label: "Paiement intégré à la réservation",     madger: true,  calendly: false, sans: false },
   { label: "Facturation automatique conforme",       madger: true,  calendly: false, sans: false },
   { label: "Format Factur-X (réforme 2026-2027)",   madger: true,  calendly: false, sans: false },
-  { label: "Archivage légal 10 ans inclus",          madger: true,  calendly: false, sans: false },
+  { label: "Conservation des données et factures",    madger: true,  calendly: false, sans: false },
   { label: "Rappels automatiques clients",           madger: true,  calendly: true,  sans: false },
   { label: "Gestion annulations & remboursements",  madger: true,  calendly: false, sans: false },
   { label: "Dashboard revenus & statistiques",       madger: true,  calendly: false, sans: false },

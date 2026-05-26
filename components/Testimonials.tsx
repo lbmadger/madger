@@ -5,22 +5,25 @@ import SectionLabel from "@/components/ui/SectionLabel";
 
 const testimonials = [
   {
-    photo: "photo-1534528741775-53994a69daeb",
-    name: "Camille Rousseau",
+    initial: "C",
+    color: "#7C6FCD",
+    name: "Camille R.",
     role: "Coach fitness · Lyon",
-    text: "Je jongle entre WhatsApp, Sumeria et Excel pour gérer mes séances. J'ai rejoint la bêta dès que j'ai vu que Madger centralisait tout : réservation, paiement et facture en une fois.",
+    text: "Je jongle entre WhatsApp, Sumeria et Excel pour gérer mes séances. J'aimerais avoir un seul endroit où tout est centralisé : réservation, paiement et facture en une fois.",
   },
   {
-    photo: "photo-1507003211169-0a1dd7228f2d",
-    name: "Thomas Girard",
+    initial: "T",
+    color: "#4A90D9",
+    name: "Thomas G.",
     role: "Préparateur physique · Paris",
-    text: "Les relances de paiement c'est ce que je déteste le plus dans mon métier. L'idée que le client paie au moment où il réserve, c'est exactement ce qu'il me fallait. J'attends la sortie avec impatience.",
+    text: "Les relances de paiement, c'est ce que je déteste le plus dans mon métier. L'idée que le client paie au moment où il réserve, ça changerait tout pour moi.",
   },
   {
-    photo: "photo-1438761681033-6461ffad8d80",
-    name: "Sarah Moreau",
+    initial: "S",
+    color: "#E07B4A",
+    name: "Sarah M.",
     role: "Coach bien-être · Bordeaux",
-    text: "J'ai un site Wix qui date de 2021, aucun système de réservation en ligne. Avoir un lien pro à mettre dans ma bio Instagram qui permet de réserver et payer directement, c'est ce que j'attendais.",
+    text: "J'ai un site Wix qui date de 2021, aucun système de réservation en ligne. Avoir un lien pro à mettre dans ma bio Instagram pour réserver et payer directement, c'est exactement ce qu'il me faut.",
   },
 ];
 
@@ -38,23 +41,23 @@ export default function Testimonials() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.7 }}
-          className="text-center flex flex-col items-center mb-14"
+          className="text-center flex flex-col items-center mb-4"
         >
-          <SectionLabel>Bêta testeurs</SectionLabel>
+          <SectionLabel>Ce qu'on entend</SectionLabel>
           <h2
             className="font-extrabold text-white mb-4"
             style={{ fontSize: "clamp(28px, 4vw, 48px)", letterSpacing: "-0.035em", lineHeight: 1.06 }}
           >
-            Des coachs qui testent la bêta<br />
+            Des coachs ont inspiré Madger.<br />
             <span style={{
               background: "linear-gradient(90deg, #CBFF03, #a8e600)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
-            }}>pour vous.</span>
+            }}>Voici ce qu'ils nous ont dit.</span>
           </h2>
-          <p className="text-text-muted text-base max-w-md mx-auto" style={{ lineHeight: 1.6 }}>
-            Ils nous ont parlé de leurs galères. On construit Madger pour les résoudre.
+          <p className="text-text-muted text-sm max-w-md mx-auto mb-14" style={{ lineHeight: 1.6 }}>
+            Ces retours ont été recueillis lors d'interviews menées pendant la conception du produit.
           </p>
         </motion.div>
 
@@ -85,18 +88,29 @@ export default function Testimonials() {
                 "
               </div>
 
-              <p className="text-sm flex-1" style={{ color: "#A0A0A0", lineHeight: 1.75 }}>
+              <p className="text-sm flex-1 italic" style={{ color: "#A0A0A0", lineHeight: 1.75 }}>
                 "{t.text}"
               </p>
 
               {/* Author */}
               <div className="flex items-center gap-3 mt-6 pt-5" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-                <div style={{ width: 38, height: 38, borderRadius: "50%", overflow: "hidden", border: "2px solid rgba(203,255,3,0.2)", flexShrink: 0 }}>
-                  <img
-                    src={`https://images.unsplash.com/${t.photo}?w=100&h=100&fit=crop&auto=format&q=80`}
-                    alt={t.name}
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                  />
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    background: t.color,
+                    border: "2px solid rgba(255,255,255,0.08)",
+                    flexShrink: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: "#fff",
+                  }}
+                >
+                  {t.initial}
                 </div>
                 <div className="flex-1">
                   <div className="font-semibold text-white text-sm">{t.name}</div>
