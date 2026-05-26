@@ -4,41 +4,40 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function StickyMobileCTA() {
-  const [visible, setVisible] = useState(false);
-  const [nearForm, setNearForm] = useState(false);
-  const [inScrollSection, setInScrollSection] = useState(false);
+  const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > 400);
+    const onScroll = () => {
+      const scrollY = window.scrollY;
+
+      // Masqué tant qu'on est dans le hero
+      if (scrollY < 400) { setShow(false); return; }
+
+      // Masqué pendant la section téléphone (#fonctionnement)
+      const phoneSection = document.getElementById("fonctionnement");
+      if (phoneSection) {
+        const top = phoneSection.offsetTop;
+        const bottom = top + phoneSection.offsetHeight;
+        if (scrollY >= top - 50 && scrollY < bottom) { setShow(false); return; }
+      }
+
+      // Masqué quand le formulaire est à l'écran
+      const formEl = document.getElementById("early-access");
+      if (formEl) {
+        const rect = formEl.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) { setShow(false); return; }
+      }
+
+      setShow(true);
+    };
+
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => {
-    const formEl = document.getElementById("early-access");
-    if (!formEl) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setNearForm(entry.isIntersecting),
-      { threshold: 0.1 }
-    );
-    observer.observe(formEl);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const scrollEl = document.getElementById("fonctionnement");
-    if (!scrollEl) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setInScrollSection(entry.isIntersecting),
-      { threshold: 0.05 }
-    );
-    observer.observe(scrollEl);
-    return () => observer.disconnect();
-  }, []);
-
   return (
     <AnimatePresence>
-      {visible && !nearForm && !inScrollSection && (
+      {show && (
         <motion.div
           initial={{ y: 80, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
