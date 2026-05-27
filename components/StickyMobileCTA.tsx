@@ -7,28 +7,22 @@ export default function StickyMobileCTA() {
   const [pastHero, setPastHero] = useState(false);
   const [nearForm, setNearForm] = useState(false);
 
-  // Sentinel placé juste après HeroScrollExperience dans page.tsx
   useEffect(() => {
-    const sentinel = document.getElementById("after-hero");
-    if (!sentinel) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => setPastHero(entry.isIntersecting || entry.boundingClientRect.top < 0),
-      { threshold: 0 }
-    );
-    obs.observe(sentinel);
-    return () => obs.disconnect();
-  }, []);
+    const onScroll = () => {
+      // Visible seulement quand le sentinel #after-hero est PASSÉ au-dessus du viewport
+      const sentinel = document.getElementById("after-hero");
+      if (!sentinel) { setPastHero(false); return; }
+      setPastHero(sentinel.getBoundingClientRect().top <= 0);
 
-  // Masqué quand le formulaire est visible
-  useEffect(() => {
-    const formEl = document.getElementById("early-access");
-    if (!formEl) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => setNearForm(entry.isIntersecting),
-      { threshold: 0.1 }
-    );
-    obs.observe(formEl);
-    return () => obs.disconnect();
+      // Masqué quand le formulaire est visible
+      const formEl = document.getElementById("early-access");
+      if (formEl) {
+        const r = formEl.getBoundingClientRect();
+        setNearForm(r.top < window.innerHeight && r.bottom > 0);
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   return (
