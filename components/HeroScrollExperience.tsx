@@ -168,21 +168,22 @@ export default function HeroScrollExperience() {
           }
         };
 
-        // Le téléphone démarre visible (pas de fade-in depuis le noir)
+        // Téléphone en position finale dès le départ, pas de settle
         gsap.set(phoneWrapRef.current, {
-          x: 0, y: "8vh", scale: 0.78, opacity: 1,
-          rotateX: 5, rotateY: 0, rotateZ: 0,
+          x: 0, y: "0vh", scale: 0.82, opacity: 1,
+          rotateX: 0, rotateY: 0, rotateZ: 0,
           transformPerspective: 800,
         });
 
         gsap.set([screen1Ref.current, screen2Ref.current, screen3Ref.current], { opacity: 0 });
         gsap.set(screen0Ref.current, { opacity: 1 });
 
-        gsap.set([mt0Ref.current, mt1Ref.current, mt2Ref.current, mt3Ref.current, mFinalRef.current], {
-          opacity: 0, y: 12,
-        });
+        // Step 0 visible immédiatement, introSlate et mHero cachés
+        gsap.set(mt0Ref.current, { opacity: 1, y: 0 });
+        gsap.set([mt1Ref.current, mt2Ref.current, mt3Ref.current, mFinalRef.current], { opacity: 0, y: 12 });
         gsap.set(mCtaRef.current, { opacity: 0 });
-        gsap.set(mHeroRef.current, { opacity: 1, y: 0 });
+        gsap.set(mHeroRef.current, { opacity: 0 });
+        gsap.set(introSlateRef.current, { opacity: 0 });
 
         // Desktop panel: invisible on mobile
         gsap.set([dHeroRef.current, dt0Ref.current, dt1Ref.current, dt2Ref.current, dt3Ref.current, dFinalRef.current, dCtaRef.current], {
@@ -199,49 +200,36 @@ export default function HeroScrollExperience() {
           },
         });
 
-        // Intro rapide : settle dans la position finale
-        tl.addLabel("intro", 0)
-          .to(phoneWrapRef.current, {
-            y: "0vh", scale: 0.82, rotateX: 0,
-            duration: 1.5, ease: "power2.out",
-          }, "intro")
-          .to(introSlateRef.current, { opacity: 0, y: -16, duration: 0.7, ease: "power2.in" }, "intro+=0.4")
-          .to(mHeroRef.current, { opacity: 0, duration: 0.7 }, "intro+=0.8");
-
-        // Écran 0 visible dès le début
-        tl.addLabel("p0", 1.8)
-          .to(mt0Ref.current, { opacity: 1, y: 0, duration: 0.8 }, "p0");
-
         // → écran 1
-        tl.addLabel("p1", 6)
-          .call(haptic, [], "p1+=0.4")
+        tl.addLabel("p1", 3)
+          .call(haptic, [], "p1+=0.3")
           .to(mt0Ref.current, { opacity: 0, duration: 0.5 }, "p1")
-          .to(screen0Ref.current, { opacity: 0, duration: 0.9 }, "p1")
-          .to(screen1Ref.current, { opacity: 1, duration: 0.9 }, "p1+=0.3")
-          .to(mt1Ref.current, { opacity: 1, y: 0, duration: 0.8 }, "p1+=0.4");
+          .to(screen0Ref.current, { opacity: 0, duration: 0.8 }, "p1")
+          .to(screen1Ref.current, { opacity: 1, duration: 0.8 }, "p1+=0.2")
+          .to(mt1Ref.current, { opacity: 1, y: 0, duration: 0.7 }, "p1+=0.3");
 
         // → écran 2
-        tl.addLabel("p2", 10.5)
-          .call(haptic, [], "p2+=0.4")
+        tl.addLabel("p2", 7)
+          .call(haptic, [], "p2+=0.3")
           .to(mt1Ref.current, { opacity: 0, duration: 0.5 }, "p2")
-          .to(screen1Ref.current, { opacity: 0, duration: 0.9 }, "p2")
-          .to(screen2Ref.current, { opacity: 1, duration: 0.9 }, "p2+=0.3")
-          .to(mt2Ref.current, { opacity: 1, y: 0, duration: 0.8 }, "p2+=0.4");
+          .to(screen1Ref.current, { opacity: 0, duration: 0.8 }, "p2")
+          .to(screen2Ref.current, { opacity: 1, duration: 0.8 }, "p2+=0.2")
+          .to(mt2Ref.current, { opacity: 1, y: 0, duration: 0.7 }, "p2+=0.3");
 
         // → écran 3
-        tl.addLabel("p3", 15)
-          .call(haptic, [], "p3+=0.4")
+        tl.addLabel("p3", 11)
+          .call(haptic, [], "p3+=0.3")
           .to(mt2Ref.current, { opacity: 0, duration: 0.5 }, "p3")
-          .to(screen2Ref.current, { opacity: 0, duration: 0.9 }, "p3")
-          .to(screen3Ref.current, { opacity: 1, duration: 0.9 }, "p3+=0.3")
-          .to(mt3Ref.current, { opacity: 1, y: 0, duration: 0.8 }, "p3+=0.4");
+          .to(screen2Ref.current, { opacity: 0, duration: 0.8 }, "p3")
+          .to(screen3Ref.current, { opacity: 1, duration: 0.8 }, "p3+=0.2")
+          .to(mt3Ref.current, { opacity: 1, y: 0, duration: 0.7 }, "p3+=0.3");
 
         // Final
-        tl.addLabel("fm", 18.5)
+        tl.addLabel("fm", 14)
           .to(mt3Ref.current, { opacity: 0, duration: 0.5 }, "fm")
-          .to(phoneWrapRef.current, { y: "4vh", scale: 0.72, duration: 1.5 }, "fm")
-          .to(mFinalRef.current, { opacity: 1, y: 0, duration: 1.2 }, "fm+=0.5")
-          .to(mCtaRef.current, { opacity: 1, duration: 0.8 }, "fm+=1");
+          .to(phoneWrapRef.current, { y: "4vh", scale: 0.72, duration: 1.2 }, "fm")
+          .to(mFinalRef.current, { opacity: 1, y: 0, duration: 1.0 }, "fm+=0.4")
+          .to(mCtaRef.current, { opacity: 1, duration: 0.7 }, "fm+=0.8");
 
         return () => {};
       });
@@ -397,7 +385,8 @@ export default function HeroScrollExperience() {
       <section
         ref={sectionRef}
         id="fonctionnement"
-        style={{ height: "500vh", position: "relative" }}
+        className="h-[350vh] lg:h-[500vh]"
+        style={{ position: "relative" }}
       >
         <div
           style={{
