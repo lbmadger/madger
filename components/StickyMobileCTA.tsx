@@ -16,9 +16,8 @@ export default function StickyMobileCTA() {
       // Masqué pendant la section téléphone (#fonctionnement)
       const phoneSection = document.getElementById("fonctionnement");
       if (phoneSection) {
-        const top = phoneSection.offsetTop;
-        const bottom = top + phoneSection.offsetHeight;
-        if (scrollY >= top - 50 && scrollY < bottom) { setShow(false); return; }
+        const rect = phoneSection.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) { setShow(false); return; }
       }
 
       // Masqué quand le formulaire est à l'écran
