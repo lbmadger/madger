@@ -8,23 +8,19 @@ export default function StickyMobileCTA() {
 
   useEffect(() => {
     const onScroll = () => {
-      const scrollY = window.scrollY;
-
-      // Masqué tant qu'on est dans le hero
-      if (scrollY < 400) { setShow(false); return; }
-
-      // Masqué pendant la section téléphone (#fonctionnement)
+      // Tant que la section téléphone est visible (ou pas encore scrollée), on masque
       const phoneSection = document.getElementById("fonctionnement");
-      if (phoneSection) {
-        const rect = phoneSection.getBoundingClientRect();
-        if (rect.top < window.innerHeight && rect.bottom > 0) { setShow(false); return; }
-      }
+      if (!phoneSection) { setShow(false); return; }
+
+      const phoneRect = phoneSection.getBoundingClientRect();
+      // phoneRect.bottom > 0 = section encore visible ou en dessous → masquer
+      if (phoneRect.bottom > 0) { setShow(false); return; }
 
       // Masqué quand le formulaire est à l'écran
       const formEl = document.getElementById("early-access");
       if (formEl) {
-        const rect = formEl.getBoundingClientRect();
-        if (rect.top < window.innerHeight && rect.bottom > 0) { setShow(false); return; }
+        const formRect = formEl.getBoundingClientRect();
+        if (formRect.top < window.innerHeight && formRect.bottom > 0) { setShow(false); return; }
       }
 
       setShow(true);
