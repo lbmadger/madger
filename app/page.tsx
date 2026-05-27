@@ -19,6 +19,7 @@ export default function Home() {
       <main className="bg-bg relative" style={{ zIndex: 1 }}>
         <Navbar />
         <HeroScrollExperience />
+        <div id="after-hero" />
         <Problem />
         <Athletes />
         <CoachDashboard />

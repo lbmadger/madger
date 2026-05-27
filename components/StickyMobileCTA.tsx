@@ -4,35 +4,36 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function StickyMobileCTA() {
-  const [show, setShow] = useState(false);
+  const [pastHero, setPastHero] = useState(false);
+  const [nearForm, setNearForm] = useState(false);
 
+  // Sentinel placé juste après HeroScrollExperience dans page.tsx
   useEffect(() => {
-    const onScroll = () => {
-      // Tant que la section téléphone est visible (ou pas encore scrollée), on masque
-      const phoneSection = document.getElementById("fonctionnement");
-      if (!phoneSection) { setShow(false); return; }
+    const sentinel = document.getElementById("after-hero");
+    if (!sentinel) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setPastHero(entry.isIntersecting || entry.boundingClientRect.top < 0),
+      { threshold: 0 }
+    );
+    obs.observe(sentinel);
+    return () => obs.disconnect();
+  }, []);
 
-      const phoneRect = phoneSection.getBoundingClientRect();
-      // phoneRect.bottom > 0 = section encore visible ou en dessous → masquer
-      if (phoneRect.bottom > 0) { setShow(false); return; }
-
-      // Masqué quand le formulaire est à l'écran
-      const formEl = document.getElementById("early-access");
-      if (formEl) {
-        const formRect = formEl.getBoundingClientRect();
-        if (formRect.top < window.innerHeight && formRect.bottom > 0) { setShow(false); return; }
-      }
-
-      setShow(true);
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+  // Masqué quand le formulaire est visible
+  useEffect(() => {
+    const formEl = document.getElementById("early-access");
+    if (!formEl) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setNearForm(entry.isIntersecting),
+      { threshold: 0.1 }
+    );
+    obs.observe(formEl);
+    return () => obs.disconnect();
   }, []);
 
   return (
     <AnimatePresence>
-      {show && (
+      {pastHero && !nearForm && (
         <motion.div
           initial={{ y: 80, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
