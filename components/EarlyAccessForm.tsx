@@ -87,7 +87,7 @@ export default function EarlyAccessForm() {
       if (!res.ok) throw new Error("Erreur serveur");
       setSubmitted(true);
     } catch {
-      setError("Une erreur est survenue. Écris-nous à bonjour@madger.app");
+      setError("Une erreur est survenue. Écris-nous à contact@madger.app");
     } finally {
       setLoading(false);
     }

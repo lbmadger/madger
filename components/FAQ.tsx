@@ -138,8 +138,8 @@ export default function FAQ() {
           style={{ color: "#5A5A5A" }}
         >
           Une autre question ?{" "}
-          <a href="mailto:bonjour@madger.app" style={{ color: "#CBFF03", textDecoration: "none" }}>
-            bonjour@madger.app
+          <a href="mailto:contact@madger.app" style={{ color: "#CBFF03", textDecoration: "none" }}>
+            contact@madger.app
           </a>
         </motion.p>
       </div>
