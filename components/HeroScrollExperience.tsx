@@ -401,12 +401,68 @@ export default function HeroScrollExperience() {
       </section>
 
       {/* ══════════════════════════════════════════════════════
-          SCROLL EXPERIENCE - 500vh, sticky 100vh
+          MOBILE - section statique simple (pas d'animation)
+      ══════════════════════════════════════════════════════ */}
+      <section className="lg:hidden py-20 px-5" id="fonctionnement">
+        <div className="max-w-md mx-auto">
+          <div style={{ marginBottom: 40, textAlign: "center" }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#CBFF03", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 14 }}>
+              Comment ça marche
+            </div>
+            <h2 style={{ fontSize: 30, fontWeight: 900, color: "#fff", letterSpacing: "-0.04em", lineHeight: 1.1 }}>
+              De la réservation à la facture,<br />en automatique.
+            </h2>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {STEPS.map((step) => (
+              <div key={step.num} style={{
+                padding: "22px 24px",
+                borderRadius: 16,
+                border: "1px solid rgba(255,255,255,0.07)",
+                background: "rgba(255,255,255,0.02)",
+                display: "flex",
+                gap: 18,
+                alignItems: "flex-start",
+              }}>
+                <div style={{
+                  flexShrink: 0,
+                  width: 36,
+                  height: 36,
+                  borderRadius: 10,
+                  background: "rgba(203,255,3,0.1)",
+                  border: "1px solid rgba(203,255,3,0.2)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 12,
+                  fontWeight: 800,
+                  color: "#CBFF03",
+                  letterSpacing: "0.05em",
+                }}>
+                  {step.num}
+                </div>
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 6, letterSpacing: "-0.02em" }}>
+                    {step.title}
+                  </div>
+                  <div style={{ fontSize: 14, color: "#6A6A6A", lineHeight: 1.55 }}>
+                    {step.desc}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════
+          SCROLL EXPERIENCE - desktop only (500vh, sticky 100vh)
       ══════════════════════════════════════════════════════ */}
       <section
         ref={sectionRef}
-        id="fonctionnement"
-        className="h-[350vh] lg:h-[500vh]"
+        id="fonctionnement-desktop"
+        className="hidden lg:block lg:h-[500vh]"
         style={{ position: "relative" }}
       >
         <div
