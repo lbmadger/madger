@@ -60,6 +60,10 @@ export default function HeroScrollExperience() {
   const dCtaRef = useRef<HTMLDivElement>(null);
   const mCtaRef = useRef<HTMLDivElement>(null);
   const introSlateRef = useRef<HTMLDivElement>(null);
+  const mDot0Ref = useRef<HTMLDivElement>(null);
+  const mDot1Ref = useRef<HTMLDivElement>(null);
+  const mDot2Ref = useRef<HTMLDivElement>(null);
+  const mDot3Ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -69,6 +73,9 @@ export default function HeroScrollExperience() {
 
       // ── DESKTOP (≥ 1024 px) ─────────────────────────────────
       mm.add("(min-width: 1024px)", () => {
+        // Restore introSlate visibility on desktop (hidden by default via CSS for mobile)
+        gsap.set(introSlateRef.current, { opacity: 1 });
+
         // Phone starts off-screen bottom-right (relative to the centered anchor)
         gsap.set(phoneWrapRef.current, {
           x: "28vw",
@@ -183,7 +190,12 @@ export default function HeroScrollExperience() {
         gsap.set([mt1Ref.current, mt2Ref.current, mt3Ref.current, mFinalRef.current], { opacity: 0, y: 12 });
         gsap.set(mCtaRef.current, { opacity: 0 });
         gsap.set(mHeroRef.current, { opacity: 0 });
-        gsap.set(introSlateRef.current, { opacity: 0 });
+
+        // Dots: dot 0 actif (lime), les autres gris
+        const dotRefs = [mDot0Ref, mDot1Ref, mDot2Ref, mDot3Ref];
+        dotRefs.forEach((ref, i) => {
+          gsap.set(ref.current, { backgroundColor: i === 0 ? "#CBFF03" : "rgba(255,255,255,0.15)", width: i === 0 ? 20 : 6 });
+        });
 
         // Desktop panel: invisible on mobile
         gsap.set([dHeroRef.current, dt0Ref.current, dt1Ref.current, dt2Ref.current, dt3Ref.current, dFinalRef.current, dCtaRef.current], {
@@ -200,13 +212,18 @@ export default function HeroScrollExperience() {
           },
         });
 
+        const dotActive = { backgroundColor: "#CBFF03", width: 20, duration: 0.3 };
+        const dotInactive = { backgroundColor: "rgba(255,255,255,0.15)", width: 6, duration: 0.3 };
+
         // → écran 1
         tl.addLabel("p1", 3)
           .call(haptic, [], "p1+=0.3")
           .to(mt0Ref.current, { opacity: 0, duration: 0.5 }, "p1")
           .to(screen0Ref.current, { opacity: 0, duration: 0.8 }, "p1")
           .to(screen1Ref.current, { opacity: 1, duration: 0.8 }, "p1+=0.2")
-          .to(mt1Ref.current, { opacity: 1, y: 0, duration: 0.7 }, "p1+=0.3");
+          .to(mt1Ref.current, { opacity: 1, y: 0, duration: 0.7 }, "p1+=0.3")
+          .to(mDot0Ref.current, dotInactive, "p1")
+          .to(mDot1Ref.current, dotActive, "p1");
 
         // → écran 2
         tl.addLabel("p2", 7)
@@ -214,7 +231,9 @@ export default function HeroScrollExperience() {
           .to(mt1Ref.current, { opacity: 0, duration: 0.5 }, "p2")
           .to(screen1Ref.current, { opacity: 0, duration: 0.8 }, "p2")
           .to(screen2Ref.current, { opacity: 1, duration: 0.8 }, "p2+=0.2")
-          .to(mt2Ref.current, { opacity: 1, y: 0, duration: 0.7 }, "p2+=0.3");
+          .to(mt2Ref.current, { opacity: 1, y: 0, duration: 0.7 }, "p2+=0.3")
+          .to(mDot1Ref.current, dotInactive, "p2")
+          .to(mDot2Ref.current, dotActive, "p2");
 
         // → écran 3
         tl.addLabel("p3", 11)
@@ -222,7 +241,9 @@ export default function HeroScrollExperience() {
           .to(mt2Ref.current, { opacity: 0, duration: 0.5 }, "p3")
           .to(screen2Ref.current, { opacity: 0, duration: 0.8 }, "p3")
           .to(screen3Ref.current, { opacity: 1, duration: 0.8 }, "p3+=0.2")
-          .to(mt3Ref.current, { opacity: 1, y: 0, duration: 0.7 }, "p3+=0.3");
+          .to(mt3Ref.current, { opacity: 1, y: 0, duration: 0.7 }, "p3+=0.3")
+          .to(mDot2Ref.current, dotInactive, "p3")
+          .to(mDot3Ref.current, dotActive, "p3");
 
         // Final
         tl.addLabel("fm", 14)
@@ -462,13 +483,36 @@ export default function HeroScrollExperience() {
             </div>
           </div>
 
-          {/* ── INTRO SLATE - visible avant l'arrivée du téléphone ── */}
+          {/* ── DOTS PROGRESSION MOBILE ── */}
+          <div className="flex lg:hidden" style={{
+            position: "absolute",
+            top: 24,
+            left: 0,
+            right: 0,
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 6,
+            zIndex: 2,
+            pointerEvents: "none",
+          }}>
+            {[mDot0Ref, mDot1Ref, mDot2Ref, mDot3Ref].map((ref, i) => (
+              <div key={i} ref={ref} style={{
+                height: 6,
+                borderRadius: 999,
+                background: i === 0 ? "#CBFF03" : "rgba(255,255,255,0.15)",
+                width: i === 0 ? 20 : 6,
+                transition: "none",
+              }} />
+            ))}
+          </div>
+
+          {/* ── INTRO SLATE - desktop only ── */}
           <div
             ref={introSlateRef}
+            className="hidden lg:flex"
             style={{
               position: "absolute",
               inset: 0,
-              display: "flex",
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
