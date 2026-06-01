@@ -372,7 +372,7 @@ export default function HeroScrollExperience() {
           >
             <span className="flex items-center gap-1.5"><Check />Sans engagement</span>
             <span className="hidden sm:flex items-center gap-1.5"><Check />Accès sélectionné manuellement</span>
-            <span className="flex items-center gap-1.5"><Check />Plan Pro offert 6 mois</span>
+            <span className="flex items-center gap-1.5"><Check />Plan Pro offert 3 mois</span>
           </motion.div>
         </div>
 

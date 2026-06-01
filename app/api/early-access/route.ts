@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
                   <tr>
                     <td style="padding:8px 0;font-size:14px;color:#222;border-bottom:1px solid #e5e7eb;">
                       <span style="display:inline-block;width:24px;">🎁</span>
-                      <strong>Plan Pro offert 6 mois</strong> - valeur 294€
+                      <strong>Plan Pro offert 3 mois</strong> - valeur 147€
                     </td>
                   </tr>
                   <tr>

@@ -47,7 +47,7 @@ export default function StickyMobileCTA() {
             <span style={{ fontSize: 16 }}>→</span>
           </a>
           <p className="text-center text-xs mt-2" style={{ color: "rgba(255,255,255,0.3)" }}>
-            Plan Pro offert 6 mois · Sans engagement
+            Plan Pro offert 3 mois · Sans engagement
           </p>
         </motion.div>
       )}

@@ -50,7 +50,7 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-5 sm:px-6 h-16 flex items-center justify-between">
 
         {/* Logo — square icon */}
-        <a href="#" className="flex items-center flex-shrink-0" onClick={() => setOpen(false)}>
+        <a href="/" className="flex items-center flex-shrink-0" onClick={() => setOpen(false)}>
           <MadgerLogo size={46} />
         </a>
 
@@ -91,7 +91,7 @@ export default function Navbar() {
             style={{ background: "#CBFF03", color: "#000", letterSpacing: "-0.01em" }}
             onClick={() => setOpen(false)}
           >
-            Accès gratuit
+            Early access
           </a>
 
           {/* Hamburger */}

@@ -73,11 +73,11 @@ export default function Pricing() {
             }}>Aucune surprise au lancement.</span>
           </h2>
           <p className="text-text-muted text-lg max-w-lg mx-auto mb-6" style={{ lineHeight: 1.6 }}>
-            Ces tarifs entrent en vigueur au lancement. Les membres early access bénéficient du plan Pro offert pendant 6 mois.
+            Ces tarifs entrent en vigueur au lancement. Les membres early access bénéficient du plan Pro offert pendant 3 mois.
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8" style={{ background: "rgba(203,255,3,0.07)", border: "1px solid rgba(203,255,3,0.18)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-accent block" style={{ background: "#CBFF03" }} />
-            <span style={{ color: "#CBFF03", fontSize: 12, fontWeight: 600 }}>Early access - Plan Pro offert 6 mois pour les premiers membres</span>
+            <span style={{ color: "#CBFF03", fontSize: 12, fontWeight: 600 }}>Early access - Plan Pro offert 3 mois pour les premiers membres</span>
           </div>
 
           {/* ── Toggle mensuel / annuel ── */}
@@ -162,7 +162,7 @@ export default function Pricing() {
                 onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.25)")}
                 onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)")}
               >
-                Commencer gratuitement
+                Rejoindre l'accès anticipé →
               </a>
               <div className="my-7" style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
               <ul className="flex flex-col gap-3">
@@ -305,7 +305,7 @@ export default function Pricing() {
                 whileHover={{ boxShadow: "0 0 30px rgba(203,255,3,0.5), 0 0 60px rgba(203,255,3,0.2)" }}
                 transition={{ duration: 0.2 }}
               >
-                {annual ? "Passer Pro · Annuel" : "Passer Pro"}
+                Rejoindre l'accès anticipé →
               </motion.a>
 
               <div className="my-7" style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />

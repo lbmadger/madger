@@ -7,7 +7,7 @@ import SectionLabel from "@/components/ui/SectionLabel";
 const faqs = [
   {
     q: "Quand Madger sera-t-il disponible ?",
-    a: "Madger est en phase d'accès anticipé. Les coachs qui s'inscrivent maintenant sont sélectionnés manuellement et accèdent en priorité au lancement, avec le plan Pro offert pendant 6 mois. On vous contacte directement dès que votre accès est prêt.",
+    a: "Madger est en phase d'accès anticipé. Les coachs qui s'inscrivent maintenant sont sélectionnés manuellement et accèdent en priorité au lancement, avec le plan Pro offert pendant 3 mois. On vous contacte directement dès que votre accès est prêt.",
   },
   {
     q: "Comment fonctionne le lien coach ?",

@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 
 export default function Footer() {
@@ -10,15 +9,16 @@ export default function Footer() {
       style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
     >
       <div className="max-w-6xl mx-auto px-6">
+        {/* Top row: logo + nav links + copyright */}
         <div className="flex flex-col sm:flex-row flex-wrap items-center justify-between gap-5 sm:gap-6 text-center sm:text-left">
-          <a href="#" className="flex items-center">
-            <img src="/logo.png" alt="Madger" style={{ height: 20, width: "auto", objectFit: "contain", display: "block" }} />
+          <a href="/" className="flex items-center flex-shrink-0">
+            <MadgerLogo size={36} />
           </a>
 
-          <div className="flex flex-wrap gap-7 text-sm">
+          <div className="flex flex-wrap justify-center gap-6 text-sm">
             <a href="#fonctionnement" className="text-text-muted hover:text-white transition-colors duration-200">Fonctionnement</a>
             <a href="#dashboard" className="text-text-muted hover:text-white transition-colors duration-200">Dashboard</a>
-<a href="#tarifs" className="text-text-muted hover:text-white transition-colors duration-200">Tarifs</a>
+            <a href="#tarifs" className="text-text-muted hover:text-white transition-colors duration-200">Tarifs</a>
             <a href="#early-access" className="text-text-muted hover:text-white transition-colors duration-200">Early access</a>
             <a href="mailto:contact@madger.app" className="text-text-muted hover:text-white transition-colors duration-200">Contact</a>
           </div>
@@ -26,7 +26,15 @@ export default function Footer() {
           <div className="text-text-dim text-sm">© 2026 Madger</div>
         </div>
 
-
+        {/* Bottom row: legal links */}
+        <div
+          className="flex flex-wrap justify-center sm:justify-start gap-5 mt-8 pt-6 text-xs"
+          style={{ borderTop: "1px solid rgba(255,255,255,0.04)", color: "#3A3A3A" }}
+        >
+          <a href="/mentions-legales" className="hover:text-white transition-colors duration-200">Mentions légales</a>
+          <a href="/politique-de-confidentialite" className="hover:text-white transition-colors duration-200">Politique de confidentialité</a>
+          <span>Paiements sécurisés via Stripe</span>
+        </div>
       </div>
     </footer>
   );
