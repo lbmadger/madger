@@ -68,6 +68,10 @@ export default function HeroScrollExperience() {
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
+    // Ignore mobile browser UI resize events (Instagram/TikTok bottom bar appearing)
+    // Without this, ScrollTrigger recalculates positions when the bottom bar shows/hides → page jump
+    ScrollTrigger.config({ ignoreMobileResize: true });
+
     // Normalize mobile scroll to prevent iOS momentum-scroll teleport when scrubbing back up
     ScrollTrigger.normalizeScroll({ momentum: 0.1, allowNestedScroll: true });
 
