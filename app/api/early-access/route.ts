@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     const { prenom, nom, email, telephone, type_coaching, nb_clients, instagram_site, defi } = body;
 
     // Validation basique
-    if (!prenom || !nom || !email || !telephone || !type_coaching || !nb_clients || !defi) {
+    if (!prenom || !email || !telephone || !type_coaching || !nb_clients || !defi) {
       return NextResponse.json({ error: "Champs manquants" }, { status: 400 });
     }
 
