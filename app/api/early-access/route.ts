@@ -1,4 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 async function sendEmail({
   to,
@@ -34,6 +40,12 @@ export async function POST(req: NextRequest) {
     if (!prenom || !email || !telephone || !type_coaching || !nb_clients || !defi) {
       return NextResponse.json({ error: "Champs manquants" }, { status: 400 });
     }
+
+    // Sauvegarde en base Supabase (ne bloque pas si ça échoue)
+    await supabase.from("early_access").insert({
+      prenom, nom: nom || null, email, telephone,
+      type_coaching, nb_clients, instagram_site: instagram_site || null, defi,
+    });
 
     // Email de notification à toi (fondateur)
     await sendEmail({
