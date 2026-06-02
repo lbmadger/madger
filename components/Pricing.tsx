@@ -280,15 +280,7 @@ export default function Pricing() {
                       <span className="font-extrabold text-white" style={{ fontSize: "clamp(38px, 10vw, 52px)", letterSpacing: "-0.04em", lineHeight: 1 }}>
                         {monthlyPrice} €
                       </span>
-                      <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <span className="text-text-muted text-lg">/ mois</span>
-                        <div
-                          className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap"
-                          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)", color: "#8A8A8A" }}
-                        >
-                          ou 490 €/an
-                        </div>
-                      </div>
+                      <span className="text-text-muted text-lg mb-1">/ mois</span>
                     </div>
                     <div className="text-text-muted text-sm">
                       Aucune commission sur vos ventes
