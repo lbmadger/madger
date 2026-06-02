@@ -72,9 +72,6 @@ export default function HeroScrollExperience() {
     // Without this, ScrollTrigger recalculates positions when the bottom bar shows/hides → page jump
     ScrollTrigger.config({ ignoreMobileResize: true });
 
-    // Normalize mobile scroll to prevent iOS momentum-scroll teleport when scrubbing back up
-    ScrollTrigger.normalizeScroll({ momentum: 0.1, allowNestedScroll: true });
-
     const ctx = gsap.context(() => {
       const mm = gsap.matchMedia();
 
