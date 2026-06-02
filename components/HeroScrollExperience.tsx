@@ -33,6 +33,7 @@ const STEPS = [
 export default function HeroScrollExperience() {
   // ── Scroll section refs ──────────────────────────────────────
   const sectionRef = useRef<HTMLElement>(null);
+  const stickyRef = useRef<HTMLDivElement>(null);
   const phoneWrapRef = useRef<HTMLDivElement>(null);
 
   // Screen refs (rendered once, stacked absolutely)
@@ -66,10 +67,15 @@ export default function HeroScrollExperience() {
   const mDot3Ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Lock heights in px on mount so layout never shifts when Instagram/browser chrome appears
+    const vh = window.innerHeight;
+    const isMobile = window.innerWidth < 1024;
+    if (stickyRef.current) stickyRef.current.style.height = `${vh}px`;
+    if (sectionRef.current) sectionRef.current.style.height = `${vh * (isMobile ? 3.5 : 5)}px`;
+
     gsap.registerPlugin(ScrollTrigger);
 
     // Ignore mobile browser UI resize events (Instagram/TikTok bottom bar appearing)
-    // Without this, ScrollTrigger recalculates positions when the bottom bar shows/hides → page jump
     ScrollTrigger.config({ ignoreMobileResize: true });
 
     const ctx = gsap.context(() => {
@@ -414,6 +420,7 @@ export default function HeroScrollExperience() {
         style={{ position: "relative" }}
       >
         <div
+          ref={stickyRef}
           style={{
             position: "sticky",
             top: 0,
