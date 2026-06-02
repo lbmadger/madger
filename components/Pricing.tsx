@@ -40,7 +40,7 @@ export default function Pricing() {
 
   const monthlyPrice = 49;
   const annualTotal = 490;
-  const annualMonthly = Math.floor(annualTotal / 12); // 40€/mois
+  const annualMonthly = Math.round(annualTotal / 12); // 41€/mois
   const saving = monthlyPrice * 12 - annualTotal; // 98€ = ~2 mois
 
   return (
