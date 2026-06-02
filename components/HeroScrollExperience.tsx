@@ -109,7 +109,7 @@ export default function HeroScrollExperience() {
             trigger: sectionRef.current,
             start: "top top",
             end: "bottom bottom",
-            scrub: 1.8,
+            scrub: 0.6,
           },
         });
 
@@ -208,7 +208,7 @@ export default function HeroScrollExperience() {
             trigger: sectionRef.current,
             start: "top top",
             end: "bottom bottom",
-            scrub: 1.2,
+            scrub: 0.4,
           },
         });
 
