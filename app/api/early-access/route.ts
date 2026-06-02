@@ -72,86 +72,143 @@ export async function POST(req: NextRequest) {
     // 3. Email de confirmation au coach
     await sendEmail({
       to: email,
-      subject: `Bienvenue dans l'early access Madger, ${prenom}`,
+      subject: `${prenom}, tu es dans les premiers. Voilà ce qui t'attend.`,
       html: `<!DOCTYPE html>
 <html lang="fr">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 0;">
+<body style="margin:0;padding:0;background:#0f0f0f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f0f0f;padding:40px 16px;">
     <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+      <table width="580" cellpadding="0" cellspacing="0" style="max-width:580px;width:100%;">
 
         <!-- Header -->
         <tr>
-          <td style="background:#0a0a0a;padding:28px 40px;text-align:center;">
-            <span style="font-size:26px;font-weight:900;color:#cbff03;letter-spacing:-1px;">Madger</span>
+          <td style="padding:0 0 32px;text-align:center;">
+            <span style="font-size:28px;font-weight:900;color:#cbff03;letter-spacing:-1.5px;">Madger</span>
           </td>
         </tr>
 
-        <!-- Body -->
+        <!-- Hero card -->
         <tr>
-          <td style="padding:36px 40px 28px;">
-            <p style="margin:0 0 20px;font-size:20px;font-weight:700;color:#111;">Bonjour ${prenom} 👋</p>
-            <p style="margin:0 0 16px;font-size:15px;color:#444;line-height:1.7;">
-              Ta demande d'early access a bien été reçue. Tu es maintenant sur la liste des premiers coachs à tester Madger.
+          <td style="background:#141414;border-radius:16px;border:1px solid rgba(255,255,255,0.08);padding:40px 40px 36px;mso-border-alt:none;">
+
+            <!-- Greeting -->
+            <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#cbff03;letter-spacing:0.08em;text-transform:uppercase;">Accès anticipé confirmé</p>
+            <p style="margin:0 0 28px;font-size:26px;font-weight:800;color:#ffffff;line-height:1.2;letter-spacing:-0.5px;">${prenom}, tu fais partie<br>des premiers.</p>
+
+            <p style="margin:0 0 20px;font-size:15px;color:#9a9a9a;line-height:1.8;">
+              On a créé Madger parce qu'on a vu des coachs incroyables perdre des heures chaque semaine sur WhatsApp, Excel et des relances qui ne devraient pas exister.
             </p>
-            <p style="margin:0 0 24px;font-size:15px;color:#444;line-height:1.7;">
-              On te contactera <strong>prochainement</strong> pour démarrer ton accès dès que Madger sera disponible. En attendant, voilà ce qui t'attend :
+            <p style="margin:0 0 32px;font-size:15px;color:#9a9a9a;line-height:1.8;">
+              Toi, tu as décidé que ça devait changer. C'est exactement pour des coachs comme toi qu'on construit Madger.
             </p>
 
-            <!-- Features -->
-            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:10px;margin-bottom:28px;">
+            <!-- Divider -->
+            <div style="height:1px;background:rgba(255,255,255,0.07);margin:0 0 32px;"></div>
+
+            <!-- What changes -->
+            <p style="margin:0 0 20px;font-size:16px;font-weight:700;color:#ffffff;">Ce que Madger va changer pour toi :</p>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
+              <tr>
+                <td style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+                  <table cellpadding="0" cellspacing="0"><tr>
+                    <td style="width:36px;vertical-align:top;padding-top:1px;">
+                      <div style="width:22px;height:22px;background:rgba(203,255,3,0.12);border-radius:6px;text-align:center;line-height:22px;font-size:12px;">⏱</div>
+                    </td>
+                    <td>
+                      <p style="margin:0;font-size:14px;font-weight:600;color:#ffffff;">Récupère 4 à 5h par semaine</p>
+                      <p style="margin:4px 0 0;font-size:13px;color:#666;line-height:1.6;">Fini les allers-retours pour caler un créneau ou relancer un paiement. Tout se règle au moment de la réservation.</p>
+                    </td>
+                  </tr></table>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+                  <table cellpadding="0" cellspacing="0"><tr>
+                    <td style="width:36px;vertical-align:top;padding-top:1px;">
+                      <div style="width:22px;height:22px;background:rgba(203,255,3,0.12);border-radius:6px;text-align:center;line-height:22px;font-size:12px;">💳</div>
+                    </td>
+                    <td>
+                      <p style="margin:0;font-size:14px;font-weight:600;color:#ffffff;">Zéro impayé, jamais</p>
+                      <p style="margin:4px 0 0;font-size:13px;color:#666;line-height:1.6;">Stripe encaisse au moment de la réservation. Ton client paie, tu confirmes. Dans cet ordre, toujours.</p>
+                    </td>
+                  </tr></table>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+                  <table cellpadding="0" cellspacing="0"><tr>
+                    <td style="width:36px;vertical-align:top;padding-top:1px;">
+                      <div style="width:22px;height:22px;background:rgba(203,255,3,0.12);border-radius:6px;text-align:center;line-height:22px;font-size:12px;">🔗</div>
+                    </td>
+                    <td>
+                      <p style="margin:0;font-size:14px;font-weight:600;color:#ffffff;">Un seul lien pour tout</p>
+                      <p style="margin:4px 0 0;font-size:13px;color:#666;line-height:1.6;">madger.app/tonnom dans ta bio Instagram. Tes clients réservent, paient et reçoivent leur facture. Sans toi dans la boucle.</p>
+                    </td>
+                  </tr></table>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:12px 0;">
+                  <table cellpadding="0" cellspacing="0"><tr>
+                    <td style="width:36px;vertical-align:top;padding-top:1px;">
+                      <div style="width:22px;height:22px;background:rgba(203,255,3,0.12);border-radius:6px;text-align:center;line-height:22px;font-size:12px;">🧾</div>
+                    </td>
+                    <td>
+                      <p style="margin:0;font-size:14px;font-weight:600;color:#ffffff;">Factures automatiques, conformes</p>
+                      <p style="margin:4px 0 0;font-size:13px;color:#666;line-height:1.6;">Chaque séance génère sa facture et l'envoie à ton client. Plus jamais de fin de mois à tout refaire.</p>
+                    </td>
+                  </tr></table>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Divider -->
+            <div style="height:1px;background:rgba(255,255,255,0.07);margin:0 0 32px;"></div>
+
+            <!-- Exclusive badge -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(203,255,3,0.06);border:1px solid rgba(203,255,3,0.18);border-radius:12px;margin-bottom:32px;">
               <tr><td style="padding:20px 24px;">
-                <table width="100%" cellpadding="0" cellspacing="0">
-                  <tr>
-                    <td style="padding:8px 0;font-size:14px;color:#222;border-bottom:1px solid #e5e7eb;">
-                      <span style="display:inline-block;width:24px;">🎁</span>
-                      <strong>Plan Pro offert 3 mois</strong> - valeur 147€
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding:8px 0;font-size:14px;color:#222;border-bottom:1px solid #e5e7eb;">
-                      <span style="display:inline-block;width:24px;">📅</span>
-                      Réservations et paiements Stripe automatiques
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding:8px 0;font-size:14px;color:#222;border-bottom:1px solid #e5e7eb;">
-                      <span style="display:inline-block;width:24px;">🧾</span>
-                      Facturation générée automatiquement
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style="padding:8px 0;font-size:14px;color:#222;">
-                      <span style="display:inline-block;width:24px;">🔗</span>
-                      Ton lien coach pro à partager en bio Instagram
-                    </td>
-                  </tr>
-                </table>
+                <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#cbff03;letter-spacing:0.06em;text-transform:uppercase;">Ton accès fondateur</p>
+                <p style="margin:0;font-size:14px;color:#9a9a9a;line-height:1.7;">
+                  Plan Pro offert <strong style="color:#ffffff;">3 mois</strong> dès le lancement — valeur 147€. Tu es parmi les 47 premiers coachs sélectionnés. On te contacte directement dès que ton accès est prêt.
+                </p>
               </td></tr>
             </table>
 
+            <!-- Pendant ce temps -->
+            <p style="margin:0 0 16px;font-size:16px;font-weight:700;color:#ffffff;">En attendant, une chose à faire :</p>
+            <p style="margin:0 0 28px;font-size:14px;color:#9a9a9a;line-height:1.8;">
+              Note le temps que tu passes cette semaine sur l'administratif — relances, factures, calage de créneaux. Juste pour avoir un chiffre réel. Tu seras surpris. Et dans 3 mois, on compare.
+            </p>
+
             <!-- CTA -->
-            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
               <tr><td align="center">
-                <a href="https://madger.app" style="display:inline-block;background:#cbff03;color:#000;font-size:14px;font-weight:700;padding:14px 32px;border-radius:100px;text-decoration:none;">
-                  Visiter madger.app →
+                <a href="https://madger.app" style="display:inline-block;background:#cbff03;color:#000000;font-size:14px;font-weight:800;padding:15px 36px;border-radius:100px;text-decoration:none;letter-spacing:-0.3px;">
+                  Voir madger.app →
                 </a>
               </td></tr>
             </table>
 
-            <p style="margin:0;font-size:14px;color:#666;line-height:1.6;">
-              Des questions ? Réponds directement à cet email, on est là.
+            <!-- Signature -->
+            <div style="height:1px;background:rgba(255,255,255,0.07);margin:0 0 28px;"></div>
+            <p style="margin:0 0 4px;font-size:14px;color:#ffffff;font-weight:600;">Léonard</p>
+            <p style="margin:0 0 16px;font-size:13px;color:#555;">Fondateur de Madger</p>
+            <p style="margin:0;font-size:13px;color:#555;line-height:1.7;">
+              PS — Tu peux répondre directement à cet email si tu as une question, une idée ou juste envie d'en parler. Je lis tout.
             </p>
+
           </td>
         </tr>
 
         <!-- Footer -->
         <tr>
-          <td style="padding:20px 40px;border-top:1px solid #e5e7eb;text-align:center;">
-            <p style="margin:0;font-size:12px;color:#9ca3af;line-height:1.6;">
-              Tu reçois cet email car tu as rejoint la liste d'accès anticipé sur
-              <a href="https://madger.app" style="color:#9ca3af;">madger.app</a>
+          <td style="padding:24px 0;text-align:center;">
+            <p style="margin:0;font-size:12px;color:#333;line-height:1.6;">
+              Tu reçois cet email car tu t'es inscrit sur
+              <a href="https://madger.app" style="color:#555;text-decoration:none;">madger.app</a>
             </p>
           </td>
         </tr>
