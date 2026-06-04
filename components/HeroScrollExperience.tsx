@@ -60,7 +60,6 @@ export default function HeroScrollExperience() {
 
   const dCtaRef = useRef<HTMLDivElement>(null);
   const mCtaRef = useRef<HTMLDivElement>(null);
-  const introSlateRef = useRef<HTMLDivElement>(null);
   const mDot0Ref = useRef<HTMLDivElement>(null);
   const mDot1Ref = useRef<HTMLDivElement>(null);
   const mDot2Ref = useRef<HTMLDivElement>(null);
@@ -83,9 +82,6 @@ export default function HeroScrollExperience() {
 
       // ── DESKTOP (≥ 1024 px) ─────────────────────────────────
       mm.add("(min-width: 1024px)", () => {
-        // Restore introSlate visibility on desktop (hidden by default via CSS for mobile)
-        gsap.set(introSlateRef.current, { opacity: 1 });
-
         // Phone starts off-screen bottom-right (relative to the centered anchor)
         gsap.set(phoneWrapRef.current, {
           x: "28vw",
@@ -130,7 +126,6 @@ export default function HeroScrollExperience() {
             scale: 1, rotateY: 0, rotateZ: 0, opacity: 1,
             duration: 3, ease: "power2.out",
           }, "intro")
-          .to(introSlateRef.current, { opacity: 0, y: -24, duration: 1.2, ease: "power2.in" }, "intro+=1.2")
           .to(dHeroRef.current, { opacity: 0, y: -20, duration: 1.2 }, "intro+=1.8");
 
         // 3 → 7: screen 0 (Profile) - step text appears
@@ -258,7 +253,7 @@ export default function HeroScrollExperience() {
         // Final
         tl.addLabel("fm", 14)
           .to(mt3Ref.current, { opacity: 0, duration: 0.5 }, "fm")
-          .to(phoneWrapRef.current, { y: "4vh", scale: 0.72, duration: 1.2 }, "fm")
+          .to(phoneWrapRef.current, { y: "-8vh", scale: 0.65, duration: 1.2 }, "fm")
           .to(mFinalRef.current, { opacity: 1, y: 0, duration: 1.0 }, "fm+=0.4")
           .to(mCtaRef.current, { opacity: 1, duration: 0.7 }, "fm+=0.8");
 
@@ -339,7 +334,7 @@ export default function HeroScrollExperience() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.22 }}
           >
-            Un seul lien partagé. Vos clients réservent, paient et reçoivent leur facture.
+            Un seul lien partagé. Vos clients réservent, paient et reçoivent leur facture.{" "}
             <br className="hidden sm:block" />
             Vous, vous coachez.
           </motion.p>
@@ -517,63 +512,6 @@ export default function HeroScrollExperience() {
             ))}
           </div>
 
-          {/* ── INTRO SLATE - desktop only ── */}
-          <div
-            ref={introSlateRef}
-            className="hidden lg:flex"
-            style={{
-              position: "absolute",
-              inset: 0,
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              pointerEvents: "none",
-              zIndex: 1,
-            }}
-          >
-            {/* Stats en grille 2x2 */}
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "1px",
-              background: "rgba(255,255,255,0.06)",
-              borderRadius: 20,
-              overflow: "hidden",
-              border: "1px solid rgba(255,255,255,0.06)",
-            }}>
-              {[
-                { value: "5h", label: "récupérées / semaine" },
-                { value: "0€", label: "d'impayés" },
-                { value: "100%", label: "automatisé" },
-                { value: "1 lien", label: "pour tout gérer" },
-              ].map(({ value, label }) => (
-                <div key={label} style={{
-                  padding: "28px 32px",
-                  background: "rgba(255,255,255,0.025)",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 6,
-                  minWidth: 140,
-                }}>
-                  <span style={{
-                    fontSize: "clamp(28px, 4vw, 42px)",
-                    fontWeight: 900,
-                    color: "#CBFF03",
-                    letterSpacing: "-0.04em",
-                    lineHeight: 1,
-                  }}>{value}</span>
-                  <span style={{
-                    fontSize: 12,
-                    color: "#5A5A5A",
-                    textAlign: "center",
-                    lineHeight: 1.4,
-                    maxWidth: 100,
-                  }}>{label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
 
           {/* ── PHONE - single instance, centered, GSAP moves it ── */}
           <div
@@ -583,6 +521,7 @@ export default function HeroScrollExperience() {
               left: "50%",
               transform: "translate(-50%, -50%)",
               perspective: "1400px",
+              zIndex: 2,
             }}
           >
             <div

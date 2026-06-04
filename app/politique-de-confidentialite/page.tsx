@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Politique de confidentialité · Madger",
-  description: "Politique de confidentialité de Madger. Comment nous collectons, utilisons et protégeons vos données personnelles.",
+  description: "Politique de confidentialité de Madger. Comment nous collectons et utilisons vos données personnelles.",
 };
 
 export default function PolitiqueConfidentialite() {
@@ -32,123 +32,41 @@ export default function PolitiqueConfidentialite() {
         <div className="flex flex-col gap-10" style={{ color: "#9A9A9A", fontSize: 15, lineHeight: 1.8 }}>
 
           <section>
-            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>1. Qui sommes-nous ?</h2>
+            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>Responsable du traitement</h2>
             <p>
-              Madger est une plateforme de réservation et de paiement destinée aux coachs indépendants en France.
-              Le site est accessible à l'adresse <strong className="text-white">madger.app</strong>.
-              Pour toute question relative à vos données, contactez-nous à{" "}
-              <a href="mailto:contact@madger.app" style={{ color: "#CBFF03" }}>contact@madger.app</a>.
+              Léonard Bondeau, Madger · <a href="mailto:contact@madger.app" style={{ color: "#CBFF03" }}>contact@madger.app</a>
             </p>
           </section>
 
           <section>
-            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>2. Données collectées</h2>
-            <p>Nous collectons les données suivantes via notre formulaire d'accès anticipé :</p>
-            <ul className="mt-3 flex flex-col gap-2" style={{ paddingLeft: 20, listStyleType: "disc" }}>
-              <li>Prénom et nom</li>
-              <li>Adresse email</li>
-              <li>Numéro de téléphone</li>
-              <li>Type de coaching pratiqué</li>
-              <li>Nombre de clients actifs</li>
-              <li>Compte Instagram ou site web (optionnel)</li>
-              <li>Informations libres sur vos besoins</li>
-            </ul>
-            <p className="mt-4">
-              Ces données sont transmises via notre API et stockées de manière sécurisée.
-              Un email de confirmation vous est envoyé via <strong className="text-white">Resend</strong> (plateforme d'envoi d'emails).
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>3. Finalité du traitement</h2>
-            <p>Vos données sont collectées dans les buts suivants :</p>
-            <ul className="mt-3 flex flex-col gap-2" style={{ paddingLeft: 20, listStyleType: "disc" }}>
-              <li>Vous recontacter pour vous donner accès à Madger</li>
-              <li>Comprendre vos besoins afin d'adapter le produit</li>
-              <li>Vous envoyer des informations sur le lancement et les mises à jour</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>4. Base légale</h2>
+            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>Données collectées et finalité</h2>
             <p>
-              Le traitement de vos données est basé sur votre consentement explicite, exprimé lors de la soumission
-              du formulaire d'accès anticipé. Vous pouvez retirer ce consentement à tout moment en nous contactant.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>5. Partage des données</h2>
-            <p>
-              Vos données ne sont jamais vendues ni partagées à des fins publicitaires.
-              Elles peuvent être transmises uniquement aux prestataires techniques nécessaires à notre fonctionnement :
-            </p>
-            <ul className="mt-3 flex flex-col gap-2" style={{ paddingLeft: 20, listStyleType: "disc" }}>
-              <li><strong className="text-white">Resend</strong> — envoi des emails de confirmation</li>
-              <li><strong className="text-white">Vercel</strong> — hébergement et infrastructure</li>
-              <li><strong className="text-white">Stripe</strong> — traitement sécurisé des paiements (lors du lancement)</li>
-            </ul>
-            <p className="mt-4">
-              Ces prestataires sont soumis à des obligations strictes de confidentialité et ne peuvent
-              utiliser vos données qu'aux fins pour lesquelles ils ont été mandatés.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>6. Durée de conservation</h2>
-            <p>
-              Vos données sont conservées pendant la durée nécessaire à la gestion de votre accès anticipé,
-              et au maximum 3 ans à compter de votre inscription. Passé ce délai, elles sont supprimées ou anonymisées.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>7. Sécurité</h2>
-            <p>
-              Nous mettons en œuvre des mesures techniques et organisationnelles appropriées pour protéger
-              vos données contre tout accès non autorisé, perte ou destruction. Les communications entre
-              votre navigateur et nos serveurs sont chiffrées via HTTPS/TLS.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>8. Vos droits (RGPD)</h2>
-            <p>Conformément au RGPD et à la loi Informatique et Libertés, vous disposez des droits suivants :</p>
-            <ul className="mt-3 flex flex-col gap-2" style={{ paddingLeft: 20, listStyleType: "disc" }}>
-              <li><strong className="text-white">Accès</strong> — obtenir une copie de vos données</li>
-              <li><strong className="text-white">Rectification</strong> — corriger des données inexactes</li>
-              <li><strong className="text-white">Suppression</strong> — demander l'effacement de vos données</li>
-              <li><strong className="text-white">Opposition</strong> — vous opposer au traitement</li>
-              <li><strong className="text-white">Portabilité</strong> — recevoir vos données dans un format structuré</li>
-              <li><strong className="text-white">Limitation</strong> — demander la limitation du traitement</li>
-            </ul>
-            <p className="mt-4">
-              Pour exercer ces droits, contactez-nous à{" "}
-              <a href="mailto:contact@madger.app" style={{ color: "#CBFF03" }}>contact@madger.app</a>.
-              Nous répondrons dans un délai de 30 jours.
+              Les données collectées via le formulaire d'accès anticipé (prénom, nom, email, téléphone, type de coaching)
+              sont utilisées uniquement pour vous recontacter dans le cadre de l'accès à Madger.
+              Elles ne sont jamais revendues ni partagées à des fins commerciales.
             </p>
             <p className="mt-3">
-              Si vous estimez que vos droits ne sont pas respectés, vous pouvez introduire une réclamation
-              auprès de la <strong className="text-white">CNIL</strong> :{" "}
-              <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer" style={{ color: "#CBFF03" }}>www.cnil.fr</a>.
+              Base légale : consentement (article 6.1.a du RGPD).
             </p>
           </section>
 
           <section>
-            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>9. Cookies</h2>
+            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>Conservation</h2>
             <p>
-              Madger n'utilise pas de cookies de traçage publicitaire ou d'analyse tierce.
-              Le site peut utiliser des cookies techniques strictement nécessaires au bon fonctionnement
-              (session, préférences). Ces cookies ne nécessitent pas de consentement préalable.
+              Vos données sont conservées 3 ans à compter de votre inscription, puis supprimées ou anonymisées.
             </p>
           </section>
 
           <section>
-            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>10. Modifications</h2>
+            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>Vos droits</h2>
             <p>
-              Nous nous réservons le droit de mettre à jour cette politique à tout moment.
-              La date de dernière mise à jour est indiquée ci-dessous.
-              En cas de modification substantielle, nous vous informerons par email.
+              Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, de suppression
+              et d'opposition sur vos données. Pour l'exercer, écrivez à{" "}
+              <a href="mailto:contact@madger.app" style={{ color: "#CBFF03" }}>contact@madger.app</a>.
+            </p>
+            <p className="mt-3">
+              En cas de litige, vous pouvez saisir la{" "}
+              <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer" style={{ color: "#CBFF03" }}>CNIL</a>.
             </p>
           </section>
 

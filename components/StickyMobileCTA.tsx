@@ -18,7 +18,9 @@ export default function StickyMobileCTA() {
       const formEl = document.getElementById("early-access");
       if (formEl) {
         const r = formEl.getBoundingClientRect();
-        setNearForm(r.top < window.innerHeight && r.bottom > 0);
+        // Hide once the form's top edge has entered or passed the viewport —
+        // covers both "form is visible" and "user has scrolled past the form"
+        setNearForm(r.top < window.innerHeight);
       }
     };
     window.addEventListener("scroll", onScroll, { passive: true });

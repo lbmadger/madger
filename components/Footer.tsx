@@ -33,6 +33,9 @@ export default function Footer() {
         >
           <a href="/mentions-legales" className="hover:text-white transition-colors duration-200">Mentions légales</a>
           <a href="/politique-de-confidentialite" className="hover:text-white transition-colors duration-200">Politique de confidentialité</a>
+          <a href="/cgu" className="hover:text-white transition-colors duration-200">CGU</a>
+          <a href="/cgv" className="hover:text-white transition-colors duration-200">CGV</a>
+          <a href="/politique-cookies" className="hover:text-white transition-colors duration-200">Cookies</a>
           <span>Paiements sécurisés via Stripe</span>
         </div>
       </div>

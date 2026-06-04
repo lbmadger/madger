@@ -109,7 +109,7 @@ export default function CoachDashboard() {
   const statsInView = useInView(statsRef, { once: true, margin: "-80px" });
 
   return (
-    <section className="py-24 relative overflow-hidden">
+    <section className="py-14 md:py-24 relative overflow-hidden">
       {/* Ambient */}
       <div
         className="absolute inset-0 pointer-events-none"
@@ -143,9 +143,9 @@ export default function CoachDashboard() {
           </p>
         </motion.div>
 
-        {/* Mobile : stats + features simplifiées */}
-        <div className="md:hidden mb-8">
-          <div className="grid grid-cols-2 gap-3 mb-6">
+        {/* Mobile : stats */}
+        <div className="md:hidden mb-4">
+          <div className="grid grid-cols-2 gap-3 mb-4">
             {[
               { label: "Revenus ce mois", value: "1 240 €", delta: "+18 %", color: "#CBFF03" },
               { label: "Séances ce mois", value: "24",      delta: "+4",    color: "#CBFF03" },
@@ -165,21 +165,6 @@ export default function CoachDashboard() {
                 <div className="font-extrabold text-white text-2xl" style={{ letterSpacing: "-0.03em", lineHeight: 1 }}>{value}</div>
                 <div className="text-xs mt-1 font-semibold" style={{ color }}>↑ {delta}</div>
               </motion.div>
-            ))}
-          </div>
-          <div className="flex flex-col gap-2">
-            {[
-              { icon: "✓", text: "Réservations & paiements en temps réel" },
-              { icon: "✓", text: "Factures générées automatiquement" },
-              { icon: "✓", text: "Rappels clients automatiques" },
-              { icon: "✓", text: "Messagerie intégrée" },
-              { icon: "✓", text: "Synchro Google Calendar" },
-              { icon: "✓", text: "0 % de commission en Pro" },
-            ].map(({ icon, text }) => (
-              <div key={text} className="flex items-center gap-3 px-4 py-3 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                <span style={{ color: "#CBFF03", fontWeight: 700, fontSize: 14 }}>{icon}</span>
-                <span className="text-sm" style={{ color: "#C0C0C0" }}>{text}</span>
-              </div>
             ))}
           </div>
         </div>
@@ -381,7 +366,7 @@ export default function CoachDashboard() {
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
                     <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>Messages</span>
                     <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                      <div style={{ padding: "1px 6px", borderRadius: 20, background: "#CBFF03", fontSize: 7, fontWeight: 700, color: "#000" }}>3</div>
+                      <div style={{ padding: "2px 6px", borderRadius: 20, background: "#CBFF03", fontSize: 7, fontWeight: 700, color: "#000", display: "flex", alignItems: "center" }}>3</div>
                       <span style={{ fontSize: 9, color: "#CBFF03", cursor: "pointer" }}>Tout voir →</span>
                     </div>
                   </div>
@@ -420,19 +405,19 @@ export default function CoachDashboard() {
                     <div style={{ display: "flex", alignItems: "center", gap: 6, paddingBottom: 6, borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                       <Avatar src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=60&h=60&fit=crop&auto=format&q=80" size={18} />
                       <span style={{ fontSize: 9, fontWeight: 600, color: "#fff" }}>Sophie Blanc</span>
-                      <div style={{ marginLeft: "auto", padding: "1px 5px", borderRadius: 10, background: "rgba(255,165,0,0.1)", border: "1px solid rgba(255,165,0,0.2)" }}>
-                        <span style={{ fontSize: 7, color: "#FFA500" }}>En attente</span>
+                      <div style={{ marginLeft: "auto", padding: "2px 6px", borderRadius: 10, background: "rgba(255,165,0,0.1)", border: "1px solid rgba(255,165,0,0.2)", display: "flex", alignItems: "center" }}>
+                        <span style={{ fontSize: 7, color: "#FFA500", lineHeight: 1 }}>En attente</span>
                       </div>
                     </div>
                     {/* Messages */}
-                    <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                      <div style={{ padding: "4px 8px", borderRadius: "8px 8px 2px 8px", background: "#CBFF03", maxWidth: "80%" }}>
-                        <span style={{ fontSize: 8, color: "#000", fontWeight: 500 }}>Bonjour Sophie ! Oui pas de souci pour 11h 😊</span>
-                      </div>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "flex-start" }}>
                       <div style={{ padding: "4px 8px", borderRadius: "8px 8px 8px 2px", background: "rgba(255,255,255,0.07)", maxWidth: "80%" }}>
                         <span style={{ fontSize: 8, color: "#fff" }}>Est-ce que je peux décaler à 11h ?</span>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "flex-end" }}>
+                      <div style={{ padding: "4px 8px", borderRadius: "8px 8px 2px 8px", background: "#CBFF03", maxWidth: "80%" }}>
+                        <span style={{ fontSize: 8, color: "#000", fontWeight: 500 }}>Oui pas de souci pour 11h 😊</span>
                       </div>
                     </div>
                     {/* Input */}

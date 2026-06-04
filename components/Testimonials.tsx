@@ -4,8 +4,7 @@ import { motion } from "framer-motion";
 
 const testimonials = [
   {
-    initial: "C",
-    color: "#7C6FCD",
+    photo: "https://images.unsplash.com/photo-1594381898411-846e7d193883?w=80&h=80&fit=crop&auto=format&q=80",
     name: "Camille R.",
     role: "Coach fitness · Lyon",
     stars: 5,
@@ -13,8 +12,7 @@ const testimonials = [
     text: "Ma première semaine, j'ai récupéré presque 4h que je passais sur WhatsApp à caler des créneaux et relancer des paiements. Maintenant tout arrive automatiquement - réservation, paiement, facture.",
   },
   {
-    initial: "T",
-    color: "#4A90D9",
+    photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&auto=format&q=80",
     name: "Thomas G.",
     role: "Préparateur physique · Paris",
     stars: 5,
@@ -22,8 +20,7 @@ const testimonials = [
     text: "J'avais des impayés qui traînaient depuis des semaines. Depuis que le paiement se fait à la réservation, ce problème n'existe plus. C'est aussi simple que ça.",
   },
   {
-    initial: "S",
-    color: "#E07B4A",
+    photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&auto=format&q=80",
     name: "Sarah M.",
     role: "Coach bien-être · Bordeaux",
     stars: 5,
@@ -109,7 +106,7 @@ export default function Testimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.6, delay: i * 0.1 }}
-              className="flex flex-col p-6 rounded-3xl"
+              className={`flex flex-col p-6 rounded-3xl${i === 2 ? " hidden md:flex" : ""}`}
               style={{
                 background: "#141414",
                 border: "1px solid rgba(255,255,255,0.07)",
@@ -147,17 +144,11 @@ export default function Testimonials() {
                   width: 38,
                   height: 38,
                   borderRadius: "50%",
-                  background: t.color,
                   flexShrink: 0,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 14,
-                  fontWeight: 700,
-                  color: "#fff",
-                  boxShadow: `0 0 0 2px rgba(0,0,0,0.4), 0 0 0 3px ${t.color}33`,
+                  overflow: "hidden",
+                  boxShadow: "0 0 0 2px rgba(0,0,0,0.4), 0 0 0 3px rgba(203,255,3,0.2)",
                 }}>
-                  {t.initial}
+                  <img src={t.photo} alt={t.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                 </div>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", letterSpacing: "-0.01em" }}>{t.name}</div>

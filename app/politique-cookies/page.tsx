@@ -2,11 +2,11 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Mentions légales · Madger",
-  description: "Mentions légales de Madger.",
+  title: "Cookies · Madger",
+  description: "Politique de cookies de Madger.",
 };
 
-export default function MentionsLegales() {
+export default function PolitiqueCookies() {
   return (
     <main className="min-h-screen bg-bg text-white">
       <div className="max-w-2xl mx-auto px-6 py-20">
@@ -25,27 +25,32 @@ export default function MentionsLegales() {
           className="font-extrabold text-white mb-10"
           style={{ fontSize: "clamp(28px, 4vw, 44px)", letterSpacing: "-0.03em", lineHeight: 1.08 }}
         >
-          Mentions légales
+          Cookies
         </h1>
 
         <div className="flex flex-col gap-10" style={{ color: "#9A9A9A", fontSize: 15, lineHeight: 1.8 }}>
 
           <section>
-            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>Éditeur</h2>
             <p>
-              <strong className="text-white">Léonard Bondeau</strong>, Madger<br />
-              SIRET : 933 449 365 00016<br />
-              Adresse : Boulevard de la Fontaine des Suisses, 21000 Dijon<br />
-              Email : <a href="mailto:contact@madger.app" style={{ color: "#CBFF03" }}>contact@madger.app</a>
+              Madger n'utilise pas de cookies de traçage publicitaire ni d'outils d'analyse tiers
+              (Google Analytics, Meta Pixel, etc.).
+            </p>
+            <p className="mt-3">
+              Seuls des cookies techniques strictement nécessaires au fonctionnement peuvent être déposés
+              (session de connexion, préférences d'affichage). Ces cookies ne nécessitent pas de consentement
+              préalable conformément aux recommandations de la CNIL.
+            </p>
+            <p className="mt-3">
+              Les pages de paiement utilisent des cookies <strong className="text-white">Stripe</strong> à des
+              fins de sécurisation des transactions.
             </p>
           </section>
 
           <section>
-            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>Hébergeur</h2>
+            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>Gérer les cookies</h2>
             <p>
-              <strong className="text-white">Vercel Inc.</strong><br />
-              440 N Barranca Ave #4133, Covina, CA 91723, États-Unis<br />
-              <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" style={{ color: "#CBFF03" }}>vercel.com</a>
+              Vous pouvez supprimer ou bloquer les cookies depuis les paramètres de votre navigateur.
+              Pour toute question : <a href="mailto:contact@madger.app" style={{ color: "#CBFF03" }}>contact@madger.app</a>
             </p>
           </section>
 

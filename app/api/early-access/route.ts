@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
               <tr><td style="padding:20px 24px;">
                 <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#cbff03;letter-spacing:0.06em;text-transform:uppercase;">Ton accès fondateur</p>
                 <p style="margin:0;font-size:14px;color:#9a9a9a;line-height:1.7;">
-                  Plan Pro offert <strong style="color:#ffffff;">3 mois</strong> dès le lancement — valeur 147€. Tu es parmi les 47 premiers coachs sélectionnés. On te contacte directement dès que ton accès est prêt.
+                  Plan Pro offert <strong style="color:#ffffff;">3 mois</strong> dès le lancement (valeur 147€). Tu es parmi les 47 premiers coachs sélectionnés. On te contacte directement dès que ton accès est prêt.
                 </p>
               </td></tr>
             </table>
@@ -180,7 +180,7 @@ export async function POST(req: NextRequest) {
             <!-- Pendant ce temps -->
             <p style="margin:0 0 16px;font-size:16px;font-weight:700;color:#ffffff;">En attendant, une chose à faire :</p>
             <p style="margin:0 0 28px;font-size:14px;color:#9a9a9a;line-height:1.8;">
-              Note le temps que tu passes cette semaine sur l'administratif — relances, factures, calage de créneaux. Juste pour avoir un chiffre réel. Tu seras surpris. Et dans 3 mois, on compare.
+              Note le temps que tu passes cette semaine sur l'administratif : relances, factures, calage de créneaux. Juste pour avoir un chiffre réel. Tu seras surpris. Et dans 3 mois, on compare.
             </p>
 
             <!-- CTA -->
@@ -197,7 +197,7 @@ export async function POST(req: NextRequest) {
             <p style="margin:0 0 4px;font-size:14px;color:#ffffff;font-weight:600;">Léonard</p>
             <p style="margin:0 0 16px;font-size:13px;color:#555;">Fondateur de Madger</p>
             <p style="margin:0;font-size:13px;color:#555;line-height:1.7;">
-              PS — Tu peux répondre directement à cet email si tu as une question, une idée ou juste envie d'en parler. Je lis tout.
+              PS : Tu peux répondre directement à cet email si tu as une question, une idée ou juste envie d'en parler. Je lis tout.
             </p>
 
           </td>

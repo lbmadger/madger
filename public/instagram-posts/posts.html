@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap');
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; width:100vw; height:100vh; }
+
+/* ── VIEWER ── */
+#viewer { position:fixed; top:0; left:0; right:0; bottom:56px; }
+#stage  { position:absolute; width:1080px; height:1080px; top:50%; left:50%; transform-origin:center center; }
+
+/* ── POST BASE ── */
+.post { position:absolute; inset:0; width:1080px; height:1080px; overflow:hidden; display:none; background:#0A0A0A; }
+.post.active { display:block; }
+
+/* ── LOGO (partagé) ── */
+.logo {
+  position:absolute; top:60px; left:60px;
+  display:flex; align-items:center; gap:14px; z-index:10;
+  animation: aFadeDown .55s .0s cubic-bezier(.16,1,.3,1) both;
+}
+.logo-icon {
+  width:52px; height:52px; background:#111; border-radius:14px;
+  border:1px solid rgba(203,255,3,.18);
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 0 24px rgba(203,255,3,.07);
+}
+.logo-name { font-size:23px; font-weight:800; letter-spacing:-.04em; color:#fff; }
+
+/* ── GRAIN ── */
+.grain {
+  position:absolute; inset:0; pointer-events:none; z-index:100;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity:.032; mix-blend-mode:screen;
+}
+
+/* ── SILHOUETTE CONTAINER (partagé) ── */
+.figure {
+  position:absolute;
+  pointer-events:none;
+  z-index:1;
+  -webkit-mask-image: linear-gradient(to top, black 0%, black 38%, rgba(0,0,0,.65) 58%, rgba(0,0,0,.25) 75%, transparent 88%);
+  mask-image: linear-gradient(to top, black 0%, black 38%, rgba(0,0,0,.65) 58%, rgba(0,0,0,.25) 75%, transparent 88%);
+}
+.figure svg { display:block; }
+
+/* ── KEYFRAMES ── */
+@keyframes aFadeUp   { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+@keyframes aFadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes aFadeIn   { from{opacity:0} to{opacity:1} }
+@keyframes aScaleIn  { from{opacity:0;transform:scale(.88)} to{opacity:1;transform:scale(1)} }
+@keyframes aSpringIn { from{opacity:0;transform:scale(.82)} to{opacity:1;transform:scale(1)} }
+@keyframes aSlideR   { from{opacity:0;transform:translateX(-36px)} to{opacity:1;transform:translateX(0)} }
+@keyframes aDrawLine { from{transform:scaleX(0);transform-origin:left} to{transform:scaleX(1);transform-origin:left} }
+@keyframes aFloat    { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
+@keyframes aPulse    { 0%{transform:scale(1);opacity:.4} 100%{transform:scale(2.4);opacity:0} }
+@keyframes aGlow     { 0%,100%{opacity:.07} 50%{opacity:.16} }
+@keyframes aShimmer  { 0%{background-position:-700px 0} 60%{background-position:700px 0} 100%{background-position:700px 0} }
+@keyframes aVertLine { from{height:0} to{height:340px} }
+
+/* ══════════════ POST 1 — +5h ══════════════ */
+#p1 { background:#0A0A0A; }
+
+#p1 .figure {
+  right:-30px; bottom:0; width:520px; height:820px;
+  animation: aFadeIn .9s .3s ease both;
+}
+
+/* Glow derrière la silhouette */
+#p1 .glow {
+  position:absolute; right:60px; bottom:100px;
+  width:500px; height:500px; border-radius:50%;
+  background:radial-gradient(circle, rgba(203,255,3,.08) 0%, transparent 65%);
+  animation: aGlow 5s ease-in-out infinite;
+}
+
+#p1 .center {
+  position:absolute; top:50%; left:60px; right:560px;
+  transform:translateY(-50%);
+}
+#p1 .eyebrow {
+  font-size:13px; font-weight:700; letter-spacing:.18em;
+  color:rgba(203,255,3,.65); text-transform:uppercase; margin-bottom:20px;
+  animation: aFadeDown .5s .15s ease both;
+}
+#p1 .stat {
+  font-size:320px; font-weight:900; line-height:.85; letter-spacing:-.07em;
+  background:linear-gradient(90deg,#b8e800 0%,#CBFF03 30%,#fff 50%,#CBFF03 70%,#b8e800 100%);
+  background-size:700px 100%;
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  animation: aSpringIn .7s .1s cubic-bezier(.16,1,.3,1) both, aShimmer 2.2s .9s ease-in-out both;
+}
+#p1 .rule {
+  width:200px; height:2px; background:rgba(203,255,3,.2);
+  margin:28px 0 24px;
+  animation: aDrawLine .6s .7s ease both;
+}
+#p1 .sub {
+  font-size:36px; font-weight:700; line-height:1.3; letter-spacing:-.03em; color:#fff;
+  animation: aFadeUp .6s .55s ease both;
+}
+#p1 .caption {
+  font-size:18px; font-weight:400; letter-spacing:-.01em; color:rgba(255,255,255,.28); margin-top:14px;
+  animation: aFadeIn .8s .75s ease both;
+}
+
+/* ══════════════ POST 2 — 0€ ══════════════ */
+#p2 { background:#0A0A0A; }
+
+/* Silhouette athlète gauche (bras levés - victoire) */
+#p2 .figure {
+  left:-20px; bottom:0; width:460px; height:900px;
+  animation: aFadeIn .9s .2s ease both;
+}
+
+/* Cercles rayonnants (payment waves) */
+#p2 .rings {
+  position:absolute; right:80px; top:200px;
+  width:400px; height:400px;
+  animation: aFadeIn 1s .3s ease both;
+}
+
+#p2 .top-line {
+  position:absolute; top:0; left:60px; right:60px; height:3px;
+  background:linear-gradient(90deg,#CBFF03,rgba(203,255,3,.1));
+  animation: aDrawLine .9s ease both;
+}
+
+#p2 .content { position:absolute; right:60px; top:160px; text-align:right; }
+#p2 .check {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:72px; height:72px;
+  background:rgba(203,255,3,.08); border:1.5px solid rgba(203,255,3,.28); border-radius:50%;
+  margin-bottom:28px;
+  animation: aSpringIn .45s .55s cubic-bezier(.34,1.56,.64,1) both;
+}
+#p2 .zero {
+  font-size:380px; font-weight:900; line-height:.85; letter-spacing:-.09em; color:#fff; display:block;
+  animation: aFadeUp .7s .08s cubic-bezier(.16,1,.3,1) both;
+}
+#p2 .impayes {
+  font-size:90px; font-weight:900; line-height:1; letter-spacing:-.04em; color:#CBFF03; display:block;
+  animation: aFadeUp .6s .3s cubic-bezier(.16,1,.3,1) both;
+}
+#p2 .jamais {
+  font-size:38px; font-weight:700; letter-spacing:-.03em; color:rgba(255,255,255,.18); display:block; margin-top:6px;
+  animation: aFadeIn .7s .5s ease both;
+}
+#p2 .note {
+  position:absolute; bottom:60px; right:60px;
+  font-size:19px; font-weight:400; color:rgba(255,255,255,.22); text-align:right;
+  animation: aFadeIn .8s .7s ease both;
+}
+
+/* ══════════════ POST 3 — TU COACHES ══════════════ */
+#p3 { background:#0A0A0A; }
+
+/* Silhouette coach centre-droit */
+#p3 .figure {
+  right:-20px; bottom:0; width:480px; height:920px;
+  animation: aFadeIn .9s .25s ease both;
+}
+
+/* Grid subtile */
+#p3 .grid-bg {
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(203,255,3,.022) 1px, transparent 1px),
+    linear-gradient(90deg,rgba(203,255,3,.022) 1px, transparent 1px);
+  background-size:90px 90px;
+  animation: aFadeIn 1.2s ease both;
+}
+#p3 .grid-bg::after {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse at 30% 50%, transparent 20%, #0A0A0A 75%);
+}
+
+#p3 .text-block {
+  position:absolute; top:50%; left:60px; right:480px;
+  transform:translateY(-52%);
+}
+#p3 .l1, #p3 .l2 {
+  display:block; font-size:118px; font-weight:900; line-height:1.04;
+  letter-spacing:-.045em; color:#fff;
+}
+#p3 .l1 { animation: aSlideR .5s .05s cubic-bezier(.16,1,.3,1) both; }
+#p3 .l2 { animation: aSlideR .5s .15s cubic-bezier(.16,1,.3,1) both; }
+#p3 .lime-line {
+  display:inline; font-size:118px; font-weight:900; line-height:1.04; letter-spacing:-.045em;
+  color:#0A0A0A; background:#CBFF03;
+  padding:0 18px 4px; border-radius:10px;
+  -webkit-box-decoration-break:clone; box-decoration-break:clone;
+  animation: aScaleIn .55s .28s cubic-bezier(.34,1.4,.64,1) both;
+}
+#p3 .tagline {
+  position:absolute; bottom:70px; left:60px; right:60px;
+  font-size:22px; font-weight:500; color:rgba(255,255,255,.25); letter-spacing:-.01em;
+  animation: aFadeIn .8s .65s ease both;
+}
+#p3 .tagline::before { content:'—  '; color:rgba(203,255,3,.5); letter-spacing:0; }
+
+/* ══════════════ POST 4 — AVANT/APRÈS ══════════════ */
+#p4 { background:#0A0A0A; }
+
+#p4 .headline {
+  position:absolute; top:148px; left:60px;
+  font-size:28px; font-weight:800; letter-spacing:-.02em; color:#fff;
+  animation: aFadeDown .5s .05s ease both;
+}
+#p4 .headline span { color:#CBFF03; }
+
+#p4 .card {
+  position:absolute; left:44px; right:44px; height:340px;
+  border-radius:24px; padding:36px 48px; overflow:hidden;
+}
+#p4 .before {
+  top:198px; background:rgba(255,255,255,.025); border:1px solid rgba(255,60,60,.1);
+  animation: aFadeUp .55s .1s ease both;
+}
+#p4 .after {
+  top:598px; background:rgba(203,255,3,.025); border:1px solid rgba(203,255,3,.18);
+  animation: aFadeUp .55s .25s ease both;
+}
+#p4 .card-label {
+  font-size:11px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; margin-bottom:22px;
+  display:flex; align-items:center; gap:8px;
+}
+#p4 .card-label.red  { color:rgba(255,80,80,.55); }
+#p4 .card-label.red::before  { content:''; width:6px;height:6px;border-radius:50%;background:rgba(255,80,80,.5);display:inline-block; }
+#p4 .card-label.lime { color:rgba(203,255,3,.65); }
+#p4 .card-label.lime::before { content:''; width:6px;height:6px;border-radius:50%;background:#CBFF03;display:inline-block; }
+#p4 .items { display:flex; flex-direction:column; gap:14px; }
+#p4 .item  { display:flex; align-items:center; gap:14px; font-size:26px; font-weight:600; letter-spacing:-.02em; }
+#p4 .item.bad  { color:rgba(255,255,255,.28); text-decoration:line-through; text-decoration-color:rgba(255,70,70,.3); }
+#p4 .item.good { color:#fff; }
+#p4 .dot-r { width:22px;height:22px;flex-shrink:0;border-radius:50%;background:rgba(255,80,80,.08);border:1px solid rgba(255,80,80,.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:rgba(255,80,80,.65); }
+#p4 .dot-g { width:22px;height:22px;flex-shrink:0;border-radius:50%;background:rgba(203,255,3,.09);border:1px solid rgba(203,255,3,.28);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#CBFF03; }
+#p4 .vs {
+  position:absolute; left:50%; top:528px; transform:translate(-50%,-50%);
+  background:#CBFF03; color:#0A0A0A; font-size:15px; font-weight:900; letter-spacing:.1em;
+  padding:9px 22px; border-radius:100px; z-index:20;
+  animation: aSpringIn .4s .4s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+/* ══════════════ POST 5 — FOUNDER ══════════════ */
+#p5 { background:#0A0A0A; }
+
+/* Silhouette portrait côté droit */
+#p5 .figure {
+  right:-20px; bottom:0; width:420px; height:860px;
+  animation: aFadeIn .9s .2s ease both;
+}
+
+#p5 .bg-quote {
+  position:absolute; top:80px; left:40px;
+  font-size:420px; font-weight:900; line-height:1;
+  color:rgba(203,255,3,.05); user-select:none;
+  animation: aFadeIn 1.2s ease both;
+}
+#p5 .v-line {
+  position:absolute; top:200px; left:60px; width:3px; height:0; background:#CBFF03;
+  animation: aVertLine .6s .2s ease both;
+}
+#p5 .quote-wrap { position:absolute; top:200px; left:88px; right:460px; }
+#p5 .eyebrow {
+  font-size:12px; font-weight:700; letter-spacing:.2em; color:rgba(203,255,3,.6);
+  text-transform:uppercase; margin-bottom:28px;
+  animation: aFadeDown .5s .15s ease both;
+}
+#p5 .quote {
+  font-size:52px; font-weight:800; line-height:1.22; letter-spacing:-.03em; color:#fff;
+  animation: aFadeUp .7s .25s cubic-bezier(.16,1,.3,1) both;
+}
+#p5 .quote em { font-style:normal; color:#CBFF03; }
+#p5 .body {
+  position:absolute; top:600px; left:60px; right:460px;
+  font-size:24px; font-weight:400; line-height:1.8; color:rgba(255,255,255,.4); letter-spacing:-.01em;
+  animation: aFadeUp .7s .42s ease both;
+}
+#p5 .sig {
+  position:absolute; bottom:70px; left:60px;
+  display:flex; align-items:center; gap:18px;
+  animation: aFadeIn .8s .6s ease both;
+}
+#p5 .avatar {
+  width:56px;height:56px;border-radius:50%;
+  background:rgba(203,255,3,.07);border:1.5px solid rgba(203,255,3,.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;font-weight:800;color:#CBFF03;letter-spacing:-.03em;
+}
+#p5 .sig-name { font-size:20px; font-weight:700; color:#fff; letter-spacing:-.02em; }
+#p5 .sig-role { font-size:15px; font-weight:400; color:rgba(255,255,255,.3); margin-top:3px; }
+
+/* ══════════════ POST 6 — URGENCY ══════════════ */
+#p6 { background:#0A0A0A; }
+
+/* Grille de personnes (47 + spots libres) */
+#p6 .crowd { position:absolute; right:48px; top:180px; z-index:1; animation: aFadeIn 1s .3s ease both; }
+
+#p6 .bg-num {
+  position:absolute; top:60px; left:-30px;
+  font-size:820px; font-weight:900; line-height:1; letter-spacing:-.1em;
+  color:rgba(255,255,255,.016); user-select:none;
+  animation: aFadeIn 1.2s ease both;
+}
+#p6 .pill {
+  position:absolute; top:162px; left:60px;
+  background:rgba(203,255,3,.07); border:1px solid rgba(203,255,3,.22); border-radius:100px;
+  padding:10px 26px; font-size:13px; font-weight:700; letter-spacing:.15em;
+  text-transform:uppercase; color:#CBFF03;
+  animation: aFadeDown .5s .1s ease both;
+}
+#p6 .num {
+  position:absolute; top:240px; left:52px;
+  font-size:380px; font-weight:900; line-height:.85; letter-spacing:-.08em;
+  background:linear-gradient(90deg,#a8d400 0%,#CBFF03 30%,#e8ff70 50%,#CBFF03 70%,#a8d400 100%);
+  background-size:700px 100%;
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  animation: aSpringIn .7s .2s cubic-bezier(.16,1,.3,1) both, aShimmer 2s .9s ease-in-out both;
+  z-index:2; position:absolute;
+}
+#p6 .label {
+  position:absolute; top:680px; left:60px;
+  font-size:88px; font-weight:900; line-height:1; letter-spacing:-.04em; color:#fff; z-index:2;
+  animation: aFadeUp .55s .4s cubic-bezier(.16,1,.3,1) both;
+}
+#p6 .sublabel {
+  position:absolute; top:872px; left:60px;
+  font-size:25px; font-weight:400; letter-spacing:-.01em; color:rgba(255,255,255,.28); z-index:2;
+  animation: aFadeIn .8s .58s ease both;
+}
+#p6 .cta {
+  position:absolute; bottom:64px; left:60px;
+  background:#CBFF03; color:#0A0A0A;
+  font-size:24px; font-weight:800; letter-spacing:-.02em;
+  padding:22px 52px; border-radius:100px; z-index:2;
+  animation: aScaleIn .5s .72s cubic-bezier(.34,1.4,.64,1) both;
+}
+
+/* ── NAV ── */
+#nav {
+  position:fixed; bottom:0; left:0; right:0; height:56px;
+  background:rgba(7,7,7,.96); backdrop-filter:blur(20px);
+  border-top:1px solid rgba(255,255,255,.055);
+  display:flex; align-items:center; justify-content:center; gap:18px; z-index:200;
+}
+#nav button {
+  background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.08);
+  color:#fff; font-family:'Inter',sans-serif; font-size:12px; font-weight:700; letter-spacing:.03em;
+  padding:7px 20px; border-radius:100px; cursor:pointer; transition:all .15s;
+}
+#nav button:hover { background:rgba(255,255,255,.1); border-color:rgba(255,255,255,.14); }
+#nav button:disabled { opacity:.18; cursor:default; pointer-events:none; }
+#counter  { font-size:12px; font-weight:600; color:rgba(255,255,255,.28); min-width:40px; text-align:center; letter-spacing:.06em; }
+#post-name { font-size:11px; font-weight:700; color:#CBFF03; letter-spacing:.16em; text-transform:uppercase; min-width:224px; text-align:center; }
+</style>
+</head>
+<body>
+<div id="viewer"><div id="stage">
+
+<!-- SVG defs réutilisables -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <!-- Logo path -->
+    <g id="logo-path">
+      <path d="M4 26 L9.5 10 L15 18.5 L20.5 9 L23.5 19C25 18.5 26.5 12 27.5 5.5" stroke="#CBFF03" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <circle cx="27.5" cy="5.5" r="1.3" fill="#CBFF03"/>
+    </g>
+  </defs>
+</svg>
+
+<!-- ═══════════════════════════════════
+     POST 1 — +5h STAT  (runner droite)
+═══════════════════════════════════ -->
+<div class="post active" id="p1">
+  <div class="glow"></div>
+
+  <!-- Silhouette coureur, profil gauche -->
+  <div class="figure" style="right:-10px;bottom:0;width:560px;height:900px;">
+    <svg viewBox="0 0 320 520" width="560" height="900" fill="none" stroke="rgba(203,255,3,0.55)" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Tête pleine -->
+      <circle cx="210" cy="50" r="34" fill="rgba(203,255,3,0.55)" stroke="none"/>
+      <!-- Torse penché en avant -->
+      <path d="M205 84 C195 115 178 142 162 174" stroke-width="26"/>
+      <!-- Bras gauche (avant, plié) -->
+      <path d="M188 112 C165 128 135 132 112 148" stroke-width="21"/>
+      <!-- Bras droit (arrière, plié) -->
+      <path d="M195 108 C218 126 232 145 240 168" stroke-width="21"/>
+      <!-- Jambe gauche (genou levé) -->
+      <path d="M162 174 C150 210 128 242 108 268 C100 295 112 325 122 355" stroke-width="24"/>
+      <!-- Jambe droite (étendue arrière) -->
+      <path d="M165 170 C180 204 195 242 204 278 C212 308 210 338 204 365" stroke-width="24"/>
+      <!-- Pied gauche -->
+      <path d="M122 355 C110 370 92 376 72 374" stroke-width="18"/>
+      <!-- Pied droit -->
+      <path d="M204 365 C216 374 232 376 248 370" stroke-width="18"/>
+      <!-- Lignes de vitesse -->
+      <line x1="20" y1="180" x2="95" y2="180" stroke-width="5" stroke="rgba(203,255,3,0.35)"/>
+      <line x1="10" y1="215" x2="78" y2="215" stroke-width="4" stroke="rgba(203,255,3,0.22)"/>
+      <line x1="30" y1="248" x2="88" y2="248" stroke-width="3" stroke="rgba(203,255,3,0.14)"/>
+    </svg>
+  </div>
+
+  <div class="logo">
+    <div class="logo-icon"><svg width="30" height="30" viewBox="0 0 32 32"><use href="#logo-path"/></svg></div>
+    <span class="logo-name">Madger</span>
+  </div>
+
+  <div class="center">
+    <div class="eyebrow">Temps récupéré / semaine</div>
+    <div class="stat">+5h</div>
+    <div class="rule"></div>
+    <div class="sub">perdues en admin<br>chaque semaine.</div>
+    <div class="caption">Madger te les rend automatiquement.</div>
+  </div>
+
+  <div class="grain"></div>
+</div>
+
+<!-- ═══════════════════════════════════
+     POST 2 — 0€ IMPAYÉS  (athlète victoire gauche)
+═══════════════════════════════════ -->
+<div class="post" id="p2">
+  <div class="top-line"></div>
+
+  <!-- Silhouette bras levés (victoire) -->
+  <div class="figure" style="left:-20px;bottom:0;width:440px;height:900px;">
+    <svg viewBox="0 0 260 530" width="440" height="900" fill="none" stroke="rgba(255,255,255,0.42)" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Tête pleine -->
+      <circle cx="130" cy="48" r="32" fill="rgba(255,255,255,0.42)" stroke="none"/>
+      <!-- Torse -->
+      <path d="M130 80 L130 220" stroke-width="28"/>
+      <!-- Bras gauche levé -->
+      <path d="M130 120 C105 100 80 80 55 60 C45 52 38 42 42 30" stroke-width="22"/>
+      <!-- Bras droit levé -->
+      <path d="M130 120 C155 100 180 80 205 60 C215 52 222 42 218 30" stroke-width="22"/>
+      <!-- Mains ouvertes -->
+      <path d="M42 30 C38 22 34 16 36 10" stroke-width="16"/>
+      <path d="M218 30 C222 22 226 16 224 10" stroke-width="16"/>
+      <!-- Hanches -->
+      <line x1="108" y1="220" x2="152" y2="220" stroke-width="26"/>
+      <!-- Jambe gauche -->
+      <path d="M108 220 L88 340 L72 440" stroke-width="24"/>
+      <!-- Jambe droite -->
+      <path d="M152 220 L172 340 L188 440" stroke-width="24"/>
+      <!-- Pieds -->
+      <path d="M72 440 C60 452 45 458 28 456" stroke-width="18"/>
+      <path d="M188 440 C200 452 215 458 232 456" stroke-width="18"/>
+    </svg>
+  </div>
+
+  <!-- Cercles rayonnants (paiement) -->
+  <div class="rings">
+    <svg viewBox="0 0 400 400" width="400" height="400" fill="none">
+      <circle cx="200" cy="200" r="60"  stroke="rgba(203,255,3,0.22)" stroke-width="1.5"/>
+      <circle cx="200" cy="200" r="110" stroke="rgba(203,255,3,0.14)" stroke-width="1"/>
+      <circle cx="200" cy="200" r="160" stroke="rgba(203,255,3,0.09)" stroke-width="1"/>
+      <circle cx="200" cy="200" r="190" stroke="rgba(203,255,3,0.05)" stroke-width="1"/>
+    </svg>
+  </div>
+
+  <div class="logo" style="animation:aFadeDown .55s .0s cubic-bezier(.16,1,.3,1) both;">
+    <div class="logo-icon"><svg width="30" height="30" viewBox="0 0 32 32"><use href="#logo-path"/></svg></div>
+    <span class="logo-name">Madger</span>
+  </div>
+
+  <div class="content">
+    <div class="check">
+      <svg width="34" height="34" viewBox="0 0 32 32" fill="none">
+        <path d="M6 17L12.5 23.5L26 8" stroke="#CBFF03" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <span class="zero">0€</span>
+    <span class="impayes">d'impayés.</span>
+    <span class="jamais">Jamais.</span>
+  </div>
+  <div class="note">Stripe encaisse au moment de la réservation.</div>
+
+  <div class="grain"></div>
+</div>
+
+<!-- ═══════════════════════════════════
+     POST 3 — TU COACHES  (coach debout droite)
+═══════════════════════════════════ -->
+<div class="post" id="p3">
+  <div class="grid-bg"></div>
+
+  <!-- Silhouette coach debout, bras ouverts -->
+  <div class="figure" style="right:-15px;bottom:0;width:500px;height:940px;">
+    <svg viewBox="0 0 290 540" width="500" height="940" fill="none" stroke="rgba(255,255,255,0.4)" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Tête pleine -->
+      <circle cx="145" cy="50" r="36" fill="rgba(255,255,255,0.4)" stroke="none"/>
+      <!-- Cou -->
+      <line x1="145" y1="86" x2="145" y2="105" stroke-width="22"/>
+      <!-- Torse -->
+      <path d="M145 105 L145 255" stroke-width="30"/>
+      <!-- Épaules -->
+      <line x1="105" y1="130" x2="185" y2="130" stroke-width="22"/>
+      <!-- Bras gauche ouvert + main -->
+      <path d="M105 130 L50 180 L22 208" stroke-width="21"/>
+      <path d="M22 208 C14 218 10 228 14 236" stroke-width="17"/>
+      <!-- Bras droit ouvert + main -->
+      <path d="M185 130 L240 180 L268 208" stroke-width="21"/>
+      <path d="M268 208 C276 218 280 228 276 236" stroke-width="17"/>
+      <!-- Hanches -->
+      <line x1="118" y1="255" x2="172" y2="255" stroke-width="26"/>
+      <!-- Jambe gauche -->
+      <path d="M118 255 L95 370 L80 460" stroke-width="24"/>
+      <!-- Jambe droite -->
+      <path d="M172 255 L195 370 L210 460" stroke-width="24"/>
+      <!-- Pieds -->
+      <path d="M80 460 C68 472 52 476 34 473" stroke-width="18"/>
+      <path d="M210 460 C222 472 238 476 256 473" stroke-width="18"/>
+      <!-- Sifflet / détail coach -->
+      <circle cx="145" cy="105" r="10" fill="rgba(203,255,3,0.7)" stroke="none"/>
+    </svg>
+  </div>
+
+  <div class="logo" style="animation:aFadeDown .55s .0s cubic-bezier(.16,1,.3,1) both;">
+    <div class="logo-icon"><svg width="30" height="30" viewBox="0 0 32 32"><use href="#logo-path"/></svg></div>
+    <span class="logo-name">Madger</span>
+  </div>
+
+  <div class="text-block">
+    <span class="l1">Tu coaches.</span>
+    <span class="l2">Tu encaisses.</span>
+    <div style="margin-top:10px;"><span class="lime-line">Pas secrétaire.</span></div>
+  </div>
+  <div class="tagline">Un lien. Réservation + paiement + facture.</div>
+
+  <div class="grain"></div>
+</div>
+
+<!-- ═══════════════════════════════════
+     POST 4 — AVANT / APRÈS
+═══════════════════════════════════ -->
+<div class="post" id="p4">
+  <div class="logo" style="animation:aFadeDown .55s .0s cubic-bezier(.16,1,.3,1) both;">
+    <div class="logo-icon"><svg width="30" height="30" viewBox="0 0 32 32"><use href="#logo-path"/></svg></div>
+    <span class="logo-name">Madger</span>
+  </div>
+  <div class="headline">La différence en <span>une image.</span></div>
+  <div class="card before">
+    <div class="card-label red">Avant Madger</div>
+    <div class="items">
+      <div class="item bad"><span class="dot-r">✕</span>WhatsApp pour caler les créneaux</div>
+      <div class="item bad"><span class="dot-r">✕</span>Relances manuelles impayés</div>
+      <div class="item bad"><span class="dot-r">✕</span>Factures Excel le dimanche soir</div>
+      <div class="item bad"><span class="dot-r">✕</span>+5h perdues chaque semaine</div>
+    </div>
+  </div>
+  <div class="vs">VS</div>
+  <div class="card after">
+    <div class="card-label lime">Après Madger</div>
+    <div class="items">
+      <div class="item good"><span class="dot-g">✓</span>Un seul lien pour tout gérer</div>
+      <div class="item good"><span class="dot-g">✓</span>Paiement auto à la réservation</div>
+      <div class="item good"><span class="dot-g">✓</span>Factures envoyées automatiquement</div>
+      <div class="item good"><span class="dot-g">✓</span>5h récupérées chaque semaine</div>
+    </div>
+  </div>
+  <div class="grain"></div>
+</div>
+
+<!-- ═══════════════════════════════════
+     POST 5 — FOUNDER STORY  (portrait droite)
+═══════════════════════════════════ -->
+<div class="post" id="p5">
+  <div class="bg-quote">"</div>
+
+  <!-- Silhouette portrait (buste + tête) -->
+  <div class="figure" style="right:-10px;bottom:0;width:440px;height:860px;">
+    <svg viewBox="0 0 260 500" width="440" height="860" fill="none" stroke="rgba(255,255,255,0.38)" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Tête pleine -->
+      <circle cx="130" cy="55" r="48" fill="rgba(255,255,255,0.38)" stroke="none"/>
+      <!-- Cou -->
+      <path d="M110 103 C110 118 118 128 130 132 C142 128 150 118 150 103" stroke-width="24"/>
+      <!-- Épaules + torse -->
+      <path d="M130 132 C120 148 80 162 40 175 L20 185" stroke-width="26"/>
+      <path d="M130 132 C140 148 180 162 220 175 L240 185" stroke-width="26"/>
+      <!-- Corps -->
+      <path d="M40 185 C35 230 30 290 28 360 L25 460" stroke-width="26"/>
+      <path d="M240 185 C245 230 250 290 252 360 L255 460" stroke-width="26"/>
+      <line x1="25" y1="460" x2="255" y2="460" stroke-width="24"/>
+    </svg>
+  </div>
+
+  <div class="v-line"></div>
+
+  <div class="logo" style="animation:aFadeDown .55s .0s cubic-bezier(.16,1,.3,1) both;">
+    <div class="logo-icon"><svg width="30" height="30" viewBox="0 0 32 32"><use href="#logo-path"/></svg></div>
+    <span class="logo-name">Madger</span>
+  </div>
+
+  <div class="quote-wrap">
+    <div class="eyebrow">Pourquoi Madger existe</div>
+    <div class="quote">
+      On a vu des coachs incroyables perdre des heures sur des trucs qui <em>ne devraient pas exister.</em>
+    </div>
+  </div>
+  <div class="body">
+    Des relances gênantes pour des impayés.<br>
+    Des créneaux calés par WhatsApp à minuit.<br>
+    Des factures refaites le dimanche soir.<br><br>
+    Tu mérites mieux que ça.
+  </div>
+  <div class="sig">
+    <div class="avatar">L</div>
+    <div>
+      <div class="sig-name">Léonard</div>
+      <div class="sig-role">Fondateur de Madger</div>
+    </div>
+  </div>
+  <div class="grain"></div>
+</div>
+
+<!-- ═══════════════════════════════════
+     POST 6 — URGENCY / FOMO  (grille de personnes)
+═══════════════════════════════════ -->
+<div class="post" id="p6">
+  <div class="bg-num">47</div>
+
+  <!-- Grille crowd — 64 personnes, 47 allumées -->
+  <div class="crowd">
+    <svg id="crowd-svg" viewBox="0 0 380 480" width="380" height="480"></svg>
+  </div>
+
+  <div class="logo" style="animation:aFadeDown .55s .0s cubic-bezier(.16,1,.3,1) both;">
+    <div class="logo-icon"><svg width="30" height="30" viewBox="0 0 32 32"><use href="#logo-path"/></svg></div>
+    <span class="logo-name">Madger</span>
+  </div>
+
+  <div class="pill">Accès anticipé</div>
+  <div class="num">47</div>
+  <div class="label">coachs<br>sélectionnés.</div>
+  <div class="sublabel">Les places sont attribuées manuellement.</div>
+  <div class="cta">Rejoindre l'early access →</div>
+  <div class="grain"></div>
+</div>
+
+</div></div>
+
+<!-- ── NAV ── -->
+<div id="nav">
+  <button id="btn-prev" onclick="nav(-1)" disabled>← Préc.</button>
+  <div id="post-name">Post 1 — +5h Stat</div>
+  <div id="counter">1 / 6</div>
+  <button id="btn-next" onclick="nav(1)">Suiv. →</button>
+</div>
+
+<script>
+/* ── Génère la grille crowd post 6 ── */
+(function(){
+  const svg = document.getElementById('crowd-svg');
+  const total = 64, active = 47;
+  const cols = 8, rows = 8;
+  const cw = 44, rh = 54;
+
+  // Indices actifs (premiers 47, mélangés de façon déterministe)
+  const indices = Array.from({length:total},(_,i)=>i);
+  // pseudo-shuffle déterministe
+  for(let i=indices.length-1;i>0;i--){const j=(i*17+5)%indices.length;[indices[i],indices[j]]=[indices[j],indices[i]];}
+  const activeSet = new Set(indices.slice(0,active));
+
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const idx = r*cols+c;
+      const isActive = activeSet.has(idx);
+      const x = c*cw + 22, y = r*rh + 22;
+      const color = isActive ? 'rgba(203,255,3,0.7)' : 'rgba(255,255,255,0.08)';
+      const sw = isActive ? '1.8' : '1.2';
+      // Mini silhouette (tête + corps)
+      const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+      g.innerHTML = `
+        <circle cx="${x}" cy="${y-8}" r="6" stroke="${color}" stroke-width="${sw}" fill="none"/>
+        <path d="M${x-6} ${y+2} Q${x} ${y-2} ${x+6} ${y+2} L${x+5} ${y+18} L${x-5} ${y+18} Z" stroke="${color}" stroke-width="${sw}" fill="none" stroke-linejoin="round"/>
+      `;
+      svg.appendChild(g);
+    }
+  }
+})();
+
+/* ── Viewer ── */
+const posts = [
+  {id:'p1',name:'Post 1 — +5h Stat'},
+  {id:'p2',name:'Post 2 — 0€ Impayés'},
+  {id:'p3',name:'Post 3 — Tu coaches.'},
+  {id:'p4',name:'Post 4 — Avant / Après'},
+  {id:'p5',name:'Post 5 — Founder Story'},
+  {id:'p6',name:'Post 6 — Urgency / FOMO'},
+];
+let current = 0;
+
+function scaleStage(){
+  const s = document.getElementById('stage');
+  const vw = window.innerWidth, vh = window.innerHeight-56;
+  s.style.transform = `translate(-50%,-50%) scale(${Math.min(vw/1080,vh/1080)*.97})`;
+}
+
+function nav(dir){
+  document.getElementById(posts[current].id).classList.remove('active');
+  current = Math.max(0,Math.min(posts.length-1,current+dir));
+  document.getElementById(posts[current].id).classList.add('active');
+  document.getElementById('counter').textContent   = `${current+1} / ${posts.length}`;
+  document.getElementById('post-name').textContent = posts[current].name;
+  document.getElementById('btn-prev').disabled = current===0;
+  document.getElementById('btn-next').disabled = current===posts.length-1;
+}
+
+window.addEventListener('resize',scaleStage);
+window.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown') nav(1);
+  if(e.key==='ArrowLeft' ||e.key==='ArrowUp')   nav(-1);
+});
+scaleStage();
+</script>
+</body>
+</html>
