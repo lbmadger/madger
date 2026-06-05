@@ -530,8 +530,8 @@ export default function CoachDashboard() {
                         <div style={{ width: 22, height: 22, borderRadius: 6, background: "rgba(203,255,3,0.08)", border: "1px solid rgba(203,255,3,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="#CBFF03" strokeWidth="2"/><path d="M14 2v6h6M16 13H8M16 17H8" stroke="#CBFF03" strokeWidth="2" strokeLinecap="round"/></svg>
                         </div>
-                        <div style={{ padding: "1px 5px", borderRadius: 10, background: f.status === "paid" ? "rgba(74,222,128,0.1)" : "rgba(255,165,0,0.1)", border: `1px solid ${f.status === "paid" ? "rgba(74,222,128,0.2)" : "rgba(255,165,0,0.2)"}` }}>
-                          <span style={{ fontSize: 7, color: f.status === "paid" ? "#4ADE80" : "#FFA500", fontWeight: 600 }}>{f.status === "paid" ? "Payée" : "En attente"}</span>
+                        <div style={{ padding: "2px 6px", borderRadius: 10, background: f.status === "paid" ? "rgba(74,222,128,0.1)" : "rgba(255,165,0,0.1)", border: `1px solid ${f.status === "paid" ? "rgba(74,222,128,0.2)" : "rgba(255,165,0,0.2)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <span style={{ fontSize: 7, color: f.status === "paid" ? "#4ADE80" : "#FFA500", fontWeight: 600, lineHeight: 1 }}>{f.status === "paid" ? "Payée" : "En attente"}</span>
                         </div>
                       </div>
                       <div>
