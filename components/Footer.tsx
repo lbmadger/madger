@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 
 export default function Footer() {
@@ -29,13 +30,13 @@ export default function Footer() {
         {/* Bottom row: legal links */}
         <div
           className="flex flex-wrap justify-center sm:justify-start gap-5 mt-8 pt-6 text-xs"
-          style={{ borderTop: "1px solid rgba(255,255,255,0.04)", color: "#3A3A3A" }}
+          style={{ borderTop: "1px solid rgba(255,255,255,0.04)", color: "#5A5A5A" }}
         >
-          <a href="/mentions-legales" className="hover:text-white transition-colors duration-200">Mentions légales</a>
-          <a href="/politique-de-confidentialite" className="hover:text-white transition-colors duration-200">Politique de confidentialité</a>
-          <a href="/cgu" className="hover:text-white transition-colors duration-200">CGU</a>
-          <a href="/cgv" className="hover:text-white transition-colors duration-200">CGV</a>
-          <a href="/politique-cookies" className="hover:text-white transition-colors duration-200">Cookies</a>
+          <Link href="/mentions-legales" className="hover:text-white transition-colors duration-200">Mentions légales</Link>
+          <Link href="/politique-de-confidentialite" className="hover:text-white transition-colors duration-200">Politique de confidentialité</Link>
+          <Link href="/cgu" className="hover:text-white transition-colors duration-200">CGU</Link>
+          <Link href="/cgv" className="hover:text-white transition-colors duration-200">CGV</Link>
+          <Link href="/politique-cookies" className="hover:text-white transition-colors duration-200">Cookies</Link>
           <span>Paiements sécurisés via Stripe</span>
         </div>
       </div>

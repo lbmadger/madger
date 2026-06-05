@@ -407,13 +407,20 @@ function ScreenPaiement() {
       </div>
       <div style={{ fontSize: 9, color: "#5A5A5A", textAlign: "center", marginBottom: 6 }}>Paiement rapide</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5, marginBottom: 8 }}>
-        <div style={{ padding: "8px", borderRadius: 10, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.36 21.95 9.1 22C7.78 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.09 16.67C20.06 16.74 19.67 18.11 18.71 19.5ZM13 3.5C13.73 2.67 14.94 2.04 15.94 2C16.07 3.17 15.6 4.35 14.9 5.19C14.21 6.04 13.07 6.7 11.95 6.61C11.8 5.46 12.36 4.26 13 3.5Z" /></svg>
-          <span style={{ fontSize: 10, fontWeight: 600, color: "#fff" }}>Apple Pay</span>
+        <div style={{ padding: "8px", borderRadius: 10, background: "#000", border: "1px solid rgba(255,255,255,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <svg width="44" height="19" viewBox="0 0 56 24" fill="none">
+            <path d="M13.6 8.1c-.1-1.5 1.2-2.2 1.3-2.3-.7-1-1.8-1.2-2.2-1.2-.9-.1-1.8.5-2.3.5-.5 0-1.2-.5-2-.5-1 0-2 .6-2.5 1.5-1.1 1.9-.3 4.6.8 6.1.5.7 1.1 1.6 1.9 1.5.8 0 1-.5 1.9-.5.9 0 1.1.5 1.9.5.8 0 1.3-.7 1.8-1.5.6-.8.8-1.7.8-1.7 0 0-1.5-.6-1.5-2.4zM12 3.5c.4-.5.7-1.2.6-1.9-.6 0-1.4.4-1.8.9-.4.4-.7 1.1-.6 1.8.7.1 1.4-.3 1.8-.8z" fill="#fff"/>
+            <text x="18" y="16.5" fontFamily="-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif" fontSize="14" fontWeight="500" letterSpacing="-0.3" fill="#fff">Pay</text>
+          </svg>
         </div>
-        <div style={{ padding: "8px", borderRadius: 10, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
-          <svg width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="white" opacity="0.1" /><text x="4" y="16" fontSize="11" fontWeight="bold" fill="#4285F4">G</text></svg>
-          <span style={{ fontSize: 10, fontWeight: 600, color: "#fff" }}>Google Pay</span>
+        <div style={{ padding: "8px", borderRadius: 10, background: "#fff", border: "1px solid rgba(255,255,255,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <svg width="48" height="19" viewBox="0 0 62 24" fill="none">
+            <path d="M19.6 12.2c0-.6-.05-1.1-.16-1.6H12v3.1h4.3c-.18 1-.74 1.85-1.58 2.42v2.02h2.55c1.5-1.38 2.33-3.42 2.33-5.94z" fill="#4285F4"/>
+            <path d="M12 20c2.16 0 3.97-.72 5.3-1.94l-2.55-2.02c-.71.48-1.62.76-2.75.76-2.12 0-3.91-1.43-4.55-3.35H4.8v2.08C6.13 18.18 8.86 20 12 20z" fill="#34A853"/>
+            <path d="M7.45 13.45c-.16-.48-.25-1-.25-1.53s.09-1.05.25-1.53V8.31H4.8C4.29 9.34 4 10.5 4 11.92s.29 2.58.8 3.61l2.65-2.08z" fill="#FBBC05"/>
+            <path d="M12 6.58c1.2 0 2.27.41 3.11 1.22l2.33-2.33C16.04 4.18 14.23 3.42 12 3.42 8.86 3.42 6.13 5.24 4.8 7.96l2.65 2.08C8.09 8.12 9.88 6.58 12 6.58z" fill="#EA4335"/>
+            <text x="22" y="16.5" fontFamily="'Product Sans','Google Sans',-apple-system,sans-serif" fontSize="14" fontWeight="500" letterSpacing="-0.2" fill="#3c4043">Pay</text>
+          </svg>
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}>
