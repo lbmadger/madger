@@ -7,6 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import SectionLabel from "@/components/ui/SectionLabel";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 import MadgerCharacter from "@/components/ui/MadgerCharacter";
+import MobileCoachIntro from "@/components/MobileCoachIntro";
 
 const STEPS = [
   {
@@ -409,43 +410,8 @@ export default function HeroScrollExperience() {
         </motion.div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════
-          MASCOTTE — bande dédiée (mobile uniquement, sous le hero)
-      ══════════════════════════════════════════════════════ */}
-      <section
-        className="lg:hidden relative overflow-hidden flex justify-center items-end px-5 pb-8"
-        style={{ background: "#0A0A0A" }}
-      >
-        {/* Lueur d'ambiance */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: "radial-gradient(ellipse 70% 55% at 50% 70%, rgba(203,255,3,0.08), transparent 70%)" }}
-        />
-        <div className="relative" style={{ width: "min(74vw, 320px)" }}>
-          {/* Halo derrière le personnage */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: "radial-gradient(ellipse 52% 46% at 50% 44%, rgba(203,255,3,0.16), transparent 70%)",
-              filter: "blur(8px)",
-            }}
-          />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/character/madger-character.png"
-            alt=""
-            draggable={false}
-            style={{
-              position: "relative",
-              width: "100%",
-              height: "auto",
-              display: "block",
-              WebkitMaskImage: "radial-gradient(ellipse 74% 86% at 50% 46%, #000 58%, transparent 86%)",
-              maskImage: "radial-gradient(ellipse 74% 86% at 50% 46%, #000 58%, transparent 86%)",
-            }}
-          />
-        </div>
-      </section>
+      {/* Mascotte interactive — section dédiée (mobile uniquement, sous le hero) */}
+      <MobileCoachIntro />
 
       {/* ══════════════════════════════════════════════════════
           SCROLL EXPERIENCE — 350vh mobile / 500vh desktop
