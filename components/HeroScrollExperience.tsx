@@ -290,8 +290,8 @@ export default function HeroScrollExperience() {
           }}
         />
 
-        {/* Mascotte Madger (hero, desktop + mobile) */}
-        <MadgerCharacter side="right" widthVw={30} maxWidth={500} inset="-2%" showOnMobile />
+        {/* Mascotte Madger (hero, desktop uniquement — sur mobile elle a sa bande dédiée) */}
+        <MadgerCharacter side="right" widthVw={30} maxWidth={500} inset="-2%" />
 
         <div className="relative max-w-4xl mx-auto w-full">
           {/* Wordmark */}
@@ -407,6 +407,44 @@ export default function HeroScrollExperience() {
             <path d="M1 1.5L6 6.5L11 1.5" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </motion.svg>
         </motion.div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════
+          MASCOTTE — bande dédiée (mobile uniquement, sous le hero)
+      ══════════════════════════════════════════════════════ */}
+      <section
+        className="lg:hidden relative overflow-hidden flex justify-center items-end px-5 pb-8"
+        style={{ background: "#0A0A0A" }}
+      >
+        {/* Lueur d'ambiance */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: "radial-gradient(ellipse 70% 55% at 50% 70%, rgba(203,255,3,0.08), transparent 70%)" }}
+        />
+        <div className="relative" style={{ width: "min(74vw, 320px)" }}>
+          {/* Halo derrière le personnage */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: "radial-gradient(ellipse 52% 46% at 50% 44%, rgba(203,255,3,0.16), transparent 70%)",
+              filter: "blur(8px)",
+            }}
+          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/character/madger-character.png"
+            alt=""
+            draggable={false}
+            style={{
+              position: "relative",
+              width: "100%",
+              height: "auto",
+              display: "block",
+              WebkitMaskImage: "radial-gradient(ellipse 74% 86% at 50% 46%, #000 58%, transparent 86%)",
+              maskImage: "radial-gradient(ellipse 74% 86% at 50% 46%, #000 58%, transparent 86%)",
+            }}
+          />
+        </div>
       </section>
 
       {/* ══════════════════════════════════════════════════════
