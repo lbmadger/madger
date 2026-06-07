@@ -21,11 +21,11 @@ const BASE_SRC = "/character/madger-character.png";
 // Optionnel : poses dédiées par étape. Si un fichier n'existe pas, on retombe
 // proprement sur l'image de base (gestion via onError).
 const POSE_SRC: (string | null)[] = [
-  "/character/coach-wave.png",     // étape 0 (salut / présente)
-  "/character/coach-point.png",    // étape 1 (pointe)
-  "/character/coach-point.png",    // étape 2
-  "/character/coach-ok.png",       // étape 3 (pouce levé)
-  "/character/coach-present.png",  // étape 4
+  "/character/coach-point.png", // étape 0 — présente la vitrine
+  "/character/coach-point.png", // étape 1 — pointe le calendrier
+  null,                          // étape 2 — pose de base (mains sur les hanches)
+  "/character/coach-ok.png",     // étape 3 — pouce levé ("je m'en occupe")
+  "/character/coach-point.png", // étape 4 — pointe le tableau de bord
 ];
 
 const EDGE_MASK =
