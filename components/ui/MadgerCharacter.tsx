@@ -28,6 +28,8 @@ interface MadgerCharacterProps {
   inset?: string;
   /** Opacité globale. */
   opacity?: number;
+  /** Afficher aussi sur mobile (sinon desktop uniquement). */
+  showOnMobile?: boolean;
   /** Chemin de l'image (override possible). */
   src?: string;
   className?: string;
@@ -40,6 +42,7 @@ export default function MadgerCharacter({
   maxWidth = 520,
   inset = "-3%",
   opacity = 1,
+  showOnMobile = false,
   src = "/character/madger-character.png",
   className = "",
 }: MadgerCharacterProps) {
@@ -54,10 +57,11 @@ export default function MadgerCharacter({
   return (
     <div
       aria-hidden="true"
-      className={`hidden lg:block absolute bottom-0 pointer-events-none select-none ${className}`}
+      className={`${showOnMobile ? "block" : "hidden lg:block"} absolute bottom-0 pointer-events-none select-none ${className}`}
       style={{
         [side]: inset,
-        width: `${widthVw}vw`,
+        // Sur mobile, un plancher en px évite un personnage minuscule.
+        width: showOnMobile ? `clamp(150px, ${widthVw}vw, ${maxWidth}px)` : `${widthVw}vw`,
         maxWidth,
         opacity,
         zIndex: 0,

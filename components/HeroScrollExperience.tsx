@@ -290,8 +290,8 @@ export default function HeroScrollExperience() {
           }}
         />
 
-        {/* Mascotte Madger (desktop) */}
-        <MadgerCharacter side="right" widthVw={30} maxWidth={500} inset="-2%" />
+        {/* Mascotte Madger (hero, desktop + mobile) */}
+        <MadgerCharacter side="right" widthVw={30} maxWidth={500} inset="-2%" showOnMobile />
 
         <div className="relative max-w-4xl mx-auto w-full">
           {/* Wordmark */}
