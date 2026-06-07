@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 /**
  * MadgerCharacter — mascotte 3D de la marque, en calque décoratif.
  *
@@ -44,6 +46,11 @@ export default function MadgerCharacter({
   const edgeMask =
     "radial-gradient(ellipse 72% 84% at 50% 46%, #000 56%, transparent 84%)";
 
+  // Tant que l'image n'est pas déposée dans le repo, on n'affiche rien
+  // (pas d'icône « image cassée »).
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
+
   return (
     <div
       aria-hidden="true"
@@ -70,6 +77,7 @@ export default function MadgerCharacter({
         src={src}
         alt=""
         draggable={false}
+        onError={() => setFailed(true)}
         style={{
           position: "relative",
           width: "100%",
