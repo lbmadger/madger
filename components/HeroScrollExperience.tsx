@@ -7,7 +7,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import SectionLabel from "@/components/ui/SectionLabel";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 import MadgerCharacter from "@/components/ui/MadgerCharacter";
-import MobileCoachIntro from "@/components/MobileCoachIntro";
 
 const STEPS = [
   {
@@ -409,9 +408,6 @@ export default function HeroScrollExperience() {
           </motion.svg>
         </motion.div>
       </section>
-
-      {/* Mascotte interactive — section dédiée (mobile uniquement, sous le hero) */}
-      <MobileCoachIntro />
 
       {/* ══════════════════════════════════════════════════════
           SCROLL EXPERIENCE — 350vh mobile / 500vh desktop
