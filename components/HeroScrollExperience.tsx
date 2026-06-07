@@ -6,6 +6,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import SectionLabel from "@/components/ui/SectionLabel";
 import MadgerLogo from "@/components/ui/MadgerLogo";
+import MadgerCharacter from "@/components/ui/MadgerCharacter";
 
 const STEPS = [
   {
@@ -288,6 +289,9 @@ export default function HeroScrollExperience() {
             maskImage: "radial-gradient(ellipse 100% 65% at 50% 25%, black, transparent 80%)",
           }}
         />
+
+        {/* Mascotte Madger (desktop) */}
+        <MadgerCharacter side="right" widthVw={30} maxWidth={500} inset="-2%" />
 
         <div className="relative max-w-4xl mx-auto w-full">
           {/* Wordmark */}
