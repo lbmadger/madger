@@ -1,22 +1,27 @@
 "use client";
 
-import { motion, useInView, animate } from "framer-motion";
+import { motion, useInView, useReducedMotion, animate } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import SectionLabel from "@/components/ui/SectionLabel";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 
 /* ── CountUp hook ─────────────────────────────────────────── */
 function useCountUp(target: number, duration = 1.4, inView = false) {
+  const reduce = useReducedMotion();
   const [value, setValue] = useState(0);
   useEffect(() => {
     if (!inView) return;
+    if (reduce) {
+      setValue(target);
+      return;
+    }
     const controls = animate(0, target, {
       duration,
       ease: [0.16, 1, 0.3, 1],
       onUpdate: (v) => setValue(Math.round(v)),
     });
     return () => controls.stop();
-  }, [inView, target, duration]);
+  }, [inView, target, duration, reduce]);
   return value;
 }
 
@@ -25,15 +30,21 @@ const barData = [38, 52, 45, 70, 60, 88, 95];
 const barDays = ["L", "M", "M", "J", "V", "S", "D"];
 
 function RevenueChart() {
+  const reduce = useReducedMotion();
   const max = Math.max(...barData);
   return (
     <div style={{ display: "flex", alignItems: "flex-end", gap: 4, height: 52, paddingTop: 4 }}>
       {barData.map((v, i) => (
         <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-          <div
+          <motion.div
+            initial={reduce ? false : { scaleY: 0 }}
+            whileInView={{ scaleY: 1 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.6, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] }}
             style={{
               width: "100%",
               height: `${(v / max) * 44}px`,
+              transformOrigin: "bottom",
               borderRadius: "3px 3px 0 0",
               background: i === 6
                 ? "linear-gradient(180deg, #CBFF03, #9DCC00)"
@@ -45,6 +56,22 @@ function RevenueChart() {
           <span style={{ fontSize: 7, color: "#5A5A5A" }}>{barDays[i]}</span>
         </div>
       ))}
+    </div>
+  );
+}
+
+/* ── Animated progress fill ─────────────────────────────── */
+function ProgressFill({ pct, color, height = 5, delay = 0 }: { pct: number; color: string; height?: number; delay?: number }) {
+  const reduce = useReducedMotion();
+  return (
+    <div style={{ height, borderRadius: 10, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+      <motion.div
+        initial={reduce ? false : { width: 0 }}
+        whileInView={{ width: `${pct}%` }}
+        viewport={{ once: true, margin: "-40px" }}
+        transition={{ duration: 0.9, delay, ease: [0.16, 1, 0.3, 1] }}
+        style={{ height: "100%", borderRadius: 10, background: color }}
+      />
     </div>
   );
 }
@@ -81,7 +108,6 @@ function StatCard({ label, value, delta, icon, inView }: { label: string; value:
   const numTarget = numMatch ? parseInt(numMatch[0]) : 0;
   const hasPercent = value.includes("%");
   const hasEuro = value.includes("€");
-  const prefix = hasEuro ? "" : "";
   const suffix = hasPercent ? " %" : hasEuro ? " €" : "";
   const count = useCountUp(numTarget, 1.4, inView);
   const displayValue = hasEuro
@@ -107,6 +133,7 @@ function StatCard({ label, value, delta, icon, inView }: { label: string; value:
 export default function CoachDashboard() {
   const statsRef = useRef(null);
   const statsInView = useInView(statsRef, { once: true, margin: "-80px" });
+  const weekRevenue = useCountUp(428, 1.4, statsInView);
 
   return (
     <section className="py-14 md:py-24 relative overflow-hidden">
@@ -435,7 +462,7 @@ export default function CoachDashboard() {
                   <div style={{ padding: "11px", borderRadius: 10, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
                       <span style={{ fontSize: 9, fontWeight: 700, color: "#fff" }}>Cette semaine</span>
-                      <span style={{ fontSize: 10, fontWeight: 800, color: "#CBFF03" }}>428 €</span>
+                      <span style={{ fontSize: 10, fontWeight: 800, color: "#CBFF03" }}>{statsInView ? `${weekRevenue} €` : "428 €"}</span>
                     </div>
                     <RevenueChart />
                   </div>
@@ -447,8 +474,8 @@ export default function CoachDashboard() {
                       <span style={{ fontSize: 8, color: "#5A5A5A" }}>1 240 / 1 500 €</span>
                     </div>
                     {/* Progress bar */}
-                    <div style={{ height: 5, borderRadius: 10, background: "rgba(255,255,255,0.06)", marginBottom: 6, overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: "82.7%", borderRadius: 10, background: "linear-gradient(90deg, #9DCC00, #CBFF03)" }} />
+                    <div style={{ marginBottom: 6 }}>
+                      <ProgressFill pct={82.7} height={5} color="linear-gradient(90deg, #9DCC00, #CBFF03)" />
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
                       <span style={{ fontSize: 7, color: "#4ADE80", fontWeight: 600 }}>83 % atteint</span>
@@ -460,9 +487,7 @@ export default function CoachDashboard() {
                       <span style={{ fontSize: 8, color: "#5A5A5A" }}>Séances</span>
                       <span style={{ fontSize: 8, color: "#fff", fontWeight: 600 }}>24 / 30</span>
                     </div>
-                    <div style={{ height: 4, borderRadius: 10, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: "80%", borderRadius: 10, background: "rgba(203,255,3,0.5)" }} />
-                    </div>
+                    <ProgressFill pct={80} height={4} color="rgba(203,255,3,0.5)" delay={0.1} />
                   </div>
 
                   {/* Répartition clients */}
@@ -472,22 +497,20 @@ export default function CoachDashboard() {
                       { label: "Coaching indiv.", pct: 58, color: "#CBFF03" },
                       { label: "Suivi mensuel",   pct: 25, color: "#4ADE80" },
                       { label: "Prépa physique",  pct: 17, color: "rgba(203,255,3,0.35)" },
-                    ].map(({ label, pct, color }) => (
+                    ].map(({ label, pct, color }, i) => (
                       <div key={label} style={{ marginBottom: 7 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
                           <span style={{ fontSize: 8, color: "#8A8A8A" }}>{label}</span>
                           <span style={{ fontSize: 8, color: "#fff", fontWeight: 600 }}>{pct} %</span>
                         </div>
-                        <div style={{ height: 3, borderRadius: 10, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
-                          <div style={{ height: "100%", width: `${pct}%`, borderRadius: 10, background: color }} />
-                        </div>
+                        <ProgressFill pct={pct} height={3} color={color} delay={i * 0.12} />
                       </div>
                     ))}
 
                     {/* Clients actifs */}
                     <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
                       <div style={{ fontSize: 8, color: "#5A5A5A", marginBottom: 6 }}>Actifs ce mois</div>
-                      <div style={{ display: "flex", gap: -4 }}>
+                      <div style={{ display: "flex" }}>
                         {clients.map((c, i) => (
                           <div key={i} style={{ width: 22, height: 22, borderRadius: "50%", overflow: "hidden", border: "1.5px solid #0D0D0D", marginLeft: i > 0 ? -6 : 0 }}>
                             <img src={`https://images.unsplash.com/${c.photo}?w=60&h=60&fit=crop&auto=format&q=80`} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} alt="" />
