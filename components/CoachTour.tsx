@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import SectionLabel from "@/components/ui/SectionLabel";
 
 /**
@@ -91,6 +91,31 @@ export default function CoachTour() {
   const [paused, setPaused] = useState(false);
   const [poseOk, setPoseOk] = useState<boolean[]>(POSE_SRC.map(() => true));
 
+  const sectionRef = useRef<HTMLElement>(null);
+
+  // Suivi du curseur : le coach s'incline vers la souris (il "te regarde")
+  const px = useMotionValue(0); // -1 .. 1
+  const py = useMotionValue(0);
+  const sx = useSpring(px, { stiffness: 120, damping: 18, mass: 0.6 });
+  const sy = useSpring(py, { stiffness: 120, damping: 18, mass: 0.6 });
+  const rotateY = useTransform(sx, [-1, 1], [-16, 16]);
+  const rotateX = useTransform(sy, [-1, 1], [10, -10]);
+  const shiftX = useTransform(sx, [-1, 1], [-12, 12]);
+
+  const handleMove = (e: React.MouseEvent) => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const nx = ((e.clientX - r.left) / r.width) * 2 - 1;
+    const ny = ((e.clientY - r.top) / r.height) * 2 - 1;
+    px.set(Math.max(-1, Math.min(1, nx)));
+    py.set(Math.max(-1, Math.min(1, ny)));
+  };
+  const handleLeave = () => {
+    px.set(0);
+    py.set(0);
+  };
+
   useEffect(() => {
     if (paused) return;
     const t = setTimeout(() => setI((v) => (v + 1) % STEPS.length), 5200);
@@ -111,7 +136,14 @@ export default function CoachTour() {
   const imgSrc = useDedicatedPose ? (wantPose as string) : BASE_SRC;
 
   return (
-    <section id="coach" className="relative overflow-hidden py-20 sm:py-28">
+    <section
+      id="coach"
+      ref={sectionRef}
+      onMouseMove={handleMove}
+      onMouseLeave={handleLeave}
+      className="relative overflow-hidden py-20 sm:py-28"
+      style={{ perspective: 1000 }}
+    >
       {/* Lueur d'ambiance */}
       <div
         className="absolute inset-0 pointer-events-none"
@@ -178,15 +210,22 @@ export default function CoachTour() {
               aria-label="Étape suivante"
               className="relative block"
               style={{ width: "min(64vw, 300px)" }}
-              animate={{ x: pose.x, rotate: pose.rotate, scale: pose.scale }}
-              transition={{ type: "spring", stiffness: 120, damping: 14 }}
-              whileTap={{ scale: pose.scale * 0.97 }}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scaleX: 1.06, scaleY: 0.9 }}
             >
-              <motion.div
-                animate={{ y: [0, -10, 0], rotate: [0, 1.3, 0, -1.3, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                className="relative"
-              >
+              {/* Inclinaison vers le curseur — il "te regarde" (desktop) */}
+              <motion.div style={{ rotateX, rotateY, x: shiftX, transformPerspective: 800 }}>
+                {/* Décalage / geste selon l'étape */}
+                <motion.div
+                  animate={{ x: pose.x, rotate: pose.rotate, scale: pose.scale }}
+                  transition={{ type: "spring", stiffness: 120, damping: 14 }}
+                >
+                  {/* Flottement (idle) */}
+                  <motion.div
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                    className="relative"
+                  >
                 <div
                   className="absolute inset-0 pointer-events-none"
                   style={{
@@ -221,6 +260,8 @@ export default function CoachTour() {
                     }}
                   />
                 </AnimatePresence>
+                  </motion.div>
+                </motion.div>
               </motion.div>
             </motion.button>
 
