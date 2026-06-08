@@ -18,18 +18,13 @@ import SectionLabel from "@/components/ui/SectionLabel";
 
 const BASE_SRC = "/character/madger-character.png";
 
-// Optionnel : poses dédiées par étape. Si un fichier n'existe pas, on retombe
-// proprement sur l'image de base (gestion via onError).
-const POSE_SRC: (string | null)[] = [
-  "/character/coach-point.png", // étape 0 — présente la vitrine
-  "/character/coach-point.png", // étape 1 — pointe le calendrier
-  null,                          // étape 2 — pose de base (mains sur les hanches)
-  "/character/coach-ok.png",     // étape 3 — pouce levé ("je m'en occupe")
-  "/character/coach-point.png", // étape 4 — pointe le tableau de bord
-];
+// Poses dédiées par étape — désactivées tant que les PNG ne sont pas dans le repo
+// (sinon l'image "flashe" absente le temps du fallback). Mettre les chemins ici
+// une fois coach-point.png / coach-ok.png uploadés.
+const POSE_SRC: (string | null)[] = [null, null, null, null, null];
 
 const EDGE_MASK =
-  "radial-gradient(ellipse 48% 88% at 50% 46%, #000 40%, rgba(0,0,0,0.5) 64%, transparent 80%)";
+  "radial-gradient(ellipse 44% 90% at 50% 47%, #000 50%, transparent 74%)";
 
 // Mouvement du coach par étape (pour donner l'impression qu'il gesticule)
 const POSES = [
@@ -144,12 +139,6 @@ export default function CoachTour() {
       className="relative overflow-hidden py-20 sm:py-28"
       style={{ perspective: 1000 }}
     >
-      {/* Lueur d'ambiance */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse 70% 50% at 50% 30%, rgba(203,255,3,0.06), transparent 70%)" }}
-      />
-
       <div className="relative max-w-6xl mx-auto px-5 sm:px-6">
         {/* En-tête */}
         <div className="text-center mb-10 sm:mb-14">
@@ -226,10 +215,19 @@ export default function CoachTour() {
                     transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                     className="relative"
                   >
+                    {/* Lueur verte (gardée) — pas de halo gris */}
+                    <div
+                      className="absolute inset-0 pointer-events-none"
+                      style={{
+                        background:
+                          "radial-gradient(ellipse 40% 50% at 50% 50%, rgba(203,255,3,0.18), transparent 66%)",
+                        filter: "blur(10px)",
+                      }}
+                    />
                     <AnimatePresence mode="wait">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <motion.img
-                    key={imgSrc + i}
+                    key={imgSrc}
                     src={imgSrc}
                     alt=""
                     draggable={false}
@@ -240,9 +238,9 @@ export default function CoachTour() {
                         return n;
                       })
                     }
-                    initial={{ opacity: useDedicatedPose ? 0 : 1, scale: 0.9, rotate: -5 }}
-                    animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                    transition={{ type: "spring", stiffness: 210, damping: 12 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.4 }}
                     style={{
                       position: "relative",
                       width: "100%",
