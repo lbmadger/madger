@@ -183,8 +183,8 @@ export default function CoachTour() {
               whileTap={{ scale: pose.scale * 0.97 }}
             >
               <motion.div
-                animate={{ y: [0, -9, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                animate={{ y: [0, -10, 0], rotate: [0, 1.3, 0, -1.3, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                 className="relative"
               >
                 <div
@@ -208,9 +208,9 @@ export default function CoachTour() {
                         return n;
                       })
                     }
-                    initial={{ opacity: useDedicatedPose ? 0 : 1 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.25 }}
+                    initial={{ opacity: useDedicatedPose ? 0 : 1, scale: 0.9, rotate: -5 }}
+                    animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                    transition={{ type: "spring", stiffness: 210, damping: 12 }}
                     style={{
                       position: "relative",
                       width: "100%",
@@ -223,6 +223,16 @@ export default function CoachTour() {
                 </AnimatePresence>
               </motion.div>
             </motion.button>
+
+            {/* Indice d'interaction */}
+            <motion.div
+              className="flex items-center gap-1.5 mt-3"
+              style={{ fontSize: 12, color: "#CBFF03", fontWeight: 600 }}
+              animate={{ opacity: [0.45, 1, 0.45], y: [0, -2, 0] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <span>👆 Tape sur le coach pour la suite</span>
+            </motion.div>
           </div>
 
           {/* ── PANNEAU FONCTIONNALITÉ ── */}
