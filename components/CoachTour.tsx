@@ -29,7 +29,7 @@ const POSE_SRC: (string | null)[] = [
 ];
 
 const EDGE_MASK =
-  "radial-gradient(ellipse 74% 86% at 50% 46%, #000 58%, transparent 86%)";
+  "radial-gradient(ellipse 48% 88% at 50% 46%, #000 40%, rgba(0,0,0,0.5) 64%, transparent 80%)";
 
 // Mouvement du coach par étape (pour donner l'impression qu'il gesticule)
 const POSES = [
@@ -226,14 +226,7 @@ export default function CoachTour() {
                     transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
                     className="relative"
                   >
-                <div
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background: "radial-gradient(ellipse 52% 46% at 50% 44%, rgba(203,255,3,0.16), transparent 70%)",
-                    filter: "blur(8px)",
-                  }}
-                />
-                <AnimatePresence mode="wait">
+                    <AnimatePresence mode="wait">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <motion.img
                     key={imgSrc + i}
