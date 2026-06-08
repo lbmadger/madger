@@ -16,15 +16,12 @@ import SectionLabel from "@/components/ui/SectionLabel";
  * de base. Mobile + desktop.
  */
 
-const BASE_SRC = "/character/madger-character.png";
+const BASE_SRC = "/character/coach-cutout.png";
 
 // Poses dédiées par étape — désactivées tant que les PNG ne sont pas dans le repo
 // (sinon l'image "flashe" absente le temps du fallback). Mettre les chemins ici
 // une fois coach-point.png / coach-ok.png uploadés.
 const POSE_SRC: (string | null)[] = [null, null, null, null, null];
-
-const EDGE_MASK =
-  "radial-gradient(ellipse 44% 90% at 50% 47%, #000 50%, transparent 74%)";
 
 // Mouvement du coach par étape (pour donner l'impression qu'il gesticule)
 const POSES = [
@@ -246,8 +243,7 @@ export default function CoachTour() {
                       width: "100%",
                       height: "auto",
                       display: "block",
-                      WebkitMaskImage: EDGE_MASK,
-                      maskImage: EDGE_MASK,
+                      filter: "drop-shadow(0 18px 30px rgba(0,0,0,0.5))",
                     }}
                   />
                 </AnimatePresence>
