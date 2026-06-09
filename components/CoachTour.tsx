@@ -149,32 +149,6 @@ export default function CoachTour() {
 
           {/* ── COACH ── */}
           <div className="relative flex flex-col items-center order-1">
-            {/* Réaction : l'icône de la fonctionnalité surgit près de lui */}
-            <div className="pointer-events-none absolute" style={{ top: 64, right: "16%", zIndex: 5 }}>
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={i}
-                  initial={{ opacity: 0, scale: 0.3, y: 14, rotate: -12 }}
-                  animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
-                  exit={{ opacity: 0, scale: 0.5, y: -16 }}
-                  transition={{ type: "spring", stiffness: 260, damping: 14 }}
-                  className="flex items-center justify-center"
-                  style={{
-                    fontSize: 26,
-                    width: 52,
-                    height: 52,
-                    borderRadius: 16,
-                    background: "rgba(203,255,3,0.12)",
-                    border: "1px solid rgba(203,255,3,0.3)",
-                    boxShadow: "0 10px 24px rgba(0,0,0,0.45)",
-                    backdropFilter: "blur(2px)",
-                  }}
-                >
-                  {step.icon}
-                </motion.span>
-              </AnimatePresence>
-            </div>
-
             {/* Bulle */}
             <div
               className={`relative w-full flex mb-1 ${side === "left" ? "justify-start" : "justify-end"}`}
@@ -194,12 +168,29 @@ export default function CoachTour() {
                     boxShadow: "0 12px 34px rgba(0,0,0,0.5)",
                   }}
                 >
-                  <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#CBFF03" }}>
-                    Coach Madger
-                  </span>
-                  <p style={{ fontSize: 15, lineHeight: 1.4, color: "#fff", marginTop: 2, fontWeight: 600 }}>
-                    {step.line}
-                  </p>
+                  <div className="flex items-center gap-2.5">
+                    <span
+                      className="flex items-center justify-center flex-shrink-0"
+                      style={{
+                        fontSize: 18,
+                        width: 36,
+                        height: 36,
+                        borderRadius: 10,
+                        background: "rgba(203,255,3,0.14)",
+                        border: "1px solid rgba(203,255,3,0.3)",
+                      }}
+                    >
+                      {step.icon}
+                    </span>
+                    <div>
+                      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#CBFF03" }}>
+                        Coach Madger
+                      </span>
+                      <p style={{ fontSize: 15, lineHeight: 1.35, color: "#fff", marginTop: 1, fontWeight: 600 }}>
+                        {step.line}
+                      </p>
+                    </div>
+                  </div>
                   <span
                     className="absolute"
                     style={{
