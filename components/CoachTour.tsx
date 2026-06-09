@@ -40,7 +40,7 @@ const STEPS: Step[] = [
     icon: "🔗",
     title: "Ta page coach",
     line: "Ça, c'est ta vitrine 👇",
-    desc: "Un seul lien — madger.app/tonnom — avec ton profil, tes offres et tes avis. Tu le mets dans ta bio, c'est tout.",
+    desc: "Un seul lien (madger.app/tonnom) avec ton profil, tes offres et tes avis. Tu le mets dans ta bio, c'est tout.",
     mock: <ProfileMock />,
   },
   {
@@ -131,25 +131,25 @@ export default function CoachTour() {
       ref={sectionRef}
       onMouseMove={handleMove}
       onMouseLeave={handleLeave}
-      className="relative overflow-hidden py-20 sm:py-28"
+      className="relative overflow-hidden py-12 sm:py-28"
       style={{ perspective: 1000 }}
     >
       <div className="relative max-w-6xl mx-auto px-5 sm:px-6">
         {/* En-tête */}
-        <div className="text-center mb-10 sm:mb-14">
+        <div className="text-center mb-4 sm:mb-14">
           <div className="flex justify-center mb-3">
             <SectionLabel>Visite guidée</SectionLabel>
           </div>
           <h2
             className="font-extrabold text-white"
-            style={{ fontSize: "clamp(26px, 4.5vw, 46px)", letterSpacing: "-0.03em", lineHeight: 1.08 }}
+            style={{ fontSize: "clamp(19px, 4vw, 46px)", letterSpacing: "-0.03em", lineHeight: 1.05 }}
           >
             Laisse le coach te montrer<br className="hidden sm:block" /> tout ce que Madger fait.
           </h2>
         </div>
 
         {/* Corps : coach + panneau */}
-        <div className="grid lg:grid-cols-2 gap-6 lg:gap-10 items-center">
+        <div className="grid lg:grid-cols-2 gap-3 lg:gap-10 items-center">
 
           {/* ── COACH ── */}
           <div className="relative flex flex-col items-center order-1">
@@ -215,8 +215,7 @@ export default function CoachTour() {
               type="button"
               onClick={() => go(i + 1)}
               aria-label="Étape suivante"
-              className="relative block"
-              style={{ width: "min(64vw, 300px)" }}
+              className="relative block w-[42vw] lg:w-[280px]"
               whileHover={{ scale: 1.03 }}
               whileTap={{ scaleX: 1.06, scaleY: 0.9 }}
             >
@@ -299,8 +298,8 @@ export default function CoachTour() {
 
             {/* Indice d'interaction */}
             <motion.div
-              className="flex items-center gap-1.5 mt-3"
-              style={{ fontSize: 12, color: "#CBFF03", fontWeight: 600 }}
+              className="flex items-center gap-1.5 mt-2"
+              style={{ fontSize: 11, color: "#CBFF03", fontWeight: 600 }}
               animate={{ opacity: [0.45, 1, 0.45], y: [0, -2, 0] }}
               transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
             >
@@ -312,7 +311,7 @@ export default function CoachTour() {
           <div className="relative order-2">
             <div
               className="relative rounded-3xl overflow-hidden"
-              style={{ background: "linear-gradient(180deg, #131313, #0F0F0F)", border: "1px solid rgba(255,255,255,0.10)", minHeight: 380 }}
+              style={{ background: "linear-gradient(180deg, #131313, #0F0F0F)", border: "1px solid rgba(255,255,255,0.10)", minHeight: 300 }}
             >
               <AnimatePresence initial={false}>
                 <motion.div
@@ -337,7 +336,7 @@ export default function CoachTour() {
                       <h3 style={{ fontSize: 20, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>{step.title}</h3>
                     </div>
                   </div>
-                  <p style={{ fontSize: 14.5, color: "#9A9A9A", lineHeight: 1.6, marginBottom: 18 }}>{step.desc}</p>
+                  <p className="hidden sm:block" style={{ fontSize: 14.5, color: "#9A9A9A", lineHeight: 1.6, marginBottom: 18 }}>{step.desc}</p>
 
                   {/* Aperçu d'UI */}
                   <div className="rounded-2xl p-4" style={{ background: "#0A0A0A", border: "1px solid rgba(255,255,255,0.07)" }}>
@@ -348,7 +347,7 @@ export default function CoachTour() {
             </div>
 
             {/* Navigation */}
-            <div className="flex items-center justify-between mt-5">
+            <div className="flex items-center justify-between mt-4">
               <div className="flex items-center gap-1.5">
                 {STEPS.map((_, idx) => (
                   <button
@@ -386,7 +385,7 @@ export default function CoachTour() {
               </div>
             </div>
 
-            <div className="mt-5 text-center lg:text-left">
+            <div className="mt-4 text-center lg:text-left">
               <a
                 href="#early-access"
                 className="inline-flex font-bold text-sm px-7 py-3.5 rounded-full"
@@ -479,7 +478,7 @@ function InvoiceMock() {
         <span style={{ fontSize: 10, fontWeight: 700, color: "#CBFF03", background: "rgba(203,255,3,0.1)", padding: "3px 8px", borderRadius: 20 }}>Envoyée auto</span>
       </div>
       <Row><span style={{ fontSize: 12, color: "#cfcfcf" }}>Coaching individuel</span><span style={{ fontSize: 12, color: "#fff" }}>50,00 €</span></Row>
-      <Row><span style={{ fontSize: 12, color: "#cfcfcf" }}>TVA</span><span style={{ fontSize: 12, color: "#8A8A8A" }}>—</span></Row>
+      <Row><span style={{ fontSize: 12, color: "#cfcfcf" }}>TVA</span><span style={{ fontSize: 12, color: "#8A8A8A" }}>0 €</span></Row>
       <div className="flex items-center justify-between px-3 pt-2">
         <span style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>Total</span>
         <span style={{ fontSize: 15, fontWeight: 800, color: "#CBFF03" }}>50,00 €</span>
