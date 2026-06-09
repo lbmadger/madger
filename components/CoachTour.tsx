@@ -155,18 +155,21 @@ export default function CoachTour() {
           <div className="relative flex flex-col items-center order-1">
             {/* Bulle */}
             <div
-              className={`relative w-full flex mb-1 ${side === "left" ? "justify-start" : "justify-end"}`}
-              style={{ minHeight: 78 }}
+              className="relative w-full mb-1"
+              style={{ minHeight: 82 }}
             >
-              <AnimatePresence mode="wait">
+              <AnimatePresence initial={false}>
                 <motion.div
                   key={i}
-                  initial={{ opacity: 0, x: dir * 44, y: 4 }}
+                  initial={{ opacity: 0, x: dir * 40, y: 4 }}
                   animate={{ opacity: 1, x: 0, y: 0 }}
-                  exit={{ opacity: 0, x: dir * -24 }}
-                  transition={{ duration: 0.34, ease: [0.16, 1, 0.3, 1] }}
-                  className="relative max-w-[300px] rounded-2xl px-4 py-3 mb-2"
+                  exit={{ opacity: 0, x: dir * -28 }}
+                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  className="max-w-[300px] rounded-2xl px-4 py-3"
                   style={{
+                    position: "absolute",
+                    top: 0,
+                    [side === "left" ? "left" : "right"]: 0,
                     background: "linear-gradient(180deg, #181818, #121212)",
                     border: "1px solid rgba(203,255,3,0.30)",
                     boxShadow: "0 12px 34px rgba(0,0,0,0.5)",
@@ -269,12 +272,12 @@ export default function CoachTour() {
                             return n;
                           })
                         }
-                        initial={{ opacity: 0, scale: 0.72, y: "12%", rotate: dir * -5 }}
+                        initial={{ opacity: 0, scale: 0.88, y: "4%", rotate: dir * -3 }}
                         animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
-                        exit={{ opacity: 0, scale: 0.9, y: "-6%" }}
+                        exit={{ opacity: 0, scale: 0.94 }}
                         transition={{
-                          opacity: { duration: 0.16 },
-                          default: { type: "spring", stiffness: 300, damping: 16 },
+                          opacity: { duration: 0.18 },
+                          default: { type: "spring", stiffness: 320, damping: 18 },
                         }}
                         style={{
                           position: "absolute",
@@ -308,16 +311,17 @@ export default function CoachTour() {
           {/* ── PANNEAU FONCTIONNALITÉ ── */}
           <div className="relative order-2">
             <div
-              className="relative rounded-3xl p-5 sm:p-7 overflow-hidden"
-              style={{ background: "linear-gradient(180deg, #131313, #0F0F0F)", border: "1px solid rgba(255,255,255,0.10)", minHeight: 360 }}
+              className="relative rounded-3xl overflow-hidden"
+              style={{ background: "linear-gradient(180deg, #131313, #0F0F0F)", border: "1px solid rgba(255,255,255,0.10)", minHeight: 380 }}
             >
-              <AnimatePresence mode="wait">
+              <AnimatePresence initial={false}>
                 <motion.div
                   key={i}
-                  initial={{ opacity: 0, x: 24 }}
+                  className="absolute inset-0 p-5 sm:p-7"
+                  initial={{ opacity: 0, x: 40 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -24 }}
-                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                  exit={{ opacity: 0, x: -40 }}
+                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 >
                   <div className="flex items-center gap-3 mb-2">
                     <span
