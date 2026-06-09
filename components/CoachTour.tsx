@@ -198,16 +198,23 @@ export default function CoachTour() {
             >
               {/* Inclinaison vers le curseur — il "te regarde" (desktop) */}
               <motion.div style={{ rotateX, rotateY, x: shiftX, transformPerspective: 800 }}>
-                {/* Décalage / geste selon l'étape */}
+                {/* Posture selon l'étape — pivot sur les pieds + transfert de poids */}
                 <motion.div
-                  animate={{ x: pose.x, rotate: pose.rotate, scale: pose.scale }}
-                  transition={{ type: "spring", stiffness: 120, damping: 14 }}
+                  animate={{
+                    x: pose.x,
+                    rotate: pose.rotate,
+                    scaleX: pose.scale * (1 + dir * 0.015),
+                    scaleY: pose.scale * (1 - 0.02),
+                  }}
+                  transition={{ type: "spring", stiffness: 130, damping: 13 }}
+                  style={{ transformOrigin: "50% 100%" }}
                 >
-                  {/* Flottement (idle) */}
+                  {/* Balancement (idle) — léger appui d'un pied sur l'autre */}
                   <motion.div
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                    animate={{ y: [0, -8, 0], rotate: [-1, 1, -1] }}
+                    transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
                     className="relative"
+                    style={{ transformOrigin: "50% 100%" }}
                   >
                     {/* Lueur verte (gardée) — pas de halo gris */}
                     <div
