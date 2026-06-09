@@ -23,15 +23,6 @@ const BASE_SRC = "/character/coach-cutout.png";
 // une fois coach-point.png / coach-ok.png uploadés.
 const POSE_SRC: (string | null)[] = [null, null, null, null, null];
 
-// Mouvement du coach par étape (pour donner l'impression qu'il gesticule)
-const POSES = [
-  { x: 0, rotate: 0, scale: 1 },
-  { x: 10, rotate: -2.5, scale: 1.03 },
-  { x: -6, rotate: 2.5, scale: 1.05 },
-  { x: 8, rotate: -2, scale: 1.04 },
-  { x: 0, rotate: 0, scale: 1.06 },
-];
-
 interface Step {
   icon: string;
   title: string;
@@ -122,7 +113,10 @@ export default function CoachTour() {
   };
 
   const step = STEPS[i];
-  const pose = POSES[i] ?? POSES[0];
+  const side: "left" | "right" = i % 2 === 0 ? "left" : "right";
+  const dir = side === "left" ? -1 : 1;
+  // Posture qui change un peu à chaque étape : il se penche vers la bulle.
+  const pose = { x: dir * 14, rotate: dir * 4, scale: 1 + (i % 3) * 0.02 };
   const wantPose = POSE_SRC[i];
   const useDedicatedPose = !!wantPose && poseOk[i];
   const imgSrc = useDedicatedPose ? (wantPose as string) : BASE_SRC;
@@ -156,15 +150,18 @@ export default function CoachTour() {
           {/* ── COACH ── */}
           <div className="relative flex flex-col items-center order-1">
             {/* Bulle */}
-            <div className="relative w-full flex justify-center" style={{ minHeight: 78 }}>
+            <div
+              className={`relative w-full flex mb-1 ${side === "left" ? "justify-start" : "justify-end"}`}
+              style={{ minHeight: 78 }}
+            >
               <AnimatePresence mode="wait">
                 <motion.div
                   key={i}
-                  initial={{ opacity: 0, y: 10, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -8, scale: 0.98 }}
-                  transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-                  className="relative max-w-[330px] w-full rounded-2xl px-4 py-3 mb-2"
+                  initial={{ opacity: 0, x: dir * 44, y: 4 }}
+                  animate={{ opacity: 1, x: 0, y: 0 }}
+                  exit={{ opacity: 0, x: dir * -24 }}
+                  transition={{ duration: 0.34, ease: [0.16, 1, 0.3, 1] }}
+                  className="relative max-w-[300px] rounded-2xl px-4 py-3 mb-2"
                   style={{
                     background: "linear-gradient(180deg, #181818, #121212)",
                     border: "1px solid rgba(203,255,3,0.30)",
@@ -180,7 +177,7 @@ export default function CoachTour() {
                   <span
                     className="absolute"
                     style={{
-                      bottom: -7, left: "50%", transform: "translateX(-50%) rotate(45deg)",
+                      bottom: -7, [side === "left" ? "right" : "left"]: 34, transform: "rotate(45deg)",
                       width: 14, height: 14, background: "#121212",
                       borderRight: "1px solid rgba(203,255,3,0.30)", borderBottom: "1px solid rgba(203,255,3,0.30)",
                     }}
