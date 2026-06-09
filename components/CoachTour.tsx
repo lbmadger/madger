@@ -81,9 +81,9 @@ export default function CoachTour() {
   const py = useMotionValue(0);
   const sx = useSpring(px, { stiffness: 120, damping: 18, mass: 0.6 });
   const sy = useSpring(py, { stiffness: 120, damping: 18, mass: 0.6 });
-  const rotateY = useTransform(sx, [-1, 1], [-16, 16]);
-  const rotateX = useTransform(sy, [-1, 1], [10, -10]);
-  const shiftX = useTransform(sx, [-1, 1], [-12, 12]);
+  const rotateY = useTransform(sx, [-1, 1], [-7, 7]);
+  const rotateX = useTransform(sy, [-1, 1], [5, -5]);
+  const shiftX = useTransform(sx, [-1, 1], [-18, 18]);
 
   const handleMove = (e: React.MouseEvent) => {
     const el = sectionRef.current;
@@ -115,8 +115,8 @@ export default function CoachTour() {
   const step = STEPS[i];
   const side: "left" | "right" = i % 2 === 0 ? "left" : "right";
   const dir = side === "left" ? -1 : 1;
-  // Posture qui change un peu à chaque étape : il se penche vers la bulle.
-  const pose = { x: dir * 14, rotate: dir * 4, scale: 1 + (i % 3) * 0.02 };
+  // Pas de rotation : juste un léger déplacement vers le côté de la bulle.
+  const pose = { x: dir * 8 };
   const wantPose = POSE_SRC[i];
   const useDedicatedPose = !!wantPose && poseOk[i];
   const imgSrc = useDedicatedPose ? (wantPose as string) : BASE_SRC;
@@ -215,23 +215,16 @@ export default function CoachTour() {
             >
               {/* Inclinaison vers le curseur — il "te regarde" (desktop) */}
               <motion.div style={{ rotateX, rotateY, x: shiftX, transformPerspective: 800 }}>
-                {/* Posture selon l'étape — pivot sur les pieds + transfert de poids */}
+                {/* Léger déplacement selon l'étape (pas de rotation) */}
                 <motion.div
-                  animate={{
-                    x: pose.x,
-                    rotate: pose.rotate,
-                    scaleX: pose.scale * (1 + dir * 0.015),
-                    scaleY: pose.scale * (1 - 0.02),
-                  }}
-                  transition={{ type: "spring", stiffness: 130, damping: 13 }}
-                  style={{ transformOrigin: "50% 100%" }}
+                  animate={{ x: pose.x }}
+                  transition={{ type: "spring", stiffness: 130, damping: 16 }}
                 >
-                  {/* Balancement (idle) — léger appui d'un pied sur l'autre */}
+                  {/* Flottement vertical doux */}
                   <motion.div
-                    animate={{ y: [0, -8, 0], rotate: [-1, 1, -1] }}
-                    transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
+                    animate={{ y: [0, -7, 0] }}
+                    transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
                     className="relative"
-                    style={{ transformOrigin: "50% 100%" }}
                   >
                     {/* Lueur verte (gardée) — pas de halo gris */}
                     <div
