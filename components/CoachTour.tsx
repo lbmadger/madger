@@ -18,10 +18,14 @@ import SectionLabel from "@/components/ui/SectionLabel";
 
 const BASE_SRC = "/character/coach-cutout.png";
 
-// Poses dédiées par étape — désactivées tant que les PNG ne sont pas dans le repo
-// (sinon l'image "flashe" absente le temps du fallback). Mettre les chemins ici
-// une fois coach-point.png / coach-ok.png uploadés.
-const POSE_SRC: (string | null)[] = [null, null, null, null, null];
+// Poses dédiées par étape (détourées + normalisées). null = pose de base.
+const POSE_SRC: (string | null)[] = [
+  null,                          // 0 — page coach : pose neutre
+  "/character/coach-point.png",  // 1 — réservation : il pointe
+  "/character/coach-ok.png",     // 2 — paiement : pouce levé
+  "/character/coach-point.png",  // 3 — factures : il pointe
+  "/character/coach-ok.png",     // 4 — tableau de bord : pouce levé
+];
 
 interface Step {
   icon: string;
@@ -251,7 +255,8 @@ export default function CoachTour() {
                     }
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ duration: 0.4 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.28 }}
                     style={{
                       position: "relative",
                       width: "100%",
