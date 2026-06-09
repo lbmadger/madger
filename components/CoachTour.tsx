@@ -228,9 +228,10 @@ export default function CoachTour() {
                   <motion.div
                     animate={{ y: [0, -7, 0] }}
                     transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-                    className="relative"
+                    className="relative w-full"
+                    style={{ aspectRatio: "1200 / 1500" }}
                   >
-                    {/* Lueur verte (gardée) — pas de halo gris */}
+                    {/* Lueur verte */}
                     <div
                       className="absolute inset-0 pointer-events-none"
                       style={{
@@ -239,33 +240,55 @@ export default function CoachTour() {
                         filter: "blur(10px)",
                       }}
                     />
-                    <AnimatePresence mode="wait">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <motion.img
-                    key={imgSrc}
-                    src={imgSrc}
-                    alt=""
-                    draggable={false}
-                    onError={() =>
-                      setPoseOk((prev) => {
-                        const n = [...prev];
-                        n[i] = false;
-                        return n;
-                      })
-                    }
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.28 }}
-                    style={{
-                      position: "relative",
-                      width: "100%",
-                      height: "auto",
-                      display: "block",
-                      filter: "drop-shadow(0 18px 30px rgba(0,0,0,0.5))",
-                    }}
-                  />
-                </AnimatePresence>
+                    {/* Flash vert à chaque changement de pose */}
+                    <AnimatePresence>
+                      <motion.div
+                        key={"burst" + i}
+                        className="absolute inset-0 pointer-events-none"
+                        initial={{ opacity: 0.55, scale: 0.5 }}
+                        animate={{ opacity: 0, scale: 1.5 }}
+                        transition={{ duration: 0.6, ease: "easeOut" }}
+                        style={{
+                          background:
+                            "radial-gradient(circle at 50% 52%, rgba(203,255,3,0.45), transparent 60%)",
+                        }}
+                      />
+                    </AnimatePresence>
+                    {/* La pose "saute" dans sa nouvelle posture (rebond) */}
+                    <AnimatePresence>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <motion.img
+                        key={imgSrc}
+                        src={imgSrc}
+                        alt=""
+                        draggable={false}
+                        onError={() =>
+                          setPoseOk((prev) => {
+                            const n = [...prev];
+                            n[i] = false;
+                            return n;
+                          })
+                        }
+                        initial={{ opacity: 0, scale: 0.72, y: "12%", rotate: dir * -5 }}
+                        animate={{ opacity: 1, scale: 1, y: 0, rotate: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, y: "-6%" }}
+                        transition={{
+                          opacity: { duration: 0.16 },
+                          default: { type: "spring", stiffness: 300, damping: 16 },
+                        }}
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "contain",
+                          objectPosition: "bottom",
+                          transformOrigin: "50% 100%",
+                          display: "block",
+                          filter: "drop-shadow(0 18px 30px rgba(0,0,0,0.5))",
+                        }}
+                      />
+                    </AnimatePresence>
                   </motion.div>
                 </motion.div>
               </motion.div>
