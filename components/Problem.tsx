@@ -187,8 +187,9 @@ export default function Problem() {
             Tu jongle entre tout ça en ce moment
           </p>
 
-          {/* Logos grid */}
-          <div className="flex flex-wrap justify-center gap-4 sm:gap-6 mb-8">
+          {/* Logos grid — grille 4 colonnes sur mobile (rangées équilibrées),
+              flex centré sur desktop */}
+          <div className="grid grid-cols-4 justify-items-center gap-x-3 gap-y-6 sm:flex sm:flex-wrap sm:justify-center sm:gap-6 mb-8">
             {TOOLS.map((tool, i) => (
               <motion.div
                 key={tool.name}

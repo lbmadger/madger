@@ -54,16 +54,20 @@ export default function TrustBar() {
       }}
     >
       <div className="max-w-5xl mx-auto px-6">
-        <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
-          <span style={{
-            fontSize: 11,
-            fontWeight: 600,
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            color: "rgba(255,255,255,0.22)",
-            whiteSpace: "nowrap",
-          }}>
-            Sécurisé &amp; certifié
+        <div className="flex flex-nowrap items-center justify-center gap-3 sm:flex-wrap sm:gap-10">
+          <span
+            className="text-[10px] sm:text-[11px]"
+            style={{
+              fontWeight: 600,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              color: "rgba(255,255,255,0.22)",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {/* Court sur mobile pour laisser les 3 logos sur la même ligne */}
+            <span className="sm:hidden">Sécurisé</span>
+            <span className="hidden sm:inline">Sécurisé &amp; certifié</span>
           </span>
 
           <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.06)" }} className="hidden sm:block" />

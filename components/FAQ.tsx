@@ -78,7 +78,17 @@ function Item({ q, a, isOpen, onToggle }: { q: string; a: string; isOpen: boolea
 }
 
 export default function FAQ() {
-  const [open, setOpen] = useState<number | null>(0);
+  // Plusieurs questions peuvent rester ouvertes en même temps : ouvrir une
+  // question plus bas ne referme plus celle du haut (ce qui faisait "remonter"
+  // toute la page). La première est ouverte par défaut.
+  const [openSet, setOpenSet] = useState<Set<number>>(() => new Set([0]));
+  const toggle = (i: number) =>
+    setOpenSet((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
 
   return (
     <section className="py-24 relative">
@@ -123,8 +133,8 @@ export default function FAQ() {
               key={i}
               q={faq.q}
               a={faq.a}
-              isOpen={open === i}
-              onToggle={() => setOpen(open === i ? null : i)}
+              isOpen={openSet.has(i)}
+              onToggle={() => toggle(i)}
             />
           ))}
         </motion.div>
