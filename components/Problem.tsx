@@ -150,7 +150,7 @@ export default function Problem() {
           <motion.div
             ref={ref}
             className="text-shimmer font-extrabold leading-none mb-4"
-            style={{ fontSize: "clamp(96px, 18vw, 200px)", letterSpacing: "-0.05em" }}
+            style={{ fontSize: "clamp(72px, 16vw, 200px)", letterSpacing: "-0.05em" }}
             initial={{ opacity: 0, scale: 0.85 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}

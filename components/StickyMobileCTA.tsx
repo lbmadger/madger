@@ -42,8 +42,10 @@ export default function StickyMobileCTA() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 80, opacity: 0 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed bottom-0 left-0 right-0 z-50 md:hidden px-4 pt-10 pb-4 pointer-events-none"
+          className="fixed bottom-0 left-0 right-0 z-50 md:hidden px-4 pt-10 pointer-events-none"
           style={{
+            // Respecte la zone système (home indicator / encoche basse) sur iPhone & Android.
+            paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
             background:
               "linear-gradient(to top, #0A0A0A 0%, #0A0A0A 52%, rgba(10,10,10,0.82) 76%, transparent 100%)",
           }}
