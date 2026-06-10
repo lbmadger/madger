@@ -1,6 +1,5 @@
 import Navbar from "@/components/Navbar";
 import HeroScrollExperience from "@/components/HeroScrollExperience";
-import CoachTour from "@/components/CoachTour";
 import TrustBar from "@/components/TrustBar";
 import Problem from "@/components/Problem";
 import Athletes from "@/components/Athletes";
@@ -23,7 +22,6 @@ export default function Home() {
         <Navbar />
         <HeroScrollExperience />
         <div id="after-hero" />
-        <CoachTour />
         <TrustBar />
         <Problem />
         <Athletes />

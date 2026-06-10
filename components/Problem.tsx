@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView, animate } from "framer-motion";
 import SectionLabel from "@/components/ui/SectionLabel";
+import CoachAside from "@/components/ui/CoachAside";
 
 const PAINS = [
   { text: "Je passe plus de temps sur WhatsApp à caler des créneaux qu'à coacher" },
@@ -132,7 +133,8 @@ export default function Problem() {
   }, [inView]);
 
   return (
-    <section className="py-20 sm:py-28 relative">
+    <section className="py-20 sm:py-28 relative overflow-hidden">
+      <CoachAside line="Ça te parle ? 😅" src="/character/coach-point.png" side="right" inset={12} />
       <div className="max-w-6xl mx-auto px-5 sm:px-6">
 
         {/* Stat centrale */}

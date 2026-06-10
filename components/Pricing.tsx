@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import SectionLabel from "@/components/ui/SectionLabel";
 import MadgerLogo from "@/components/ui/MadgerLogo";
+import CoachAside from "@/components/ui/CoachAside";
 
 const freeFeatures = [
   "Lien public personnalisé",
@@ -46,11 +47,12 @@ export default function Pricing() {
   return (
     <section
       id="tarifs"
-      className="py-28 relative"
+      className="py-28 relative overflow-hidden"
       style={{
         background: "linear-gradient(180deg, transparent, rgba(255,255,255,0.01), transparent)",
       }}
     >
+      <CoachAside line="Et c'est gratuit pour commencer 👍" src="/character/coach-ok.png" side="right" inset={12} />
       <div className="max-w-6xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

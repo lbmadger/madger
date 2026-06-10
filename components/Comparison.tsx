@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import SectionLabel from "@/components/ui/SectionLabel";
+import CoachAside from "@/components/ui/CoachAside";
 
 const features = [
   { label: "Prise de rendez-vous en ligne",         madger: true,  calendly: true,  sans: false },
@@ -51,6 +52,7 @@ export default function Comparison() {
         className="absolute inset-0 pointer-events-none"
         style={{ background: "radial-gradient(ellipse 60% 40% at 50% 60%, rgba(203,255,3,0.03), transparent 70%)" }}
       />
+      <CoachAside line="Franchement, y a pas photo 👍" src="/character/coach-ok.png" side="left" inset={12} />
 
       <div className="max-w-4xl mx-auto px-6">
         <motion.div
