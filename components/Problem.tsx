@@ -289,6 +289,10 @@ export default function Problem() {
           ))}
         </div>
 
+        {/* Bande vide sous les citations : Léo (posé en bas de section) se
+            tient dans cet espace noir, sans chevaucher les citations. */}
+        <div aria-hidden className="h-40 sm:h-52" />
+
       </div>
     </section>
   );
