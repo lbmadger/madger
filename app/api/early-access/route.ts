@@ -1,10 +1,48 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Route dynamique : pas de mise en cache, le count doit être lu à chaque appel.
+export const dynamic = "force-dynamic";
+
+// Init paresseuse : ne crée le client qu'au premier appel pour ne pas planter
+// le build si les variables d'env ne sont pas présentes au moment de la
+// collecte des pages.
+let _supabase: ReturnType<typeof createClient> | null = null;
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+  }
+  return _supabase;
+}
+
+// Nombre de places "fondateur" (plan Pro offert 3 mois). Au-delà, les
+// inscriptions basculent automatiquement en liste d'attente. Réglable via
+// la variable d'env FOUNDER_CAP sans redéploiement de code.
+const FOUNDER_CAP = Number(process.env.FOUNDER_CAP ?? 50);
+
+// Compte réel des inscrits en base. En cas d'erreur Supabase, on renvoie 0
+// pour ne jamais bloquer une inscription.
+async function getSignupCount(): Promise<number> {
+  const { count, error } = await getSupabase()
+    .from("early_access")
+    .select("*", { count: "exact", head: true });
+  if (error || count == null) return 0;
+  return count;
+}
+
+// Lu par le formulaire au chargement pour afficher les places restantes /
+// l'état "complet". On n'expose pas le compte brut, seulement le restant.
+export async function GET() {
+  const count = await getSignupCount();
+  const remaining = Math.max(0, FOUNDER_CAP - count);
+  return NextResponse.json(
+    { cap: FOUNDER_CAP, remaining, full: count >= FOUNDER_CAP },
+    { headers: { "Cache-Control": "no-store" } }
+  );
+}
 
 async function sendEmail({
   to,
@@ -41,8 +79,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Champs manquants" }, { status: 400 });
     }
 
+    // Au-delà du cap fondateur, l'inscription bascule en liste d'attente.
+    // (basé sur l'ordre d'arrivée : pas besoin de colonne dédiée)
+    const waitlist = (await getSignupCount()) >= FOUNDER_CAP;
+
     // Sauvegarde en base Supabase (ne bloque pas si ça échoue)
-    await supabase.from("early_access").insert({
+    await getSupabase().from("early_access").insert({
       prenom, nom: nom || null, email, telephone,
       type_coaching, nb_clients, instagram_site: instagram_site || null, defi,
     });
@@ -50,7 +92,7 @@ export async function POST(req: NextRequest) {
     // Email de notification à toi (fondateur)
     await sendEmail({
       to: process.env.FOUNDER_EMAIL!,
-      subject: `🟢 Nouvelle inscription : ${prenom} ${nom}`,
+      subject: `🟢 Nouvelle inscription${waitlist ? " (liste d'attente)" : ""} : ${prenom} ${nom}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
           <h2 style="color: #CBFF03; background: #0A0A0A; padding: 16px; border-radius: 8px;">
@@ -69,10 +111,21 @@ export async function POST(req: NextRequest) {
       `,
     });
 
-    // 3. Email de confirmation au coach
+    // 3. Email de confirmation au coach (texte adapté fondateur / liste d'attente)
+    const greetingLabel = waitlist ? "Liste d'attente confirmée" : "Accès anticipé confirmé";
+    const heroTitle = waitlist
+      ? `${prenom}, tu es sur<br>la liste.`
+      : `${prenom}, tu fais partie<br>des premiers.`;
+    const badgeLabel = waitlist ? "Ta place sur la prochaine vague" : "Ton accès fondateur";
+    const badgeText = waitlist
+      ? `Les places fondateurs (plan Pro offert 3 mois) sont déjà toutes prises. Mais tu es <strong style="color:#ffffff;">prioritaire</strong> sur la prochaine vague d'ouverture. On te contacte dès qu'une place se libère.`
+      : `Plan Pro offert <strong style="color:#ffffff;">3 mois</strong> dès le lancement, réservé aux membres fondateurs. Tu fais partie des premiers coachs sélectionnés. On te contacte directement dès que ton accès est prêt.`;
+
     await sendEmail({
       to: email,
-      subject: `${prenom}, tu es dans les premiers. Voilà ce qui t'attend.`,
+      subject: waitlist
+        ? `${prenom}, tu es sur la liste d'attente Madger.`
+        : `${prenom}, tu es dans les premiers. Voilà ce qui t'attend.`,
       html: `<!DOCTYPE html>
 <html lang="fr">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
@@ -93,8 +146,8 @@ export async function POST(req: NextRequest) {
           <td style="background:#141414;border-radius:16px;border:1px solid rgba(255,255,255,0.08);padding:40px 40px 36px;mso-border-alt:none;">
 
             <!-- Greeting -->
-            <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#cbff03;letter-spacing:0.08em;text-transform:uppercase;">Accès anticipé confirmé</p>
-            <p style="margin:0 0 28px;font-size:26px;font-weight:800;color:#ffffff;line-height:1.2;letter-spacing:-0.5px;">${prenom}, tu fais partie<br>des premiers.</p>
+            <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#cbff03;letter-spacing:0.08em;text-transform:uppercase;">${greetingLabel}</p>
+            <p style="margin:0 0 28px;font-size:26px;font-weight:800;color:#ffffff;line-height:1.2;letter-spacing:-0.5px;">${heroTitle}</p>
 
             <p style="margin:0 0 20px;font-size:15px;color:#9a9a9a;line-height:1.8;">
               On a créé Madger parce qu'on a vu des coachs incroyables perdre des heures chaque semaine sur WhatsApp, Excel et des relances qui ne devraient pas exister.
@@ -170,9 +223,9 @@ export async function POST(req: NextRequest) {
             <!-- Exclusive badge -->
             <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(203,255,3,0.06);border:1px solid rgba(203,255,3,0.18);border-radius:12px;margin-bottom:32px;">
               <tr><td style="padding:20px 24px;">
-                <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#cbff03;letter-spacing:0.06em;text-transform:uppercase;">Ton accès fondateur</p>
+                <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#cbff03;letter-spacing:0.06em;text-transform:uppercase;">${badgeLabel}</p>
                 <p style="margin:0;font-size:14px;color:#9a9a9a;line-height:1.7;">
-                  Plan Pro offert <strong style="color:#ffffff;">3 mois</strong> dès le lancement, réservé aux membres fondateurs. Tu fais partie des premiers coachs sélectionnés. On te contacte directement dès que ton accès est prêt.
+                  ${badgeText}
                 </p>
               </td></tr>
             </table>
@@ -220,7 +273,7 @@ export async function POST(req: NextRequest) {
 </html>`,
     });
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, waitlist });
   } catch (err) {
     console.error("API error:", err);
     return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });

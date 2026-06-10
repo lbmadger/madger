@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 
@@ -38,6 +38,18 @@ export default function EarlyAccessForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState(1);
+
+  // Places fondateurs restantes (null tant qu'on n'a pas la réponse de l'API).
+  const [cap, setCap] = useState<{ remaining: number; full: boolean } | null>(null);
+  const [joinedWaitlist, setJoinedWaitlist] = useState(false);
+  const full = cap?.full ?? false;
+
+  useEffect(() => {
+    fetch("/api/early-access")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setCap({ remaining: d.remaining, full: d.full }))
+      .catch(() => {});
+  }, []);
 
   const [fields, setFields] = useState({
     prenom: "",
@@ -85,6 +97,8 @@ export default function EarlyAccessForm() {
         body: JSON.stringify(fields),
       });
       if (!res.ok) throw new Error("Erreur serveur");
+      const data = await res.json().catch(() => ({}));
+      setJoinedWaitlist(Boolean(data?.waitlist));
       setSubmitted(true);
     } catch {
       setError("Une erreur est survenue. Écris-nous à contact@madger.app");
@@ -137,13 +151,15 @@ export default function EarlyAccessForm() {
             className="font-extrabold text-white mb-3"
             style={{ fontSize: "clamp(28px, 4vw, 44px)", letterSpacing: "-0.03em", lineHeight: 1.1 }}
           >
-            Rejoignez les premiers coachs Madger.
+            {full ? "L'accès fondateur est complet." : "Rejoignez les premiers coachs Madger."}
           </h2>
           <p className="text-text-muted leading-relaxed mb-4" style={{ fontSize: 16 }}>
-            Les premiers membres accèdent au plan Pro offert 3 mois.
+            {full
+              ? "Les places fondateurs sont parties. Inscrivez-vous pour être prévenu en priorité de la prochaine vague."
+              : "Les premiers membres accèdent au plan Pro offert 3 mois."}
           </p>
 
-          {/* Value highlight */}
+          {/* Value highlight / état des places */}
           <div
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8"
             style={{ background: "rgba(203,255,3,0.07)", border: "1px solid rgba(203,255,3,0.18)" }}
@@ -152,7 +168,11 @@ export default function EarlyAccessForm() {
               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#CBFF03" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             <span style={{ fontSize: 12, color: "#CBFF03", fontWeight: 600 }}>
-              Plan Pro offert 3 mois · réservé aux membres fondateurs
+              {full
+                ? "Accès anticipé complet · liste d'attente ouverte"
+                : cap && cap.remaining > 0 && cap.remaining <= 25
+                ? `Plus que ${cap.remaining} place${cap.remaining > 1 ? "s" : ""} fondateur${cap.remaining > 1 ? "s" : ""}`
+                : "Plan Pro offert 3 mois · réservé aux membres fondateurs"}
             </span>
           </div>
 
@@ -210,10 +230,22 @@ export default function EarlyAccessForm() {
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" className="mx-auto mb-4">
                   <path d="M20 6L9 17L4 12" stroke="#CBFF03" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                <p className="font-bold text-white mb-2" style={{ fontSize: 18 }}>Demande reçue.</p>
+                <p className="font-bold text-white mb-2" style={{ fontSize: 18 }}>
+                  {joinedWaitlist ? "Vous êtes sur la liste." : "Demande reçue."}
+                </p>
                 <p style={{ color: "#8A8A8A", fontSize: 14, lineHeight: 1.7 }}>
-                  On vous contacte dès que Madger est disponible.<br />
-                  Gardez un oeil sur votre boite mail.
+                  {joinedWaitlist ? (
+                    <>
+                      Les places fondateurs sont parties, mais vous êtes prioritaire
+                      sur la prochaine vague.<br />
+                      On vous contacte dès qu'une place se libère.
+                    </>
+                  ) : (
+                    <>
+                      On vous contacte dès que Madger est disponible.<br />
+                      Gardez un oeil sur votre boite mail.
+                    </>
+                  )}
                 </p>
               </motion.div>
 
@@ -408,7 +440,11 @@ export default function EarlyAccessForm() {
                     whileHover={!loading ? { boxShadow: "0 0 30px rgba(203,255,3,0.35)" } : {}}
                     whileTap={!loading ? { scale: 0.98 } : {}}
                   >
-                    {loading ? "Envoi en cours…" : "Rejoindre l'accès prioritaire"}
+                    {loading
+                      ? "Envoi en cours…"
+                      : full
+                      ? "Rejoindre la liste d'attente"
+                      : "Rejoindre l'accès prioritaire"}
                   </motion.button>
                 </div>
               </motion.form>
