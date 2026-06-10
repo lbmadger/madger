@@ -191,7 +191,7 @@ export default function CoachTour() {
                     </span>
                     <div>
                       <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#CBFF03" }}>
-                        Coach Madger
+                        Léo · le coach des coachs
                       </span>
                       <p style={{ fontSize: 15, lineHeight: 1.35, color: "#fff", marginTop: 1, fontWeight: 600 }}>
                         {step.line}
