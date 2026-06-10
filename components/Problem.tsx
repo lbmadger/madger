@@ -134,7 +134,7 @@ export default function Problem() {
 
   return (
     <section className="py-20 sm:py-28 relative overflow-hidden">
-      <CoachAside line="Ça te parle ? 😅" src="/character/coach-point.png" side="right" inset={12} />
+      <CoachAside line="Ça te parle, non ? 😅" src="/character/coach-point.png" side="right" inset={12} />
       <div className="max-w-6xl mx-auto px-5 sm:px-6">
 
         {/* Stat centrale */}
