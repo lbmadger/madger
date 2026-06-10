@@ -52,7 +52,7 @@ export default function CoachAside({
           }}
         >
           <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#CBFF03", display: "block" }}>
-            Léo · le coach des coachs
+            Léo
           </span>
           <p style={{ fontSize: 12, lineHeight: 1.25, color: "#fff", marginTop: 1, fontWeight: 600 }}>
             {line}
