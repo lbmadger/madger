@@ -6,7 +6,7 @@ export default function Hero() {
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center px-5 sm:px-6 pt-24 lg:pt-32 pb-28 overflow-hidden text-center">
 
-      {/* Background radial — animated pulse */}
+      {/* Background radial - animated pulse */}
       <motion.div
         className="absolute inset-0 pointer-events-none"
         animate={{ opacity: [0.65, 1, 0.65] }}

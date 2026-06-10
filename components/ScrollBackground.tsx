@@ -27,7 +27,7 @@ export default function ScrollBackground() {
         overflow: "hidden",
       }}
     >
-      {/* Orbe principal — descend avec le scroll */}
+      {/* Orbe principal - descend avec le scroll */}
       <div
         style={{
           position: "absolute",
@@ -44,7 +44,7 @@ export default function ScrollBackground() {
           willChange: "top",
         }}
       />
-      {/* Orbe secondaire — remonte avec le scroll */}
+      {/* Orbe secondaire - remonte avec le scroll */}
       <div
         style={{
           position: "absolute",
@@ -61,7 +61,7 @@ export default function ScrollBackground() {
           willChange: "top",
         }}
       />
-      {/* Micro orbe accent — mid-page */}
+      {/* Micro orbe accent - mid-page */}
       <div
         style={{
           position: "absolute",

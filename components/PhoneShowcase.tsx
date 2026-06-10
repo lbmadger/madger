@@ -88,7 +88,7 @@ export default function PhoneShowcase() {
 
               <SectionLabel>Comment ça marche</SectionLabel>
 
-              {/* Phone — scaled down, simple entrance */}
+              {/* Phone - scaled down, simple entrance */}
               <div style={{ perspective: "1200px" }}>
                 <motion.div
                   initial={{ opacity: 0, y: 60, scale: 0.85, rotateX: 12 }}
@@ -193,7 +193,7 @@ export default function PhoneShowcase() {
                 </div>
               </div>
 
-              {/* Phone — full 3D on desktop */}
+              {/* Phone - full 3D on desktop */}
               <div className="flex justify-end" style={{ perspective: "1400px" }}>
                 <motion.div
                   initial={{ rotateY: -55, scale: 0.75, opacity: 0, y: 100 }}

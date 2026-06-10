@@ -3,11 +3,11 @@
 import { useState } from "react";
 
 /**
- * MadgerCharacter — mascotte 3D de la marque, en calque décoratif.
+ * MadgerCharacter - mascotte 3D de la marque, en calque décoratif.
  *
  * L'image source a un fond sombre (≈ #0A0A0A) : on l'utilise telle quelle et on
  * fond ses bords dans la page grâce à un masque radial. Posé sur un fond sombre
- * (le site), le raccord est invisible — pas besoin de détourage.
+ * (le site), le raccord est invisible - pas besoin de détourage.
  *
  * Le parent DOIT être `position: relative` (idéalement `overflow-hidden`).
  * Décoratif → masqué aux lecteurs d'écran, ne capte pas la souris.

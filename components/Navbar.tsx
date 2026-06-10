@@ -49,7 +49,7 @@ export default function Navbar() {
       {/* ── Barre principale ── */}
       <div className="max-w-6xl mx-auto px-5 sm:px-6 h-16 flex items-center justify-between">
 
-        {/* Logo — square icon */}
+        {/* Logo - square icon */}
         <a href="/" className="flex items-center flex-shrink-0" onClick={() => setOpen(false)}>
           <MadgerLogo size={46} />
         </a>

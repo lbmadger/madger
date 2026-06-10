@@ -135,7 +135,7 @@ export default function Problem() {
   return (
     <section className="py-20 sm:py-28 relative overflow-hidden">
       <CoachAside line="Ça te parle, non ? 😅" src="/character/coach-point.png" side="right" inset={12} />
-      <div className="max-w-6xl mx-auto px-5 sm:px-6">
+      <div className="max-w-6xl mx-auto px-5 sm:px-6 relative z-10">
 
         {/* Stat centrale */}
         <motion.div
@@ -187,7 +187,7 @@ export default function Problem() {
             Tu jongle entre tout ça en ce moment
           </p>
 
-          {/* Logos grid — grille 4 colonnes sur mobile (rangées équilibrées),
+          {/* Logos grid - grille 4 colonnes sur mobile (rangées équilibrées),
               flex centré sur desktop */}
           <div className="grid grid-cols-4 justify-items-center gap-x-3 gap-y-6 sm:flex sm:flex-wrap sm:justify-center sm:gap-6 mb-8">
             {TOOLS.map((tool, i) => (

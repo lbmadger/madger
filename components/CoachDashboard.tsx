@@ -350,7 +350,7 @@ export default function CoachDashboard() {
                             Voir les objectifs
                           </div>
                         </div>
-                        {/* Paid badge — centré verticalement */}
+                        {/* Paid badge - centré verticalement */}
                         <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
                           <div style={{ padding: "3px 7px", borderRadius: 20, background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.2)", display: "flex", alignItems: "center" }}>
                             <span style={{ fontSize: 7, color: "#4ADE80", fontWeight: 600, lineHeight: 1 }}>Payé</span>
@@ -556,7 +556,7 @@ export default function CoachDashboard() {
         </motion.div>
         </div>
 
-        {/* Feature pills below mockup — desktop only */}
+        {/* Feature pills below mockup - desktop only */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}

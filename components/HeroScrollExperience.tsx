@@ -406,7 +406,7 @@ export default function HeroScrollExperience() {
       </section>
 
       {/* ══════════════════════════════════════════════════════
-          SCROLL EXPERIENCE — 350vh mobile / 500vh desktop
+          SCROLL EXPERIENCE - 350vh mobile / 500vh desktop
       ══════════════════════════════════════════════════════ */}
       <section
         ref={sectionRef}

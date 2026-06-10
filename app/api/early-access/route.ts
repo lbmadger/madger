@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
               <tr><td style="padding:20px 24px;">
                 <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#cbff03;letter-spacing:0.06em;text-transform:uppercase;">Ton accès fondateur</p>
                 <p style="margin:0;font-size:14px;color:#9a9a9a;line-height:1.7;">
-                  Plan Pro offert <strong style="color:#ffffff;">3 mois</strong> dès le lancement (valeur 147€). Tu es parmi les 47 premiers coachs sélectionnés. On te contacte directement dès que ton accès est prêt.
+                  Plan Pro offert <strong style="color:#ffffff;">3 mois</strong> dès le lancement, réservé aux membres fondateurs. Tu fais partie des premiers coachs sélectionnés. On te contacte directement dès que ton accès est prêt.
                 </p>
               </td></tr>
             </table>

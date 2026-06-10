@@ -5,7 +5,7 @@ import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from
 import SectionLabel from "@/components/ui/SectionLabel";
 
 /**
- * CoachTour — visite guidée animée par la mascotte.
+ * CoachTour - visite guidée animée par la mascotte.
  *
  * Le coach présente les fonctionnalités une par une : il bouge (se penche,
  * pointe, zoome), une bulle change de réplique, et un aperçu d'UI s'affiche
@@ -20,11 +20,11 @@ const BASE_SRC = "/character/coach-cutout.png";
 
 // Poses dédiées par étape (détourées + normalisées). null = pose de base.
 const POSE_SRC: (string | null)[] = [
-  null,                          // 0 — page coach : pose neutre
-  "/character/coach-point.png",  // 1 — réservation : il pointe
-  "/character/coach-ok.png",     // 2 — paiement : pouce levé
-  "/character/coach-point.png",  // 3 — factures : il pointe
-  "/character/coach-ok.png",     // 4 — tableau de bord : pouce levé
+  null,                          // 0 - page coach : pose neutre
+  "/character/coach-point.png",  // 1 - réservation : il pointe
+  "/character/coach-ok.png",     // 2 - paiement : pouce levé
+  "/character/coach-point.png",  // 3 - factures : il pointe
+  "/character/coach-ok.png",     // 4 - tableau de bord : pouce levé
 ];
 
 interface Step {
@@ -219,7 +219,7 @@ export default function CoachTour() {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scaleX: 1.06, scaleY: 0.9 }}
             >
-              {/* Inclinaison vers le curseur — il "te regarde" (desktop) */}
+              {/* Inclinaison vers le curseur - il "te regarde" (desktop) */}
               <motion.div style={{ rotateX, rotateY, x: shiftX, transformPerspective: 800 }}>
                 {/* Léger déplacement selon l'étape (pas de rotation) */}
                 <motion.div

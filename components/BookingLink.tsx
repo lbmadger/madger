@@ -31,7 +31,7 @@ export default function BookingLink() {
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
-          {/* Left — text */}
+          {/* Left - text */}
           <motion.div
             initial={{ opacity: 0, x: -24 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -93,7 +93,7 @@ export default function BookingLink() {
             </div>
           </motion.div>
 
-          {/* Right — page mockup */}
+          {/* Right - page mockup */}
           <motion.div
             initial={{ opacity: 0, x: 24 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -101,7 +101,7 @@ export default function BookingLink() {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="flex flex-col items-center gap-6"
           >
-            {/* URL bar — interactive */}
+            {/* URL bar - interactive */}
             <motion.div
               className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl"
               style={{

@@ -53,7 +53,7 @@ export default function Comparison() {
       />
       <CoachAside line="Le choix est vite fait, non ? 👍" src="/character/coach-ok.png" side="left" inset={12} />
 
-      <div className="max-w-4xl mx-auto px-6">
+      <div className="max-w-4xl mx-auto px-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

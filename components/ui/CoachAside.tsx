@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 
 /**
- * CoachAside — Léo, la mascotte qui "commente" une section existante.
+ * CoachAside - Léo, la mascotte qui "commente" une section existante.
  *
  * Posé dans un coin de la section (qui doit être position:relative + overflow-hidden),
  * Léo surgit de derrière le bord, réagit avec une bulle et pointe vers le contenu.
@@ -37,7 +37,7 @@ export default function CoachAside({
       transition={{ type: "spring", stiffness: 90, damping: 15, opacity: { duration: 0.4 } }}
     >
       <div className="relative w-full">
-        {/* Bulle — ancrée vers l'intérieur pour rester à l'écran */}
+        {/* Bulle - ancrée vers l'intérieur pour rester à l'écran */}
         <div
           className="absolute rounded-xl px-2.5 py-1.5 lg:px-3 lg:py-2"
           style={{
