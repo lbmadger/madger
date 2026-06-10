@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 // Route dynamique : pas de mise en cache, le count doit être lu à chaque appel.
 export const dynamic = "force-dynamic";
@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 // Init paresseuse : ne crée le client qu'au premier appel pour ne pas planter
 // le build si les variables d'env ne sont pas présentes au moment de la
 // collecte des pages.
-let _supabase: ReturnType<typeof createClient> | null = null;
+let _supabase: SupabaseClient | null = null;
 function getSupabase() {
   if (!_supabase) {
     _supabase = createClient(
@@ -33,13 +33,13 @@ async function getSignupCount(): Promise<number> {
   return count;
 }
 
-// Lu par le formulaire au chargement pour afficher les places restantes /
-// l'état "complet". On n'expose pas le compte brut, seulement le restant.
+// Lu par le formulaire au chargement. On n'expose QUE l'état complet/pas
+// complet (booléen) : ni le compte, ni les places restantes, pour que
+// personne ne puisse suivre la progression des inscriptions.
 export async function GET() {
   const count = await getSignupCount();
-  const remaining = Math.max(0, FOUNDER_CAP - count);
   return NextResponse.json(
-    { cap: FOUNDER_CAP, remaining, full: count >= FOUNDER_CAP },
+    { full: count >= FOUNDER_CAP },
     { headers: { "Cache-Control": "no-store" } }
   );
 }

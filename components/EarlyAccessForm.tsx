@@ -39,15 +39,15 @@ export default function EarlyAccessForm() {
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState(1);
 
-  // Places fondateurs restantes (null tant qu'on n'a pas la réponse de l'API).
-  const [cap, setCap] = useState<{ remaining: number; full: boolean } | null>(null);
+  // On ne récupère QUE l'état complet/pas complet (aucun nombre exposé, pour
+  // que personne ne puisse suivre la progression des inscriptions).
+  const [full, setFull] = useState(false);
   const [joinedWaitlist, setJoinedWaitlist] = useState(false);
-  const full = cap?.full ?? false;
 
   useEffect(() => {
     fetch("/api/early-access")
       .then((r) => (r.ok ? r.json() : null))
-      .then((d) => d && setCap({ remaining: d.remaining, full: d.full }))
+      .then((d) => d && setFull(Boolean(d.full)))
       .catch(() => {});
   }, []);
 
@@ -170,9 +170,7 @@ export default function EarlyAccessForm() {
             <span style={{ fontSize: 12, color: "#CBFF03", fontWeight: 600 }}>
               {full
                 ? "Accès anticipé complet · liste d'attente ouverte"
-                : cap && cap.remaining > 0 && cap.remaining <= 25
-                ? `Plus que ${cap.remaining} place${cap.remaining > 1 ? "s" : ""} fondateur${cap.remaining > 1 ? "s" : ""}`
-                : "Plan Pro offert 3 mois · réservé aux membres fondateurs"}
+                : "Plan Pro offert 3 mois · places limitées"}
             </span>
           </div>
 
