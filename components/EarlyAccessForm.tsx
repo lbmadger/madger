@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import MadgerLogo from "@/components/ui/MadgerLogo";
+import { useEarlyAccessFull } from "@/components/ui/useEarlyAccessFull";
 
 const inputBase = {
   background: "rgba(255,255,255,0.03)",
@@ -39,17 +40,9 @@ export default function EarlyAccessForm() {
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState(1);
 
-  // On ne récupère QUE l'état complet/pas complet (aucun nombre exposé, pour
-  // que personne ne puisse suivre la progression des inscriptions).
-  const [full, setFull] = useState(false);
+  // État "complet" partagé avec le hero (aucun nombre exposé).
+  const full = useEarlyAccessFull();
   const [joinedWaitlist, setJoinedWaitlist] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/early-access")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => d && setFull(Boolean(d.full)))
-      .catch(() => {});
-  }, []);
 
   const [fields, setFields] = useState({
     prenom: "",

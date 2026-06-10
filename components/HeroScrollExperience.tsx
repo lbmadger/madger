@@ -6,6 +6,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import SectionLabel from "@/components/ui/SectionLabel";
 import MadgerLogo from "@/components/ui/MadgerLogo";
+import { useEarlyAccessFull } from "@/components/ui/useEarlyAccessFull";
 
 const STEPS = [
   {
@@ -31,6 +32,10 @@ const STEPS = [
 ];
 
 export default function HeroScrollExperience() {
+  // Accès anticipé complet → on bascule les CTA / badges du hero en liste d'attente.
+  const full = useEarlyAccessFull();
+  const ctaLabel = full ? "Rejoindre la liste d'attente" : "Rejoindre l'early access";
+
   // ── Scroll section refs ──────────────────────────────────────
   const sectionRef = useRef<HTMLElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
@@ -354,7 +359,7 @@ export default function HeroScrollExperience() {
               whileTap={{ scale: 0.97 }}
               transition={{ duration: 0.2 }}
             >
-              Rejoindre l'early access
+              {ctaLabel}
             </motion.a>
             <motion.a
               href="#fonctionnement"
@@ -377,7 +382,7 @@ export default function HeroScrollExperience() {
           >
             <span className="flex items-center gap-1.5"><Check />Sans engagement</span>
             <span className="hidden sm:flex items-center gap-1.5"><Check />Accès sélectionné manuellement</span>
-            <span className="flex items-center gap-1.5"><Check />Plan Pro offert 3 mois</span>
+            <span className="flex items-center gap-1.5"><Check />{full ? "Accès anticipé complet" : "Plan Pro offert 3 mois"}</span>
           </motion.div>
         </div>
 
@@ -482,7 +487,7 @@ export default function HeroScrollExperience() {
                       textDecoration: "none",
                     }}
                   >
-                    Rejoindre l'early access →
+                    {ctaLabel} →
                   </a>
                 </div>
               </div>
@@ -596,7 +601,7 @@ export default function HeroScrollExperience() {
                       textDecoration: "none",
                     }}
                   >
-                    Rejoindre l'early access →
+                    {ctaLabel} →
                   </a>
                 </div>
               </div>
