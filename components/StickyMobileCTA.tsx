@@ -6,30 +6,37 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function StickyMobileCTA() {
   const [pastHero, setPastHero] = useState(false);
   const [nearForm, setNearForm] = useState(false);
+  const [scrolling, setScrolling] = useState(false);
 
   useEffect(() => {
+    let idleTimer: ReturnType<typeof setTimeout>;
     const onScroll = () => {
       // Visible seulement quand le sentinel #after-hero est PASSÉ au-dessus du viewport
       const sentinel = document.getElementById("after-hero");
-      if (!sentinel) { setPastHero(false); return; }
-      setPastHero(sentinel.getBoundingClientRect().top <= 0);
+      setPastHero(sentinel ? sentinel.getBoundingClientRect().top <= 0 : false);
 
-      // Masqué quand le formulaire est visible
+      // Masqué quand le formulaire est visible (ou passé)
       const formEl = document.getElementById("early-access");
       if (formEl) {
-        const r = formEl.getBoundingClientRect();
-        // Hide once the form's top edge has entered or passed the viewport —
-        // covers both "form is visible" and "user has scrolled past the form"
-        setNearForm(r.top < window.innerHeight);
+        setNearForm(formEl.getBoundingClientRect().top < window.innerHeight);
       }
+
+      // Pendant le scroll : on s'efface pour ne jamais masquer le contenu.
+      // On réapparaît une fois la lecture posée (scroll arrêté).
+      setScrolling(true);
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => setScrolling(false), 650);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      clearTimeout(idleTimer);
+    };
   }, []);
 
   return (
     <AnimatePresence>
-      {pastHero && !nearForm && (
+      {pastHero && !nearForm && !scrolling && (
         <motion.div
           initial={{ y: 80, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
