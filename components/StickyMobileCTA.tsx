@@ -35,22 +35,23 @@ export default function StickyMobileCTA() {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 80, opacity: 0 }}
           transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed bottom-5 left-4 right-4 z-50 md:hidden"
+          className="fixed bottom-0 left-0 right-0 z-50 md:hidden px-4 pt-10 pb-4 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(to top, #0A0A0A 0%, #0A0A0A 52%, rgba(10,10,10,0.82) 76%, transparent 100%)",
+          }}
         >
           <a
             href="#early-access"
-            className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl font-bold text-sm text-black"
+            className="pointer-events-auto flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-bold text-sm text-black"
             style={{
               background: "#CBFF03",
-              boxShadow: "0 0 30px rgba(203,255,3,0.4), 0 8px 32px rgba(0,0,0,0.5)",
+              boxShadow: "0 6px 20px rgba(0,0,0,0.5), 0 0 18px rgba(203,255,3,0.22)",
             }}
           >
             <span>Réserver ma place</span>
             <span style={{ fontSize: 16 }}>→</span>
           </a>
-          <p className="text-center text-xs mt-2" style={{ color: "rgba(255,255,255,0.3)" }}>
-            Plan Pro offert 3 mois · Sans engagement
-          </p>
         </motion.div>
       )}
     </AnimatePresence>
