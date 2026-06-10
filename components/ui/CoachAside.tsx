@@ -56,7 +56,7 @@ export default function CoachAside({
         }}
       >
         <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#CBFF03" }}>
-          Max · ton coach
+          Léo · ton coach
         </span>
         <p style={{ fontSize: 13, lineHeight: 1.3, color: "#fff", marginTop: 1, fontWeight: 600 }}>
           {line}
