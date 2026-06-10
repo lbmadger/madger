@@ -411,13 +411,13 @@ export default function CoachDashboard() {
                     </div>
                     {/* Messages */}
                     <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "flex-start" }}>
-                      <div style={{ padding: "4px 8px", borderRadius: "8px 8px 8px 2px", background: "rgba(255,255,255,0.07)", maxWidth: "80%" }}>
-                        <span style={{ fontSize: 8, color: "#fff" }}>Est-ce que je peux décaler à 11h ?</span>
+                      <div style={{ padding: "5px 9px", borderRadius: "9px 9px 9px 2px", background: "rgba(255,255,255,0.07)", maxWidth: "86%" }}>
+                        <span style={{ display: "block", fontSize: 9, lineHeight: 1.35, color: "#fff" }}>Est-ce que je peux décaler à 11h ?</span>
                       </div>
                     </div>
                     <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "flex-end" }}>
-                      <div style={{ padding: "4px 8px", borderRadius: "8px 8px 2px 8px", background: "#CBFF03", maxWidth: "80%" }}>
-                        <span style={{ fontSize: 8, color: "#000", fontWeight: 500 }}>Oui pas de souci pour 11h 😊</span>
+                      <div style={{ padding: "5px 9px", borderRadius: "9px 9px 2px 9px", background: "#CBFF03", maxWidth: "86%" }}>
+                        <span style={{ display: "block", fontSize: 9, lineHeight: 1.35, color: "#000", fontWeight: 500 }}>Oui pas de souci pour 11h 😊</span>
                       </div>
                     </div>
                     {/* Input */}
