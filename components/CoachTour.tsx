@@ -131,18 +131,18 @@ export default function CoachTour() {
       ref={sectionRef}
       onMouseMove={handleMove}
       onMouseLeave={handleLeave}
-      className="relative overflow-hidden py-12 sm:py-28"
+      className="relative overflow-hidden py-8 sm:py-28"
       style={{ perspective: 1000 }}
     >
       <div className="relative max-w-6xl mx-auto px-5 sm:px-6">
         {/* En-tête */}
-        <div className="text-center mb-4 sm:mb-14">
+        <div className="text-center mb-3 sm:mb-14">
           <div className="flex justify-center mb-3">
             <SectionLabel>Visite guidée</SectionLabel>
           </div>
           <h2
             className="font-extrabold text-white"
-            style={{ fontSize: "clamp(19px, 4vw, 46px)", letterSpacing: "-0.03em", lineHeight: 1.05 }}
+            style={{ fontSize: "clamp(17px, 3.6vw, 46px)", letterSpacing: "-0.03em", lineHeight: 1.04 }}
           >
             Laisse le coach te montrer<br className="hidden sm:block" /> tout ce que Madger fait.
           </h2>
@@ -156,7 +156,7 @@ export default function CoachTour() {
             {/* Bulle */}
             <div
               className="relative w-full mb-1"
-              style={{ minHeight: 82 }}
+              style={{ minHeight: 64 }}
             >
               <AnimatePresence initial={false}>
                 <motion.div
@@ -215,7 +215,7 @@ export default function CoachTour() {
               type="button"
               onClick={() => go(i + 1)}
               aria-label="Étape suivante"
-              className="relative block w-[42vw] lg:w-[280px]"
+              className="relative block w-[34vw] lg:w-[280px]"
               whileHover={{ scale: 1.03 }}
               whileTap={{ scaleX: 1.06, scaleY: 0.9 }}
             >
@@ -298,8 +298,8 @@ export default function CoachTour() {
 
             {/* Indice d'interaction */}
             <motion.div
-              className="flex items-center gap-1.5 mt-2"
-              style={{ fontSize: 11, color: "#CBFF03", fontWeight: 600 }}
+              className="flex items-center gap-1.5 mt-1"
+              style={{ fontSize: 10, color: "#CBFF03", fontWeight: 600 }}
               animate={{ opacity: [0.45, 1, 0.45], y: [0, -2, 0] }}
               transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
             >
@@ -311,7 +311,7 @@ export default function CoachTour() {
           <div className="relative order-2">
             <div
               className="relative rounded-3xl overflow-hidden"
-              style={{ background: "linear-gradient(180deg, #131313, #0F0F0F)", border: "1px solid rgba(255,255,255,0.10)", minHeight: 300 }}
+              style={{ background: "linear-gradient(180deg, #131313, #0F0F0F)", border: "1px solid rgba(255,255,255,0.10)", minHeight: 240 }}
             >
               <AnimatePresence initial={false}>
                 <motion.div
@@ -347,7 +347,7 @@ export default function CoachTour() {
             </div>
 
             {/* Navigation */}
-            <div className="flex items-center justify-between mt-4">
+            <div className="flex items-center justify-between mt-3">
               <div className="flex items-center gap-1.5">
                 {STEPS.map((_, idx) => (
                   <button
@@ -385,7 +385,7 @@ export default function CoachTour() {
               </div>
             </div>
 
-            <div className="mt-4 text-center lg:text-left">
+            <div className="mt-3 text-center lg:text-left">
               <a
                 href="#early-access"
                 className="inline-flex font-bold text-sm px-7 py-3.5 rounded-full"
