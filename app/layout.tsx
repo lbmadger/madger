@@ -1,16 +1,14 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
+// Inter est auto-hébergée par next/font au build : aucune requête vers
+// Google Fonts au runtime (conforme RGPD), pas de @import bloquant.
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -33,6 +31,18 @@ export const metadata: Metadata = {
   },
 };
 
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Madger",
+  url: "https://madger.app",
+  logo: "https://madger.app/logo.png",
+  description:
+    "Réservations, paiements et facturation automatique en un seul lien, pour les coachs indépendants en France.",
+  email: "contact@madger.app",
+  founder: { "@type": "Person", name: "Léonard Bondeau" },
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -43,11 +53,14 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: `history.scrollRestoration = 'manual'; window.scrollTo(0, 0);` }} />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${inter.variable} antialiased`}>
         {children}
+        <Analytics />
       </body>
     </html>
   );

@@ -23,6 +23,51 @@ function getSupabase() {
 // la variable d'env FOUNDER_CAP sans redéploiement de code.
 const FOUNDER_CAP = Number(process.env.FOUNDER_CAP ?? 50);
 
+// Les champs saisis par l'utilisateur sont injectés dans le HTML des emails :
+// sans échappement, n'importe qui pourrait faire envoyer du HTML arbitraire
+// depuis contact@madger.app (phishing).
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+// Rate limiting en mémoire par IP. Sur Vercel chaque instance a sa propre
+// Map : ce n'est pas étanche à 100 %, mais ça bloque l'abus évident
+// (boucle de POST = spam Resend + pollution de la base) sans dépendance.
+const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 h
+const RATE_MAX = 5; // 5 inscriptions / h / IP
+const rateMap = new Map<string, { count: number; start: number }>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateMap.get(ip);
+  if (!entry || now - entry.start > RATE_WINDOW_MS) {
+    rateMap.set(ip, { count: 1, start: now });
+    return false;
+  }
+  entry.count += 1;
+  return entry.count > RATE_MAX;
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const PHONE_RE = /^\+?[0-9 .\-()]{6,20}$/;
+
+// Longueurs max par champ : évite de stocker / envoyer des payloads énormes.
+const MAX_LEN: Record<string, number> = {
+  prenom: 60,
+  nom: 80,
+  email: 254,
+  telephone: 25,
+  type_coaching: 100,
+  nb_clients: 40,
+  instagram_site: 200,
+  defi: 2000,
+};
+
 // Compte réel des inscrits en base. En cas d'erreur Supabase, on renvoie 0
 // pour ne jamais bloquer une inscription.
 async function getSignupCount(): Promise<number> {
@@ -71,41 +116,97 @@ async function sendEmail({
 
 export async function POST(req: NextRequest) {
   try {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+    if (isRateLimited(ip)) {
+      return NextResponse.json({ error: "Trop de tentatives. Réessayez plus tard." }, { status: 429 });
+    }
+
     const body = await req.json();
+
+    // Honeypot : champ invisible pour les humains. S'il est rempli, c'est un
+    // bot — on répond "succès" sans rien enregistrer ni envoyer.
+    if (typeof body.website === "string" && body.website.trim() !== "") {
+      return NextResponse.json({ success: true, waitlist: false });
+    }
+
     const { prenom, nom, email, telephone, type_coaching, nb_clients, instagram_site, defi } = body;
 
-    // Validation basique
+    // Validation serveur (le client valide aussi, mais l'API doit se suffire)
     if (!prenom || !email || !telephone || !type_coaching || !nb_clients || !defi) {
       return NextResponse.json({ error: "Champs manquants" }, { status: 400 });
     }
+    for (const [field, max] of Object.entries(MAX_LEN)) {
+      const value = body[field];
+      if (value != null && (typeof value !== "string" || value.length > max)) {
+        return NextResponse.json({ error: `Champ "${field}" invalide` }, { status: 400 });
+      }
+    }
+    if (!EMAIL_RE.test(email)) {
+      return NextResponse.json({ error: "Adresse email invalide" }, { status: 400 });
+    }
+    if (!PHONE_RE.test(telephone)) {
+      return NextResponse.json({ error: "Numéro de téléphone invalide" }, { status: 400 });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
 
     // Au-delà du cap fondateur, l'inscription bascule en liste d'attente.
     // (basé sur l'ordre d'arrivée : pas besoin de colonne dédiée)
     const waitlist = (await getSignupCount()) >= FOUNDER_CAP;
 
-    // Sauvegarde en base Supabase (ne bloque pas si ça échoue)
-    await getSupabase().from("early_access").insert({
-      prenom, nom: nom || null, email, telephone,
+    // Déduplication : si l'email est déjà inscrit, on répond "succès" sans
+    // ré-insérer ni renvoyer d'emails (idempotent, et le compteur du cap
+    // fondateur reste juste).
+    const { data: existing } = await getSupabase()
+      .from("early_access")
+      .select("id")
+      .eq("email", normalizedEmail)
+      .limit(1);
+    if (existing && existing.length > 0) {
+      return NextResponse.json({ success: true, waitlist });
+    }
+
+    // Sauvegarde en base Supabase. Si elle échoue, on s'arrête : envoyer
+    // "tu fais partie des premiers" à quelqu'un qui n'est pas enregistré
+    // serait pire qu'une erreur visible.
+    const { error: insertError } = await getSupabase().from("early_access").insert({
+      prenom, nom: nom || null, email: normalizedEmail, telephone,
       type_coaching, nb_clients, instagram_site: instagram_site || null, defi,
     });
+    if (insertError) {
+      console.error("Supabase insert error:", insertError);
+      return NextResponse.json({ error: "Erreur serveur" }, { status: 500 });
+    }
+
+    // Valeurs échappées pour toute interpolation dans du HTML d'email.
+    const safe = {
+      prenom: escapeHtml(prenom),
+      nom: escapeHtml(nom || ""),
+      email: escapeHtml(normalizedEmail),
+      telephone: escapeHtml(telephone),
+      type_coaching: escapeHtml(type_coaching),
+      nb_clients: escapeHtml(nb_clients),
+      instagram_site: escapeHtml(instagram_site || ""),
+      defi: escapeHtml(defi),
+    };
 
     // Email de notification à toi (fondateur)
     await sendEmail({
       to: process.env.FOUNDER_EMAIL!,
-      subject: `🟢 Nouvelle inscription${waitlist ? " (liste d'attente)" : ""} : ${prenom} ${nom}`,
+      subject: `🟢 Nouvelle inscription${waitlist ? " (liste d'attente)" : ""} : ${prenom} ${nom || ""}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
           <h2 style="color: #CBFF03; background: #0A0A0A; padding: 16px; border-radius: 8px;">
             Nouvelle inscription Early Access
           </h2>
           <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
-            <tr><td style="padding: 8px; color: #666; width: 40%;">Nom</td><td style="padding: 8px; font-weight: 600;">${prenom} ${nom}</td></tr>
-            <tr style="background: #f9f9f9;"><td style="padding: 8px; color: #666;">Email</td><td style="padding: 8px;"><a href="mailto:${email}">${email}</a></td></tr>
-            <tr><td style="padding: 8px; color: #666;">Téléphone</td><td style="padding: 8px;">${telephone}</td></tr>
-            <tr style="background: #f9f9f9;"><td style="padding: 8px; color: #666;">Type de coaching</td><td style="padding: 8px;">${type_coaching}</td></tr>
-            <tr><td style="padding: 8px; color: #666;">Nb clients</td><td style="padding: 8px;">${nb_clients}</td></tr>
-            <tr style="background: #f9f9f9;"><td style="padding: 8px; color: #666;">Instagram/Site</td><td style="padding: 8px;">${instagram_site || "-"}</td></tr>
-            <tr><td style="padding: 8px; color: #666; vertical-align: top;">Défi principal</td><td style="padding: 8px;">${defi}</td></tr>
+            <tr><td style="padding: 8px; color: #666; width: 40%;">Nom</td><td style="padding: 8px; font-weight: 600;">${safe.prenom} ${safe.nom}</td></tr>
+            <tr style="background: #f9f9f9;"><td style="padding: 8px; color: #666;">Email</td><td style="padding: 8px;"><a href="mailto:${safe.email}">${safe.email}</a></td></tr>
+            <tr><td style="padding: 8px; color: #666;">Téléphone</td><td style="padding: 8px;">${safe.telephone}</td></tr>
+            <tr style="background: #f9f9f9;"><td style="padding: 8px; color: #666;">Type de coaching</td><td style="padding: 8px;">${safe.type_coaching}</td></tr>
+            <tr><td style="padding: 8px; color: #666;">Nb clients</td><td style="padding: 8px;">${safe.nb_clients}</td></tr>
+            <tr style="background: #f9f9f9;"><td style="padding: 8px; color: #666;">Instagram/Site</td><td style="padding: 8px;">${safe.instagram_site || "-"}</td></tr>
+            <tr><td style="padding: 8px; color: #666; vertical-align: top;">Défi principal</td><td style="padding: 8px;">${safe.defi}</td></tr>
           </table>
         </div>
       `,
@@ -114,15 +215,15 @@ export async function POST(req: NextRequest) {
     // 3. Email de confirmation au coach (texte adapté fondateur / liste d'attente)
     const greetingLabel = waitlist ? "Liste d'attente confirmée" : "Accès anticipé confirmé";
     const heroTitle = waitlist
-      ? `${prenom}, tu es sur<br>la liste.`
-      : `${prenom}, tu fais partie<br>des premiers.`;
+      ? `${safe.prenom}, tu es sur<br>la liste.`
+      : `${safe.prenom}, tu fais partie<br>des premiers.`;
     const badgeLabel = waitlist ? "Ta place sur la prochaine vague" : "Ton accès fondateur";
     const badgeText = waitlist
       ? `Les places fondateurs (plan Pro offert 3 mois) sont déjà toutes prises. Mais tu es <strong style="color:#ffffff;">prioritaire</strong> sur la prochaine vague d'ouverture. On te contacte dès qu'une place se libère.`
       : `Plan Pro offert <strong style="color:#ffffff;">3 mois</strong> dès le lancement, réservé aux membres fondateurs. Tu fais partie des premiers coachs sélectionnés. On te contacte directement dès que ton accès est prêt.`;
 
     await sendEmail({
-      to: email,
+      to: normalizedEmail,
       subject: waitlist
         ? `${prenom}, tu es sur la liste d'attente Madger.`
         : `${prenom}, tu es dans les premiers. Voilà ce qui t'attend.`,

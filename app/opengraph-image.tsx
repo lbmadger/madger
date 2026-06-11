@@ -103,6 +103,7 @@ export default async function Image() {
             {/* Logo SVG réel */}
             <img
               src={logoSrc}
+              alt=""
               width={40}
               height={40}
               style={{ display: "block", borderRadius: 10 }}

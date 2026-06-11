@@ -75,6 +75,32 @@ export default function HeroScrollExperience() {
     const vh = window.innerHeight;
     const isMobile = window.innerWidth < 1024;
     if (stickyRef.current) stickyRef.current.style.height = `${vh}px`;
+
+    // prefers-reduced-motion : pas de timeline scroll-jacking de 350-500vh.
+    // On replie la section sur un seul écran statique : téléphone visible,
+    // message final + CTA, rien ne bouge.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      if (sectionRef.current) sectionRef.current.style.height = `${vh}px`;
+      const ctx = gsap.context(() => {
+        gsap.set(phoneWrapRef.current, { x: 0, y: 0, scale: isMobile ? 0.7 : 0.9, opacity: 1 });
+        gsap.set([screen1Ref.current, screen2Ref.current, screen3Ref.current], { opacity: 0 });
+        gsap.set(screen0Ref.current, { opacity: 1 });
+        // Les panneaux de texte sont empilés en absolu : un seul doit rester visible.
+        gsap.set([dHeroRef.current, dt0Ref.current, dt1Ref.current, dt2Ref.current, dt3Ref.current], { opacity: 0, pointerEvents: "none" });
+        gsap.set([mHeroRef.current, mt0Ref.current, mt1Ref.current, mt2Ref.current, mt3Ref.current], { opacity: 0, pointerEvents: "none" });
+        if (isMobile) {
+          gsap.set([dFinalRef.current, dCtaRef.current], { opacity: 0, pointerEvents: "none" });
+          gsap.set([mFinalRef.current, mCtaRef.current], { opacity: 1, y: 0 });
+          gsap.set(phoneWrapRef.current, { y: "-8vh", scale: 0.65 });
+        } else {
+          gsap.set([mFinalRef.current, mCtaRef.current], { opacity: 0, pointerEvents: "none" });
+          gsap.set([dFinalRef.current, dCtaRef.current], { opacity: 1, y: 0 });
+          gsap.set(phoneWrapRef.current, { x: "12vw" });
+        }
+      }, sectionRef);
+      return () => ctx.revert();
+    }
+
     if (sectionRef.current) sectionRef.current.style.height = `${vh * (isMobile ? 3.5 : 5)}px`;
 
     gsap.registerPlugin(ScrollTrigger);
@@ -302,7 +328,7 @@ export default function HeroScrollExperience() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <img src="/logo.png" alt="Madger" style={{ height: 120, width: "auto", objectFit: "contain", display: "block" }} />
+            <img src="/logo.png" alt="Madger" width={900} height={360} fetchPriority="high" style={{ height: 120, width: "auto", objectFit: "contain", display: "block" }} />
           </motion.div>
 
           {/* Badge */}
@@ -705,7 +731,7 @@ function ScreenProfile() {
           madger.app/<span style={{ color: "#CBFF03" }}>marie</span>
         </div>
         <div style={{ width: 56, height: 56, borderRadius: "50%", overflow: "hidden", marginBottom: 7, border: "2px solid rgba(203,255,3,0.35)", boxShadow: "0 0 18px rgba(203,255,3,0.18)" }}>
-          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=140&h=140&fit=crop&auto=format&q=85" alt="Marie" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=140&h=140&fit=crop&auto=format&q=85" alt="Marie" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
         </div>
         <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 2 }}>Marie Laurent</div>
         <div style={{ fontSize: 10, color: "#8A8A8A", marginBottom: 4 }}>Coach sportif · Paris 11e</div>
@@ -889,7 +915,7 @@ function ScreenDashboard() {
             <div style={{ position: "absolute", top: 4, right: 4, width: 5, height: 5, borderRadius: "50%", background: "#CBFF03", border: "1px solid #0A0A0A" }} />
           </div>
           <div style={{ width: 28, height: 28, borderRadius: "50%", overflow: "hidden", border: "1.5px solid rgba(255,255,255,0.15)" }}>
-            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&auto=format&q=80" alt="Léonard" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&auto=format&q=80" alt="Léonard" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
           </div>
         </div>
       </div>
@@ -918,7 +944,7 @@ function ScreenDashboard() {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
             <div style={{ width: 26, height: 26, borderRadius: "50%", overflow: "hidden", flexShrink: 0, border: "1.5px solid rgba(203,255,3,0.4)" }}>
-              <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&auto=format&q=80" alt="Marie" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&auto=format&q=80" alt="Marie" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 10, fontWeight: 600, color: "#fff" }}>Coaching individuel</div>
@@ -994,7 +1020,7 @@ function ScreenDashboard() {
         {/* Contacter le coach */}
         <div style={{ padding: "9px 10px", borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 26, height: 26, borderRadius: "50%", overflow: "hidden", flexShrink: 0 }}>
-            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&auto=format&q=80" alt="Marie" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&auto=format&q=80" alt="Marie" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 9, fontWeight: 600, color: "#fff" }}>Marie Laurent</div>

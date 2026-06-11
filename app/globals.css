@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -17,7 +15,7 @@ html {
 body {
   background-color: #0A0A0A;
   color: #FFFFFF;
-  font-family: 'Inter', -apple-system, sans-serif;
+  font-family: var(--font-inter), 'Inter', -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
   font-feature-settings: 'cv11', 'ss01';
@@ -118,4 +116,15 @@ a {
   transform: translateY(-3px);
   box-shadow: 0 0 0 1px rgba(203,255,3,0.15), 0 20px 60px rgba(0,0,0,0.5), 0 0 30px rgba(203,255,3,0.06);
   border-color: rgba(203,255,3,0.2) !important;
+}
+
+/* ── Reduced motion ─────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .text-shimmer,
+  .glow-dot {
+    animation: none;
+  }
 }

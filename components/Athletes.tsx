@@ -87,6 +87,8 @@ export default function Athletes() {
               <img
                 src={card.photo}
                 alt={card.title}
+                loading="lazy"
+                decoding="async"
                 className="absolute inset-0 w-full h-full object-cover"
                 style={{
                   filter: "grayscale(1) contrast(1.25) brightness(1.05)",

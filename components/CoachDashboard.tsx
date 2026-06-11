@@ -53,7 +53,7 @@ function RevenueChart() {
 function Avatar({ src, size = 28 }: { src: string; size?: number }) {
   return (
     <div style={{ width: size, height: size, borderRadius: "50%", overflow: "hidden", flexShrink: 0 }}>
-      <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+      <img src={src} alt="" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
     </div>
   );
 }
@@ -490,7 +490,7 @@ export default function CoachDashboard() {
                       <div style={{ display: "flex", gap: -4 }}>
                         {clients.map((c, i) => (
                           <div key={i} style={{ width: 22, height: 22, borderRadius: "50%", overflow: "hidden", border: "1.5px solid #0D0D0D", marginLeft: i > 0 ? -6 : 0 }}>
-                            <img src={`https://images.unsplash.com/${c.photo}?w=60&h=60&fit=crop&auto=format&q=80`} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} alt="" />
+                            <img src={`https://images.unsplash.com/${c.photo}?w=60&h=60&fit=crop&auto=format&q=80`} loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} alt="" />
                           </div>
                         ))}
                         <div style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(255,255,255,0.06)", border: "1.5px solid #0D0D0D", marginLeft: -6, display: "flex", alignItems: "center", justifyContent: "center" }}>

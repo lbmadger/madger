@@ -59,30 +59,6 @@ export default function Testimonials() {
           transition={{ duration: 0.7 }}
           className="text-center flex flex-col items-center mb-12"
         >
-          {/* Aggregate rating bar */}
-          <div style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 10,
-            padding: "10px 20px",
-            borderRadius: 100,
-            background: "rgba(203,255,3,0.06)",
-            border: "1px solid rgba(203,255,3,0.14)",
-            marginBottom: 28,
-          }}>
-            <div style={{ display: "flex", gap: 3 }}>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <svg key={i} width="13" height="13" viewBox="0 0 14 14" fill="#CBFF03">
-                  <path d="M7 1l1.5 4H13l-3.5 2.5 1.3 4.2L7 9.3l-3.8 2.4L4.5 7.5 1 5h4.5z" />
-                </svg>
-              ))}
-            </div>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#CBFF03", letterSpacing: "-0.01em" }}>4.9</span>
-            <span style={{ width: 1, height: 12, background: "rgba(203,255,3,0.2)" }} />
-            <span className="hidden sm:inline" style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", letterSpacing: "-0.01em" }}>47 coachs en accès anticipé</span>
-            <span className="sm:hidden" style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", letterSpacing: "-0.01em" }}>47 avis</span>
-          </div>
-
           <h2
             className="font-extrabold text-white mb-3"
             style={{ fontSize: "clamp(28px, 4vw, 48px)", letterSpacing: "-0.035em", lineHeight: 1.06 }}
@@ -148,11 +124,11 @@ export default function Testimonials() {
                   overflow: "hidden",
                   boxShadow: "0 0 0 2px rgba(0,0,0,0.4), 0 0 0 3px rgba(203,255,3,0.2)",
                 }}>
-                  <img src={t.photo} alt={t.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                  <img src={t.photo} alt={t.name} loading="lazy" decoding="async" width={38} height={38} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                 </div>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", letterSpacing: "-0.01em" }}>{t.name}</div>
-                  <div style={{ fontSize: 12, color: "#4A4A4A", marginTop: 1 }}>{t.role}</div>
+                  <div style={{ fontSize: 12, color: "#8A8A8A", marginTop: 1 }}>{t.role}</div>
                 </div>
               </div>
             </motion.div>

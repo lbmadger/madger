@@ -53,6 +53,8 @@ export default function EarlyAccessForm() {
     telephone: "",
     instagram_site: "",
     defi: "",
+    // Honeypot anti-spam : invisible pour les humains, les bots le remplissent.
+    website: "",
   });
 
   function set(k: keyof typeof fields) {
@@ -79,6 +81,10 @@ export default function EarlyAccessForm() {
     e.preventDefault();
     if (!fields.nb_clients || !fields.telephone.trim() || !fields.defi.trim()) {
       setError("Merci de renseigner tous les champs obligatoires.");
+      return;
+    }
+    if (!/^\+?[0-9 .\-()]{6,20}$/.test(fields.telephone.trim())) {
+      setError("Merci de saisir un numéro de téléphone valide.");
       return;
     }
     setLoading(true);
@@ -320,7 +326,7 @@ export default function EarlyAccessForm() {
                   </select>
                 </label>
 
-                {error && <p className="text-sm text-red-400 text-center">{error}</p>}
+                {error && <p role="alert" className="text-sm text-red-400 text-center">{error}</p>}
 
                 <motion.button
                   type="button"
@@ -345,6 +351,17 @@ export default function EarlyAccessForm() {
                 transition={{ duration: 0.2 }}
                 className="flex flex-col gap-3 text-left"
               >
+                {/* Honeypot : hors écran, ignoré par les lecteurs d'écran et le focus clavier */}
+                <input
+                  type="text"
+                  name="website"
+                  value={fields.website}
+                  onChange={set("website")}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }}
+                />
                 <label className="flex flex-col gap-1.5">
                   <Label>Nombre de clients actifs<Required /></Label>
                   <select
@@ -412,7 +429,7 @@ export default function EarlyAccessForm() {
                   />
                 </label>
 
-                {error && <p className="text-sm text-red-400 text-center">{error}</p>}
+                {error && <p role="alert" className="text-sm text-red-400 text-center">{error}</p>}
 
                 <div className="flex gap-3 mt-2">
                   <button

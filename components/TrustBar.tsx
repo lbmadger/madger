@@ -61,7 +61,7 @@ export default function TrustBar() {
               fontWeight: 600,
               letterSpacing: "0.08em",
               textTransform: "uppercase",
-              color: "rgba(255,255,255,0.22)",
+              color: "rgba(255,255,255,0.5)",
               whiteSpace: "nowrap",
             }}
           >
@@ -76,12 +76,12 @@ export default function TrustBar() {
             <div
               key={name}
               className="flex flex-col items-center gap-1.5 cursor-default"
-              style={{ color: "rgba(255,255,255,0.32)", transition: "color 0.2s" }}
+              style={{ color: "rgba(255,255,255,0.55)", transition: "color 0.2s" }}
               onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.65)"}
-              onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.32)"}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)"}
             >
               <div style={{ height: 20, display: "flex", alignItems: "center" }}>{logo}</div>
-              <span style={{ fontSize: 9, fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(255,255,255,0.18)" }}>
+              <span style={{ fontSize: 9, fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)" }}>
                 {label}
               </span>
             </div>

@@ -4,8 +4,13 @@ import { useEffect, useState } from "react";
 
 export default function ScrollBackground() {
   const [p, setP] = useState(0);
+  const [enabled, setEnabled] = useState(true);
 
   useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setEnabled(false);
+      return;
+    }
     const fn = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
       setP(max > 0 ? window.scrollY / max : 0);
@@ -14,6 +19,15 @@ export default function ScrollBackground() {
     window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
   }, []);
+
+  // `transform` plutôt que `top` : animé sur le compositeur, pas de reflow à
+  // chaque frame de scroll. Déplacement exprimé en vh (le conteneur fixed
+  // fait 100vh de haut, équivalent aux anciens % de `top`).
+  const orb = (translate: number): React.CSSProperties => ({
+    transform: `translateY(${enabled ? translate : 0}vh)`,
+    transition: "transform 0.9s cubic-bezier(0.25,0.46,0.45,0.94)",
+    willChange: "transform",
+  });
 
   return (
     <div
@@ -38,10 +52,9 @@ export default function ScrollBackground() {
           borderRadius: "50%",
           background: "radial-gradient(circle, rgba(203,255,3,0.13) 0%, transparent 62%)",
           left: "-18%",
-          top: `${-15 + p * 60}%`,
+          top: "-15%",
           filter: "blur(72px)",
-          transition: "top 0.9s cubic-bezier(0.25,0.46,0.45,0.94)",
-          willChange: "top",
+          ...orb(p * 60),
         }}
       />
       {/* Orbe secondaire - remonte avec le scroll */}
@@ -55,10 +68,9 @@ export default function ScrollBackground() {
           borderRadius: "50%",
           background: "radial-gradient(circle, rgba(203,255,3,0.08) 0%, transparent 62%)",
           right: "-12%",
-          top: `${65 - p * 55}%`,
+          top: "65%",
           filter: "blur(96px)",
-          transition: "top 0.9s cubic-bezier(0.25,0.46,0.45,0.94)",
-          willChange: "top",
+          ...orb(p * -55),
         }}
       />
       {/* Micro orbe accent - mid-page */}
@@ -72,10 +84,9 @@ export default function ScrollBackground() {
           borderRadius: "50%",
           background: "radial-gradient(circle, rgba(203,255,3,0.06) 0%, transparent 62%)",
           left: "35%",
-          top: `${20 + p * 40}%`,
+          top: "20%",
           filter: "blur(60px)",
-          transition: "top 0.9s cubic-bezier(0.25,0.46,0.45,0.94)",
-          willChange: "top",
+          ...orb(p * 40),
         }}
       />
     </div>

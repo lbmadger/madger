@@ -41,13 +41,28 @@ export default function PolitiqueConfidentialite() {
           <section>
             <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>Données collectées et finalité</h2>
             <p>
-              Les données collectées via le formulaire d'accès anticipé (prénom, nom, email, téléphone, type de coaching)
-              sont utilisées uniquement pour vous recontacter dans le cadre de l'accès à Madger.
+              Les données collectées via le formulaire d'accès anticipé (prénom, nom, email, téléphone,
+              type de coaching, nombre de clients actifs, lien Instagram ou site - optionnel - et votre
+              réponse libre sur ce que vous souhaitez automatiser) sont utilisées uniquement pour vous
+              recontacter dans le cadre de l'accès à Madger.
               Elles ne sont jamais revendues ni partagées à des fins commerciales.
             </p>
             <p className="mt-3">
               Base légale : consentement (article 6.1.a du RGPD).
             </p>
+          </section>
+
+          <section>
+            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>Sous-traitants</h2>
+            <p>
+              Pour fournir ce service, nous faisons appel aux sous-traitants suivants, qui traitent
+              vos données pour notre compte :
+            </p>
+            <ul className="mt-3 flex flex-col gap-2" style={{ paddingLeft: 20, listStyleType: "disc" }}>
+              <li><strong className="text-white">Vercel</strong> (États-Unis) : hébergement du site et mesure d'audience sans cookies</li>
+              <li><strong className="text-white">Supabase</strong> : stockage des données du formulaire (base hébergée dans l'Union européenne)</li>
+              <li><strong className="text-white">Resend</strong> : envoi des emails de confirmation</li>
+            </ul>
           </section>
 
           <section>
