@@ -327,8 +327,8 @@ export default function HeroScrollExperience() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
-            De la demande client<br />
-            à la <span className="text-shimmer">facture encaissée.</span>
+            L'app <span className="text-shimmer">tout-en-un</span><br />
+            des coachs indépendants.
           </motion.h1>
 
           {/* Subtitle */}
@@ -339,9 +339,9 @@ export default function HeroScrollExperience() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.22 }}
           >
-            Un seul lien partagé. Vos clients réservent, paient et reçoivent leur facture.{" "}
+            Réservation, paiement et facture réunis dans un seul lien à partager.{" "}
             <br className="hidden sm:block" />
-            Vous, vous coachez.
+            Vous coachez, Madger gère l'administratif.
           </motion.p>
 
           {/* CTAs */}
