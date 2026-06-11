@@ -5,21 +5,22 @@ import SectionLabel from "@/components/ui/SectionLabel";
 import CoachAside from "@/components/ui/CoachAside";
 
 const features = [
-  { label: "Prise de rendez-vous en ligne",         madger: true,  calendly: true,  sans: false },
-  { label: "Paiement intégré à la réservation",     madger: true,  calendly: false, sans: false },
-  { label: "Facturation automatique conforme",       madger: true,  calendly: false, sans: false },
-  { label: "Facturation au format Factur-X",          madger: true,  calendly: false, sans: false },
-  { label: "Conservation des données et factures",    madger: true,  calendly: false, sans: false },
-  { label: "Rappels automatiques clients",           madger: true,  calendly: true,  sans: false },
-  { label: "Gestion annulations & remboursements",  madger: true,  calendly: false, sans: false },
-  { label: "Dashboard revenus & statistiques",       madger: true,  calendly: false, sans: false },
-  { label: "Messagerie intégrée",                    madger: true,  calendly: false, sans: false },
+  { label: "Prise de rendez-vous en ligne",         madger: true,  calendly: true,  whatsapp: false, excel: false },
+  { label: "Paiement intégré à la réservation",     madger: true,  calendly: false, whatsapp: false, excel: false },
+  { label: "Facturation automatique conforme",       madger: true,  calendly: false, whatsapp: false, excel: false },
+  { label: "Facturation au format Factur-X",          madger: true,  calendly: false, whatsapp: false, excel: false },
+  { label: "Conservation des données et factures",    madger: true,  calendly: false, whatsapp: false, excel: false },
+  { label: "Rappels automatiques clients",           madger: true,  calendly: true,  whatsapp: false, excel: false },
+  { label: "Gestion annulations & remboursements",  madger: true,  calendly: false, whatsapp: false, excel: false },
+  { label: "Dashboard revenus & statistiques",       madger: true,  calendly: false, whatsapp: false, excel: false },
+  { label: "Messagerie intégrée",                    madger: true,  calendly: false, whatsapp: true,  excel: false },
 ];
 
 const cols = [
-  { key: "madger",   label: "Madger",     highlight: true  },
-  { key: "calendly", label: "Calendly",   highlight: false },
-  { key: "sans",     label: "Sans outil", highlight: false },
+  { key: "madger",   label: "Madger",   highlight: true  },
+  { key: "calendly", label: "Calendly", highlight: false },
+  { key: "whatsapp", label: "WhatsApp", highlight: false },
+  { key: "excel",    label: "Excel",    highlight: false },
 ] as const;
 
 function Check({ ok }: { ok: boolean }) {
@@ -90,7 +91,7 @@ export default function Comparison() {
         >
           <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(203,255,3,0.1)", background: "rgba(203,255,3,0.04)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: "#CBFF03" }}>Madger fait tout ça</span>
-            <span style={{ fontSize: 11, color: "#5A5A5A" }}>vs Calendly / sans outil</span>
+            <span style={{ fontSize: 11, color: "#5A5A5A" }}>vs Calendly, WhatsApp, Excel</span>
           </div>
           {features.map((f, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 18px", borderBottom: i < features.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none", background: i % 2 === 0 ? "rgba(255,255,255,0.01)" : "transparent" }}>
@@ -118,12 +119,12 @@ export default function Comparison() {
           className="hidden md:block"
           style={{ overflowX: "auto" }}
         >
-          <div style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(255,255,255,0.07)", minWidth: 520 }}>
+          <div style={{ borderRadius: 20, overflow: "hidden", border: "1px solid rgba(255,255,255,0.07)", minWidth: 640 }}>
             {/* Header */}
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr repeat(3, 120px)",
+                gridTemplateColumns: "1.5fr repeat(4, 1fr)",
                 background: "#141414",
                 borderBottom: "1px solid rgba(255,255,255,0.06)",
                 padding: "0 20px",
@@ -169,7 +170,7 @@ export default function Comparison() {
                 transition={{ duration: 0.4, delay: i * 0.04 }}
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr repeat(3, 120px)",
+                  gridTemplateColumns: "1.5fr repeat(4, 1fr)",
                   background: i % 2 === 0 ? "rgba(255,255,255,0.012)" : "transparent",
                   borderBottom: "1px solid rgba(255,255,255,0.04)",
                   padding: "0 20px",
@@ -199,7 +200,7 @@ export default function Comparison() {
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr repeat(3, 120px)",
+                gridTemplateColumns: "1.5fr repeat(4, 1fr)",
                 background: "#141414",
                 borderTop: "1px solid rgba(255,255,255,0.06)",
                 padding: "16px 20px",
@@ -237,6 +238,9 @@ export default function Comparison() {
             </div>
           </div>
         </motion.div>
+
+        {/* Bande vide : Léo se tient dans le noir sous le tableau, sans le chevaucher */}
+        <div aria-hidden className="h-40 sm:h-52" />
       </div>
     </section>
   );

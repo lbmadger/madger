@@ -130,11 +130,11 @@ export default function Pricing() {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto pt-6" style={{ overflow: "visible" }}>
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 max-w-3xl mx-auto pt-6" style={{ overflow: "visible" }}>
 
           {/* ── Free ── */}
           <motion.div
-            className="spotlight-card card-hover-glow p-10 rounded-3xl"
+            className="spotlight-card card-hover-glow p-5 sm:p-10 rounded-2xl sm:rounded-3xl"
             style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.07)" }}
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -150,7 +150,7 @@ export default function Pricing() {
                 </div>
               </div>
               <div style={{ minHeight: 110 }}>
-                <div className="font-extrabold text-white mb-1" style={{ fontSize: "clamp(38px, 10vw, 52px)", letterSpacing: "-0.04em", lineHeight: 1 }}>
+                <div className="font-extrabold text-white mb-1" style={{ fontSize: "clamp(24px, 6.5vw, 52px)", letterSpacing: "-0.04em", lineHeight: 1 }}>
                   0 €
                 </div>
                 <div className="text-text-muted text-sm pt-1">
@@ -159,17 +159,18 @@ export default function Pricing() {
               </div>
               <a
                 href="#early-access"
-                className="block w-full text-center text-white text-sm font-semibold py-3 rounded-full mb-7 transition-all duration-200"
+                className="block w-full text-center text-white text-xs sm:text-sm font-semibold py-2.5 sm:py-3 rounded-full mb-5 sm:mb-7 transition-all duration-200"
                 style={{ border: "1px solid rgba(255,255,255,0.12)" }}
                 onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.25)")}
                 onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)")}
               >
-                Rejoindre l'accès anticipé →
+                <span className="sm:hidden">Rejoindre →</span>
+                <span className="hidden sm:inline">Rejoindre l'accès anticipé →</span>
               </a>
-              <div className="my-7" style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
-              <ul className="flex flex-col gap-3">
+              <div className="my-5 sm:my-7" style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
+              <ul className="flex flex-col gap-2 sm:gap-3">
                 {freeFeatures.map((f, i) => (
-                  <li key={i} className="flex items-center gap-2.5 text-sm text-white">
+                  <li key={i} className="flex items-center gap-2 text-xs sm:text-sm text-white">
                     <Check />{f}
                   </li>
                 ))}
@@ -178,7 +179,7 @@ export default function Pricing() {
           </motion.div>
 
           {/* ── Pro ── wrapper pour badge flottant */}
-          <div className="relative mt-8 md:mt-0" style={{ overflow: "visible" }}>
+          <div className="relative" style={{ overflow: "visible" }}>
 
             {/* Badge flottant - positionné par rapport au wrapper, pas la carte */}
             <AnimatePresence>
@@ -189,7 +190,7 @@ export default function Pricing() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.85 }}
                   transition={{ duration: 0.22 }}
-                  className="absolute -top-3 right-0 px-4 py-1.5 rounded-full text-black font-bold text-xs uppercase tracking-wider whitespace-nowrap"
+                  className="absolute -top-3 right-0 px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-black font-bold text-[10px] sm:text-xs uppercase tracking-wider whitespace-nowrap"
                   style={{ background: "#CBFF03", letterSpacing: "0.07em", zIndex: 20 }}
                 >
                   Recommandé ⭐
@@ -201,7 +202,7 @@ export default function Pricing() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.85 }}
                   transition={{ duration: 0.22 }}
-                  className="absolute -top-3 right-0 px-4 py-1.5 rounded-full text-black font-bold text-xs uppercase tracking-wider whitespace-nowrap"
+                  className="absolute -top-3 right-0 px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-black font-bold text-[10px] sm:text-xs uppercase tracking-wider whitespace-nowrap"
                   style={{ background: "#CBFF03", letterSpacing: "0.07em", zIndex: 20 }}
                 >
                   0 % commission
@@ -226,7 +227,7 @@ export default function Pricing() {
             onMouseLeave={e => (e.currentTarget.style.boxShadow = "0 0 60px rgba(203,255,3,0.06)")}
           >
 
-            <div className="p-10 relative" style={{ zIndex: 2 }}>
+            <div className="p-5 sm:p-10 relative" style={{ zIndex: 2 }}>
               {/* Logo + label */}
               <div className="flex items-center gap-2.5 mb-3">
                 <MadgerLogo size={28} />
@@ -247,10 +248,10 @@ export default function Pricing() {
                     transition={{ duration: 0.22 }}
                   >
                     <div className="flex items-end gap-2 mb-1">
-                      <span className="font-extrabold text-white" style={{ fontSize: "clamp(38px, 10vw, 52px)", letterSpacing: "-0.04em", lineHeight: 1 }}>
+                      <span className="font-extrabold text-white" style={{ fontSize: "clamp(24px, 6.5vw, 52px)", letterSpacing: "-0.04em", lineHeight: 1 }}>
                         {annualMonthly} €
                       </span>
-                      <span className="text-text-muted text-lg mb-1">/ mois</span>
+                      <span className="text-text-muted text-sm sm:text-lg mb-0.5 sm:mb-1">/ mois</span>
                     </div>
                     <div className="flex items-center gap-2 mb-1">
                       <span
@@ -279,10 +280,10 @@ export default function Pricing() {
                     transition={{ duration: 0.22 }}
                   >
                     <div className="flex flex-wrap items-end gap-x-2 gap-y-1 mb-2">
-                      <span className="font-extrabold text-white" style={{ fontSize: "clamp(38px, 10vw, 52px)", letterSpacing: "-0.04em", lineHeight: 1 }}>
+                      <span className="font-extrabold text-white" style={{ fontSize: "clamp(24px, 6.5vw, 52px)", letterSpacing: "-0.04em", lineHeight: 1 }}>
                         {monthlyPrice} €
                       </span>
-                      <span className="text-text-muted text-lg mb-1">/ mois</span>
+                      <span className="text-text-muted text-sm sm:text-lg mb-0.5 sm:mb-1">/ mois</span>
                     </div>
                     <div className="text-text-muted text-sm">
                       Aucune commission sur vos ventes
@@ -294,18 +295,19 @@ export default function Pricing() {
 
               <motion.a
                 href="#early-access"
-                className="block w-full text-center text-black text-sm font-semibold py-3 rounded-full mb-7"
+                className="block w-full text-center text-black text-xs sm:text-sm font-semibold py-2.5 sm:py-3 rounded-full mb-5 sm:mb-7"
                 style={{ background: "#CBFF03" }}
                 whileHover={{ boxShadow: "0 0 30px rgba(203,255,3,0.5), 0 0 60px rgba(203,255,3,0.2)" }}
                 transition={{ duration: 0.2 }}
               >
-                Rejoindre l'accès anticipé →
+                <span className="sm:hidden">Rejoindre →</span>
+                <span className="hidden sm:inline">Rejoindre l'accès anticipé →</span>
               </motion.a>
 
-              <div className="my-7" style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
-              <ul className="flex flex-col gap-3">
+              <div className="my-5 sm:my-7" style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
+              <ul className="flex flex-col gap-2 sm:gap-3">
                 {proFeatures.map((f, i) => (
-                  <li key={i} className="flex items-center gap-2.5 text-sm text-white">
+                  <li key={i} className="flex items-center gap-2 text-xs sm:text-sm text-white">
                     <Check />{f}
                   </li>
                 ))}
@@ -314,6 +316,9 @@ export default function Pricing() {
           </motion.div>
           </div>
         </div>
+
+        {/* Bande vide : Léo se tient dans le noir sous les cartes, sans les chevaucher */}
+        <div aria-hidden className="h-40 sm:h-52" />
       </div>
     </section>
   );
