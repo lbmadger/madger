@@ -28,14 +28,18 @@ export default function CoachAside({
   const innerAnchor = side === "right" ? { right: 0 } : { left: 0 };
 
   return (
-    <motion.div
-      aria-hidden="true"
-      className="absolute pointer-events-none select-none z-0 w-[84px] lg:w-[150px]"
-      style={{ [side]: inset, bottom: -14 }}
-      initial={{ y: 60, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ type: "spring", stiffness: 90, damping: 15, opacity: { duration: 0.4 } }}
-    >
+    // Rail centré aligné sur la largeur du contenu (max-w-6xl) : sur grand
+    // écran, Léo reste près des cartes au lieu de se coller au bord du
+    // viewport. Hauteur nulle : ne change rien au flux de la section.
+    <div aria-hidden="true" className="absolute inset-x-0 bottom-0 pointer-events-none z-0">
+      <div className="relative max-w-6xl mx-auto" style={{ height: 0 }}>
+        <motion.div
+          className="absolute pointer-events-none select-none w-[84px] lg:w-[150px]"
+          style={{ [side]: inset, bottom: -14 }}
+          initial={{ y: 60, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 90, damping: 15, opacity: { duration: 0.4 } }}
+        >
       <div className="relative w-full">
         {/* Bulle - ancrée vers l'intérieur pour rester à l'écran */}
         <div
@@ -100,8 +104,10 @@ export default function CoachAside({
               filter: "drop-shadow(0 12px 22px rgba(0,0,0,0.5))",
             }}
           />
+          </motion.div>
+          </div>
         </motion.div>
       </div>
-    </motion.div>
+    </div>
   );
 }
