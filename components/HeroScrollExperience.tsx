@@ -2,8 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import SectionLabel from "@/components/ui/SectionLabel";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 import { useEarlyAccessFull } from "@/components/ui/useEarlyAccessFull";
@@ -71,202 +69,177 @@ export default function HeroScrollExperience() {
   const mDot3Ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Lock heights in px on mount so layout never shifts when Instagram/browser chrome appears
+    // Hauteurs verrouillées en px au mount : le layout ne bouge pas quand le
+    // chrome du navigateur mobile (barre Instagram/TikTok) apparaît.
     const vh = window.innerHeight;
     const isMobile = window.innerWidth < 1024;
     if (stickyRef.current) stickyRef.current.style.height = `${vh}px`;
-    if (sectionRef.current) sectionRef.current.style.height = `${vh * (isMobile ? 3.5 : 5)}px`;
 
-    gsap.registerPlugin(ScrollTrigger);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const section = sectionRef.current;
+    const phone = phoneWrapRef.current;
+    if (!section || !phone) return;
 
-    // Ignore mobile browser UI resize events (Instagram/TikTok bottom bar appearing)
-    ScrollTrigger.config({ ignoreMobileResize: true });
+    // prefers-reduced-motion : pas de scroll-jacking de 350-500vh, la section
+    // se replie sur un seul écran statique (téléphone + message final + CTA).
+    section.style.height = reduced ? `${vh}px` : `${vh * (isMobile ? 3.5 : 5)}px`;
 
-    const ctx = gsap.context(() => {
-      const mm = gsap.matchMedia();
+    const dTexts = [dHeroRef, dt0Ref, dt1Ref, dt2Ref, dt3Ref, dFinalRef].map((r) => r.current);
+    const mTexts = [mt0Ref, mt1Ref, mt2Ref, mt3Ref, mFinalRef].map((r) => r.current);
+    const screens = [screen0Ref, screen1Ref, screen2Ref, screen3Ref].map((r) => r.current);
+    const dots = [mDot0Ref, mDot1Ref, mDot2Ref, mDot3Ref].map((r) => r.current);
+    const dCta = dCtaRef.current;
+    const mCta = mCtaRef.current;
 
-      // ── DESKTOP (≥ 1024 px) ─────────────────────────────────
-      mm.add("(min-width: 1024px)", () => {
-        // Phone starts off-screen bottom-right (relative to the centered anchor)
-        gsap.set(phoneWrapRef.current, {
-          x: "28vw",
-          y: "38vh",
-          scale: 0.65,
-          rotateY: -14,
-          rotateZ: 3.5,
-          opacity: 0,
-          transformPerspective: 1400,
-        });
+    // Les bascules texte/écran/dots se font par franchissement de seuil :
+    // on pose une transition CSS une fois, le navigateur fait le fondu.
+    for (const el of [...dTexts, ...mTexts]) {
+      if (el) el.style.transition = "opacity 0.45s ease, transform 0.45s ease";
+    }
+    for (const el of screens) {
+      if (el) el.style.transition = "opacity 0.5s ease";
+    }
+    for (const el of dots) {
+      if (el) el.style.transition = "width 0.25s ease, background-color 0.25s ease";
+    }
+    if (dCta) dCta.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+    if (mCta) mCta.style.transition = "opacity 0.4s ease";
+    // Jamais affiché pendant l'expérience (l'intro vit au-dessus, dans le hero)
+    if (mHeroRef.current) mHeroRef.current.style.opacity = "0";
 
-        // Screens: only 0 visible at start
-        gsap.set([screen1Ref.current, screen2Ref.current, screen3Ref.current], { opacity: 0 });
-        gsap.set(screen0Ref.current, { opacity: 1 });
+    const show = (el: HTMLElement | null, y = 0) => {
+      if (!el) return;
+      el.style.opacity = "1";
+      el.style.transform = `translateY(${y}px)`;
+      el.style.pointerEvents = "";
+    };
+    const hide = (el: HTMLElement | null, y = 0) => {
+      if (!el) return;
+      el.style.opacity = "0";
+      el.style.transform = `translateY(${y}px)`;
+      el.style.pointerEvents = "none";
+    };
 
-        // Desktop texts: all invisible except hero intro
-        gsap.set([dt0Ref.current, dt1Ref.current, dt2Ref.current, dt3Ref.current, dFinalRef.current], {
-          opacity: 0, y: 22,
-        });
-        gsap.set(dCtaRef.current, { opacity: 0, y: 16 });
-        gsap.set(dHeroRef.current, { opacity: 1, y: 0 });
+    // Interpolation linéaire par morceaux sur des keyframes [position, valeur].
+    const piecewise = (stops: [number, number][]) => (t: number) => {
+      if (t <= stops[0][0]) return stops[0][1];
+      for (let i = 1; i < stops.length; i++) {
+        if (t <= stops[i][0]) {
+          const [t0, v0] = stops[i - 1];
+          const [t1, v1] = stops[i];
+          return v0 + ((t - t0) / (t1 - t0)) * (v1 - v0);
+        }
+      }
+      return stops[stops.length - 1][1];
+    };
 
-        // Mobile panel: invisible on desktop
-        gsap.set([mHeroRef.current, mt0Ref.current, mt1Ref.current, mt2Ref.current, mt3Ref.current, mFinalRef.current, mCtaRef.current], {
-          opacity: 0,
-          pointerEvents: "none",
-        });
-
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top top",
-            end: "bottom bottom",
-            scrub: 0.6,
-          },
-        });
-
-        // 0 → 3: phone glides in from bottom-right to right-of-center
-        tl.addLabel("intro", 0)
-          .to(phoneWrapRef.current, {
-            x: "12vw", y: "0vh",
-            scale: 1, rotateY: 0, rotateZ: 0, opacity: 1,
-            duration: 3, ease: "power2.out",
-          }, "intro")
-          .to(dHeroRef.current, { opacity: 0, y: -20, duration: 1.2 }, "intro+=1.8");
-
-        // 3 → 7: screen 0 (Profile) - step text appears
-        tl.addLabel("phase0", 3)
-          .to(dt0Ref.current, { opacity: 1, y: 0, duration: 1.2 }, "phase0");
-
-        // 7 → 11.5: switch to screen 1 (Séance)
-        tl.addLabel("phase1", 7)
-          .to(dt0Ref.current, { opacity: 0, y: -18, duration: 0.8 }, "phase1")
-          .to(screen0Ref.current, { opacity: 0, duration: 1.2 }, "phase1")
-          .to(screen1Ref.current, { opacity: 1, duration: 1.2 }, "phase1+=0.4")
-          .to(dt1Ref.current, { opacity: 1, y: 0, duration: 1.2 }, "phase1+=0.6")
-          .to(phoneWrapRef.current, { x: "10vw", duration: 2.5, ease: "power1.inOut" }, "phase1");
-
-        // 11.5 → 16: switch to screen 2 (Paiement)
-        tl.addLabel("phase2", 11.5)
-          .to(dt1Ref.current, { opacity: 0, y: -18, duration: 0.8 }, "phase2")
-          .to(screen1Ref.current, { opacity: 0, duration: 1.2 }, "phase2")
-          .to(screen2Ref.current, { opacity: 1, duration: 1.2 }, "phase2+=0.4")
-          .to(dt2Ref.current, { opacity: 1, y: 0, duration: 1.2 }, "phase2+=0.6")
-          .to(phoneWrapRef.current, { x: "14vw", duration: 2.5, ease: "power1.inOut" }, "phase2");
-
-        // 16 → 19.5: switch to screen 3 (Dashboard)
-        tl.addLabel("phase3", 16)
-          .to(dt2Ref.current, { opacity: 0, y: -18, duration: 0.8 }, "phase3")
-          .to(screen2Ref.current, { opacity: 0, duration: 1.2 }, "phase3")
-          .to(screen3Ref.current, { opacity: 1, duration: 1.2 }, "phase3+=0.4")
-          .to(dt3Ref.current, { opacity: 1, y: 0, duration: 1.2 }, "phase3+=0.6")
-          .to(phoneWrapRef.current, { x: "11vw", duration: 2.5, ease: "power1.inOut" }, "phase3");
-
-        // 19.5 → 22: final - phone moves to center + final text
-        tl.addLabel("final", 19.5)
-          .to(dt3Ref.current, { opacity: 0, y: -18, duration: 0.8 }, "final")
-          .to(phoneWrapRef.current, {
-            x: "0vw", y: "6vh",
-            scale: 0.88, rotateZ: -0.5,
-            duration: 2.2, ease: "power2.inOut",
-          }, "final")
-          .to(dFinalRef.current, { opacity: 1, y: 0, duration: 1.5 }, "final+=0.5")
-          .to(dCtaRef.current, { opacity: 1, y: 0, duration: 1 }, "final+=1.2");
-
-        return () => {};
-      });
-
-      // ── MOBILE (< 1024 px) ──────────────────────────────────
-      mm.add("(max-width: 1023px)", () => {
-
-        // Haptique légère au passage d'un écran à l'autre
-        const haptic = () => {
-          if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-            navigator.vibrate(12);
-          }
+    // Chorégraphie du téléphone en "unités timeline" (mêmes repères que
+    // l'ancienne timeline : desktop 0-22, mobile 0-15.5).
+    const TOTAL = isMobile ? 15.5 : 22;
+    const phoneTracks = isMobile
+      ? {
+          x: piecewise([[0, 0]]),
+          y: piecewise([[0, 0], [14, 0], [15.2, -8]]),
+          scale: piecewise([[0, 0.82], [14, 0.82], [15.2, 0.65]]),
+          rotY: piecewise([[0, 0]]),
+          rotZ: piecewise([[0, 0]]),
+          opacity: piecewise([[0, 1]]),
+        }
+      : {
+          x: piecewise([[0, 28], [3, 12], [7, 12], [9.5, 10], [11.5, 10], [14, 14], [16, 14], [18.5, 11], [19.5, 11], [21.7, 0]]),
+          y: piecewise([[0, 38], [3, 0], [19.5, 0], [21.7, 6]]),
+          scale: piecewise([[0, 0.65], [3, 1], [19.5, 1], [21.7, 0.88]]),
+          rotY: piecewise([[0, -14], [3, 0]]),
+          rotZ: piecewise([[0, 3.5], [3, 0], [19.5, 0], [21.7, -0.5]]),
+          opacity: piecewise([[0, 0], [2, 1]]),
         };
 
-        // Téléphone en position finale dès le départ, pas de settle
-        gsap.set(phoneWrapRef.current, {
-          x: 0, y: "0vh", scale: 0.82, opacity: 1,
-          rotateX: 0, rotateY: 0, rotateZ: 0,
-          transformPerspective: 800,
-        });
+    const applyPhone = (t: number) => {
+      phone.style.opacity = String(phoneTracks.opacity(t));
+      phone.style.transform =
+        `translate3d(${phoneTracks.x(t)}vw, ${phoneTracks.y(t)}vh, 0) ` +
+        `scale(${phoneTracks.scale(t)}) rotateY(${phoneTracks.rotY(t)}deg) rotateZ(${phoneTracks.rotZ(t)}deg)`;
+    };
 
-        gsap.set([screen1Ref.current, screen2Ref.current, screen3Ref.current], { opacity: 0 });
-        gsap.set(screen0Ref.current, { opacity: 1 });
+    // Phases : desktop = intro, étapes 01-04, final ; mobile = étapes 01-04, final.
+    const thresholds = isMobile ? [3, 7, 11, 14] : [3, 7, 11.5, 16, 19.5];
+    const phaseCount = thresholds.length + 1;
+    const screenForPhase = isMobile ? [0, 1, 2, 3, 3] : [0, 0, 1, 2, 3, 3];
 
-        // Step 0 visible immédiatement, introSlate et mHero cachés
-        gsap.set(mt0Ref.current, { opacity: 1, y: 0 });
-        gsap.set([mt1Ref.current, mt2Ref.current, mt3Ref.current, mFinalRef.current], { opacity: 0, y: 12 });
-        gsap.set(mCtaRef.current, { opacity: 0 });
-        gsap.set(mHeroRef.current, { opacity: 0 });
+    let currentPhase = -1;
+    const setPhase = (phase: number) => {
+      if (phase === currentPhase) return;
+      const prev = currentPhase;
+      currentPhase = phase;
 
-        // Dots: dot 0 actif (lime), les autres gris
-        const dotRefs = [mDot0Ref, mDot1Ref, mDot2Ref, mDot3Ref];
-        dotRefs.forEach((ref, i) => {
-          gsap.set(ref.current, { backgroundColor: i === 0 ? "#CBFF03" : "rgba(255,255,255,0.15)", width: i === 0 ? 20 : 6 });
-        });
-
-        // Desktop panel: invisible on mobile
-        gsap.set([dHeroRef.current, dt0Ref.current, dt1Ref.current, dt2Ref.current, dt3Ref.current, dFinalRef.current, dCtaRef.current], {
-          opacity: 0,
-          pointerEvents: "none",
-        });
-
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top top",
-            end: "bottom bottom",
-            scrub: 0.4,
-          },
-        });
-
-        const dotActive = { backgroundColor: "#CBFF03", width: 20, duration: 0.3 };
-        const dotInactive = { backgroundColor: "rgba(255,255,255,0.15)", width: 6, duration: 0.3 };
-
-        // → écran 1
-        tl.addLabel("p1", 3)
-          .call(haptic, [], "p1+=0.3")
-          .to(mt0Ref.current, { opacity: 0, duration: 0.5 }, "p1")
-          .to(screen0Ref.current, { opacity: 0, duration: 0.8 }, "p1")
-          .to(screen1Ref.current, { opacity: 1, duration: 0.8 }, "p1+=0.2")
-          .to(mt1Ref.current, { opacity: 1, y: 0, duration: 0.7 }, "p1+=0.3")
-          .to(mDot0Ref.current, dotInactive, "p1")
-          .to(mDot1Ref.current, dotActive, "p1");
-
-        // → écran 2
-        tl.addLabel("p2", 7)
-          .call(haptic, [], "p2+=0.3")
-          .to(mt1Ref.current, { opacity: 0, duration: 0.5 }, "p2")
-          .to(screen1Ref.current, { opacity: 0, duration: 0.8 }, "p2")
-          .to(screen2Ref.current, { opacity: 1, duration: 0.8 }, "p2+=0.2")
-          .to(mt2Ref.current, { opacity: 1, y: 0, duration: 0.7 }, "p2+=0.3")
-          .to(mDot1Ref.current, dotInactive, "p2")
-          .to(mDot2Ref.current, dotActive, "p2");
-
-        // → écran 3
-        tl.addLabel("p3", 11)
-          .call(haptic, [], "p3+=0.3")
-          .to(mt2Ref.current, { opacity: 0, duration: 0.5 }, "p3")
-          .to(screen2Ref.current, { opacity: 0, duration: 0.8 }, "p3")
-          .to(screen3Ref.current, { opacity: 1, duration: 0.8 }, "p3+=0.2")
-          .to(mt3Ref.current, { opacity: 1, y: 0, duration: 0.7 }, "p3+=0.3")
-          .to(mDot2Ref.current, dotInactive, "p3")
-          .to(mDot3Ref.current, dotActive, "p3");
-
-        // Final
-        tl.addLabel("fm", 14)
-          .to(mt3Ref.current, { opacity: 0, duration: 0.5 }, "fm")
-          .to(phoneWrapRef.current, { y: "-8vh", scale: 0.65, duration: 1.2 }, "fm")
-          .to(mFinalRef.current, { opacity: 1, y: 0, duration: 1.0 }, "fm+=0.4")
-          .to(mCtaRef.current, { opacity: 1, duration: 0.7 }, "fm+=0.8");
-
-        return () => {};
+      screens.forEach((el, i) => {
+        if (el) el.style.opacity = screenForPhase[phase] === i ? "1" : "0";
       });
-    }, sectionRef);
 
-    return () => ctx.revert();
+      if (isMobile) {
+        mTexts.forEach((el, i) => (i === phase ? show(el) : hide(el, i > phase ? 12 : 0)));
+        if (phase === phaseCount - 1) show(mCta); else hide(mCta);
+        const active = Math.min(phase, 3);
+        dots.forEach((el, i) => {
+          if (!el) return;
+          el.style.width = `${i === active ? 20 : 6}px`;
+          el.style.backgroundColor = i === active ? "#CBFF03" : "rgba(255,255,255,0.15)";
+        });
+        // Haptique légère au changement d'écran (pas au chargement initial)
+        if (prev !== -1 && !reduced && "vibrate" in navigator) navigator.vibrate(12);
+      } else {
+        dTexts.forEach((el, i) => (i === phase ? show(el) : hide(el, i > phase ? 22 : -18)));
+        if (phase === phaseCount - 1) show(dCta); else hide(dCta, 16);
+      }
+    };
+
+    const phaseFor = (t: number) => {
+      let phase = 0;
+      for (const th of thresholds) if (t >= th) phase++;
+      return phase;
+    };
+
+    if (reduced) {
+      applyPhone(TOTAL);
+      setPhase(phaseCount - 1);
+      return;
+    }
+
+    // Progression cible lue au scroll, progression affichée lissée en rAF
+    // (équivalent du scrub : le téléphone "rattrape" le scroll en ~0,25 s).
+    let target = 0;
+    let displayed = 0;
+    let raf = 0;
+    let lastTime = performance.now();
+
+    const readScroll = () => {
+      const rect = section.getBoundingClientRect();
+      const span = section.offsetHeight - vh;
+      target = Math.min(1, Math.max(0, span > 0 ? -rect.top / span : 0)) * TOTAL;
+      setPhase(phaseFor(target));
+    };
+
+    const tick = (now: number) => {
+      const dt = Math.min(0.1, (now - lastTime) / 1000);
+      lastTime = now;
+      if (Math.abs(target - displayed) > 0.0005) {
+        displayed += (target - displayed) * Math.min(1, dt / 0.25);
+        if (Math.abs(target - displayed) < 0.0005) displayed = target;
+        applyPhone(displayed);
+      }
+      raf = requestAnimationFrame(tick);
+    };
+
+    readScroll();
+    displayed = target;
+    applyPhone(displayed);
+    window.addEventListener("scroll", readScroll, { passive: true });
+    raf = requestAnimationFrame(tick);
+
+    return () => {
+      window.removeEventListener("scroll", readScroll);
+      cancelAnimationFrame(raf);
+    };
   }, []);
 
   return (
@@ -302,7 +275,7 @@ export default function HeroScrollExperience() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <img src="/logo.png" alt="Madger" style={{ height: 120, width: "auto", objectFit: "contain", display: "block" }} />
+            <img src="/logo.png" alt="Madger" width={900} height={360} fetchPriority="high" style={{ height: 120, width: "auto", objectFit: "contain", display: "block" }} />
           </motion.div>
 
           {/* Badge */}
@@ -705,7 +678,7 @@ function ScreenProfile() {
           madger.app/<span style={{ color: "#CBFF03" }}>marie</span>
         </div>
         <div style={{ width: 56, height: 56, borderRadius: "50%", overflow: "hidden", marginBottom: 7, border: "2px solid rgba(203,255,3,0.35)", boxShadow: "0 0 18px rgba(203,255,3,0.18)" }}>
-          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=140&h=140&fit=crop&auto=format&q=85" alt="Marie" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=140&h=140&fit=crop&auto=format&q=85" alt="Marie" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
         </div>
         <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 2 }}>Marie Laurent</div>
         <div style={{ fontSize: 10, color: "#8A8A8A", marginBottom: 4 }}>Coach sportif · Paris 11e</div>
@@ -889,7 +862,7 @@ function ScreenDashboard() {
             <div style={{ position: "absolute", top: 4, right: 4, width: 5, height: 5, borderRadius: "50%", background: "#CBFF03", border: "1px solid #0A0A0A" }} />
           </div>
           <div style={{ width: 28, height: 28, borderRadius: "50%", overflow: "hidden", border: "1.5px solid rgba(255,255,255,0.15)" }}>
-            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&auto=format&q=80" alt="Léonard" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&auto=format&q=80" alt="Léonard" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
           </div>
         </div>
       </div>
@@ -918,7 +891,7 @@ function ScreenDashboard() {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
             <div style={{ width: 26, height: 26, borderRadius: "50%", overflow: "hidden", flexShrink: 0, border: "1.5px solid rgba(203,255,3,0.4)" }}>
-              <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&auto=format&q=80" alt="Marie" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&auto=format&q=80" alt="Marie" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 10, fontWeight: 600, color: "#fff" }}>Coaching individuel</div>
@@ -994,7 +967,7 @@ function ScreenDashboard() {
         {/* Contacter le coach */}
         <div style={{ padding: "9px 10px", borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 26, height: 26, borderRadius: "50%", overflow: "hidden", flexShrink: 0 }}>
-            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&auto=format&q=80" alt="Marie" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&auto=format&q=80" alt="Marie" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 9, fontWeight: 600, color: "#fff" }}>Marie Laurent</div>

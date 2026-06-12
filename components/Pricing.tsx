@@ -52,7 +52,7 @@ export default function Pricing() {
         background: "linear-gradient(180deg, transparent, rgba(255,255,255,0.01), transparent)",
       }}
     >
-      <CoachAside line="Et tu commences gratuitement 👍" src="/character/coach-ok.png" side="right" inset={12} />
+      <CoachAside line="Et tu commences gratuitement 👍" src="/character/coach-ok.webp" side="right" inset={12} />
       <div className="max-w-6xl mx-auto px-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -89,8 +89,9 @@ export default function Pricing() {
           >
             <button
               onClick={() => setAnnual(false)}
+              aria-pressed={!annual}
               className="relative px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300"
-              style={{ color: annual ? "#5A5A5A" : "#fff" }}
+              style={{ color: annual ? "#8A8A8A" : "#fff" }}
             >
               {!annual && (
                 <motion.div
@@ -104,8 +105,9 @@ export default function Pricing() {
             </button>
             <button
               onClick={() => setAnnual(true)}
+              aria-pressed={annual}
               className="relative px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2"
-              style={{ color: annual ? "#000" : "#5A5A5A" }}
+              style={{ color: annual ? "#000" : "#8A8A8A" }}
             >
               {annual && (
                 <motion.div

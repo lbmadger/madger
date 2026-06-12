@@ -134,7 +134,7 @@ export default function Problem() {
 
   return (
     <section className="py-20 sm:py-28 relative overflow-hidden">
-      <CoachAside line="Ça te parle, non ? 😅" src="/character/coach-point.png" side="right" inset={12} />
+      <CoachAside line="Ça te parle, non ? 😅" src="/character/coach-point.webp" side="right" inset={12} />
       <div className="max-w-6xl mx-auto px-5 sm:px-6 relative z-10">
 
         {/* Stat centrale */}
@@ -159,12 +159,12 @@ export default function Problem() {
             +{count}h
           </motion.div>
 
-          <div
+          <h2
             className="font-bold text-white mb-4"
             style={{ fontSize: "clamp(18px, 2.5vw, 28px)", letterSpacing: "-0.02em" }}
           >
             perdues en tâches administratives, en moyenne chaque semaine
-          </div>
+          </h2>
           <p className="text-text-muted max-w-xl mx-auto" style={{ fontSize: 16, lineHeight: 1.65 }}>
             C'est ce que nous disent les coachs qu'on a rencontrés.
             Vous êtes coach, pas secrétaire.
@@ -182,7 +182,7 @@ export default function Problem() {
           {/* Header */}
           <p
             className="text-center font-semibold mb-8"
-            style={{ fontSize: 13, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.3)" }}
+            style={{ fontSize: 13, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)" }}
           >
             Tu jongle entre tout ça en ce moment
           </p>
@@ -216,7 +216,7 @@ export default function Problem() {
                 >
                   {tool.icon}
                 </div>
-                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.28)", fontWeight: 500 }}>
+                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>
                   {tool.name}
                 </span>
               </motion.div>
@@ -232,7 +232,7 @@ export default function Problem() {
             transition={{ duration: 0.5, delay: 0.4 }}
           >
             <div style={{ height: 1, width: 48, background: "rgba(255,255,255,0.1)" }} />
-            <span style={{ fontSize: 13, color: "rgba(255,255,255,0.22)", letterSpacing: "0.1em" }}>
+            <span style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", letterSpacing: "0.1em" }}>
               remplacé par
             </span>
             <div style={{ height: 1, width: 48, background: "rgba(255,255,255,0.1)" }} />

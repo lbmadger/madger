@@ -21,7 +21,7 @@ const config: Config = {
         "border-strong": "rgba(255,255,255,0.12)",
       },
       fontFamily: {
-        sans: ["Inter", "sans-serif"],
+        sans: ["var(--font-inter)", "Inter", "sans-serif"],
       },
       backgroundImage: {
         "hero-glow":

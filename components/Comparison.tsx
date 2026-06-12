@@ -52,7 +52,7 @@ export default function Comparison() {
         className="absolute inset-0 pointer-events-none"
         style={{ background: "radial-gradient(ellipse 60% 40% at 50% 60%, rgba(203,255,3,0.03), transparent 70%)" }}
       />
-      <CoachAside line="Le choix est vite fait, non ? 👍" src="/character/coach-ok.png" side="left" inset={12} />
+      <CoachAside line="Le choix est vite fait, non ? 👍" src="/character/coach-ok.webp" side="left" inset={12} />
 
       <div className="max-w-4xl mx-auto px-6 relative z-10">
         <motion.div

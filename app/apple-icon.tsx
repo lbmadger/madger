@@ -21,7 +21,7 @@ export default function AppleIcon() {
           borderRadius: 40,
         }}
       >
-        <img src={logoSrc} width={180} height={180} style={{ display: "block" }} />
+        <img src={logoSrc} alt="" width={180} height={180} style={{ display: "block" }} />
       </div>
     ),
     { width: 180, height: 180 }

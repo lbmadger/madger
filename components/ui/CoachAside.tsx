@@ -20,7 +20,7 @@ interface CoachAsideProps {
 
 export default function CoachAside({
   line,
-  src = "/character/coach-point.png",
+  src = "/character/coach-point.webp",
   side = "right",
   inset = 8,
   flip = false,
@@ -88,6 +88,8 @@ export default function CoachAside({
           <img
             src={src}
             alt=""
+            loading="lazy"
+            decoding="async"
             draggable={false}
             style={{
               position: "relative",
