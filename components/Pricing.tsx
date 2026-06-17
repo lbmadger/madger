@@ -151,7 +151,7 @@ export default function Pricing() {
                   Free
                 </div>
               </div>
-              <div style={{ minHeight: 110 }}>
+              <div style={{ minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "center" }}>
                 <div className="font-extrabold text-white mb-1" style={{ fontSize: "clamp(24px, 6.5vw, 52px)", letterSpacing: "-0.04em", lineHeight: 1 }}>
                   0 €
                 </div>
@@ -161,7 +161,7 @@ export default function Pricing() {
               </div>
               <a
                 href="#early-access"
-                className="block w-full text-center text-white text-xs sm:text-sm font-semibold py-2.5 sm:py-3 rounded-full mb-5 sm:mb-7 transition-all duration-200"
+                className="block w-full text-center text-white text-xs sm:text-sm font-semibold py-2.5 sm:py-3 rounded-full mb-5 sm:mb-7 transition-all duration-200 whitespace-nowrap"
                 style={{ border: "1px solid rgba(255,255,255,0.12)" }}
                 onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.25)")}
                 onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)")}
@@ -240,7 +240,7 @@ export default function Pricing() {
               </div>
 
               {/* Prix animé */}
-              <div style={{ minHeight: 110 }}>
+              <div style={{ minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "center" }}>
               <AnimatePresence mode="wait">
                 {annual ? (
                   <motion.div
@@ -256,21 +256,21 @@ export default function Pricing() {
                       </span>
                       <span className="text-text-muted text-sm sm:text-lg mb-0.5 sm:mb-1">/ mois</span>
                     </div>
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
                       <span
-                        className="text-sm"
+                        className="text-xs sm:text-sm whitespace-nowrap"
                         style={{ color: "#5A5A5A", textDecoration: "line-through" }}
                       >
                         588 € / an
                       </span>
                       <span
-                        className="text-sm font-semibold px-2 py-0.5 rounded-full"
+                        className="text-xs sm:text-sm font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
                         style={{ background: "rgba(203,255,3,0.12)", color: "#CBFF03" }}
                       >
                         490 € / an
                       </span>
                     </div>
-                    <div className="text-text-muted text-sm">
+                    <div className="text-text-muted text-xs sm:text-sm">
                       Vous économisez {saving} € · 0 % de commission
                     </div>
                   </motion.div>
@@ -298,7 +298,7 @@ export default function Pricing() {
 
               <motion.a
                 href="#early-access"
-                className="block w-full text-center text-black text-xs sm:text-sm font-semibold py-2.5 sm:py-3 rounded-full mb-5 sm:mb-7"
+                className="block w-full text-center text-black text-xs sm:text-sm font-semibold py-2.5 sm:py-3 rounded-full mb-5 sm:mb-7 whitespace-nowrap"
                 style={{ background: "#CBFF03" }}
                 whileHover={{ boxShadow: "0 0 30px rgba(203,255,3,0.5), 0 0 60px rgba(203,255,3,0.2)" }}
                 transition={{ duration: 0.2 }}
