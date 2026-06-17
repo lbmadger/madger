@@ -172,8 +172,9 @@ export default function Pricing() {
               <div className="my-5 sm:my-7" style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
               <ul className="flex flex-col gap-2 sm:gap-3">
                 {freeFeatures.map((f, i) => (
-                  <li key={i} className="flex items-center gap-2 text-xs sm:text-sm text-white">
-                    <Check />{f}
+                  <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-white">
+                    <span className="flex-shrink-0" style={{ marginTop: 1 }}><Check /></span>
+                    <span>{f}</span>
                   </li>
                 ))}
               </ul>
@@ -309,8 +310,9 @@ export default function Pricing() {
               <div className="my-5 sm:my-7" style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
               <ul className="flex flex-col gap-2 sm:gap-3">
                 {proFeatures.map((f, i) => (
-                  <li key={i} className="flex items-center gap-2 text-xs sm:text-sm text-white">
-                    <Check />{f}
+                  <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-white">
+                    <span className="flex-shrink-0" style={{ marginTop: 1 }}><Check /></span>
+                    <span>{f}</span>
                   </li>
                 ))}
               </ul>
