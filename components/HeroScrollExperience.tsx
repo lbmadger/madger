@@ -139,8 +139,8 @@ export default function HeroScrollExperience() {
     const phoneTracks = isMobile
       ? {
           x: piecewise([[0, 0]]),
-          y: piecewise([[0, 0], [14, 0], [15.2, -8]]),
-          scale: piecewise([[0, 0.82], [14, 0.82], [15.2, 0.65]]),
+          y: piecewise([[0, -4], [14, -4], [15.2, -12]]),
+          scale: piecewise([[0, 0.76], [14, 0.76], [15.2, 0.6]]),
           rotY: piecewise([[0, 0]]),
           rotZ: piecewise([[0, 0]]),
           opacity: piecewise([[0, 1]]),

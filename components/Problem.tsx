@@ -284,6 +284,7 @@ export default function Problem() {
               <span style={{ fontSize: 16, color: "rgba(255,255,255,0.15)", fontFamily: "Georgia, serif", lineHeight: 1, marginTop: 2, flexShrink: 0 }}>"</span>
               <span className="relative text-text-muted text-sm leading-relaxed italic" style={{ zIndex: 2 }}>
                 {p.text}
+                <span style={{ color: "rgba(255,255,255,0.15)", fontFamily: "Georgia, serif", marginLeft: 1 }}>"</span>
               </span>
             </motion.div>
           ))}
