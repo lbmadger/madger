@@ -136,7 +136,7 @@ export default function Pricing() {
 
           {/* ── Free ── */}
           <motion.div
-            className="spotlight-card card-hover-glow p-5 sm:p-10 rounded-2xl sm:rounded-3xl"
+            className="spotlight-card card-hover-glow h-full p-5 sm:p-10 rounded-2xl sm:rounded-3xl"
             style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.07)" }}
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -172,8 +172,9 @@ export default function Pricing() {
               <div className="my-5 sm:my-7" style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
               <ul className="flex flex-col gap-2 sm:gap-3">
                 {freeFeatures.map((f, i) => (
-                  <li key={i} className="flex items-center gap-2 text-xs sm:text-sm text-white">
-                    <Check />{f}
+                  <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-white">
+                    <span className="flex-shrink-0" style={{ marginTop: 1 }}><Check /></span>
+                    <span>{f}</span>
                   </li>
                 ))}
               </ul>
@@ -181,7 +182,7 @@ export default function Pricing() {
           </motion.div>
 
           {/* ── Pro ── wrapper pour badge flottant */}
-          <div className="relative" style={{ overflow: "visible" }}>
+          <div className="relative h-full" style={{ overflow: "visible" }}>
 
             {/* Badge flottant - positionné par rapport au wrapper, pas la carte */}
             <AnimatePresence>
@@ -213,7 +214,7 @@ export default function Pricing() {
             </AnimatePresence>
 
           <motion.div
-            className="spotlight-card rounded-3xl relative"
+            className="spotlight-card rounded-3xl relative h-full"
             style={{
               background: "linear-gradient(160deg, rgba(203,255,3,0.07), rgba(203,255,3,0.02) 60%, transparent)",
               border: "1px solid rgba(203,255,3,0.28)",
@@ -309,8 +310,9 @@ export default function Pricing() {
               <div className="my-5 sm:my-7" style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
               <ul className="flex flex-col gap-2 sm:gap-3">
                 {proFeatures.map((f, i) => (
-                  <li key={i} className="flex items-center gap-2 text-xs sm:text-sm text-white">
-                    <Check />{f}
+                  <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-white">
+                    <span className="flex-shrink-0" style={{ marginTop: 1 }}><Check /></span>
+                    <span>{f}</span>
                   </li>
                 ))}
               </ul>
