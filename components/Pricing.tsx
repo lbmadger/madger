@@ -52,7 +52,7 @@ export default function Pricing() {
         background: "linear-gradient(180deg, transparent, rgba(255,255,255,0.01), transparent)",
       }}
     >
-      <CoachAside line="Et tu commences gratuitement 👍" src="/character/coach-ok.webp" side="right" inset={12} />
+      <CoachAside line="Démarrez sans engagement." src="/character/coach-ok.webp" side="right" inset={12} />
       <div className="max-w-6xl mx-auto px-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
