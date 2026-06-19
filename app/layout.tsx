@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
+import GrainOverlay from "@/components/ui/GrainOverlay";
 import "./globals.css";
 
 // Inter est auto-hébergée par next/font au build : aucune requête vers
@@ -60,6 +61,7 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} antialiased`}>
         {children}
+        <GrainOverlay />
         <Analytics />
       </body>
     </html>

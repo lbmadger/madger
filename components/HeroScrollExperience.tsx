@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import SectionLabel from "@/components/ui/SectionLabel";
 import MadgerLogo from "@/components/ui/MadgerLogo";
+import MagneticButton from "@/components/ui/MagneticButton";
 import { useEarlyAccessFull } from "@/components/ui/useEarlyAccessFull";
 
 const STEPS = [
@@ -338,25 +339,29 @@ export default function HeroScrollExperience() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.32 }}
           >
-            <motion.a
-              href="#early-access"
-              className="font-semibold text-sm px-8 py-4 rounded-full text-center"
-              style={{ background: "#CBFF03", color: "#000" }}
-              whileHover={{ scale: 1.04, boxShadow: "0 0 30px rgba(203,255,3,0.5), 0 0 60px rgba(203,255,3,0.2)" }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ duration: 0.2 }}
-            >
-              {ctaLabel}
-            </motion.a>
-            <motion.a
-              href="#fonctionnement"
-              className="text-white font-semibold text-sm px-8 py-4 rounded-full text-center"
-              style={{ border: "1px solid rgba(255,255,255,0.12)" }}
-              whileHover={{ backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.22)" }}
-              transition={{ duration: 0.2 }}
-            >
-              Voir le fonctionnement
-            </motion.a>
+            <MagneticButton className="w-full sm:w-auto" strength={0.45}>
+              <motion.a
+                href="#early-access"
+                className="cta-shine block w-full sm:w-auto sm:inline-block font-semibold text-sm px-8 py-4 rounded-full text-center"
+                style={{ background: "#CBFF03", color: "#000" }}
+                whileHover={{ scale: 1.04, boxShadow: "0 0 30px rgba(203,255,3,0.5), 0 0 60px rgba(203,255,3,0.2)" }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ duration: 0.2 }}
+              >
+                {ctaLabel}
+              </motion.a>
+            </MagneticButton>
+            <MagneticButton className="w-full sm:w-auto" strength={0.45}>
+              <motion.a
+                href="#fonctionnement"
+                className="block w-full sm:w-auto sm:inline-block text-white font-semibold text-sm px-8 py-4 rounded-full text-center"
+                style={{ border: "1px solid rgba(255,255,255,0.12)" }}
+                whileHover={{ backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.22)" }}
+                transition={{ duration: 0.2 }}
+              >
+                Voir le fonctionnement
+              </motion.a>
+            </MagneticButton>
           </motion.div>
 
           {/* Trust badges */}
