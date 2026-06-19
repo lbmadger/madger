@@ -210,23 +210,38 @@ export default function HeroScrollExperience() {
     let target = 0;
     let displayed = 0;
     let raf = 0;
+    let running = false;
     let lastTime = performance.now();
+
+    // La boucle rAF ne tourne QUE tant que le téléphone rattrape le scroll,
+    // puis s'arrête. À l'arrêt (lecture posée), plus aucune frame n'est
+    // calculée : économie nette de CPU/batterie, déterminante sur mobile.
+    const ensureRunning = () => {
+      if (running) return;
+      running = true;
+      lastTime = performance.now();
+      raf = requestAnimationFrame(tick);
+    };
 
     const readScroll = () => {
       const rect = section.getBoundingClientRect();
       const span = section.offsetHeight - vh;
       target = Math.min(1, Math.max(0, span > 0 ? -rect.top / span : 0)) * TOTAL;
       setPhase(phaseFor(target));
+      ensureRunning();
     };
 
     const tick = (now: number) => {
       const dt = Math.min(0.1, (now - lastTime) / 1000);
       lastTime = now;
-      if (Math.abs(target - displayed) > 0.0005) {
-        displayed += (target - displayed) * Math.min(1, dt / 0.25);
-        if (Math.abs(target - displayed) < 0.0005) displayed = target;
+      displayed += (target - displayed) * Math.min(1, dt / 0.25);
+      if (Math.abs(target - displayed) < 0.0005) {
+        displayed = target;
         applyPhone(displayed);
+        running = false; // arrivé à destination : on coupe jusqu'au prochain scroll
+        return;
       }
+      applyPhone(displayed);
       raf = requestAnimationFrame(tick);
     };
 
@@ -234,7 +249,6 @@ export default function HeroScrollExperience() {
     displayed = target;
     applyPhone(displayed);
     window.addEventListener("scroll", readScroll, { passive: true });
-    raf = requestAnimationFrame(tick);
 
     return () => {
       window.removeEventListener("scroll", readScroll);

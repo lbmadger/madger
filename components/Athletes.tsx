@@ -26,7 +26,7 @@ const CARDS = [
 
 export default function Athletes() {
   return (
-    <section className="hidden sm:block py-20 sm:py-28 relative overflow-hidden">
+    <section className="py-20 sm:py-28 relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-5 sm:px-6">
 
         {/* Header */}

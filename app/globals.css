@@ -118,6 +118,19 @@ a {
   border-color: rgba(203,255,3,0.2) !important;
 }
 
+/* ── Accessibilité : focus clavier visible ──────────────── */
+/* :focus-visible ne se déclenche qu'au clavier (pas au clic/tap souris ou
+   tactile), donc aucun anneau parasite pour la majorité des utilisateurs. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #CBFF03;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 /* ── Reduced motion ─────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   html {

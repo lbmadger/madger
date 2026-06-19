@@ -82,7 +82,7 @@ export default function Testimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.6, delay: i * 0.1 }}
-              className={`flex flex-col p-6 rounded-3xl${i === 2 ? " hidden md:flex" : ""}`}
+              className="flex flex-col p-6 rounded-3xl"
               style={{
                 background: "#141414",
                 border: "1px solid rgba(255,255,255,0.07)",
