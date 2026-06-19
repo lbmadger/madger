@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Madger · Visite de l'appli</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap');
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; width:100vw; height:100vh; }
+#viewer { position:fixed; top:0; left:0; right:0; bottom:56px; }
+#stage  { position:absolute; width:1080px; height:1350px; top:50%; left:50%; transform-origin:center center; }
+.post { position:absolute; inset:0; width:1080px; height:1350px; overflow:hidden; display:none; background:#0A0A0A; }
+.post.active { display:block; }
+
+/* grain */
+.grain { position:absolute; inset:0; pointer-events:none; z-index:100; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.03; mix-blend-mode:screen; }
+
+/* wordmark (icône seule) */
+.wordmark { position:absolute; top:60px; left:60px; z-index:30; animation:aFadeDown .55s 0s cubic-bezier(.16,1,.3,1) both; }
+.wordmark .ic { width:54px; height:54px; background:#111; border-radius:15px; border:1px solid rgba(203,255,3,.18); display:flex; align-items:center; justify-content:center; }
+
+/* en-tête de slide */
+.head { position:absolute; top:150px; left:60px; right:60px; z-index:5; }
+.kicker { font-size:14px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:rgba(203,255,3,.7); margin-bottom:14px; animation:aFadeDown .5s .1s ease both; }
+.head h2 { font-size:56px; font-weight:900; line-height:1.02; letter-spacing:-.038em; color:#fff; animation:aFadeDown .55s .15s ease both; }
+.head h2 .hl { background:linear-gradient(90deg,#CBFF03,#a8e600); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+
+/* mockup navigateur partagé */
+.mock { position:absolute; top:330px; left:60px; right:60px; border-radius:20px; overflow:hidden; border:1px solid rgba(255,255,255,.08); box-shadow:0 40px 100px rgba(0,0,0,.7), 0 0 80px rgba(203,255,3,.06); animation:aFadeUp .7s .26s cubic-bezier(.16,1,.3,1) both; }
+.chrome { background:#1A1A1A; padding:13px 18px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(255,255,255,.06); }
+.chrome .dots { display:flex; gap:7px; } .chrome .dots i { width:12px; height:12px; border-radius:50%; display:block; }
+.chrome .url { flex:1; max-width:340px; margin:0 auto; background:#111; border-radius:8px; padding:8px 14px; font-size:14px; color:#7a7a7a; text-align:center; }
+.body { background:#0D0D0D; padding:26px 28px; }
+
+/* avatars initiales */
+.av { border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; flex-shrink:0; letter-spacing:-.02em; }
+
+/* sections génériques */
+.panel { border-radius:14px; background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.06); }
+.ptitle { display:flex; align-items:center; justify-content:space-between; }
+.ptitle .t { font-size:17px; font-weight:700; color:#fff; }
+.ptitle a { font-size:14px; color:#CBFF03; }
+.badge2026 { display:inline-flex; align-items:center; gap:7px; padding:5px 12px; border-radius:20px; background:rgba(74,222,128,.08); border:1px solid rgba(74,222,128,.2); font-size:13px; color:#4ADE80; font-weight:600; }
+
+/* LÉO */
+.leo { position:absolute; z-index:20; pointer-events:none; user-select:none; }
+.leo .floor { position:absolute; left:50%; bottom:6%; width:78%; height:42px; transform:translateX(-50%); background:radial-gradient(ellipse 50% 50% at 50% 50%, rgba(0,0,0,.55), transparent 70%); filter:blur(6px); }
+.leo .aura { position:absolute; inset:0; background:radial-gradient(ellipse 44% 50% at 50% 52%, rgba(203,255,3,.16), transparent 64%); filter:blur(16px); }
+.leo img { position:relative; width:100%; height:auto; display:block; filter:drop-shadow(0 20px 36px rgba(0,0,0,.5)); animation:aFloat 5s ease-in-out infinite; }
+.leo .bubble { position:absolute; width:max-content; max-width:320px; background:linear-gradient(180deg,#181818,#121212); border:1px solid rgba(203,255,3,.3); border-radius:18px; padding:14px 18px; box-shadow:0 14px 32px rgba(0,0,0,.5); animation:aSpringIn .5s .55s cubic-bezier(.34,1.4,.64,1) both; }
+.leo .bubble .line { font-size:22px; line-height:1.25; color:#fff; font-weight:600; }
+.leo .bubble .tail { position:absolute; width:14px; height:14px; background:#121212; border-right:1px solid rgba(203,255,3,.3); border-bottom:1px solid rgba(203,255,3,.3); bottom:-7px; transform:rotate(45deg); }
+
+@keyframes aFadeUp   { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+@keyframes aFadeDown { from{opacity:0;transform:translateY(-18px)} to{opacity:1;transform:translateY(0)} }
+@keyframes aFadeIn   { from{opacity:0} to{opacity:1} }
+@keyframes aScaleIn  { from{opacity:0;transform:scale(.9)} to{opacity:1;transform:scale(1)} }
+@keyframes aSpringIn { from{opacity:0;transform:scale(.82)} to{opacity:1;transform:scale(1)} }
+@keyframes aFadeUpEl { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+@keyframes aFloat    { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
+@keyframes aGlow     { 0%,100%{opacity:.06} 50%{opacity:.14} }
+@keyframes aGrow     { from{width:0} }
+
+/* ════════ COUVERTURE ════════ */
+#c1 .glow { position:absolute; left:50%; top:38%; width:840px; height:840px; transform:translate(-50%,-50%); border-radius:50%; background:radial-gradient(circle, rgba(203,255,3,.07), transparent 62%); animation:aGlow 6s ease-in-out infinite; }
+#c1 .wrap { position:absolute; top:320px; left:60px; right:60px; }
+#c1 .kicker { animation:aFadeDown .5s .12s ease both; }
+#c1 h1 { font-size:112px; font-weight:900; line-height:.96; letter-spacing:-.05em; color:#fff; animation:aFadeUp .65s .2s cubic-bezier(.16,1,.3,1) both; }
+#c1 h1 .hl { background:linear-gradient(90deg,#CBFF03,#a8e600); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+#c1 .sub { margin-top:36px; font-size:30px; font-weight:500; line-height:1.45; color:rgba(255,255,255,.6); max-width:540px; animation:aFadeUp .6s .42s ease both; }
+
+/* ════════ RÉSERVATION ════════ */
+.resv { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.resv .profile { grid-column:1 / -1; display:flex; align-items:center; gap:16px; padding-bottom:18px; border-bottom:1px solid rgba(255,255,255,.06); margin-bottom:4px; }
+.resv .profile .nm { font-size:22px; font-weight:800; color:#fff; }
+.resv .profile .rl { font-size:15px; color:#7a7a7a; margin-top:2px; }
+.resv .profile .dispo { margin-left:auto; display:inline-flex; align-items:center; gap:7px; font-size:14px; color:#4ADE80; font-weight:600; }
+.resv .profile .dispo i { width:8px; height:8px; border-radius:50%; background:#4ADE80; }
+.colt { font-size:14px; font-weight:700; color:#9a9a9a; letter-spacing:.02em; margin-bottom:12px; }
+.svc { display:flex; align-items:center; gap:14px; padding:16px; border-radius:13px; margin-bottom:10px; background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.06); }
+.svc.sel { background:rgba(203,255,3,.05); border-color:rgba(203,255,3,.3); }
+.svc .si { width:42px; height:42px; border-radius:11px; background:rgba(203,255,3,.1); border:1px solid rgba(203,255,3,.22); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.svc .sb { flex:1; } .svc .sn { font-size:17px; font-weight:700; color:#fff; } .svc .sd { font-size:14px; color:#7a7a7a; margin-top:2px; }
+.svc .sp { font-size:18px; font-weight:800; color:#CBFF03; } .svc.free .sp { color:#4ADE80; }
+.dates { display:flex; gap:8px; margin-bottom:14px; }
+.datep { flex:1; text-align:center; padding:10px 0; border-radius:11px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); }
+.datep.sel { background:#CBFF03; border-color:#CBFF03; }
+.datep .dd { font-size:12px; color:#7a7a7a; } .datep.sel .dd { color:rgba(0,0,0,.55); }
+.datep .dn { font-size:20px; font-weight:800; color:#fff; margin-top:2px; } .datep.sel .dn { color:#0A0A0A; }
+.slots { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px; }
+.slot { text-align:center; padding:11px 0; border-radius:10px; font-size:15px; font-weight:600; color:#cfcfcf; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); }
+.slot.sel { background:rgba(203,255,3,.12); border-color:rgba(203,255,3,.4); color:#CBFF03; }
+.slot.off { color:#4a4a4a; }
+.resv-cta { display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-radius:13px; background:#CBFF03; }
+.resv-cta .l { font-size:17px; font-weight:800; color:#0A0A0A; }
+.resv-cta .r { font-size:20px; font-weight:900; color:#0A0A0A; }
+.stripe { display:flex; align-items:center; gap:8px; justify-content:center; margin-top:12px; font-size:13px; color:#6a6a6a; }
+
+/* ════════ AGENDA ════════ */
+.cal-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+.cal-top .m { font-size:20px; font-weight:800; color:#fff; }
+.cal-top .today { padding:7px 16px; border-radius:20px; background:rgba(203,255,3,.1); border:1px solid rgba(203,255,3,.25); font-size:13px; font-weight:700; color:#CBFF03; }
+.week { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; }
+.day .dh { text-align:center; padding-bottom:10px; } .day .dh .wd { font-size:12px; color:#7a7a7a; text-transform:uppercase; letter-spacing:.06em; } .day .dh .dn { font-size:18px; font-weight:800; color:#cfcfcf; margin-top:3px; }
+.day.today .dh .dn { color:#0A0A0A; background:#CBFF03; width:34px; height:34px; line-height:34px; border-radius:50%; margin:3px auto 0; }
+.track { height:380px; border-radius:12px; background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.05); padding:8px 6px; position:relative; }
+.ev { border-radius:9px; padding:8px 9px; margin:0 2px 7px; }
+.ev .et { font-size:11px; font-weight:700; } .ev .en { font-size:13px; font-weight:700; color:#fff; margin-top:2px; line-height:1.15; } .ev .ey { font-size:11px; margin-top:2px; }
+.ev.lime { background:rgba(203,255,3,.12); border:1px solid rgba(203,255,3,.3); } .ev.lime .et,.ev.lime .ey { color:#CBFF03; }
+.ev.green{ background:rgba(74,222,128,.12); border:1px solid rgba(74,222,128,.28);} .ev.green .et,.ev.green .ey { color:#4ADE80; }
+.ev.dim  { background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);} .ev.dim .et,.ev.dim .ey { color:#8a8a8a; }
+
+/* ════════ MESSAGERIE ════════ */
+.msg { display:grid; grid-template-columns:300px 1fr; gap:18px; height:560px; }
+.conv { padding:8px; }
+.crow { display:flex; align-items:center; gap:12px; padding:12px 10px; border-radius:11px; }
+.crow.active { background:rgba(203,255,3,.05); border:1px solid rgba(203,255,3,.14); }
+.crow .ci { flex:1; min-width:0; }
+.crow .cn { font-size:15px; font-weight:700; color:#fff; }
+.crow .cm { font-size:13px; color:#7a7a7a; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.crow .cu { width:20px; height:20px; border-radius:50%; background:#CBFF03; color:#000; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.chat { display:flex; flex-direction:column; padding:0; }
+.chat .ch-top { display:flex; align-items:center; gap:12px; padding:16px 18px; border-bottom:1px solid rgba(255,255,255,.06); }
+.chat .ch-top .nm { font-size:16px; font-weight:700; color:#fff; }
+.chat .ch-body { flex:1; padding:18px; display:flex; flex-direction:column; gap:12px; justify-content:flex-end; }
+.bub { max-width:75%; padding:12px 16px; font-size:15px; line-height:1.35; }
+.bub.them { align-self:flex-start; background:rgba(255,255,255,.07); color:#fff; border-radius:14px 14px 14px 4px; }
+.bub.me { align-self:flex-end; background:#CBFF03; color:#0A0A0A; font-weight:500; border-radius:14px 14px 4px 14px; }
+.chat .ch-input { margin:0 18px 18px; display:flex; align-items:center; gap:10px; padding:13px 16px; border-radius:12px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); font-size:14px; color:#6a6a6a; }
+
+/* ════════ PAIEMENTS ════════ */
+.pay-sum { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:18px; }
+.pay-sum .c { padding:18px; border-radius:14px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); }
+.pay-sum .c .l { font-size:14px; color:#7a7a7a; } .pay-sum .c .v { font-size:30px; font-weight:800; color:#fff; letter-spacing:-.03em; margin-top:8px; }
+.pay-sum .c.hl .v { color:#CBFF03; }
+.inv-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.inv-head .l { display:flex; align-items:center; gap:12px; } .inv-head .t { font-size:17px; font-weight:700; color:#fff; }
+.inv { display:flex; align-items:center; gap:14px; padding:14px 16px; border-radius:12px; background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.06); margin-bottom:9px; }
+.inv .ii { width:40px; height:40px; border-radius:10px; background:rgba(203,255,3,.08); border:1px solid rgba(203,255,3,.16); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.inv .ref { font-size:15px; font-weight:700; color:#fff; } .inv .cl { font-size:13px; color:#7a7a7a; margin-top:2px; }
+.inv .amt { margin-left:auto; font-size:18px; font-weight:800; color:#fff; }
+.inv .paid { padding:6px 12px; border-radius:20px; background:rgba(74,222,128,.1); border:1px solid rgba(74,222,128,.22); font-size:13px; font-weight:600; color:#4ADE80; }
+.inv .pdf { display:flex; align-items:center; gap:6px; padding:7px 11px; border-radius:9px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); font-size:13px; color:#9a9a9a; }
+
+/* ════════ CTA ════════ */
+#c6 .glow { position:absolute; left:50%; top:40%; width:880px; height:880px; transform:translate(-50%,-50%); border-radius:50%; background:radial-gradient(circle, rgba(203,255,3,.08), transparent 60%); animation:aGlow 6s ease-in-out infinite; }
+#c6 .wrap { position:absolute; top:330px; left:60px; right:60px; }
+#c6 .kicker { animation:aFadeDown .5s .12s ease both; }
+#c6 h2 { font-size:92px; font-weight:900; line-height:.98; letter-spacing:-.045em; color:#fff; animation:aFadeUp .65s .18s cubic-bezier(.16,1,.3,1) both; }
+#c6 .sub { margin-top:34px; font-size:30px; font-weight:500; line-height:1.5; color:rgba(255,255,255,.6); max-width:540px; animation:aFadeUp .6s .42s ease both; }
+#c6 .invite { position:absolute; bottom:150px; left:60px; display:flex; align-items:center; gap:14px; animation:aFadeIn .8s .7s ease both; }
+#c6 .invite .arrow { width:46px; height:46px; border-radius:50%; border:1.5px solid rgba(203,255,3,.45); display:flex; align-items:center; justify-content:center; }
+#c6 .invite .txt { font-size:26px; font-weight:600; color:rgba(255,255,255,.85); } #c6 .invite .txt b { color:#CBFF03; font-weight:800; }
+
+/* nav */
+#nav { position:fixed; bottom:0; left:0; right:0; height:56px; background:rgba(7,7,7,.96); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,.055); display:flex; align-items:center; justify-content:center; gap:18px; z-index:200; }
+#nav button { background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.08); color:#fff; font-family:'Inter',sans-serif; font-size:12px; font-weight:700; padding:7px 20px; border-radius:100px; cursor:pointer; }
+#nav button:disabled { opacity:.18; pointer-events:none; }
+#counter { font-size:12px; font-weight:600; color:rgba(255,255,255,.28); min-width:40px; text-align:center; }
+#post-name { font-size:11px; font-weight:700; color:#CBFF03; letter-spacing:.16em; text-transform:uppercase; min-width:280px; text-align:center; }
+</style>
+</head>
+<body>
+<div id="viewer"><div id="stage">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="logo-path"><path d="M4 26 L9.5 10 L15 18.5 L20.5 9 L23.5 19C25 18.5 26.5 12 27.5 5.5" stroke="#CBFF03" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="27.5" cy="5.5" r="1.3" fill="#CBFF03"/></g>
+</defs></svg>
+
+<!-- ═══ COUVERTURE ═══ -->
+<div class="post active" id="c1">
+  <div class="glow"></div>
+  <div class="wordmark"><span class="ic"><svg width="30" height="30" viewBox="0 0 32 32"><use href="#logo-path"/></svg></span></div>
+  <div class="wrap">
+    <div class="kicker">Visite guidée</div>
+    <h1>Voilà à quoi<br>ressemble <span class="hl">Madger.</span></h1>
+    <div class="sub">Réservation, agenda, messages, paiements&nbsp;— tout est pensé pour les coachs. Swipe pour visiter.</div>
+  </div>
+  <div class="leo" style="bottom:-12px; right:20px; width:430px;">
+    <div class="bubble" style="bottom:101%; right:6px;"><div class="line">Je te fais le tour 👀</div><span class="tail" style="right:34px;"></span></div>
+    <div class="floor"></div><div class="aura"></div>
+    <img src="../character/coach-point.webp" alt="">
+  </div>
+  <div class="grain"></div>
+</div>
+
+<!-- ═══ RÉSERVATION ═══ -->
+<div class="post" id="c2">
+  <div class="head"><div class="kicker">Côté client · lien en bio</div><h2>Ils réservent et paient<br>en <span class="hl">30 secondes.</span></h2></div>
+  <div class="mock" style="top:360px;">
+    <div class="chrome"><div class="dots"><i style="background:#FF5F57"></i><i style="background:#FFBD2E"></i><i style="background:#28C840"></i></div><div class="url">madger.app/marie-laurent</div></div>
+    <div class="body">
+      <div class="resv">
+        <div class="profile">
+          <span class="av" style="width:54px;height:54px;background:rgba(203,255,3,.16);color:#CBFF03;font-size:22px;">M</span>
+          <div><div class="nm">Marie Laurent</div><div class="rl">Coach sportif · Paris 11e</div></div>
+          <span class="dispo"><i></i>Disponible</span>
+        </div>
+        <div>
+          <div class="colt">1 · Choisis ta prestation</div>
+          <div class="svc sel"><span class="si"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6.5 6.5l11 11M4 9l5-5 2 2-5 5zM13 18l5-5 2 2-5 5z" stroke="#CBFF03" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="sb"><div class="sn">Coaching individuel</div><div class="sd">60 min · en salle</div></div><div class="sp">50 €</div></div>
+          <div class="svc"><span class="si"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M8 7V3m8 4V3M5 11h14M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="#CBFF03" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div class="sb"><div class="sn">Suivi mensuel</div><div class="sd">4 séances / mois</div></div><div class="sp">160 €</div></div>
+          <div class="svc free"><span class="si"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.4-6.3-4.6L5.7 21.4 8 14 2 9.4h7.6z" stroke="#4ADE80" stroke-width="2" stroke-linejoin="round"/></svg></span><div class="sb"><div class="sn">Séance découverte</div><div class="sd">45 min</div></div><div class="sp">Offerte</div></div>
+        </div>
+        <div>
+          <div class="colt">2 · Choisis ton créneau</div>
+          <div class="dates">
+            <div class="datep"><div class="dd">Lun</div><div class="dn">12</div></div>
+            <div class="datep sel"><div class="dd">Mar</div><div class="dn">13</div></div>
+            <div class="datep"><div class="dd">Mer</div><div class="dn">14</div></div>
+            <div class="datep"><div class="dd">Jeu</div><div class="dn">15</div></div>
+          </div>
+          <div class="slots">
+            <div class="slot">09:00</div><div class="slot sel">10:30</div><div class="slot">12:00</div>
+            <div class="slot">14:00</div><div class="slot">15:30</div><div class="slot off">17:00</div>
+          </div>
+          <div class="resv-cta"><span class="l">Réserver & payer</span><span class="r">50 €</span></div>
+          <div class="stripe"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="16" height="11" rx="2" stroke="#6a6a6a" stroke-width="2"/><path d="M8 10V7a4 4 0 018 0v3" stroke="#6a6a6a" stroke-width="2"/></svg>Paiement sécurisé par Stripe</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="leo" style="bottom:-12px; right:26px; width:230px;"><div class="floor"></div><div class="aura"></div><img src="../character/coach-point.webp" alt=""></div>
+  <div class="grain"></div>
+</div>
+
+<!-- ═══ AGENDA ═══ -->
+<div class="post" id="c3">
+  <div class="head"><div class="kicker">Ton agenda</div><h2>Ta semaine,<br><span class="hl">claire d'un coup d'œil.</span></h2></div>
+  <div class="mock" style="top:360px;">
+    <div class="chrome"><div class="dots"><i style="background:#FF5F57"></i><i style="background:#FFBD2E"></i><i style="background:#28C840"></i></div><div class="url">app.madger.app/agenda</div></div>
+    <div class="body">
+      <div class="cal-top"><div class="m">Semaine du 25 mai</div><span class="today">Aujourd'hui</span></div>
+      <div class="week">
+        <div class="day today"><div class="dh"><div class="wd">Lun</div><div class="dn">25</div></div><div class="track">
+          <div class="ev lime" style="margin-top:30px;"><div class="et">09:00</div><div class="en">Julien</div><div class="ey">Suivi</div></div>
+          <div class="ev green" style="margin-top:34px;"><div class="et">10:30</div><div class="en">Sophie</div><div class="ey">Indiv.</div></div>
+        </div></div>
+        <div class="day"><div class="dh"><div class="wd">Mar</div><div class="dn">26</div></div><div class="track">
+          <div class="ev dim" style="margin-top:120px;"><div class="et">12:00</div><div class="en">Romain</div><div class="ey">Prépa</div></div>
+        </div></div>
+        <div class="day"><div class="dh"><div class="wd">Mer</div><div class="dn">27</div></div><div class="track">
+          <div class="ev lime" style="margin-top:170px;"><div class="et">14:00</div><div class="en">Clara</div><div class="ey">Indiv.</div></div>
+        </div></div>
+        <div class="day"><div class="dh"><div class="wd">Jeu</div><div class="dn">28</div></div><div class="track">
+          <div class="ev green" style="margin-top:30px;"><div class="et">09:00</div><div class="en">Lucas</div><div class="ey">Indiv.</div></div>
+        </div></div>
+        <div class="day"><div class="dh"><div class="wd">Ven</div><div class="dn">29</div></div><div class="track">
+          <div class="ev dim" style="margin-top:250px;"><div class="et">17:00</div><div class="en">Emma</div><div class="ey">Découv.</div></div>
+        </div></div>
+        <div class="day"><div class="dh"><div class="wd">Sam</div><div class="dn">30</div></div><div class="track">
+          <div class="ev lime" style="margin-top:60px;"><div class="et">10:00</div><div class="en">Julien</div><div class="ey">Suivi</div></div>
+        </div></div>
+        <div class="day"><div class="dh"><div class="wd">Dim</div><div class="dn">31</div></div><div class="track"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="leo" style="bottom:-12px; right:26px; width:230px;"><div class="floor"></div><div class="aura"></div><img src="../character/coach-ok.webp" alt=""></div>
+  <div class="grain"></div>
+</div>
+
+<!-- ═══ MESSAGERIE ═══ -->
+<div class="post" id="c4">
+  <div class="head"><div class="kicker">Messagerie intégrée</div><h2>Tes échanges clients,<br><span class="hl">au même endroit.</span></h2></div>
+  <div class="mock" style="top:360px;">
+    <div class="chrome"><div class="dots"><i style="background:#FF5F57"></i><i style="background:#FFBD2E"></i><i style="background:#28C840"></i></div><div class="url">app.madger.app/messages</div></div>
+    <div class="body" style="padding:0;">
+      <div class="msg">
+        <div class="conv" style="border-right:1px solid rgba(255,255,255,.06);">
+          <div class="crow active"><span class="av" style="width:40px;height:40px;background:rgba(203,255,3,.16);color:#CBFF03;font-size:15px;">S</span><div class="ci"><div class="cn">Sophie Blanc</div><div class="cm">Je peux décaler à 11h ?</div></div><span class="cu">2</span></div>
+          <div class="crow"><span class="av" style="width:40px;height:40px;background:rgba(74,222,128,.16);color:#4ADE80;font-size:15px;">J</span><div class="ci"><div class="cn">Julien Martin</div><div class="cm">Top, à mercredi 💪</div></div></div>
+          <div class="crow"><span class="av" style="width:40px;height:40px;background:rgba(255,255,255,.1);color:#cfcfcf;font-size:15px;">R</span><div class="ci"><div class="cn">Romain Duval</div><div class="cm">Merci pour les exos 🙏</div></div></div>
+          <div class="crow"><span class="av" style="width:40px;height:40px;background:rgba(255,255,255,.1);color:#cfcfcf;font-size:15px;">C</span><div class="ci"><div class="cn">Clara Morin</div><div class="cm">Une question sur le programme</div></div></div>
+        </div>
+        <div class="chat">
+          <div class="ch-top"><span class="av" style="width:38px;height:38px;background:rgba(203,255,3,.16);color:#CBFF03;font-size:15px;">S</span><div class="nm">Sophie Blanc</div></div>
+          <div class="ch-body">
+            <div class="bub them">Coucou Marie ! Est-ce que je peux décaler ma séance de demain à 11h ?</div>
+            <div class="bub me">Oui pas de souci pour 11h 😊 Je te l'ai déjà replanifiée.</div>
+            <div class="bub them">Génial, merci beaucoup 🙏</div>
+          </div>
+          <div class="ch-input">Répondre à Sophie…<svg style="margin-left:auto;" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke="#CBFF03" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="leo" style="bottom:-12px; right:26px; width:230px;"><div class="floor"></div><div class="aura"></div><img src="../character/coach-point.webp" alt=""></div>
+  <div class="grain"></div>
+</div>
+
+<!-- ═══ PAIEMENTS ═══ -->
+<div class="post" id="c5">
+  <div class="head"><div class="kicker">Paiements & factures</div><h2>L'argent rentre,<br>les factures <span class="hl">se font seules.</span></h2></div>
+  <div class="mock" style="top:380px;">
+    <div class="chrome"><div class="dots"><i style="background:#FF5F57"></i><i style="background:#FFBD2E"></i><i style="background:#28C840"></i></div><div class="url">app.madger.app/paiements</div></div>
+    <div class="body">
+      <div class="pay-sum">
+        <div class="c hl"><div class="l">Encaissé en mai</div><div class="v">1 240 €</div></div>
+        <div class="c"><div class="l">En attente</div><div class="v">0 €</div></div>
+        <div class="c"><div class="l">Versé sur ton compte</div><div class="v">1 240 €</div></div>
+      </div>
+      <div class="panel" style="padding:18px;">
+        <div class="inv-head"><div class="l"><span class="t">Factures</span><span class="badge2026"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" fill="rgba(74,222,128,0.2)" stroke="#4ADE80" stroke-width="2"/><path d="M9 12l2 2 4-4" stroke="#4ADE80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Conformes réforme e-facture 2026</span></div></div>
+        <div class="inv"><span class="ii"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="#CBFF03" stroke-width="2"/><path d="M14 2v6h6" stroke="#CBFF03" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><div class="ref">FAC-024 · Julien Martin</div><div class="cl">2 mai 2026</div></div><span class="amt">160 €</span><span class="paid">Payée</span><span class="pdf">PDF</span></div>
+        <div class="inv"><span class="ii"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="#CBFF03" stroke-width="2"/><path d="M14 2v6h6" stroke="#CBFF03" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><div class="ref">FAC-023 · Sophie Blanc</div><div class="cl">2 mai 2026</div></div><span class="amt">50 €</span><span class="paid">Payée</span><span class="pdf">PDF</span></div>
+        <div class="inv" style="margin-bottom:0;"><span class="ii"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="#CBFF03" stroke-width="2"/><path d="M14 2v6h6" stroke="#CBFF03" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><div class="ref">FAC-022 · Romain Duval</div><div class="cl">25 avril 2026</div></div><span class="amt">80 €</span><span class="paid">Payée</span><span class="pdf">PDF</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="leo" style="bottom:-12px; right:26px; width:230px;"><div class="floor"></div><div class="aura"></div><img src="../character/coach-ok.webp" alt=""></div>
+  <div class="grain"></div>
+</div>
+
+<!-- ═══ CTA ═══ -->
+<div class="post" id="c6">
+  <div class="glow"></div>
+  <div class="wordmark"><span class="ic"><svg width="30" height="30" viewBox="0 0 32 32"><use href="#logo-path"/></svg></span></div>
+  <div class="wrap">
+    <div class="kicker">Accès anticipé</div>
+    <h2>Essaie Madger<br>avant tout le monde.</h2>
+    <div class="sub">Gratuit pendant la beta, accompagné par l'équipe, et sans engagement.</div>
+  </div>
+  <div class="invite"><span class="arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#CBFF03" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="txt">Le lien est dans la <b>bio</b></span></div>
+  <div class="leo" style="bottom:-12px; right:20px; width:430px;"><div class="floor"></div><div class="aura"></div><img src="../character/coach-ok.webp" alt=""></div>
+  <div class="grain"></div>
+</div>
+
+</div></div>
+
+<div id="nav">
+  <button id="btn-prev" onclick="nav(-1)" disabled>← Préc.</button>
+  <div id="post-name">Couverture</div>
+  <div id="counter">1 / 6</div>
+  <button id="btn-next" onclick="nav(1)">Suiv. →</button>
+</div>
+
+<script>
+const posts = [
+  {id:'c1',name:'Couverture'},
+  {id:'c2',name:'Réservation client'},
+  {id:'c3',name:'Agenda'},
+  {id:'c4',name:'Messagerie'},
+  {id:'c5',name:'Paiements & factures'},
+  {id:'c6',name:'Accès anticipé'},
+];
+let current = 0;
+function scaleStage(){ const s=document.getElementById('stage'); const vw=window.innerWidth, vh=window.innerHeight-56; s.style.transform=`translate(-50%,-50%) scale(${Math.min(vw/1080, vh/1350)*.97})`; }
+function nav(dir){
+  document.getElementById(posts[current].id).classList.remove('active');
+  current=Math.max(0,Math.min(posts.length-1,current+dir));
+  document.getElementById(posts[current].id).classList.add('active');
+  document.getElementById('counter').textContent=`${current+1} / ${posts.length}`;
+  document.getElementById('post-name').textContent=posts[current].name;
+  document.getElementById('btn-prev').disabled=current===0;
+  document.getElementById('btn-next').disabled=current===posts.length-1;
+}
+window.addEventListener('resize',scaleStage);
+window.addEventListener('keydown',e=>{ if(e.key==='ArrowRight'||e.key==='ArrowDown')nav(1); if(e.key==='ArrowLeft'||e.key==='ArrowUp')nav(-1); });
+scaleStage();
+</script>
+</body>
+</html>
