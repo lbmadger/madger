@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import MadgerLogo from "@/components/ui/MadgerLogo";
+import MagneticButton from "@/components/ui/MagneticButton";
 
 
 const LINKS = [
@@ -73,16 +74,18 @@ export default function Navbar() {
         {/* CTA desktop + hamburger mobile */}
         <div className="flex items-center gap-3">
           {/* CTA desktop */}
-          <motion.a
-            href="#early-access"
-            className="hidden md:inline-flex items-center text-sm font-semibold px-5 py-2.5 rounded-full"
-            style={{ background: "#CBFF03", color: "#000" }}
-            whileHover={{ scale: 1.03, boxShadow: "0 0 22px rgba(203,255,3,0.45)" }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ duration: 0.18 }}
-          >
-            Rejoindre l'early access
-          </motion.a>
+          <MagneticButton className="hidden md:inline-block" strength={0.5}>
+            <motion.a
+              href="#early-access"
+              className="cta-shine inline-flex items-center text-sm font-semibold px-5 py-2.5 rounded-full"
+              style={{ background: "#CBFF03", color: "#000" }}
+              whileHover={{ scale: 1.03, boxShadow: "0 0 22px rgba(203,255,3,0.45)" }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ duration: 0.18 }}
+            >
+              Rejoindre l'early access
+            </motion.a>
+          </MagneticButton>
 
           {/* CTA mobile compact */}
           <a

@@ -26,13 +26,13 @@ const CARDS = [
 
 export default function Athletes() {
   return (
-    <section className="hidden sm:block py-20 sm:py-28 relative overflow-hidden">
+    <section className="py-20 sm:py-28 relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-5 sm:px-6">
 
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 22 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 22, filter: "blur(8px)" }}
+          whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.7 }}
           className="mb-10 sm:mb-14"

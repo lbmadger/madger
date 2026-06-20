@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import SectionLabel from "@/components/ui/SectionLabel";
 import MadgerLogo from "@/components/ui/MadgerLogo";
+import MagneticButton from "@/components/ui/MagneticButton";
 import { useEarlyAccessFull } from "@/components/ui/useEarlyAccessFull";
 
 const STEPS = [
@@ -210,23 +211,38 @@ export default function HeroScrollExperience() {
     let target = 0;
     let displayed = 0;
     let raf = 0;
+    let running = false;
     let lastTime = performance.now();
+
+    // La boucle rAF ne tourne QUE tant que le téléphone rattrape le scroll,
+    // puis s'arrête. À l'arrêt (lecture posée), plus aucune frame n'est
+    // calculée : économie nette de CPU/batterie, déterminante sur mobile.
+    const ensureRunning = () => {
+      if (running) return;
+      running = true;
+      lastTime = performance.now();
+      raf = requestAnimationFrame(tick);
+    };
 
     const readScroll = () => {
       const rect = section.getBoundingClientRect();
       const span = section.offsetHeight - vh;
       target = Math.min(1, Math.max(0, span > 0 ? -rect.top / span : 0)) * TOTAL;
       setPhase(phaseFor(target));
+      ensureRunning();
     };
 
     const tick = (now: number) => {
       const dt = Math.min(0.1, (now - lastTime) / 1000);
       lastTime = now;
-      if (Math.abs(target - displayed) > 0.0005) {
-        displayed += (target - displayed) * Math.min(1, dt / 0.25);
-        if (Math.abs(target - displayed) < 0.0005) displayed = target;
+      displayed += (target - displayed) * Math.min(1, dt / 0.25);
+      if (Math.abs(target - displayed) < 0.0005) {
+        displayed = target;
         applyPhone(displayed);
+        running = false; // arrivé à destination : on coupe jusqu'au prochain scroll
+        return;
       }
+      applyPhone(displayed);
       raf = requestAnimationFrame(tick);
     };
 
@@ -234,7 +250,6 @@ export default function HeroScrollExperience() {
     displayed = target;
     applyPhone(displayed);
     window.addEventListener("scroll", readScroll, { passive: true });
-    raf = requestAnimationFrame(tick);
 
     return () => {
       window.removeEventListener("scroll", readScroll);
@@ -324,25 +339,29 @@ export default function HeroScrollExperience() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.32 }}
           >
-            <motion.a
-              href="#early-access"
-              className="font-semibold text-sm px-8 py-4 rounded-full text-center"
-              style={{ background: "#CBFF03", color: "#000" }}
-              whileHover={{ scale: 1.04, boxShadow: "0 0 30px rgba(203,255,3,0.5), 0 0 60px rgba(203,255,3,0.2)" }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ duration: 0.2 }}
-            >
-              {ctaLabel}
-            </motion.a>
-            <motion.a
-              href="#fonctionnement"
-              className="text-white font-semibold text-sm px-8 py-4 rounded-full text-center"
-              style={{ border: "1px solid rgba(255,255,255,0.12)" }}
-              whileHover={{ backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.22)" }}
-              transition={{ duration: 0.2 }}
-            >
-              Voir le fonctionnement
-            </motion.a>
+            <MagneticButton className="w-full sm:w-auto" strength={0.45}>
+              <motion.a
+                href="#early-access"
+                className="cta-shine block w-full sm:w-auto sm:inline-block font-semibold text-sm px-8 py-4 rounded-full text-center"
+                style={{ background: "#CBFF03", color: "#000" }}
+                whileHover={{ scale: 1.04, boxShadow: "0 0 30px rgba(203,255,3,0.5), 0 0 60px rgba(203,255,3,0.2)" }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ duration: 0.2 }}
+              >
+                {ctaLabel}
+              </motion.a>
+            </MagneticButton>
+            <MagneticButton className="w-full sm:w-auto" strength={0.45}>
+              <motion.a
+                href="#fonctionnement"
+                className="block w-full sm:w-auto sm:inline-block text-white font-semibold text-sm px-8 py-4 rounded-full text-center"
+                style={{ border: "1px solid rgba(255,255,255,0.12)" }}
+                whileHover={{ backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.22)" }}
+                transition={{ duration: 0.2 }}
+              >
+                Voir le fonctionnement
+              </motion.a>
+            </MagneticButton>
           </motion.div>
 
           {/* Trust badges */}

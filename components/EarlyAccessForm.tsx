@@ -331,7 +331,7 @@ export default function EarlyAccessForm() {
                 <motion.button
                   type="button"
                   onClick={handleContinue}
-                  className="w-full py-4 rounded-xl text-black font-bold text-sm mt-2"
+                  className="cta-shine w-full py-4 rounded-xl text-black font-bold text-sm mt-2"
                   style={{ background: "#CBFF03" }}
                   whileHover={{ boxShadow: "0 0 30px rgba(203,255,3,0.35)" }}
                   whileTap={{ scale: 0.98 }}
@@ -443,7 +443,7 @@ export default function EarlyAccessForm() {
                   <motion.button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 py-4 rounded-xl text-black font-bold text-sm"
+                    className="cta-shine flex-1 py-4 rounded-xl text-black font-bold text-sm"
                     style={{ background: "#CBFF03", opacity: loading ? 0.7 : 1 }}
                     whileHover={!loading ? { boxShadow: "0 0 30px rgba(203,255,3,0.35)" } : {}}
                     whileTap={!loading ? { scale: 0.98 } : {}}

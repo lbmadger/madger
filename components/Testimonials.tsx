@@ -53,8 +53,8 @@ export default function Testimonials() {
 
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
+          whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.7 }}
           className="text-center flex flex-col items-center mb-12"
@@ -82,7 +82,7 @@ export default function Testimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.6, delay: i * 0.1 }}
-              className={`flex flex-col p-6 rounded-3xl${i === 2 ? " hidden md:flex" : ""}`}
+              className="flex flex-col p-6 rounded-3xl"
               style={{
                 background: "#141414",
                 border: "1px solid rgba(255,255,255,0.07)",
