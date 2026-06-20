@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Madger · Posts solos</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap');
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; width:100vw; height:100vh; }
+#viewer { position:fixed; top:0; left:0; right:0; bottom:56px; }
+#stage  { position:absolute; width:1080px; height:1350px; top:50%; left:50%; transform-origin:center center; }
+.post { position:absolute; inset:0; width:1080px; height:1350px; overflow:hidden; display:none; background:#0A0A0A; }
+.post.active { display:block; }
+
+/* fond texturé (anti zones noires) */
+.bg { position:absolute; inset:0; z-index:0; pointer-events:none;
+  background:
+   radial-gradient(ellipse 50% 38% at 84% 18%, rgba(203,255,3,.09), transparent 58%),
+   radial-gradient(ellipse 55% 46% at 88% 88%, rgba(203,255,3,.06), transparent 60%),
+   radial-gradient(ellipse 40% 30% at 12% 90%, rgba(203,255,3,.04), transparent 60%),
+   linear-gradient(140deg, rgba(255,255,255,.025), transparent 48%); }
+.bg::after { content:''; position:absolute; inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.032) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.032) 1px,transparent 1px);
+  background-size:80px 80px;
+  -webkit-mask-image:radial-gradient(ellipse 100% 90% at 70% 52%, #000 22%, transparent 86%);
+  mask-image:radial-gradient(ellipse 100% 90% at 70% 52%, #000 22%, transparent 86%); }
+/* bloc texte (colonne droite) */
+.copy { position:absolute; top:150px; left:512px; right:52px; z-index:6; }
+.copy .kicker { font-size:14px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:rgba(203,255,3,.7); margin-bottom:16px; animation:aFadeDown .5s .1s ease both; }
+.copy h2 { font-size:50px; font-weight:900; line-height:1.04; letter-spacing:-.04em; color:#fff; animation:aFadeDown .55s .15s ease both; }
+.copy h2 .hl { background:linear-gradient(90deg,#CBFF03,#a8e600); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.copy .sub { margin-top:20px; font-size:22px; font-weight:500; line-height:1.5; color:rgba(255,255,255,.55); animation:aFadeUp .6s .38s ease both; }
+.feats { margin-top:26px; display:flex; flex-direction:column; gap:15px; }
+.feat { display:flex; align-items:center; gap:13px; font-size:21px; font-weight:600; color:rgba(255,255,255,.85); animation:aFadeUp .5s ease both; }
+.feat:nth-child(1){animation-delay:.5s}.feat:nth-child(2){animation-delay:.6s}.feat:nth-child(3){animation-delay:.7s}
+.feat .c { width:32px; height:32px; border-radius:50%; background:rgba(203,255,3,.12); border:1px solid rgba(203,255,3,.25); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+
+.cta-solo { position:absolute; right:54px; bottom:96px; z-index:8; text-align:right; animation:aFadeUp .6s .6s ease both; }
+.cta-solo .k { font-size:12px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:rgba(203,255,3,.7); margin-bottom:10px; }
+.cta-solo .l { display:flex; align-items:center; justify-content:flex-end; gap:10px; font-size:23px; font-weight:700; color:#fff; }
+.cta-solo .l b { color:#CBFF03; }
+.cta-solo .l .ar { width:38px; height:38px; border-radius:50%; border:1.5px solid rgba(203,255,3,.45); display:flex; align-items:center; justify-content:center; }
+
+
+.grain { position:absolute; inset:0; pointer-events:none; z-index:100; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.03; mix-blend-mode:screen; }
+.wordmark { position:absolute; top:60px; left:60px; z-index:30; animation:aFadeDown .55s 0s cubic-bezier(.16,1,.3,1) both; }
+.wordmark .ic { width:54px; height:54px; background:#111; border-radius:15px; border:1px solid rgba(203,255,3,.18); display:flex; align-items:center; justify-content:center; }
+
+/* en-tête (colonne droite) */
+.head { position:absolute; top:250px; left:540px; right:56px; z-index:5; }
+.kicker { font-size:14px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:rgba(203,255,3,.7); margin-bottom:16px; animation:aFadeDown .5s .1s ease both; }
+.head h2 { font-size:54px; font-weight:900; line-height:1.02; letter-spacing:-.04em; color:#fff; animation:aFadeDown .55s .15s ease both; }
+.head h2 .hl { background:linear-gradient(90deg,#CBFF03,#a8e600); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.head .sub { margin-top:26px; font-size:25px; font-weight:500; line-height:1.5; color:rgba(255,255,255,.55); animation:aFadeUp .6s .4s ease both; }
+
+/* glow ambiant derrière le téléphone */
+.pglow { position:absolute; left:300px; top:50%; width:640px; height:640px; transform:translateY(-50%); border-radius:50%; background:radial-gradient(circle, rgba(203,255,3,.08), transparent 64%); animation:aGlow 6s ease-in-out infinite; }
+
+/* ── TÉLÉPHONE ── */
+.phone { position:absolute; left:58px; top:240px; width:404px; height:846px; border-radius:56px; background:linear-gradient(160deg,#2c2c2e,#0a0a0a); padding:13px; box-shadow:0 50px 120px rgba(0,0,0,.72), 0 0 90px rgba(203,255,3,.06), inset 0 0 0 1px rgba(255,255,255,.07); animation:aFadeUp .8s .2s cubic-bezier(.16,1,.3,1) both; z-index:4; }
+.scr { position:relative; width:100%; height:100%; border-radius:44px; overflow:hidden; background:#0A0A0A; }
+.island { position:absolute; top:15px; left:50%; transform:translateX(-50%); width:112px; height:30px; background:#000; border-radius:20px; z-index:60; }
+.sb { display:flex; justify-content:space-between; align-items:center; padding:15px 28px 4px; font-size:14px; font-weight:700; color:#fff; position:relative; z-index:55; }
+.sb .r { display:flex; gap:6px; align-items:center; }
+.sb .bat { width:24px; height:12px; border:1.4px solid rgba(255,255,255,.8); border-radius:3px; position:relative; }
+.sb .bat::after { content:''; position:absolute; inset:1.5px; right:5px; background:#fff; border-radius:1px; }
+.sb .bat::before { content:''; position:absolute; right:-3px; top:3px; width:2px; height:5px; background:rgba(255,255,255,.8); border-radius:0 1px 1px 0; }
+
+/* contenu app */
+.app { padding:8px 18px 0; height:100%; }
+.appbar { display:flex; align-items:center; justify-content:space-between; padding:10px 0 16px; }
+.appbar .ttl { font-size:21px; font-weight:800; color:#fff; letter-spacing:-.02em; }
+.appbar .date { font-size:12px; color:#6a6a6a; margin-top:2px; }
+.av { border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; flex-shrink:0; }
+
+.mcard { border-radius:16px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); }
+.row2 { display:grid; grid-template-columns:1fr 1fr; gap:11px; margin-bottom:14px; }
+.kpi { padding:14px; }
+.kpi .l { font-size:11px; color:#6a6a6a; } .kpi .v { font-size:25px; font-weight:800; color:#fff; letter-spacing:-.03em; margin-top:7px; line-height:1; } .kpi .d { font-size:11px; color:#4ADE80; font-weight:600; margin-top:6px; } .kpi.hl .v { color:#CBFF03; }
+.sect { font-size:13px; font-weight:700; color:#9a9a9a; margin:4px 0 11px; }
+
+.bk { display:flex; align-items:center; gap:11px; padding:12px; border-radius:13px; margin-bottom:9px; background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.06); }
+.bk.first { background:rgba(203,255,3,.05); border-color:rgba(203,255,3,.16); }
+.bk .tm { font-size:13px; font-weight:700; width:42px; flex-shrink:0; color:#6a6a6a; } .bk.first .tm { color:#CBFF03; }
+.bk .bar { width:3px; align-self:stretch; border-radius:3px; background:rgba(255,255,255,.08); } .bk.first .bar { background:#CBFF03; }
+.bk .nm { font-size:14px; font-weight:700; color:#fff; } .bk .ty { font-size:11px; color:#6a6a6a; margin-top:2px; }
+.bk .paid { margin-left:auto; padding:5px 10px; border-radius:20px; background:rgba(74,222,128,.1); border:1px solid rgba(74,222,128,.22); font-size:11px; font-weight:600; color:#4ADE80; }
+
+/* tab bar */
+.tab { position:absolute; bottom:0; left:0; right:0; height:78px; background:rgba(8,8,8,.92); backdrop-filter:blur(14px); border-top:1px solid rgba(255,255,255,.06); display:flex; align-items:flex-start; justify-content:space-around; padding-top:12px; z-index:40; }
+.tab .ti { display:flex; flex-direction:column; align-items:center; gap:5px; font-size:10px; font-weight:600; color:#5a5a5a; }
+.tab .ti.on { color:#CBFF03; }
+
+/* réservation mobile */
+.prof { display:flex; align-items:center; gap:12px; padding:6px 0 16px; border-bottom:1px solid rgba(255,255,255,.06); margin-bottom:14px; }
+.prof .nm { font-size:17px; font-weight:800; color:#fff; } .prof .rl { font-size:12px; color:#6a6a6a; margin-top:2px; }
+.prof .dispo { margin-left:auto; display:flex; align-items:center; gap:6px; font-size:12px; color:#4ADE80; font-weight:600; } .prof .dispo i { width:7px; height:7px; border-radius:50%; background:#4ADE80; }
+.svc { display:flex; align-items:center; gap:11px; padding:13px; border-radius:13px; margin-bottom:9px; background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.06); }
+.svc.sel { background:rgba(203,255,3,.05); border-color:rgba(203,255,3,.3); }
+.svc .sn { font-size:14px; font-weight:700; color:#fff; } .svc .sd { font-size:11px; color:#6a6a6a; margin-top:2px; }
+.svc .sp { margin-left:auto; font-size:15px; font-weight:800; color:#CBFF03; } .svc.free .sp { color:#4ADE80; }
+.dates { display:flex; gap:7px; margin:4px 0 12px; }
+.datep { flex:1; text-align:center; padding:9px 0; border-radius:11px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); }
+.datep.sel { background:#CBFF03; border-color:#CBFF03; } .datep .dd { font-size:10px; color:#6a6a6a; } .datep.sel .dd { color:rgba(0,0,0,.55); } .datep .dn { font-size:17px; font-weight:800; color:#fff; margin-top:2px; } .datep.sel .dn { color:#0A0A0A; }
+.slots { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+.slot { text-align:center; padding:10px 0; border-radius:10px; font-size:13px; font-weight:600; color:#cfcfcf; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); }
+.slot.sel { background:rgba(203,255,3,.12); border-color:rgba(203,255,3,.4); color:#CBFF03; } .slot.off { color:#444; }
+.cta-fixed { position:absolute; left:18px; right:18px; bottom:24px; }
+.cta-btn { display:flex; align-items:center; justify-content:space-between; padding:15px 18px; border-radius:15px; background:#CBFF03; box-shadow:0 14px 30px rgba(203,255,3,.2); }
+.cta-btn .l { font-size:15px; font-weight:800; color:#0A0A0A; } .cta-btn .r { font-size:17px; font-weight:900; color:#0A0A0A; }
+.stripe { display:flex; align-items:center; gap:7px; justify-content:center; margin-top:10px; font-size:11px; color:#6a6a6a; }
+
+/* agenda mobile */
+.daystrip { display:flex; gap:7px; margin-bottom:16px; }
+.dchip { flex:1; text-align:center; padding:9px 0; border-radius:12px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); }
+.dchip.on { background:#CBFF03; border-color:#CBFF03; } .dchip .w { font-size:10px; color:#6a6a6a; } .dchip.on .w { color:rgba(0,0,0,.55); } .dchip .n { font-size:16px; font-weight:800; color:#fff; margin-top:2px; } .dchip.on .n { color:#0A0A0A; }
+
+/* messagerie mobile */
+.chath { display:flex; align-items:center; gap:11px; padding:8px 0 14px; border-bottom:1px solid rgba(255,255,255,.06); margin-bottom:16px; }
+.chath .nm { font-size:16px; font-weight:700; color:#fff; } .chath .on { font-size:11px; color:#4ADE80; margin-top:1px; }
+.cbody { display:flex; flex-direction:column; gap:11px; }
+.bub { max-width:80%; padding:11px 14px; font-size:14px; line-height:1.35; }
+.bub.them { align-self:flex-start; background:rgba(255,255,255,.07); color:#fff; border-radius:15px 15px 15px 4px; }
+.bub.me { align-self:flex-end; background:#CBFF03; color:#0A0A0A; font-weight:500; border-radius:15px 15px 4px 15px; }
+.cinput { position:absolute; left:18px; right:18px; bottom:22px; display:flex; align-items:center; gap:10px; padding:13px 16px; border-radius:14px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09); font-size:13px; color:#6a6a6a; }
+
+/* paiements mobile */
+.bigpay { padding:18px; margin-bottom:13px; }
+.bigpay .l { font-size:12px; color:#6a6a6a; } .bigpay .v { font-size:38px; font-weight:900; color:#CBFF03; letter-spacing:-.04em; margin-top:6px; line-height:1; }
+.bars { display:flex; align-items:flex-end; gap:6px; height:52px; margin-top:16px; }
+.bars div { flex:1; border-radius:4px 4px 0 0; }
+.inv { display:flex; align-items:center; gap:11px; padding:12px; border-radius:13px; margin-bottom:8px; background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.06); }
+.inv .ii { width:34px; height:34px; border-radius:9px; background:rgba(203,255,3,.08); border:1px solid rgba(203,255,3,.16); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.inv .ref { font-size:13px; font-weight:700; color:#fff; } .inv .cl { font-size:11px; color:#6a6a6a; margin-top:1px; }
+.inv .amt { margin-left:auto; font-size:15px; font-weight:800; color:#fff; }
+.inv .paid { padding:4px 9px; border-radius:16px; background:rgba(74,222,128,.1); border:1px solid rgba(74,222,128,.22); font-size:10px; font-weight:600; color:#4ADE80; }
+.badge2026 { display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:20px; background:rgba(74,222,128,.08); border:1px solid rgba(74,222,128,.2); font-size:11px; color:#4ADE80; font-weight:600; }
+
+/* LÉO */
+.leo { position:absolute; z-index:20; pointer-events:none; user-select:none; }
+.leo .floor { position:absolute; left:50%; bottom:6%; width:78%; height:42px; transform:translateX(-50%); background:radial-gradient(ellipse 50% 50% at 50% 50%, rgba(0,0,0,.55), transparent 70%); filter:blur(6px); }
+.leo .aura { position:absolute; inset:0; background:radial-gradient(ellipse 44% 50% at 50% 52%, rgba(203,255,3,.16), transparent 64%); filter:blur(16px); }
+.leo img { position:relative; width:100%; height:auto; display:block; filter:drop-shadow(0 20px 36px rgba(0,0,0,.5)); animation:aFloat 5s ease-in-out infinite; }
+.leo .bubble { position:absolute; width:max-content; max-width:300px; background:linear-gradient(180deg,#181818,#121212); border:1px solid rgba(203,255,3,.3); border-radius:18px; padding:13px 17px; box-shadow:0 14px 32px rgba(0,0,0,.5); animation:aSpringIn .5s .55s cubic-bezier(.34,1.4,.64,1) both; }
+.leo .bubble .line { font-size:21px; line-height:1.25; color:#fff; font-weight:600; }
+.leo .bubble .tail { position:absolute; width:14px; height:14px; background:#121212; border-right:1px solid rgba(203,255,3,.3); border-bottom:1px solid rgba(203,255,3,.3); bottom:-7px; transform:rotate(45deg); }
+
+@keyframes aFadeUp   { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+@keyframes aFadeDown { from{opacity:0;transform:translateY(-18px)} to{opacity:1;transform:translateY(0)} }
+@keyframes aFadeIn   { from{opacity:0} to{opacity:1} }
+@keyframes aSpringIn { from{opacity:0;transform:scale(.82)} to{opacity:1;transform:scale(1)} }
+@keyframes aFloat    { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
+@keyframes aGlow     { 0%,100%{opacity:.06} 50%{opacity:.14} }
+
+/* COUVERTURE */
+#m1 .head { top:300px; left:540px; right:56px; }
+#m1 h1 { font-size:96px; font-weight:900; line-height:.97; letter-spacing:-.05em; color:#fff; animation:aFadeUp .65s .2s cubic-bezier(.16,1,.3,1) both; }
+#m1 h1 .hl { background:linear-gradient(90deg,#CBFF03,#a8e600); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+#m1 .sub2 { margin-top:30px; font-size:26px; font-weight:500; line-height:1.5; color:rgba(255,255,255,.58); animation:aFadeUp .6s .42s ease both; }
+
+/* CTA */
+#m6 .pglow { left:50%; transform:translate(-50%,-50%); top:42%; width:880px; height:880px; }
+#m6 .wrap { position:absolute; top:330px; left:60px; right:60px; }
+#m6 .kicker { animation:aFadeDown .5s .12s ease both; }
+#m6 h2 { font-size:90px; font-weight:900; line-height:.98; letter-spacing:-.045em; color:#fff; animation:aFadeUp .65s .18s cubic-bezier(.16,1,.3,1) both; }
+#m6 .sub { margin-top:34px; font-size:30px; font-weight:500; line-height:1.5; color:rgba(255,255,255,.6); max-width:540px; animation:aFadeUp .6s .42s ease both; }
+#m6 .invite { position:absolute; bottom:150px; left:60px; display:flex; align-items:center; gap:14px; animation:aFadeIn .8s .7s ease both; }
+#m6 .invite .arrow { width:46px; height:46px; border-radius:50%; border:1.5px solid rgba(203,255,3,.45); display:flex; align-items:center; justify-content:center; }
+#m6 .invite .txt { font-size:26px; font-weight:600; color:rgba(255,255,255,.85); } #m6 .invite .txt b { color:#CBFF03; font-weight:800; }
+
+/* nav */
+#nav { position:fixed; bottom:0; left:0; right:0; height:56px; background:rgba(7,7,7,.96); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,.055); display:flex; align-items:center; justify-content:center; gap:18px; z-index:200; }
+#nav button { background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.08); color:#fff; font-family:'Inter',sans-serif; font-size:12px; font-weight:700; padding:7px 20px; border-radius:100px; cursor:pointer; } #nav button:disabled { opacity:.18; pointer-events:none; }
+#counter { font-size:12px; color:rgba(255,255,255,.28); min-width:40px; text-align:center; } #post-name { font-size:11px; font-weight:700; color:#CBFF03; letter-spacing:.16em; text-transform:uppercase; min-width:280px; text-align:center; }
+</style>
+</head>
+<body>
+<div id="viewer"><div id="stage">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="logo-path"><path d="M4 26 L9.5 10 L15 18.5 L20.5 9 L23.5 19C25 18.5 26.5 12 27.5 5.5" stroke="#CBFF03" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="27.5" cy="5.5" r="1.3" fill="#CBFF03"/></g>
+  <g id="ic-home"><path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></g>
+  <g id="ic-cal"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g>
+  <g id="ic-msg"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></g>
+  <g id="ic-pay"><rect x="3" y="6" width="18" height="13" rx="2" stroke="currentColor" stroke-width="2"/><path d="M3 10h18" stroke="currentColor" stroke-width="2"/></g>
+</defs></svg>
+
+<!-- helper status bar template repeated inline -->
+
+<!-- ═══ COUVERTURE ═══ -->
+<div class="post active" id="m1">
+  <div class="pglow"></div>
+  <div class="wordmark"><span class="ic"><svg width="30" height="30" viewBox="0 0 32 32"><use href="#logo-path"/></svg></span></div>
+  <div class="phone">
+    <div class="scr">
+      <div class="island"></div>
+      <div class="sb"><span>9:41</span><div class="r"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="7" width="3" height="5" rx="1" fill="#fff"/><rect x="4.5" y="4.5" width="3" height="7.5" rx="1" fill="#fff"/><rect x="9" y="2" width="3" height="10" rx="1" fill="#fff"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="rgba(255,255,255,.4)"/></svg><div class="bat"></div></div></div>
+      <div class="app">
+        <div class="appbar"><div><div class="ttl">Bonjour, Marie 👋</div><div class="date">Lundi 25 mai · 6 séances</div></div><span class="av" style="width:42px;height:42px;background:rgba(203,255,3,.16);color:#CBFF03;font-size:16px;">M</span></div>
+        <div class="row2">
+          <div class="mcard kpi hl"><div class="l">Revenus ce mois</div><div class="v">1 240 €</div><div class="d">↑ +18 %</div></div>
+          <div class="mcard kpi"><div class="l">Séances</div><div class="v">24</div><div class="d">↑ +4</div></div>
+        </div>
+        <div class="sect">Séances du jour</div>
+        <div class="bk first"><div class="tm">09:00</div><div class="bar"></div><div><div class="nm">Julien Martin</div><div class="ty">Suivi mensuel · 60 min</div></div><div class="paid">Payé</div></div>
+        <div class="bk"><div class="tm">10:30</div><div class="bar"></div><div><div class="nm">Sophie Blanc</div><div class="ty">Coaching ind. · 60 min</div></div><div class="paid">Payé</div></div>
+        <div class="bk"><div class="tm">12:00</div><div class="bar"></div><div><div class="nm">Romain Duval</div><div class="ty">Prépa physique · 90 min</div></div><div class="paid">Payé</div></div>
+      </div>
+      <div class="tab"><span class="ti on"><svg width="22" height="22" viewBox="0 0 24 24"><use href="#ic-home"/></svg>Accueil</span><span class="ti"><svg width="22" height="22" viewBox="0 0 24 24"><use href="#ic-cal"/></svg>Agenda</span><span class="ti"><svg width="22" height="22" viewBox="0 0 24 24"><use href="#ic-msg"/></svg>Messages</span><span class="ti"><svg width="22" height="22" viewBox="0 0 24 24"><use href="#ic-pay"/></svg>Paiements</span></div>
+    </div>
+  </div>
+  <div class="head" style="top:296px;">
+    <div class="kicker">L'appli des coachs</div>
+    <h1>Ton studio,<br>dans ta <span class="hl">poche.</span></h1>
+    <div class="feats" style="margin-top:24px;"><div class="feat"><span class="c"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="#CBFF03" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Réservations & paiements</div><div class="feat"><span class="c"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="#CBFF03" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Agenda toujours à jour</div><div class="feat"><span class="c"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="#CBFF03" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Factures automatiques</div></div>
+  </div>
+  <div class="leo" style="bottom:-18px; left:300px; width:480px;">
+    <div class="bubble" style="top:50px; left:-30px;"><div class="line">Tout dans ta main 💪</div><span class="tail" style="left:38px;"></span></div>
+    <div class="floor"></div><div class="aura"></div><img src="../character/coach-point.webp" alt="">
+  </div>
+  <div class="cta-solo"><div class="k">Essai gratuit · beta</div><div class="l">Lien en <b>bio</b><span class="ar"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#CBFF03" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div>
+  <div class="grain"></div>
+</div>
+
+<!-- ═══ RÉSERVATION ═══ -->
+<div class="post" id="m2">
+  <div class="pglow"></div>
+  <div class="wordmark"><span class="ic"><svg width="30" height="30" viewBox="0 0 32 32"><use href="#logo-path"/></svg></span></div>
+  <div class="phone">
+    <div class="scr">
+      <div class="island"></div>
+      <div class="sb"><span>9:41</span><div class="r"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="7" width="3" height="5" rx="1" fill="#fff"/><rect x="4.5" y="4.5" width="3" height="7.5" rx="1" fill="#fff"/><rect x="9" y="2" width="3" height="10" rx="1" fill="#fff"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="rgba(255,255,255,.4)"/></svg><div class="bat"></div></div></div>
+      <div class="app">
+        <div class="prof"><span class="av" style="width:46px;height:46px;background:rgba(203,255,3,.16);color:#CBFF03;font-size:18px;">M</span><div><div class="nm">Marie Laurent</div><div class="rl">Coach sportif · Paris 11e</div></div><span class="dispo"><i></i>Dispo</span></div>
+        <div class="sect" style="margin-top:0;">1 · Ta prestation</div>
+        <div class="svc sel"><div><div class="sn">Coaching individuel</div><div class="sd">60 min · en salle</div></div><div class="sp">50 €</div></div>
+        <div class="svc"><div><div class="sn">Suivi mensuel</div><div class="sd">4 séances / mois</div></div><div class="sp">160 €</div></div>
+        <div class="sect">2 · Ton créneau</div>
+        <div class="dates">
+          <div class="datep"><div class="dd">Lun</div><div class="dn">12</div></div>
+          <div class="datep sel"><div class="dd">Mar</div><div class="dn">13</div></div>
+          <div class="datep"><div class="dd">Mer</div><div class="dn">14</div></div>
+          <div class="datep"><div class="dd">Jeu</div><div class="dn">15</div></div>
+        </div>
+        <div class="slots">
+          <div class="slot">09:00</div><div class="slot sel">10:30</div><div class="slot">12:00</div>
+          <div class="slot">14:00</div><div class="slot">15:30</div><div class="slot off">17:00</div>
+        </div>
+      </div>
+      <div class="cta-fixed">
+        <div class="cta-btn"><span class="l">Réserver & payer</span><span class="r">50 €</span></div>
+        <div class="stripe"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="16" height="11" rx="2" stroke="#6a6a6a" stroke-width="2"/><path d="M8 10V7a4 4 0 018 0v3" stroke="#6a6a6a" stroke-width="2"/></svg>Paiement sécurisé par Stripe</div>
+      </div>
+    </div>
+  </div>
+  <div class="copy"><div class="kicker">Côté client · lien en bio</div><h2>Ils réservent<br>en <span class="hl">30 secondes.</span></h2><div class="feats"><div class="feat"><span class="c"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="#CBFF03" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Ton lien partagé dans ta bio</div><div class="feat"><span class="c"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="#CBFF03" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Créneau choisi + payé direct</div><div class="feat"><span class="c"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="#CBFF03" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>La résa tombe dans ton agenda</div></div></div>
+  <div class="leo" style="bottom:-18px; left:285px; width:480px;"><div class="floor"></div><div class="aura"></div><img src="../character/coach-point.webp" alt=""></div>
+  <div class="cta-solo"><div class="k">Essai gratuit · beta</div><div class="l">Lien en <b>bio</b><span class="ar"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#CBFF03" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div>
+  <div class="grain"></div>
+</div>
+
+<!-- ═══ AGENDA ═══ -->
+<div class="post" id="m3">
+  <div class="pglow"></div>
+  <div class="wordmark"><span class="ic"><svg width="30" height="30" viewBox="0 0 32 32"><use href="#logo-path"/></svg></span></div>
+  <div class="phone">
+    <div class="scr">
+      <div class="island"></div>
+      <div class="sb"><span>9:41</span><div class="r"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="7" width="3" height="5" rx="1" fill="#fff"/><rect x="4.5" y="4.5" width="3" height="7.5" rx="1" fill="#fff"/><rect x="9" y="2" width="3" height="10" rx="1" fill="#fff"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="rgba(255,255,255,.4)"/></svg><div class="bat"></div></div></div>
+      <div class="app">
+        <div class="appbar"><div class="ttl">Agenda</div><span style="font-size:12px;font-weight:700;color:#CBFF03;background:rgba(203,255,3,.1);border:1px solid rgba(203,255,3,.25);padding:6px 13px;border-radius:18px;">Aujourd'hui</span></div>
+        <div class="daystrip">
+          <div class="dchip on"><div class="w">Lun</div><div class="n">25</div></div>
+          <div class="dchip"><div class="w">Mar</div><div class="n">26</div></div>
+          <div class="dchip"><div class="w">Mer</div><div class="n">27</div></div>
+          <div class="dchip"><div class="w">Jeu</div><div class="n">28</div></div>
+          <div class="dchip"><div class="w">Ven</div><div class="n">29</div></div>
+        </div>
+        <div class="bk first"><div class="tm">09:00</div><div class="bar"></div><div><div class="nm">Julien Martin</div><div class="ty">Suivi mensuel · 60 min</div></div><div class="paid">Payé</div></div>
+        <div class="bk"><div class="tm">10:30</div><div class="bar"></div><div><div class="nm">Sophie Blanc</div><div class="ty">Coaching ind. · 60 min</div></div><div class="paid">Payé</div></div>
+        <div class="bk"><div class="tm">12:00</div><div class="bar"></div><div><div class="nm">Romain Duval</div><div class="ty">Prépa physique · 90 min</div></div><div class="paid">Payé</div></div>
+        <div class="bk"><div class="tm">14:00</div><div class="bar"></div><div><div class="nm">Clara Morin</div><div class="ty">Coaching ind. · 60 min</div></div><div class="paid">Payé</div></div>
+      </div>
+      <div class="tab"><span class="ti"><svg width="22" height="22" viewBox="0 0 24 24"><use href="#ic-home"/></svg>Accueil</span><span class="ti on"><svg width="22" height="22" viewBox="0 0 24 24"><use href="#ic-cal"/></svg>Agenda</span><span class="ti"><svg width="22" height="22" viewBox="0 0 24 24"><use href="#ic-msg"/></svg>Messages</span><span class="ti"><svg width="22" height="22" viewBox="0 0 24 24"><use href="#ic-pay"/></svg>Paiements</span></div>
+    </div>
+  </div>
+  <div class="copy"><div class="kicker">Ton agenda</div><h2>Ta journée,<br><span class="hl">d'un coup d'œil.</span></h2><div class="feats"><div class="feat"><span class="c"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="#CBFF03" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Toutes tes séances du jour</div><div class="feat"><span class="c"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="#CBFF03" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Qui vient, qui a déjà payé</div><div class="feat"><span class="c"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="#CBFF03" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Synchro avec Google Agenda</div></div></div>
+  <div class="leo" style="bottom:-18px; left:285px; width:480px;"><div class="floor"></div><div class="aura"></div><img src="../character/coach-ok.webp" alt=""></div>
+  <div class="cta-solo"><div class="k">Essai gratuit · beta</div><div class="l">Lien en <b>bio</b><span class="ar"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#CBFF03" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div>
+  <div class="grain"></div>
+</div>
+
+<!-- ═══ MESSAGERIE ═══ -->
+<div class="post" id="m4">
+  <div class="pglow"></div>
+  <div class="wordmark"><span class="ic"><svg width="30" height="30" viewBox="0 0 32 32"><use href="#logo-path"/></svg></span></div>
+  <div class="phone">
+    <div class="scr">
+      <div class="island"></div>
+      <div class="sb"><span>9:41</span><div class="r"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="7" width="3" height="5" rx="1" fill="#fff"/><rect x="4.5" y="4.5" width="3" height="7.5" rx="1" fill="#fff"/><rect x="9" y="2" width="3" height="10" rx="1" fill="#fff"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="rgba(255,255,255,.4)"/></svg><div class="bat"></div></div></div>
+      <div class="app">
+        <div class="chath"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#8a8a8a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="av" style="width:40px;height:40px;background:rgba(203,255,3,.16);color:#CBFF03;font-size:15px;">S</span><div><div class="nm">Sophie Blanc</div><div class="on">● En ligne</div></div></div>
+        <div class="cbody">
+          <div class="bub them">Coucou Marie ! Je peux décaler ma séance de demain à 11h ?</div>
+          <div class="bub me">Oui pas de souci pour 11h 😊 Je te l'ai déjà replanifiée.</div>
+          <div class="bub them">Génial, merci beaucoup 🙏</div>
+          <div class="bub me">Avec plaisir, à demain 💪</div>
+        </div>
+      </div>
+      <div class="cinput">Répondre à Sophie…<svg style="margin-left:auto;" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke="#CBFF03" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </div>
+  </div>
+  <div class="copy"><div class="kicker">Messagerie</div><h2>Tes clients<br>te <span class="hl">parlent ici.</span></h2><div class="feats"><div class="feat"><span class="c"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="#CBFF03" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Tous tes échanges au même endroit</div><div class="feat"><span class="c"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="#CBFF03" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Fini le perso mélangé au pro</div><div class="feat"><span class="c"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="#CBFF03" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Rappels envoyés automatiquement</div></div></div>
+  <div class="leo" style="bottom:-18px; left:285px; width:480px;"><div class="floor"></div><div class="aura"></div><img src="../character/coach-point.webp" alt=""></div>
+  <div class="cta-solo"><div class="k">Essai gratuit · beta</div><div class="l">Lien en <b>bio</b><span class="ar"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#CBFF03" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div>
+  <div class="grain"></div>
+</div>
+
+<!-- ═══ PAIEMENTS ═══ -->
+<div class="post" id="m5">
+  <div class="pglow"></div>
+  <div class="wordmark"><span class="ic"><svg width="30" height="30" viewBox="0 0 32 32"><use href="#logo-path"/></svg></span></div>
+  <div class="phone">
+    <div class="scr">
+      <div class="island"></div>
+      <div class="sb"><span>9:41</span><div class="r"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="7" width="3" height="5" rx="1" fill="#fff"/><rect x="4.5" y="4.5" width="3" height="7.5" rx="1" fill="#fff"/><rect x="9" y="2" width="3" height="10" rx="1" fill="#fff"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="rgba(255,255,255,.4)"/></svg><div class="bat"></div></div></div>
+      <div class="app">
+        <div class="appbar"><div class="ttl">Paiements</div></div>
+        <div class="mcard bigpay"><div class="l">Encaissé en mai</div><div class="v">1 240 €</div>
+          <div class="bars">
+            <div style="height:38%;background:rgba(203,255,3,.15)"></div><div style="height:52%;background:rgba(203,255,3,.15)"></div><div style="height:45%;background:rgba(203,255,3,.15)"></div><div style="height:70%;background:rgba(203,255,3,.3)"></div><div style="height:60%;background:rgba(203,255,3,.3)"></div><div style="height:88%;background:rgba(203,255,3,.45)"></div><div style="height:95%;background:linear-gradient(180deg,#CBFF03,#9DCC00)"></div>
+          </div>
+        </div>
+        <div style="margin:14px 0 11px;"><span class="badge2026"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" fill="rgba(74,222,128,0.2)" stroke="#4ADE80" stroke-width="2"/><path d="M9 12l2 2 4-4" stroke="#4ADE80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Factures conformes 2026</span></div>
+        <div class="inv"><span class="ii"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="#CBFF03" stroke-width="2"/><path d="M14 2v6h6" stroke="#CBFF03" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><div class="ref">FAC-024 · Julien</div><div class="cl">2 mai</div></div><span class="amt">160 €</span><span class="paid">Payée</span></div>
+        <div class="inv"><span class="ii"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="#CBFF03" stroke-width="2"/><path d="M14 2v6h6" stroke="#CBFF03" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><div class="ref">FAC-023 · Sophie</div><div class="cl">2 mai</div></div><span class="amt">50 €</span><span class="paid">Payée</span></div>
+      </div>
+      <div class="tab"><span class="ti"><svg width="22" height="22" viewBox="0 0 24 24"><use href="#ic-home"/></svg>Accueil</span><span class="ti"><svg width="22" height="22" viewBox="0 0 24 24"><use href="#ic-cal"/></svg>Agenda</span><span class="ti"><svg width="22" height="22" viewBox="0 0 24 24"><use href="#ic-msg"/></svg>Messages</span><span class="ti on"><svg width="22" height="22" viewBox="0 0 24 24"><use href="#ic-pay"/></svg>Paiements</span></div>
+    </div>
+  </div>
+  <div class="copy"><div class="kicker">Paiements & factures</div><h2>L'argent rentre,<br>les factures <span class="hl">se font.</span></h2><div class="feats"><div class="feat"><span class="c"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="#CBFF03" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Encaissement dès la réservation</div><div class="feat"><span class="c"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="#CBFF03" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Factures auto, conformes 2026</div><div class="feat"><span class="c"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="#CBFF03" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>0 % de commission en Pro</div></div></div>
+  <div class="leo" style="bottom:-18px; left:285px; width:480px;"><div class="floor"></div><div class="aura"></div><img src="../character/coach-ok.webp" alt=""></div>
+  <div class="cta-solo"><div class="k">Essai gratuit · beta</div><div class="l">Lien en <b>bio</b><span class="ar"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#CBFF03" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div></div>
+  <div class="grain"></div>
+</div>
+
+</div></div>
+
+<div id="nav">
+  <button id="btn-prev" onclick="nav(-1)" disabled>← Préc.</button>
+  <div id="post-name">Dans ta poche</div>
+  <div id="counter">1 / 5</div>
+  <button id="btn-next" onclick="nav(1)">Suiv. →</button>
+</div>
+
+<script>
+const posts = [
+  {id:'m1',name:'Dans ta poche'},
+  {id:'m2',name:'Réservation'},
+  {id:'m3',name:'Agenda'},
+  {id:'m4',name:'Messagerie'},
+  {id:'m5',name:'Paiements'},
+];
+let current = 0;
+function scaleStage(){ const s=document.getElementById('stage'); const vw=window.innerWidth, vh=window.innerHeight-56; s.style.transform=`translate(-50%,-50%) scale(${Math.min(vw/1080, vh/1350)*.97})`; }
+function nav(dir){
+  document.getElementById(posts[current].id).classList.remove('active');
+  current=Math.max(0,Math.min(posts.length-1,current+dir));
+  document.getElementById(posts[current].id).classList.add('active');
+  document.getElementById('counter').textContent=`${current+1} / ${posts.length}`;
+  document.getElementById('post-name').textContent=posts[current].name;
+  document.getElementById('btn-prev').disabled=current===0;
+  document.getElementById('btn-next').disabled=current===posts.length-1;
+}
+window.addEventListener('resize',scaleStage);
+window.addEventListener('keydown',e=>{ if(e.key==='ArrowRight'||e.key==='ArrowDown')nav(1); if(e.key==='ArrowLeft'||e.key==='ArrowUp')nav(-1); });
+scaleStage();
+</script>
+</body>
+</html>
