@@ -47,13 +47,13 @@ export default function Pricing() {
   return (
     <section
       id="tarifs"
-      className="py-28 relative overflow-hidden"
+      className="py-20 sm:py-28 relative overflow-hidden"
       style={{
         background: "linear-gradient(180deg, transparent, rgba(255,255,255,0.01), transparent)",
       }}
     >
       <CoachAside line="Démarrez sans engagement." src="/character/coach-ok.webp" side="right" inset={12} />
-      <div className="max-w-6xl mx-auto px-6 relative z-10">
+      <div className="max-w-6xl mx-auto px-5 sm:px-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -322,7 +322,7 @@ export default function Pricing() {
         </div>
 
         {/* Bande vide : Léo se tient dans le noir sous les cartes, sans les chevaucher */}
-        <div aria-hidden className="h-40 sm:h-52" />
+        <div aria-hidden className="h-24 sm:h-52" />
       </div>
     </section>
   );

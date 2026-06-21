@@ -109,14 +109,14 @@ export default function CoachDashboard() {
   const statsInView = useInView(statsRef, { once: true, margin: "-80px" });
 
   return (
-    <section className="py-14 md:py-24 relative overflow-hidden">
+    <section className="py-20 md:py-24 relative overflow-hidden">
       {/* Ambient */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{ background: "radial-gradient(ellipse 70% 50% at 50% 50%, rgba(203,255,3,0.04), transparent 70%)" }}
       />
 
-      <div id="dashboard" className="max-w-6xl mx-auto px-6">
+      <div id="dashboard" className="max-w-6xl mx-auto px-5 sm:px-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
