@@ -61,8 +61,8 @@ export default function FAQ() {
     });
 
   return (
-    <section className="py-24 relative">
-      <div className="max-w-3xl mx-auto px-6">
+    <section className="py-20 sm:py-24 relative">
+      <div className="max-w-3xl mx-auto px-5 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
           whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}

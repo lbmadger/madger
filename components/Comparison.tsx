@@ -47,14 +47,14 @@ function Check({ ok }: { ok: boolean }) {
 
 export default function Comparison() {
   return (
-    <section className="py-24 relative overflow-hidden">
+    <section className="py-20 sm:py-24 relative overflow-hidden">
       <div
         className="absolute inset-0 pointer-events-none"
         style={{ background: "radial-gradient(ellipse 60% 40% at 50% 60%, rgba(203,255,3,0.03), transparent 70%)" }}
       />
       <CoachAside line="Le comparatif parle de lui-même." src="/character/coach-ok.webp" side="left" inset={12} />
 
-      <div className="max-w-4xl mx-auto px-6 relative z-10">
+      <div className="max-w-4xl mx-auto px-5 sm:px-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
           whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
@@ -240,7 +240,7 @@ export default function Comparison() {
         </motion.div>
 
         {/* Bande vide : Léo se tient dans le noir sous le tableau, sans le chevaucher */}
-        <div aria-hidden className="h-40 sm:h-52" />
+        <div aria-hidden className="h-24 sm:h-52" />
       </div>
     </section>
   );

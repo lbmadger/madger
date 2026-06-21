@@ -107,14 +107,14 @@ export default function EarlyAccessForm() {
   }
 
   return (
-    <section id="early-access" className="py-28 relative overflow-hidden">
+    <section id="early-access" className="py-20 sm:py-28 relative overflow-hidden">
       <div
         className="absolute inset-0 pointer-events-none"
         style={{ background: "radial-gradient(ellipse 60% 50% at 50% 50%, rgba(203,255,3,0.08), transparent 70%)" }}
       />
 
 
-      <div className="relative max-w-6xl mx-auto px-6">
+      <div className="relative max-w-6xl mx-auto px-5 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}

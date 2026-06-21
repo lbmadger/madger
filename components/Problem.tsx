@@ -189,7 +189,7 @@ export default function Problem() {
 
           {/* Logos grid - grille 4 colonnes sur mobile (rangées équilibrées),
               flex centré sur desktop */}
-          <div className="grid grid-cols-4 justify-items-center gap-x-3 gap-y-6 sm:flex sm:flex-wrap sm:justify-center sm:gap-6 mb-8">
+          <div className="flex flex-wrap justify-center gap-x-5 gap-y-6 sm:gap-6 mb-8">
             {TOOLS.map((tool, i) => (
               <motion.div
                 key={tool.name}
@@ -292,7 +292,7 @@ export default function Problem() {
 
         {/* Bande vide sous les citations : Léo (posé en bas de section) se
             tient dans cet espace noir, sans chevaucher les citations. */}
-        <div aria-hidden className="h-40 sm:h-52" />
+        <div aria-hidden className="h-24 sm:h-52" />
 
       </div>
     </section>
