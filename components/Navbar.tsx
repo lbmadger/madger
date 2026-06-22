@@ -87,15 +87,9 @@ export default function Navbar() {
             </motion.a>
           </MagneticButton>
 
-          {/* CTA mobile compact */}
-          <a
-            href="#early-access"
-            className="md:hidden inline-flex items-center text-xs font-bold px-4 py-2 rounded-full"
-            style={{ background: "#CBFF03", color: "#000", letterSpacing: "-0.01em" }}
-            onClick={() => setOpen(false)}
-          >
-            Early access
-          </a>
+          {/* CTA mobile : retiré du header pour ne garder qu'un seul bouton
+              (le menu). Le CTA reste accessible dans le menu déroulant et via
+              le bouton collant en bas de page. */}
 
           {/* Hamburger */}
           <button
