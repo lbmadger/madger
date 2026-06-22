@@ -140,8 +140,11 @@ export default function HeroScrollExperience() {
     const phoneTracks = isMobile
       ? {
           x: piecewise([[0, 0]]),
-          y: piecewise([[0, -8], [14, -8], [15.2, -17]]),
-          scale: piecewise([[0, 0.73], [14, 0.73], [15.2, 0.56]]),
+          // Moins de remontée (-6/-8 au lieu de -8/-17) et moins de
+          // rétrécissement final (0.58 au lieu de 0.56) : le téléphone reste
+          // bien centré, sans grand vide noir avant le texte final sur mobile.
+          y: piecewise([[0, -6], [14, -6], [15.2, -8]]),
+          scale: piecewise([[0, 0.66], [14, 0.66], [15.2, 0.58]]),
           rotY: piecewise([[0, 0]]),
           rotZ: piecewise([[0, 0]]),
           opacity: piecewise([[0, 1]]),
@@ -262,7 +265,7 @@ export default function HeroScrollExperience() {
       {/* ══════════════════════════════════════════════════════
           HERO - static intro section above the scroll experience
       ══════════════════════════════════════════════════════ */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center px-5 sm:px-6 pt-24 lg:pt-32 pb-28 overflow-hidden text-center">
+      <section className="relative min-h-screen flex flex-col items-center justify-center px-5 sm:px-6 pt-20 lg:pt-32 pb-14 lg:pb-28 overflow-hidden text-center">
         {/* Radial glow */}
         <motion.div
           className="absolute inset-0 pointer-events-none"
@@ -285,17 +288,17 @@ export default function HeroScrollExperience() {
         <div className="relative max-w-4xl mx-auto w-full">
           {/* Wordmark */}
           <motion.div
-            className="flex justify-center mb-7 sm:mb-8"
+            className="flex justify-center mb-3 sm:mb-8"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <img src="/logo.png" alt="Madger" width={900} height={360} fetchPriority="high" style={{ height: 120, width: "auto", objectFit: "contain", display: "block" }} />
+            <img src="/logo.png" alt="Madger" width={900} height={360} fetchPriority="high" style={{ height: "clamp(62px, 18vw, 120px)", width: "auto", objectFit: "contain", display: "block" }} />
           </motion.div>
 
           {/* Badge */}
           <motion.div
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full font-medium mb-6 sm:mb-8"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full font-medium mb-4 sm:mb-8"
             style={{ background: "rgba(203,255,3,0.07)", border: "1px solid rgba(203,255,3,0.22)" }}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -309,7 +312,7 @@ export default function HeroScrollExperience() {
 
           {/* H1 */}
           <motion.h1
-            className="font-extrabold text-white mb-5 sm:mb-6"
+            className="font-extrabold text-white mb-3 sm:mb-6"
             style={{ fontSize: "clamp(38px, 7.5vw, 92px)", letterSpacing: "-0.04em", lineHeight: 0.97 }}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -321,7 +324,7 @@ export default function HeroScrollExperience() {
 
           {/* Subtitle */}
           <motion.p
-            className="text-text-muted leading-relaxed mb-8 sm:mb-10 max-w-2xl mx-auto"
+            className="text-text-muted leading-relaxed mb-5 sm:mb-10 max-w-2xl mx-auto"
             style={{ fontSize: "clamp(15px, 2vw, 19px)", lineHeight: 1.6 }}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -334,7 +337,7 @@ export default function HeroScrollExperience() {
 
           {/* CTAs */}
           <motion.div
-            className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 mb-8 sm:mb-10"
+            className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 mb-5 sm:mb-10"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.32 }}
