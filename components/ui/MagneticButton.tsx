@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, type CSSProperties, type ReactNode } from "react";
+import { twMerge } from "tailwind-merge";
 
 // Effet magnétique premium : l'enfant glisse légèrement vers le curseur puis
 // revient en douceur quand la souris quitte la zone. Souris uniquement —
@@ -40,13 +41,16 @@ export default function MagneticButton({
   };
 
   return (
+    // display via className (et non en style inline) pour qu'une classe
+    // `hidden` passée par l'appelant puisse cacher le bouton sur mobile.
+    // twMerge garde la dernière classe de `display` en cas de conflit
+    // (ex: "inline-block" par défaut écrasé par "hidden md:inline-block").
     <span
       ref={ref}
       onMouseMove={handleMove}
       onMouseLeave={reset}
-      className={className}
+      className={twMerge("inline-block", className)}
       style={{
-        display: "inline-block",
         transition: "transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)",
         willChange: "transform",
         ...style,
