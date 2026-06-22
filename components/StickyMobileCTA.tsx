@@ -4,39 +4,41 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function StickyMobileCTA() {
-  const [pastHero, setPastHero] = useState(false);
-  const [nearForm, setNearForm] = useState(false);
-  const [scrolling, setScrolling] = useState(false);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    let idleTimer: ReturnType<typeof setTimeout>;
+    let lastY = window.scrollY;
     const onScroll = () => {
-      // Visible seulement quand le sentinel #after-hero est PASSÉ au-dessus du viewport
-      const sentinel = document.getElementById("after-hero");
-      setPastHero(sentinel ? sentinel.getBoundingClientRect().top <= 0 : false);
+      const y = window.scrollY;
 
-      // Masqué quand le formulaire est visible (ou passé)
+      // Zone utile : seulement après le hero (#after-hero passé au-dessus du
+      // viewport) et tant qu'on n'a pas atteint le formulaire d'inscription.
+      const sentinel = document.getElementById("after-hero");
+      const pastHero = sentinel ? sentinel.getBoundingClientRect().top <= 0 : false;
       const formEl = document.getElementById("early-access");
-      if (formEl) {
-        setNearForm(formEl.getBoundingClientRect().top < window.innerHeight);
+      const nearForm = formEl ? formEl.getBoundingClientRect().top < window.innerHeight : false;
+
+      if (!pastHero || nearForm) {
+        setVisible(false);
+        lastY = y;
+        return;
       }
 
-      // Pendant le scroll : on s'efface pour ne jamais masquer le contenu.
-      // On réapparaît une fois la lecture posée (scroll arrêté).
-      setScrolling(true);
-      clearTimeout(idleTimer);
-      idleTimer = setTimeout(() => setScrolling(false), 650);
+      // Direction-aware : le bouton pop quand on DESCEND, reste en place à
+      // l'arrêt, et se retire quand on REMONTE (seuil de 2px anti-jitter).
+      if (y > lastY + 2) setVisible(true);
+      else if (y < lastY - 2) setVisible(false);
+      lastY = y;
     };
+
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      clearTimeout(idleTimer);
-    };
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   return (
     <AnimatePresence>
-      {pastHero && !nearForm && !scrolling && (
+      {visible && (
         <motion.div
           initial={{ y: 80, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
