@@ -14,10 +14,22 @@ const LINKS = [
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
 
+  // Header direction-aware : masqué quand on descend (le bouton collant en bas
+  // prend le relais), ré-affiché quand on remonte ou en haut de page. La
+  // translation n'est appliquée que sur mobile (cf. md:translate-y-0).
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 12);
+      if (y < 80) setHidden(false);
+      else if (y > lastY + 4) setHidden(true);
+      else if (y < lastY - 4) setHidden(false);
+      lastY = y;
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
@@ -42,11 +54,14 @@ export default function Navbar() {
     backdropFilter: scrolled || open ? "blur(28px) saturate(180%)" : "blur(8px)",
     WebkitBackdropFilter: scrolled || open ? "blur(28px) saturate(180%)" : "blur(8px)",
     boxShadow: scrolled && !open ? "0 1px 0 rgba(255,255,255,0.06), 0 12px 40px rgba(0,0,0,0.6)" : "none",
-    transition: "background 0.4s ease, box-shadow 0.4s ease, backdrop-filter 0.4s ease",
+    transition: "background 0.4s ease, box-shadow 0.4s ease, backdrop-filter 0.4s ease, transform 0.35s ease",
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50" style={glassStyle}>
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 ${hidden && !open ? "-translate-y-full md:translate-y-0" : "translate-y-0"}`}
+      style={glassStyle}
+    >
       {/* ── Barre principale ── */}
       <div className="max-w-6xl mx-auto px-5 sm:px-6 h-16 flex items-center justify-between">
 
