@@ -293,7 +293,7 @@ export default function HeroScrollExperience() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <img src="/logo.png" alt="Madger" width={900} height={360} fetchPriority="high" style={{ height: "clamp(100px, 27vw, 130px)", width: "auto", objectFit: "contain", display: "block" }} />
+            <img src="/logo.png" alt="Madger" width={900} height={360} fetchPriority="high" style={{ height: "clamp(120px, 32vw, 150px)", width: "auto", objectFit: "contain", display: "block" }} />
           </motion.div>
 
           {/* Badge */}
