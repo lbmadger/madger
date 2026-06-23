@@ -53,7 +53,7 @@ export default function TrustBar() {
         background: "rgba(255,255,255,0.01)",
       }}
     >
-      <div className="max-w-5xl mx-auto px-6">
+      <div className="max-w-5xl mx-auto px-5 sm:px-6">
         <div className="flex flex-nowrap items-center justify-center gap-3 sm:flex-wrap sm:gap-10">
           <span
             className="text-[10px] sm:text-[11px]"
