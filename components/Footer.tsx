@@ -9,7 +9,7 @@ export default function Footer() {
       className="py-16"
       style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
     >
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="max-w-6xl mx-auto px-5 sm:px-6">
         {/* Top row: logo + nav links + copyright */}
         <div className="flex flex-col sm:flex-row flex-wrap items-center justify-between gap-5 sm:gap-6 text-center sm:text-left">
           <a href="/" className="flex items-center flex-shrink-0">
