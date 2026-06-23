@@ -87,7 +87,7 @@ a {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: text-shimmer 5s linear infinite;
+  animation: text-shimmer 7s linear infinite;
 }
 
 /* ── Pulsing glow dot ───────────────────────────────────── */
