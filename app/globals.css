@@ -74,20 +74,24 @@ a {
   to   { background-position: 200% center; }
 }
 .text-shimmer {
+  /* Plusieurs reflets répartis => il y a toujours un éclat qui traverse le
+     texte : l'effet est CONTINU (ne semble jamais s'arrêter). Extrémités
+     identiques (#CBFF03) + background-size 200% => boucle sans raccord. */
   background: linear-gradient(
     90deg,
     #CBFF03 0%,
-    #e8ffaa 25%,
-    #ffffff 45%,
-    #e8ffaa 65%,
+    #e8ffaa 10%, #ffffff 16.7%, #e8ffaa 23%,
+    #CBFF03 33.3%,
+    #e8ffaa 43%, #ffffff 50%, #e8ffaa 57%,
+    #CBFF03 66.7%,
+    #e8ffaa 77%, #ffffff 83.3%, #e8ffaa 90%,
     #CBFF03 100%
   );
-  /* size = 200% + extrémités identiques (#CBFF03) => boucle sans raccord */
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: text-shimmer 7s linear infinite;
+  animation: text-shimmer 5s linear infinite;
 }
 
 /* ── Pulsing glow dot ───────────────────────────────────── */
