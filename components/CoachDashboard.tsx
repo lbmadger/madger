@@ -6,18 +6,35 @@ import SectionLabel from "@/components/ui/SectionLabel";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 
 /* ── CountUp hook ─────────────────────────────────────────── */
-function useCountUp(target: number, duration = 1.4, inView = false) {
+function useCountUp(target: number, duration = 2.4, inView = false) {
   const [value, setValue] = useState(0);
   useEffect(() => {
     if (!inView) return;
     const controls = animate(0, target, {
       duration,
-      ease: [0.16, 1, 0.3, 1],
+      ease: "easeOut",
       onUpdate: (v) => setValue(Math.round(v)),
     });
     return () => controls.stop();
   }, [inView, target, duration]);
   return value;
+}
+
+/* ── Valeur animée (compteur) pour les stats mobiles ───── */
+function MobileStatValue({ value, inView }: { value: string; inView: boolean }) {
+  const hasEuro = value.includes("€");
+  const hasPercent = value.includes("%");
+  const num = parseInt(value.replace(/\s/g, "").match(/\d+/)?.[0] ?? "0", 10);
+  const count = useCountUp(num, 2.4, inView);
+  if (!inView) return <>{value}</>;
+  const display = hasEuro
+    ? count >= 1000
+      ? `${Math.floor(count / 1000)} ${String(count % 1000).padStart(3, "0")} €`
+      : `${count} €`
+    : hasPercent
+    ? `${count} %`
+    : `${count}`;
+  return <>{display}</>;
 }
 
 /* ── Mini bar chart ─────────────────────────────────────── */
@@ -83,7 +100,7 @@ function StatCard({ label, value, delta, icon, inView }: { label: string; value:
   const hasEuro = value.includes("€");
   const prefix = hasEuro ? "" : "";
   const suffix = hasPercent ? " %" : hasEuro ? " €" : "";
-  const count = useCountUp(numTarget, 1.4, inView);
+  const count = useCountUp(numTarget, 2.4, inView);
   const displayValue = hasEuro
     ? count >= 1000 ? `${Math.floor(count / 1000)} ${String(count % 1000).padStart(3, "0")} €` : `${count} €`
     : `${count}${suffix}`;
@@ -107,6 +124,8 @@ function StatCard({ label, value, delta, icon, inView }: { label: string; value:
 export default function CoachDashboard() {
   const statsRef = useRef(null);
   const statsInView = useInView(statsRef, { once: true, margin: "-80px" });
+  const mobileStatsRef = useRef(null);
+  const mobileStatsInView = useInView(mobileStatsRef, { once: true, margin: "-80px" });
 
   return (
     <section className="py-20 md:py-24 relative overflow-hidden">
@@ -145,7 +164,7 @@ export default function CoachDashboard() {
 
         {/* Mobile : stats */}
         <div className="md:hidden mb-4">
-          <div className="grid grid-cols-2 gap-3 mb-4">
+          <div ref={mobileStatsRef} className="grid grid-cols-2 gap-3 mb-4">
             {[
               { label: "Revenus ce mois", value: "1 240 €", delta: "+18 %", color: "#CBFF03" },
               { label: "Séances ce mois", value: "24",      delta: "+4",    color: "#CBFF03" },
@@ -162,7 +181,9 @@ export default function CoachDashboard() {
                 style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.07)" }}
               >
                 <div className="text-xs mb-2" style={{ color: "#5A5A5A" }}>{label}</div>
-                <div className="font-extrabold text-white text-2xl" style={{ letterSpacing: "-0.03em", lineHeight: 1 }}>{value}</div>
+                <div className="font-extrabold text-white text-2xl" style={{ letterSpacing: "-0.03em", lineHeight: 1 }}>
+                  <MobileStatValue value={value} inView={mobileStatsInView} />
+                </div>
                 <div className="text-xs mt-1 font-semibold" style={{ color }}>↑ {delta}</div>
               </motion.div>
             ))}
