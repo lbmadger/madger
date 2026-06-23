@@ -125,7 +125,7 @@ export default function Problem() {
   useEffect(() => {
     if (!inView) return;
     const controls = animate(0, 5, {
-      duration: 2.6,
+      duration: 1.8,
       ease: "easeOut",
       onUpdate: (v) => setCount(Math.round(v)),
     });
