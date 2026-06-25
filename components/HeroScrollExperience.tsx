@@ -143,7 +143,7 @@ export default function HeroScrollExperience() {
           // Moins de remontée (-6/-8 au lieu de -8/-17) et moins de
           // rétrécissement final (0.58 au lieu de 0.56) : le téléphone reste
           // bien centré, sans grand vide noir avant le texte final sur mobile.
-          y: piecewise([[0, -6], [14, -6], [15.2, -8]]),
+          y: piecewise([[0, 0], [14, 0], [15.2, -2]]),
           scale: piecewise([[0, 0.66], [14, 0.66], [15.2, 0.58]]),
           rotY: piecewise([[0, 0]]),
           rotZ: piecewise([[0, 0]]),
@@ -419,7 +419,7 @@ export default function HeroScrollExperience() {
           style={{
             position: "sticky",
             top: 0,
-            height: "100vh",
+            height: "100dvh",
             overflow: "hidden",
           }}
         >
