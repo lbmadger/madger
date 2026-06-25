@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Madger · Notifications (niveau pub)</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap');
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; width:100vw; height:100vh; }
+#viewer { position:fixed; top:0; left:0; right:0; bottom:56px; }
+#stage  { position:absolute; width:1080px; height:1350px; top:50%; left:50%; transform-origin:center center; }
+.post { position:absolute; inset:0; width:1080px; height:1350px; overflow:hidden; display:none; background:#0A0A0A; }
+.post.active { display:block; }
+
+/* fond : spot + sol néon perspective + vignette */
+.bg { position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden;
+  background:radial-gradient(ellipse 80% 55% at 42% -8%, rgba(203,255,3,.14), transparent 52%), radial-gradient(ellipse 60% 50% at 90% 86%, rgba(203,255,3,.06), transparent 60%), #0A0A0A; }
+.bg::before { content:''; position:absolute; left:-30%; right:-30%; bottom:-2%; height:50%;
+  background-image:linear-gradient(rgba(203,255,3,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(203,255,3,.11) 1px,transparent 1px);
+  background-size:66px 66px; transform:perspective(680px) rotateX(73deg); transform-origin:bottom center;
+  -webkit-mask-image:linear-gradient(to top,#000,transparent 72%); mask-image:linear-gradient(to top,#000,transparent 72%); opacity:.6; }
+.bg::after { content:''; position:absolute; inset:0; box-shadow:inset 0 0 170px rgba(0,0,0,.5); }
+
+.grain { position:absolute; inset:0; pointer-events:none; z-index:100; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.03; mix-blend-mode:screen; }
+.wordmark { position:absolute; top:58px; left:60px; z-index:30; }
+.wordmark .ic { width:54px; height:54px; background:#111; border-radius:15px; border:1px solid rgba(203,255,3,.18); display:flex; align-items:center; justify-content:center; box-shadow:0 0 22px rgba(203,255,3,.10); }
+
+.head { position:absolute; z-index:8; }
+.kicker { font-size:14px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:rgba(203,255,3,.78); margin-bottom:16px; display:flex; align-items:center; gap:12px; animation:aFadeDown .5s .1s ease both; }
+.kicker::before { content:''; width:26px; height:2px; background:#CBFF03; box-shadow:0 0 10px rgba(203,255,3,.9); border-radius:2px; }
+.title { font-weight:900; line-height:1.02; letter-spacing:-.04em; color:#fff; animation:aFadeDown .55s .15s ease both; }
+.hl { background:linear-gradient(90deg,#CBFF03,#a8e600); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; filter:drop-shadow(0 0 20px rgba(203,255,3,.4)); }
+
+.cta { position:absolute; left:60px; bottom:62px; z-index:9; display:flex; align-items:center; gap:14px; animation:aFadeUp .6s .6s ease both; }
+.cta .ar { width:44px; height:44px; border-radius:50%; border:1.5px solid rgba(203,255,3,.6); display:flex; align-items:center; justify-content:center; box-shadow:0 0 18px rgba(203,255,3,.3); }
+.cta .t { font-size:24px; font-weight:700; color:#fff; } .cta .t b { color:#CBFF03; }
+
+/* ── TÉLÉPHONE incliné + reflet (niveau pub) ── */
+.phone { position:absolute; width:432px; height:880px; border-radius:58px; background:linear-gradient(150deg,#33343a,#0a0a0a 70%); padding:13px; z-index:5;
+  box-shadow:0 60px 120px rgba(0,0,0,.7), 0 0 70px rgba(203,255,3,.20), 0 0 160px rgba(203,255,3,.12), inset 0 0 0 1px rgba(255,255,255,.10);
+  transform:perspective(2000px) rotateY(-16deg) rotateX(3deg) rotateZ(-1deg);
+  -webkit-box-reflect:below 10px linear-gradient(transparent 58%, rgba(0,0,0,.16));
+  animation:aPhoneIn 1s .15s cubic-bezier(.16,1,.3,1) both; }
+.phone::after { content:''; position:absolute; inset:0; border-radius:58px; padding:2px; z-index:6; pointer-events:none; background:linear-gradient(135deg,#e6ff7a, rgba(203,255,3,.05) 36%, rgba(203,255,3,.05) 62%, #a8e600); -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; box-shadow:0 0 26px rgba(203,255,3,.32); }
+.scr { position:relative; width:100%; height:100%; border-radius:46px; overflow:hidden; }
+.island { position:absolute; top:16px; left:50%; transform:translateX(-50%); width:116px; height:31px; background:#000; border-radius:20px; z-index:60; }
+.sb { display:flex; justify-content:space-between; align-items:center; padding:16px 30px 0; font-size:14px; font-weight:700; color:#fff; position:relative; z-index:55; }
+.sb .r { display:flex; gap:6px; align-items:center; } .sb .bat { width:24px; height:12px; border:1.4px solid rgba(255,255,255,.85); border-radius:3px; position:relative; } .sb .bat::after { content:''; position:absolute; inset:1.5px; right:5px; background:#fff; border-radius:1px; }
+
+/* écran verrouillé */
+.lock { position:relative; width:100%; height:100%; border-radius:46px; overflow:hidden;
+  background:radial-gradient(ellipse 75% 38% at 50% 8%, rgba(203,255,3,.22), transparent 58%), radial-gradient(ellipse 90% 50% at 50% 104%, rgba(203,255,3,.10), transparent 60%), linear-gradient(180deg,#0f1208,#0a0a0a 60%); }
+.llock { position:absolute; top:64px; left:50%; transform:translateX(-50%); opacity:.9; }
+.ldate { position:absolute; top:104px; left:0; right:0; text-align:center; font-size:18px; font-weight:600; color:rgba(255,255,255,.85); }
+.lclock { position:absolute; top:118px; left:0; right:0; text-align:center; font-size:118px; font-weight:800; letter-spacing:-.04em; color:#fff; line-height:1; text-shadow:0 6px 40px rgba(0,0,0,.4); }
+
+.notifs { position:absolute; left:15px; right:15px; bottom:104px; display:flex; flex-direction:column; gap:10px; }
+.ngroup { font-size:12px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.5); margin:0 6px 2px; display:flex; align-items:center; gap:7px; }
+.ngroup .gi { width:18px; height:18px; border-radius:5px; background:#111; border:1px solid rgba(203,255,3,.3); display:flex; align-items:center; justify-content:center; }
+.notif { display:flex; gap:12px; padding:14px; border-radius:22px; background:rgba(38,40,44,.55); -webkit-backdrop-filter:blur(24px); backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,.1); box-shadow:0 10px 30px rgba(0,0,0,.35); }
+.notif .ai { width:42px; height:42px; flex-shrink:0; border-radius:11px; background:linear-gradient(150deg,#1a1a1a,#0c0c0c); border:1px solid rgba(203,255,3,.35); display:flex; align-items:center; justify-content:center; box-shadow:0 0 16px rgba(203,255,3,.25); }
+.notif .nb { flex:1; min-width:0; }
+.notif .nhead { display:flex; align-items:baseline; justify-content:space-between; }
+.notif .nt { font-size:15px; font-weight:700; color:#fff; } .notif .ntime { font-size:12px; color:rgba(255,255,255,.45); flex-shrink:0; margin-left:8px; }
+.notif .nm { font-size:14px; color:rgba(255,255,255,.72); margin-top:3px; line-height:1.3; }
+.notif .amt { color:#CBFF03; font-weight:700; }
+
+/* barre du bas lockscreen */
+.lbottom { position:absolute; bottom:0; left:0; right:0; height:90px; }
+.lbtn { position:absolute; bottom:30px; width:46px; height:46px; border-radius:50%; background:rgba(255,255,255,.12); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:center; }
+.lbtn.l { left:26px; } .lbtn.r { right:26px; }
+.lhandle { position:absolute; bottom:11px; left:50%; transform:translateX(-50%); width:134px; height:5px; border-radius:3px; background:rgba(255,255,255,.85); }
+
+/* centre de notifications (post 2) : fond flouté + pile */
+.ncenter { position:relative; width:100%; height:100%; border-radius:46px; overflow:hidden; background:radial-gradient(ellipse 80% 40% at 50% 6%, rgba(203,255,3,.16), transparent 58%), linear-gradient(180deg,#0e1109,#0a0a0a 55%); }
+.ncenter .nclock { position:absolute; top:58px; left:0; right:0; text-align:center; font-size:60px; font-weight:800; color:rgba(255,255,255,.92); letter-spacing:-.03em; }
+.ncenter .ncdate { position:absolute; top:128px; left:0; right:0; text-align:center; font-size:15px; font-weight:600; color:rgba(255,255,255,.6); }
+.ncenter .notifs { top:178px; bottom:auto; }
+
+/* LÉO (sans néon) */
+.leo { position:absolute; z-index:20; pointer-events:none; user-select:none; }
+.leo .floor { position:absolute; left:50%; bottom:6%; width:78%; height:42px; transform:translateX(-50%); background:radial-gradient(ellipse 50% 50% at 50% 50%, rgba(0,0,0,.55), transparent 70%); filter:blur(6px); }
+.leo .aura { position:absolute; inset:0; background:radial-gradient(ellipse 44% 50% at 50% 52%, rgba(203,255,3,.14), transparent 64%); filter:blur(16px); }
+.leo img { position:relative; width:100%; height:auto; display:block; filter:drop-shadow(0 20px 36px rgba(0,0,0,.5)); animation:aFloat 5s ease-in-out infinite; }
+
+@keyframes aFadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+@keyframes aFadeDown { from{opacity:0;transform:translateY(-18px)} to{opacity:1;transform:translateY(0)} }
+@keyframes aFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
+@keyframes aPhoneIn { from{opacity:0;transform:perspective(2000px) rotateY(-16deg) rotateX(3deg) rotateZ(-1deg) translateY(40px)} to{opacity:1} }
+
+/* placements */
+#n1 .phone { left:96px; top:300px; }
+#n1 .head { top:140px; left:560px; right:54px; } #n1 .title { font-size:62px; }
+#n2 .phone { left:96px; top:300px; transform:perspective(2000px) rotateY(-13deg) rotateX(2deg) rotateZ(-.5deg); }
+#n2 .head { top:140px; left:560px; right:54px; } #n2 .title { font-size:60px; }
+
+#nav { position:fixed; bottom:0; left:0; right:0; height:56px; background:rgba(7,7,7,.96); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,.055); display:flex; align-items:center; justify-content:center; gap:18px; z-index:200; }
+#nav button { background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.08); color:#fff; font-family:'Inter',sans-serif; font-size:12px; font-weight:700; padding:7px 20px; border-radius:100px; cursor:pointer; } #nav button:disabled { opacity:.18; pointer-events:none; }
+#counter { font-size:12px; color:rgba(255,255,255,.28); min-width:40px; text-align:center; } #post-name { font-size:11px; font-weight:700; color:#CBFF03; letter-spacing:.16em; text-transform:uppercase; min-width:280px; text-align:center; }
+</style>
+</head>
+<body>
+<div id="viewer"><div id="stage">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="logo-path"><path d="M4 26 L9.5 10 L15 18.5 L20.5 9 L23.5 19C25 18.5 26.5 12 27.5 5.5" stroke="#CBFF03" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="27.5" cy="5.5" r="1.3" fill="#CBFF03"/></g>
+  <g id="mlogo"><path d="M4 26 L9.5 10 L15 18.5 L20.5 9 L23.5 19C25 18.5 26.5 12 27.5 5.5" stroke="#CBFF03" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="27.5" cy="5.5" r="1.4" fill="#CBFF03"/></g>
+</defs></svg>
+
+<!-- ═══ N1 · ÉCRAN VERROUILLÉ ═══ -->
+<div class="post active" id="n1">
+  <div class="bg"></div>
+  <div class="wordmark"><span class="ic"><svg width="30" height="30" viewBox="0 0 32 32"><use href="#logo-path"/></svg></span></div>
+  <div class="head"><div class="kicker">Notifications Madger</div><div class="title">Les seules notifs<br>que tu veux <span class="hl">recevoir.</span></div></div>
+  <div class="phone">
+    <div class="scr"><div class="lock">
+      <div class="island"></div>
+      <div class="sb"><span>lun. 25 mai</span><div class="r"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="7" width="3" height="5" rx="1" fill="#fff"/><rect x="4.5" y="4.5" width="3" height="7.5" rx="1" fill="#fff"/><rect x="9" y="2" width="3" height="10" rx="1" fill="#fff"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="#fff"/></svg><div class="bat"></div></div></div>
+      <div class="llock"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" fill="rgba(255,255,255,.85)"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="rgba(255,255,255,.85)" stroke-width="2"/></svg></div>
+      <div class="lclock">9:41</div>
+      <div class="notifs">
+        <div class="notif">
+          <div class="ai"><svg width="22" height="22" viewBox="0 0 32 32"><use href="#mlogo"/></svg></div>
+          <div class="nb"><div class="nhead"><span class="nt">Nouvelle réservation 🎉</span><span class="ntime">maintenant</span></div><div class="nm">Julien a réservé un Coaching individuel — mercredi 9:00</div></div>
+        </div>
+        <div class="notif">
+          <div class="ai"><svg width="22" height="22" viewBox="0 0 32 32"><use href="#mlogo"/></svg></div>
+          <div class="nb"><div class="nhead"><span class="nt">Paiement reçu 💸</span><span class="ntime">il y a 2 min</span></div><div class="nm"><span class="amt">+50 €</span> de Sophie Blanc — encaissé à la réservation</div></div>
+        </div>
+        <div class="notif">
+          <div class="ai"><svg width="22" height="22" viewBox="0 0 32 32"><use href="#mlogo"/></svg></div>
+          <div class="nb"><div class="nhead"><span class="nt">Facture envoyée ✅</span><span class="ntime">il y a 5 min</span></div><div class="nm">FAC-024 envoyée à Julien — conforme 2026</div></div>
+        </div>
+      </div>
+      <div class="lbottom">
+        <div class="lbtn l"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 2h6v3l-1 9a2 2 0 0 1-4 0L9 5z" stroke="rgba(255,255,255,.85)" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+        <div class="lbtn r"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="18" height="13" rx="3" stroke="rgba(255,255,255,.85)" stroke-width="1.8"/><circle cx="12" cy="13.5" r="3.4" stroke="rgba(255,255,255,.85)" stroke-width="1.8"/><path d="M8 7l1.5-2.5h5L16 7" stroke="rgba(255,255,255,.85)" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+        <div class="lhandle"></div>
+      </div>
+    </div></div>
+  </div>
+  <div class="leo" style="bottom:-16px; right:18px; width:300px;"><div class="floor"></div><div class="aura"></div><img src="../character/coach-ok.webp" alt=""></div>
+  <div class="cta"><span class="ar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#CBFF03" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="t">Essai gratuit · <b>lien en bio</b></span></div>
+  <div class="grain"></div>
+</div>
+
+<!-- ═══ N2 · CENTRE DE NOTIFICATIONS ═══ -->
+<div class="post" id="n2">
+  <div class="bg"></div>
+  <div class="wordmark"><span class="ic"><svg width="30" height="30" viewBox="0 0 32 32"><use href="#logo-path"/></svg></span></div>
+  <div class="head"><div class="kicker">Centre de notifications</div><div class="title">Ta journée<br>en <span class="hl">temps réel.</span></div></div>
+  <div class="phone">
+    <div class="scr"><div class="ncenter">
+      <div class="island"></div>
+      <div class="sb"><span>9:41</span><div class="r"><svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="7" width="3" height="5" rx="1" fill="#fff"/><rect x="4.5" y="4.5" width="3" height="7.5" rx="1" fill="#fff"/><rect x="9" y="2" width="3" height="10" rx="1" fill="#fff"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="#fff"/></svg><div class="bat"></div></div></div>
+      <div class="nclock">9:41</div>
+      <div class="ncdate">lundi 25 mai</div>
+      <div class="notifs">
+        <div class="ngroup"><span class="gi"><svg width="11" height="11" viewBox="0 0 32 32"><use href="#mlogo"/></svg></span>Madger · aujourd'hui</div>
+        <div class="notif"><div class="ai"><svg width="22" height="22" viewBox="0 0 32 32"><use href="#mlogo"/></svg></div><div class="nb"><div class="nhead"><span class="nt">Nouvelle réservation 🎉</span><span class="ntime">maintenant</span></div><div class="nm">Julien — Coaching individuel, mer. 9:00</div></div></div>
+        <div class="notif"><div class="ai"><svg width="22" height="22" viewBox="0 0 32 32"><use href="#mlogo"/></svg></div><div class="nb"><div class="nhead"><span class="nt">Paiement reçu 💸</span><span class="ntime">2 min</span></div><div class="nm"><span class="amt">+50 €</span> de Sophie Blanc</div></div></div>
+        <div class="notif"><div class="ai"><svg width="22" height="22" viewBox="0 0 32 32"><use href="#mlogo"/></svg></div><div class="nb"><div class="nhead"><span class="nt">Rappel envoyé ⏰</span><span class="ntime">1 h</span></div><div class="nm">Rappel auto à Romain — séance demain 12:00</div></div></div>
+        <div class="notif"><div class="ai"><svg width="22" height="22" viewBox="0 0 32 32"><use href="#mlogo"/></svg></div><div class="nb"><div class="nhead"><span class="nt">Facture envoyée ✅</span><span class="ntime">2 h</span></div><div class="nm">FAC-024 — Julien Martin · conforme 2026</div></div></div>
+        <div class="notif"><div class="ai"><svg width="22" height="22" viewBox="0 0 32 32"><use href="#mlogo"/></svg></div><div class="nb"><div class="nhead"><span class="nt">Objectif du mois 🔥</span><span class="ntime">ce matin</span></div><div class="nm">83 % atteint — plus que 260 € !</div></div></div>
+      </div>
+    </div></div>
+  </div>
+  <div class="leo" style="bottom:-16px; right:18px; width:300px;"><div class="floor"></div><div class="aura"></div><img src="../character/coach-point.webp" alt=""></div>
+  <div class="cta"><span class="ar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#CBFF03" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="t">Essai gratuit · <b>lien en bio</b></span></div>
+  <div class="grain"></div>
+</div>
+
+</div></div>
+<div id="nav">
+  <button id="btn-prev" onclick="nav(-1)" disabled>← Préc.</button>
+  <div id="post-name">Écran verrouillé</div>
+  <div id="counter">1 / 2</div>
+  <button id="btn-next" onclick="nav(1)">Suiv. →</button>
+</div>
+<script>
+const posts=[{id:'n1',name:'Écran verrouillé'},{id:'n2',name:'Centre de notifications'}];
+let current=0;
+function scaleStage(){const s=document.getElementById('stage');const vw=window.innerWidth,vh=window.innerHeight-56;s.style.transform=`translate(-50%,-50%) scale(${Math.min(vw/1080,vh/1350)*.97})`;}
+function nav(d){document.getElementById(posts[current].id).classList.remove('active');current=Math.max(0,Math.min(posts.length-1,current+d));document.getElementById(posts[current].id).classList.add('active');document.getElementById('counter').textContent=`${current+1} / ${posts.length}`;document.getElementById('post-name').textContent=posts[current].name;document.getElementById('btn-prev').disabled=current===0;document.getElementById('btn-next').disabled=current===posts.length-1;}
+window.addEventListener('resize',scaleStage);window.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown')nav(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')nav(-1);});
+scaleStage();
+</script>
+</body>
+</html>
