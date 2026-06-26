@@ -141,7 +141,7 @@ body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; widt
 /* ════ PC3 · PUBLICATION PRINCIPALE (écran entier, net) ════ */
 #pc3 .screen { position:absolute; top:150px; left:34px; width:1012px; height:650px; border-radius:14px; overflow:hidden; border:1px solid rgba(203,255,3,.22); z-index:5;
   box-shadow:0 50px 110px rgba(0,0,0,.7), 0 0 60px rgba(203,255,3,.14), 0 0 150px rgba(203,255,3,.08);
-  transform:perspective(3000px) rotateY(-6deg) rotateX(3deg) rotateZ(-.4deg); animation:aIn .9s .15s ease both; }
+  transform:none; animation:aIn .9s .15s ease both; }
 #pc3 .screen::after { content:''; position:absolute; inset:0; border-radius:14px; padding:1.5px; pointer-events:none; background:linear-gradient(135deg,#e6ff7a,rgba(203,255,3,.05) 40%,rgba(203,255,3,.05) 60%,#a8e600); -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; z-index:2; }
 #pc3 .fdwrap { width:100%; height:100%; }
 /* compaction pour tout afficher net à la taille native */
