@@ -76,18 +76,20 @@ body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; widt
 #f3 .logo .ic { background:#0E0E0E; } #f3 .logo .nm { color:#0E0E0E; }
 #f3 .title { color:#0C0D0A; } #f3 .title .hl { -webkit-text-fill-color:initial; background:none; color:#6f7a1a; filter:none; }
 #f3 .kicker { color:#6f7a1a; } #f3 .kicker::before { background:#0C0D0A; box-shadow:none; }
-#f3 .integ { position:absolute; left:0; right:0; top:470px; display:flex; align-items:center; justify-content:center; gap:38px; }
-#f3 .feats { position:absolute; top:760px; left:140px; right:140px; }
+#f3 .integ { position:absolute; left:0; right:0; top:412px; display:flex; align-items:center; justify-content:center; gap:58px; }
+#f3 .integ::before { content:''; position:absolute; left:21%; right:21%; top:50%; height:2px; transform:translateY(-50%); background:repeating-linear-gradient(90deg,#0C0D0A 0 9px, transparent 9px 18px); opacity:.22; z-index:0; }
+#f3 .feats { position:absolute; top:812px; left:140px; right:140px; }
 #f3 .feat { color:#2a2c24; font-size:25px; }
 #f3 .feat .c { background:#0C0D0A; box-shadow:none; border:none; }
-#f3 .app { width:170px; height:170px; border-radius:40px; background:#fff; box-shadow:0 26px 60px rgba(0,0,0,.14); display:flex; align-items:center; justify-content:center; animation:aScale .6s both; }
+#f3 .app { position:relative; z-index:1; width:292px; height:292px; border-radius:64px; background:#fff; box-shadow:0 30px 70px rgba(0,0,0,.16); display:flex; align-items:center; justify-content:center; animation:aScale .6s both; }
 #f3 .app.m { background:#0E0E0E; } #f3 .app.g { animation-delay:.2s; }
 #f3 .link { display:flex; flex-direction:column; align-items:center; gap:8px; animation:aIn .8s .4s both; }
-#f3 .link .sync { width:64px; height:64px; border-radius:50%; background:#CBFF03; display:flex; align-items:center; justify-content:center; box-shadow:0 10px 26px rgba(203,255,3,.45); }
+#f3 .link { position:relative; z-index:1; }
+#f3 .link .sync { width:106px; height:106px; border-radius:50%; background:#CBFF03; display:flex; align-items:center; justify-content:center; box-shadow:0 12px 30px rgba(203,255,3,.5); }
 #f3 .link .lb { font-size:14px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#4a7a1a; }
-#f3 .gcal { position:relative; width:96px; height:96px; border-radius:20px; background:#fff; box-shadow:inset 0 0 0 3px #eee; }
-#f3 .gcal::before { content:''; position:absolute; inset:0; border-radius:20px; border:8px solid; border-image:linear-gradient(135deg,#4285F4,#EA4335 33%,#FBBC04 66%,#34A853) 1; -webkit-mask:linear-gradient(#000 0 0); }
-#f3 .gcal span { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:42px; font-weight:800; color:#4285F4; }
+#f3 .gcal { position:relative; width:178px; height:178px; border-radius:34px; background:#fff; box-shadow:inset 0 0 0 4px #eee; }
+#f3 .gcal::before { content:''; position:absolute; inset:0; border-radius:34px; border:13px solid; border-image:linear-gradient(135deg,#4285F4,#EA4335 33%,#FBBC04 66%,#34A853) 1; -webkit-mask:linear-gradient(#000 0 0); }
+#f3 .gcal span { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:74px; font-weight:800; color:#4285F4; }
 #f3 .sub { position:absolute; top:780px; left:62px; right:62px; text-align:center; font-size:26px; font-weight:500; color:#43463c; animation:aUp .6s .4s both; }
 #f3 .foot { position:absolute; bottom:64px; left:62px; font-size:22px; font-weight:700; color:#0C0D0A; } #f3 .foot b { color:#6f7a1a; }
 
@@ -192,8 +194,8 @@ body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; widt
   <div class="logo"><span class="ic"><svg width="28" height="28" viewBox="0 0 32 32"><use href="#lg"/></svg></span><span class="nm">Madger</span></div>
   <div class="head"><div class="kicker">Synchro agenda</div><div class="title">Connecté à ton<br><span class="hl">Google Agenda.</span></div></div>
   <div class="integ">
-    <div class="app m"><svg width="86" height="86" viewBox="0 0 32 32"><use href="#lg"/></svg></div>
-    <div class="link"><div class="sync"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 0 1 13.5-5.7L20 8M20 4v4h-4M20 12a8 8 0 0 1-13.5 5.7L4 16M4 20v-4h4" stroke="#0A0A0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="lb">Synchronisé</div></div>
+    <div class="app m"><svg width="150" height="150" viewBox="0 0 32 32"><use href="#lg"/></svg></div>
+    <div class="link"><div class="sync"><svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 0 1 13.5-5.7L20 8M20 4v4h-4M20 12a8 8 0 0 1-13.5 5.7L4 16M4 20v-4h4" stroke="#0A0A0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="lb">Synchronisé</div></div>
     <div class="app g"><div class="gcal"><span>31</span></div></div>
   </div>
   <div class="feats">
