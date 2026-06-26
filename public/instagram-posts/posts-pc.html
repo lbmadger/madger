@@ -138,21 +138,26 @@ body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; widt
 @keyframes aRise { from{opacity:0; transform:translateY(40px) perspective(2400px) rotateY(-23deg) rotateX(5deg)} to{opacity:1} }
 @keyframes aGrowH { from{height:0} }
 
-/* ════ PC3 · PUBLICATION PRINCIPALE (écran entier) ════ */
-#pc3 .screen { position:absolute; top:150px; left:96px; width:888px; height:588px; border-radius:14px; overflow:hidden; border:1px solid rgba(203,255,3,.22); z-index:5;
+/* ════ PC3 · PUBLICATION PRINCIPALE (écran entier, net) ════ */
+#pc3 .screen { position:absolute; top:150px; left:34px; width:1012px; height:650px; border-radius:14px; overflow:hidden; border:1px solid rgba(203,255,3,.22); z-index:5;
   box-shadow:0 50px 110px rgba(0,0,0,.7), 0 0 60px rgba(203,255,3,.14), 0 0 150px rgba(203,255,3,.08);
-  transform:perspective(2900px) rotateX(4deg) rotateY(-7deg) rotateZ(-.5deg); animation:aIn .9s .15s ease both; }
+  transform:perspective(3000px) rotateY(-6deg) rotateX(3deg) rotateZ(-.4deg); animation:aIn .9s .15s ease both; }
 #pc3 .screen::after { content:''; position:absolute; inset:0; border-radius:14px; padding:1.5px; pointer-events:none; background:linear-gradient(135deg,#e6ff7a,rgba(203,255,3,.05) 40%,rgba(203,255,3,.05) 60%,#a8e600); -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; z-index:2; }
-#pc3 .fdwrap { width:1200px; height:795px; transform:scale(.74); transform-origin:top left; }
-#pc3 .head { position:absolute; top:762px; left:62px; right:62px; z-index:8; }
-#pc3 .title { font-size:46px; }
-#pc3 .sub2 { margin-top:10px; font-size:21px; }
-#pc3 .fgrid { position:absolute; top:884px; left:60px; right:60px; z-index:8; display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-#pc3 .fitem { display:flex; gap:12px; align-items:center; padding:13px 15px; border-radius:14px; background:rgba(255,255,255,.035); border:1px solid rgba(203,255,3,.14); box-shadow:inset 0 1px 0 rgba(255,255,255,.06); }
-#pc3 .fitem .fi { width:40px; height:40px; flex-shrink:0; border-radius:11px; background:rgba(203,255,3,.1); border:1px solid rgba(203,255,3,.28); display:flex; align-items:center; justify-content:center; box-shadow:0 0 14px rgba(203,255,3,.14); }
-#pc3 .fitem .ft { font-size:17px; font-weight:800; color:#fff; letter-spacing:-.01em; }
-#pc3 .fitem .fds { font-size:12px; color:rgba(255,255,255,.5); margin-top:2px; line-height:1.25; }
-#pc3 .ctabtn { position:absolute; bottom:48px; left:62px; z-index:9; font-size:19px; padding:16px 28px; }
+#pc3 .fdwrap { width:100%; height:100%; }
+/* compaction pour tout afficher net à la taille native */
+#pc3 .fd-side { width:150px; padding:11px 0; }
+#pc3 .fd-main { padding:12px 14px; }
+#pc3 .fd-stats { margin-bottom:8px; } #pc3 .fd-link { margin-bottom:8px; padding:7px 10px; }
+#pc3 .fd-cols { margin-bottom:8px; }
+#pc3 .head { position:absolute; top:826px; left:62px; right:62px; z-index:8; }
+#pc3 .title { font-size:44px; }
+#pc3 .sub2 { margin-top:8px; font-size:20px; }
+#pc3 .fgrid { position:absolute; top:936px; left:60px; right:60px; z-index:8; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+#pc3 .fitem { display:flex; gap:11px; align-items:center; padding:11px 14px; border-radius:13px; background:rgba(255,255,255,.035); border:1px solid rgba(203,255,3,.14); box-shadow:inset 0 1px 0 rgba(255,255,255,.06); }
+#pc3 .fitem .fi { width:38px; height:38px; flex-shrink:0; border-radius:10px; background:rgba(203,255,3,.1); border:1px solid rgba(203,255,3,.28); display:flex; align-items:center; justify-content:center; box-shadow:0 0 14px rgba(203,255,3,.14); }
+#pc3 .fitem .ft { font-size:16px; font-weight:800; color:#fff; letter-spacing:-.01em; }
+#pc3 .fitem .fds { font-size:11.5px; color:rgba(255,255,255,.5); margin-top:2px; line-height:1.2; }
+#pc3 .ctabtn { position:absolute; bottom:46px; left:62px; z-index:9; font-size:19px; padding:15px 26px; }
 #pc3 .logo { display:none; }
 #nav { position:fixed; bottom:0; left:0; right:0; height:56px; background:rgba(7,7,7,.96); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,.055); display:flex; align-items:center; justify-content:center; gap:18px; z-index:200; }
 #nav button { background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.08); color:#fff; font-family:'Inter',sans-serif; font-size:12px; font-weight:700; padding:7px 20px; border-radius:100px; cursor:pointer; } #nav button:disabled { opacity:.18; pointer-events:none; }
