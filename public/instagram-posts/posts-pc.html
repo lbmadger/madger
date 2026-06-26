@@ -57,17 +57,70 @@ body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; widt
 .bars { display:flex; align-items:flex-end; gap:9px; height:150px; }
 .bars .b { flex:1; height:100%; display:flex; align-items:flex-end; } .bars .b i { width:100%; border-radius:6px 6px 0 0; display:block; }
 
-/* écran incliné (pc1) */
-#pc1 .head { position:absolute; top:250px; left:62px; width:470px; z-index:8; }
-#pc1 .title { font-size:66px; }
-#pc1 .sub2 { margin-top:26px; }
-#pc1 .pills { margin-top:26px; }
-#pc1 .ctabtn { margin-top:30px; }
-#pc1 .screen { position:absolute; top:330px; right:-150px; width:820px; height:560px; border-radius:18px; overflow:hidden; border:1px solid rgba(203,255,3,.22); z-index:5;
-  box-shadow:0 50px 120px rgba(0,0,0,.72), 0 0 70px rgba(203,255,3,.18), 0 0 160px rgba(203,255,3,.1);
-  transform:perspective(2400px) rotateY(-23deg) rotateX(5deg) rotateZ(-1deg);
-  animation:aRise 1s .15s cubic-bezier(.16,1,.3,1) both; }
-#pc1 .screen::after { content:''; position:absolute; inset:0; border-radius:18px; padding:1.5px; pointer-events:none; background:linear-gradient(135deg,#e6ff7a,rgba(203,255,3,.05) 40%,rgba(203,255,3,.05) 60%,#a8e600); -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; }
+/* écran incliné (pc1) avec dashboard complet */
+#pc1 .head { position:absolute; top:138px; left:62px; right:62px; z-index:8; }
+#pc1 .title { font-size:52px; }
+#pc1 .sub2 { margin-top:16px; max-width:680px; }
+#pc1 .screen { position:absolute; top:372px; left:78px; width:1140px; height:792px; border-radius:16px; overflow:hidden; border:1px solid rgba(203,255,3,.22); z-index:5;
+  box-shadow:0 50px 120px rgba(0,0,0,.72), 0 0 70px rgba(203,255,3,.16), 0 0 170px rgba(203,255,3,.1);
+  transform:perspective(2600px) rotateY(-13deg) rotateX(5deg) rotateZ(-1deg); transform-origin:left center;
+  animation:aRise2 1s .15s cubic-bezier(.16,1,.3,1) both; }
+#pc1 .screen::after { content:''; position:absolute; inset:0; border-radius:16px; padding:1.5px; pointer-events:none; background:linear-gradient(135deg,#e6ff7a,rgba(203,255,3,.05) 40%,rgba(203,255,3,.05) 60%,#a8e600); -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; }
+@keyframes aRise2 { from{opacity:0; transform:translateY(40px) perspective(2600px) rotateY(-13deg) rotateX(5deg)} to{opacity:1} }
+
+/* ── DASHBOARD COMPLET (repris du site) ── */
+.fd { display:flex; width:100%; height:100%; background:#0D0D0D; color:#fff; }
+.fd-side { width:160px; flex-shrink:0; background:#111; border-right:1px solid rgba(255,255,255,.06); padding:14px 0; display:flex; flex-direction:column; }
+.fd-brand { display:flex; align-items:center; gap:8px; padding:0 14px 13px; border-bottom:1px solid rgba(255,255,255,.06); margin-bottom:9px; }
+.fd-brand .bi { width:24px; height:24px; border-radius:7px; background:#161616; border:1px solid rgba(203,255,3,.2); display:flex; align-items:center; justify-content:center; }
+.fd-brand .nm { font-size:13px; font-weight:800; }
+.fd-nav { display:flex; align-items:center; gap:9px; padding:8px 14px; margin:1px 8px; border-radius:8px; font-size:11px; font-weight:500; color:#6a6a6a; }
+.fd-nav.on { background:rgba(203,255,3,.08); color:#CBFF03; font-weight:600; }
+.fd-nav .dot { width:7px;height:7px;border-radius:2px;background:currentColor;opacity:.8;flex-shrink:0; }
+.fd-nav .bdg { margin-left:auto; width:15px; height:15px; border-radius:50%; background:#CBFF03; color:#000; font-size:8px; font-weight:800; display:flex; align-items:center; justify-content:center; }
+.fd-prof { margin-top:auto; padding:11px 14px 2px; border-top:1px solid rgba(255,255,255,.06); display:flex; align-items:center; gap:8px; }
+.fd-prof .av { width:30px; height:30px; border-radius:50%; background:linear-gradient(150deg,#CBFF03,#7fa800); color:#0A0A0A; font-size:13px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.fd-prof .nm { font-size:11px; font-weight:700; } .fd-prof .pl { font-size:8px; color:#5A5A5A; }
+.fd-prof .live { margin-left:auto; width:7px; height:7px; border-radius:50%; background:#4ADE80; }
+.fd-main { flex:1; min-width:0; padding:15px 17px; }
+.fd-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:11px; }
+.fd-hi { font-size:16px; font-weight:800; } .fd-date { font-size:10px; color:#5A5A5A; margin-top:2px; }
+.fd-new { background:#CBFF03; color:#000; font-size:10px; font-weight:700; padding:7px 12px; border-radius:8px; }
+.fd-link { display:flex; align-items:center; gap:10px; padding:8px 11px; border-radius:9px; background:rgba(203,255,3,.04); border:1px solid rgba(203,255,3,.18); margin-bottom:11px; }
+.fd-link .lic { width:24px; height:24px; border-radius:7px; background:rgba(203,255,3,.1); border:1px solid rgba(203,255,3,.2); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.fd-link .ll { font-size:8px; color:#5A5A5A; } .fd-link .u { font-size:11px; font-weight:700; color:#CBFF03; margin-top:1px; }
+.fd-link .btns { margin-left:auto; display:flex; gap:6px; }
+.fd-cp { background:#CBFF03; color:#000; font-size:8px; font-weight:800; padding:5px 10px; border-radius:7px; }
+.fd-sh { background:rgba(255,255,255,.06); color:#9a9a9a; font-size:8px; font-weight:600; padding:5px 10px; border-radius:7px; border:1px solid rgba(255,255,255,.1); }
+.fd-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:9px; margin-bottom:11px; }
+.fd-stat { padding:11px; border-radius:10px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); }
+.fd-stat .l { font-size:9px; color:#5A5A5A; } .fd-stat .v { font-size:19px; font-weight:800; letter-spacing:-.02em; margin-top:6px; line-height:1; } .fd-stat.hot .v { color:#CBFF03; } .fd-stat .d { font-size:9px; color:#4ADE80; font-weight:600; margin-top:5px; }
+.fd-cols { display:grid; grid-template-columns:1fr 205px 158px; gap:10px; margin-bottom:11px; }
+.fp { padding:11px; border-radius:10px; background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.06); }
+.fp-h { display:flex; align-items:center; justify-content:space-between; margin-bottom:9px; } .fp-h .t { font-size:10px; font-weight:700; } .fp-h a { font-size:9px; color:#CBFF03; }
+.fb { display:flex; align-items:center; gap:7px; padding:6px 7px; border-radius:8px; margin-bottom:4px; }
+.fb.first { background:rgba(203,255,3,.04); border:1px solid rgba(203,255,3,.14); } .fb.rest { background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.05); }
+.fb .tm { font-size:9px; font-weight:600; width:28px; flex-shrink:0; } .fb.first .tm { color:#CBFF03; } .fb.rest .tm { color:#5A5A5A; }
+.fav { width:18px; height:18px; border-radius:50%; font-size:8px; font-weight:800; color:#0A0A0A; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.fb .nm { font-size:9px; font-weight:600; } .fb .ty { font-size:7px; color:#5A5A5A; margin-top:1px; }
+.fb .paid { margin-left:auto; font-size:7px; color:#4ADE80; background:rgba(74,222,128,.1); border:1px solid rgba(74,222,128,.2); padding:3px 7px; border-radius:10px; font-weight:600; }
+.fc { display:flex; align-items:center; gap:7px; padding:6px 6px; border-radius:7px; margin-bottom:2px; }
+.fc.act { background:rgba(203,255,3,.04); border:1px solid rgba(203,255,3,.1); }
+.fc .nm { font-size:9px; font-weight:600; } .fc .ms { font-size:8px; color:#5A5A5A; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.fc .un { margin-left:auto; width:13px; height:13px; border-radius:50%; background:#CBFF03; color:#000; font-size:7px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.fchat { margin-top:8px; padding:8px; border-radius:8px; background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.05); }
+.fbub { font-size:8px; padding:5px 8px; border-radius:8px; margin-bottom:5px; max-width:88%; line-height:1.3; }
+.fbub.them { background:rgba(255,255,255,.07); color:#fff; } .fbub.me { background:#CBFF03; color:#0A0A0A; font-weight:500; margin-left:auto; }
+.fweek { display:flex; align-items:flex-end; gap:3px; height:44px; margin-top:6px; } .fweek .b { flex:1; height:100%; display:flex; align-items:flex-end; } .fweek .b i { width:100%; border-radius:2px 2px 0 0; display:block; }
+.fobj .bar { height:5px; border-radius:6px; background:rgba(255,255,255,.06); overflow:hidden; margin:7px 0 6px; } .fobj .bar i { display:block; height:100%; background:linear-gradient(90deg,#9DCC00,#CBFF03); }
+.frep .row { margin-bottom:6px; } .frep .rl { display:flex; justify-content:space-between; font-size:8px; margin-bottom:3px; } .frep .rl .a { color:#8A8A8A; } .frep .rl .b { color:#fff; font-weight:600; }
+.frep .bar { height:3px; border-radius:6px; background:rgba(255,255,255,.06); overflow:hidden; } .frep .bar i { display:block; height:100%; }
+.fmini { font-size:9px; color:#5A5A5A; } .fmini b { color:#fff; }
+.finv-head { display:flex; align-items:center; gap:8px; margin-bottom:9px; }
+.finv-head .t { font-size:10px; font-weight:700; } .fbadge { display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:20px; background:rgba(74,222,128,.08); border:1px solid rgba(74,222,128,.2); font-size:8px; color:#4ADE80; font-weight:600; }
+.finvs { display:grid; grid-template-columns:repeat(5,1fr); gap:7px; }
+.finv { padding:8px; border-radius:8px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); }
+.finv .ref { font-size:9px; font-weight:700; } .finv .cl { font-size:7px; color:#5A5A5A; margin-top:1px; } .finv .am { font-size:11px; font-weight:800; color:#CBFF03; margin-top:5px; } .finv .pd { font-size:7px; color:#4ADE80; margin-top:3px; }
 
 /* laptop + phone (pc2) */
 #pc2 .head { position:absolute; top:130px; left:62px; right:62px; z-index:8; text-align:left; }
@@ -103,25 +156,91 @@ body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; widt
   <div class="logo"><span class="ic"><svg width="28" height="28" viewBox="0 0 32 32"><use href="#lg"/></svg></span><span class="nm">Madger</span></div>
   <div class="head">
     <div class="kicker">Sur ordinateur</div>
-    <div class="title">Toute ton activité.<br><span class="hl">Un seul écran.</span></div>
-    <div class="sub2">Réservations, paiements, clients et stats, centralisés.</div>
-    <div class="pills"><span class="pill">Réservations</span><span class="pill">Paiements</span><span class="pill">Factures</span><span class="pill">Statistiques</span></div>
-    <div class="ctabtn">Essai gratuit · lien en bio</div>
+    <div class="title">Tout ton business, sur <span class="hl">un seul écran.</span></div>
+    <div class="sub2">Réservations, paiements, clients, messagerie, factures et stats : tout est là.</div>
   </div>
   <div class="screen">
-    <div class="dash">
-      <div class="dtop"><div><div class="dtt">Tableau de bord</div><div class="dtd">Lundi 25 mai · 6 séances aujourd'hui</div></div><div class="dbtn">+ Nouvelle séance</div></div>
-      <div class="dbody">
-        <div class="kpis">
-          <div class="kpi hot"><div class="l">Revenus ce mois</div><div class="v">1 240 €</div><div class="d">↑ +18 %</div></div>
-          <div class="kpi"><div class="l">Séances</div><div class="v">24</div><div class="d">↑ +4</div></div>
-          <div class="kpi"><div class="l">Clients actifs</div><div class="v">12</div><div class="d">↑ +2</div></div>
-          <div class="kpi"><div class="l">Remplissage</div><div class="v">87 %</div><div class="d">↑ +5 %</div></div>
+    <div class="fd">
+      <!-- Sidebar -->
+      <div class="fd-side">
+        <div class="fd-brand"><span class="bi"><svg width="15" height="15" viewBox="0 0 32 32"><use href="#lg"/></svg></span><span class="nm">Madger</span></div>
+        <div class="fd-nav on"><span class="dot"></span>Tableau de bord</div>
+        <div class="fd-nav"><span class="dot"></span>Réservations</div>
+        <div class="fd-nav"><span class="dot"></span>Clients</div>
+        <div class="fd-nav"><span class="dot"></span>Paiements</div>
+        <div class="fd-nav"><span class="dot"></span>Statistiques</div>
+        <div class="fd-nav"><span class="dot"></span>Messages<span class="bdg">3</span></div>
+        <div class="fd-nav"><span class="dot"></span>Paramètres</div>
+        <div class="fd-prof"><span class="av">M</span><div><div class="nm">Marie Laurent</div><div class="pl">Plan Pro</div></div><span class="live"></span></div>
+      </div>
+      <!-- Main -->
+      <div class="fd-main">
+        <div class="fd-top">
+          <div><div class="fd-hi">Bonjour, Marie 👋</div><div class="fd-date">Lundi 25 mai 2026 · 6 séances aujourd'hui</div></div>
+          <div class="fd-new">+ Nouvelle séance</div>
         </div>
-        <div class="cwrap">
-          <div class="ch"><span class="t">Évolution du chiffre d'affaires</span><span class="v">+18 %</span></div>
-          <div class="bars">
-            <div class="b"><i style="height:34%;background:rgba(203,255,3,.22)"></i></div><div class="b"><i style="height:46%;background:rgba(203,255,3,.28)"></i></div><div class="b"><i style="height:40%;background:rgba(203,255,3,.28)"></i></div><div class="b"><i style="height:58%;background:rgba(203,255,3,.4)"></i></div><div class="b"><i style="height:52%;background:rgba(203,255,3,.36)"></i></div><div class="b"><i style="height:70%;background:rgba(203,255,3,.5)"></i></div><div class="b"><i style="height:64%;background:rgba(203,255,3,.46)"></i></div><div class="b"><i style="height:82%;background:rgba(203,255,3,.62)"></i></div><div class="b"><i style="height:78%;background:rgba(203,255,3,.56)"></i></div><div class="b"><i style="height:100%;background:linear-gradient(180deg,#CBFF03,#9DCC00)"></i></div>
+        <div class="fd-link">
+          <span class="lic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7" stroke="#CBFF03" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7" stroke="#CBFF03" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <div><div class="ll">Ton lien de réservation</div><div class="u">madger.app/marie-laurent</div></div>
+          <div class="btns"><span class="fd-cp">Copier</span><span class="fd-sh">Partager</span></div>
+        </div>
+        <div class="fd-stats">
+          <div class="fd-stat hot"><div class="l">Revenus ce mois</div><div class="v">1 240 €</div><div class="d">↑ +18 %</div></div>
+          <div class="fd-stat"><div class="l">Séances ce mois</div><div class="v">24</div><div class="d">↑ +4</div></div>
+          <div class="fd-stat"><div class="l">Clients actifs</div><div class="v">12</div><div class="d">↑ +2</div></div>
+          <div class="fd-stat"><div class="l">Taux de remplissage</div><div class="v">87 %</div><div class="d">↑ +5 %</div></div>
+        </div>
+        <div class="fd-cols">
+          <!-- Séances du jour -->
+          <div class="fp">
+            <div class="fp-h"><span class="t">Séances du jour</span><a>Voir le calendrier →</a></div>
+            <div class="fb first"><span class="tm">09:00</span><span class="fav" style="background:linear-gradient(150deg,#CBFF03,#8fb600)">J</span><div><div class="nm">Julien Martin</div><div class="ty">Suivi mensuel · 60 min</div></div><span class="paid">Payé</span></div>
+            <div class="fb rest"><span class="tm">10:30</span><span class="fav" style="background:linear-gradient(150deg,#4ADE80,#2fa760)">S</span><div><div class="nm">Sophie Blanc</div><div class="ty">Coaching ind. · 60 min</div></div><span class="paid">Payé</span></div>
+            <div class="fb rest"><span class="tm">12:00</span><span class="fav" style="background:linear-gradient(150deg,#9ab0c0,#5f7384)">R</span><div><div class="nm">Romain Duval</div><div class="ty">Prépa physique · 90 min</div></div><span class="paid">Payé</span></div>
+            <div class="fb rest"><span class="tm">14:00</span><span class="fav" style="background:linear-gradient(150deg,#7fd0ff,#3a9bd0)">L</span><div><div class="nm">Lucas Bernard</div><div class="ty">Coaching ind. · 60 min</div></div><span class="paid">Payé</span></div>
+            <div class="fb rest"><span class="tm">15:30</span><span class="fav" style="background:linear-gradient(150deg,#e0a0ff,#a86fd0)">C</span><div><div class="nm">Clara Morin</div><div class="ty">Coaching ind. · 60 min</div></div><span class="paid">Payé</span></div>
+          </div>
+          <!-- Messages -->
+          <div class="fp">
+            <div class="fp-h"><span class="t">Messages</span><a>Tout voir →</a></div>
+            <div class="fc act"><span class="fav" style="background:linear-gradient(150deg,#4ADE80,#2fa760)">S</span><div style="min-width:0;flex:1"><div class="nm">Sophie Blanc</div><div class="ms">Je peux décaler à 11h ?</div></div><span class="un">2</span></div>
+            <div class="fc"><span class="fav" style="background:linear-gradient(150deg,#CBFF03,#8fb600)">J</span><div style="min-width:0;flex:1"><div class="nm">Julien Martin</div><div class="ms">Top, à mercredi 💪</div></div></div>
+            <div class="fc"><span class="fav" style="background:linear-gradient(150deg,#9ab0c0,#5f7384)">R</span><div style="min-width:0;flex:1"><div class="nm">Romain Duval</div><div class="ms">Merci pour les exos 🙏</div></div></div>
+            <div class="fchat">
+              <div class="fbub them">Je peux décaler à 11h ?</div>
+              <div class="fbub me">Oui pas de souci 😊</div>
+            </div>
+          </div>
+          <!-- Colonne droite -->
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div class="fp">
+              <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:9px;font-weight:700;">Cette semaine</span><span style="font-size:11px;font-weight:800;color:#CBFF03;">428 €</span></div>
+              <div class="fweek">
+                <div class="b"><i style="height:38%;background:rgba(203,255,3,.2)"></i></div><div class="b"><i style="height:52%;background:rgba(203,255,3,.28)"></i></div><div class="b"><i style="height:45%;background:rgba(203,255,3,.28)"></i></div><div class="b"><i style="height:70%;background:rgba(203,255,3,.4)"></i></div><div class="b"><i style="height:60%;background:rgba(203,255,3,.36)"></i></div><div class="b"><i style="height:88%;background:rgba(203,255,3,.5)"></i></div><div class="b"><i style="height:100%;background:linear-gradient(180deg,#CBFF03,#9DCC00)"></i></div>
+              </div>
+            </div>
+            <div class="fp fobj">
+              <div style="display:flex;justify-content:space-between;"><span style="font-size:9px;font-weight:700;">Objectif mai</span><span style="font-size:8px;color:#5A5A5A;">1 240 / 1 500 €</span></div>
+              <div class="bar"><i style="width:83%"></i></div>
+              <div class="fmini"><b style="color:#4ADE80;">83 % atteint</b> · reste 260 €</div>
+            </div>
+            <div class="fp frep">
+              <div style="font-size:9px;font-weight:700;margin-bottom:7px;">Répartition</div>
+              <div class="row"><div class="rl"><span class="a">Coaching indiv.</span><span class="b">58 %</span></div><div class="bar"><i style="width:58%;background:#CBFF03"></i></div></div>
+              <div class="row"><div class="rl"><span class="a">Suivi mensuel</span><span class="b">25 %</span></div><div class="bar"><i style="width:25%;background:#4ADE80"></i></div></div>
+              <div class="row"><div class="rl"><span class="a">Prépa physique</span><span class="b">17 %</span></div><div class="bar"><i style="width:17%;background:rgba(203,255,3,.4)"></i></div></div>
+            </div>
+          </div>
+        </div>
+        <!-- Factures -->
+        <div class="fp">
+          <div class="finv-head"><span class="t">Factures</span><span class="fbadge"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" fill="rgba(74,222,128,0.2)" stroke="#4ADE80" stroke-width="2"/><path d="M9 12l2 2 4-4" stroke="#4ADE80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Conformes réforme e-facture 2026</span></div>
+          <div class="finvs">
+            <div class="finv"><div class="ref">FAC-024</div><div class="cl">Julien M. · 2 mai</div><div class="am">160 €</div><div class="pd">Payée</div></div>
+            <div class="finv"><div class="ref">FAC-023</div><div class="cl">Sophie B. · 2 mai</div><div class="am">50 €</div><div class="pd">Payée</div></div>
+            <div class="finv"><div class="ref">FAC-022</div><div class="cl">Romain D. · 25 avr</div><div class="am">80 €</div><div class="pd">Payée</div></div>
+            <div class="finv"><div class="ref">FAC-021</div><div class="cl">Clara M. · 25 avr</div><div class="am">50 €</div><div class="pd">Payée</div></div>
+            <div class="finv"><div class="ref">FAC-020</div><div class="cl">Julien M. · 18 avr</div><div class="am">160 €</div><div class="pd">Payée</div></div>
           </div>
         </div>
       </div>
