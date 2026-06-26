@@ -13,18 +13,22 @@ body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; widt
 .post.active { display:block; }
 
 .bg { position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden;
-  background:radial-gradient(ellipse 80% 55% at 40% -8%, rgba(203,255,3,.14), transparent 52%), radial-gradient(ellipse 60% 50% at 90% 86%, rgba(203,255,3,.06), transparent 60%), #0A0A0A; }
-.bg::before { content:''; position:absolute; left:-30%; right:-30%; bottom:-2%; height:50%;
-  background-image:linear-gradient(rgba(203,255,3,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(203,255,3,.11) 1px,transparent 1px);
-  background-size:66px 66px; transform:perspective(680px) rotateX(73deg); transform-origin:bottom center;
-  -webkit-mask-image:linear-gradient(to top,#000,transparent 72%); mask-image:linear-gradient(to top,#000,transparent 72%); opacity:.6; }
-.bg::after { content:''; position:absolute; inset:0; box-shadow:inset 0 0 170px rgba(0,0,0,.5); }
+  background:
+   radial-gradient(ellipse 66% 48% at 34% 50%, rgba(203,255,3,.13), transparent 62%),
+   radial-gradient(ellipse 85% 55% at 46% -6%, rgba(203,255,3,.13), transparent 54%),
+   radial-gradient(ellipse 55% 50% at 92% 88%, rgba(203,255,3,.07), transparent 60%),
+   #0A0A0A; }
+.bg::before { content:''; position:absolute; left:-30%; right:-30%; bottom:-2%; height:58%;
+  background-image:linear-gradient(rgba(203,255,3,.22) 1px,transparent 1px),linear-gradient(90deg,rgba(203,255,3,.15) 1px,transparent 1px);
+  background-size:62px 62px; transform:perspective(640px) rotateX(74deg); transform-origin:bottom center;
+  -webkit-mask-image:linear-gradient(to top,#000 8%,transparent 78%); mask-image:linear-gradient(to top,#000 8%,transparent 78%); opacity:.8; }
+.bg::after { content:''; position:absolute; inset:0; box-shadow:inset 0 0 130px rgba(0,0,0,.38); }
 
 .grain { position:absolute; inset:0; pointer-events:none; z-index:100; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.03; mix-blend-mode:screen; }
 .wordmark { position:absolute; top:58px; left:60px; z-index:30; }
 .wordmark .ic { width:54px; height:54px; background:#111; border-radius:15px; border:1px solid rgba(203,255,3,.18); display:flex; align-items:center; justify-content:center; box-shadow:0 0 22px rgba(203,255,3,.10); }
 
-.head { position:absolute; z-index:8; top:150px; left:556px; right:54px; }
+.head { position:absolute; z-index:8; top:118px; left:64px; right:64px; }
 .kicker { font-size:14px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:rgba(203,255,3,.78); margin-bottom:16px; display:flex; align-items:center; gap:12px; animation:aFadeDown .5s .1s ease both; }
 .kicker::before { content:''; width:26px; height:2px; background:#CBFF03; box-shadow:0 0 10px rgba(203,255,3,.9); border-radius:2px; }
 .title { font-weight:900; line-height:1.03; letter-spacing:-.04em; color:#fff; font-size:58px; animation:aFadeDown .55s .15s ease both; }
@@ -84,9 +88,13 @@ body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; widt
 @keyframes aFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
 
 /* placements */
-#o1 .obj { left:70px; top:360px; width:600px; display:flex; flex-direction:column; gap:18px; }
-#o2 .obj { left:46px; top:344px; }
-#o3 .obj { left:80px; top:380px; }
+#o1 .obj { left:150px; top:400px; width:780px; display:flex; flex-direction:column; gap:20px; }
+#o1 .bcard { padding:28px 30px; }
+#o2 .obj { left:218px; top:392px; }
+#o2 .invoice { width:644px; padding:40px 42px; }
+#o3 .obj { left:196px; top:430px; }
+#o3 .pcard { width:688px; padding:58px 50px; }
+#o3 .pcard .big { font-size:158px; }
 
 #nav { position:fixed; bottom:0; left:0; right:0; height:56px; background:rgba(7,7,7,.96); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,.055); display:flex; align-items:center; justify-content:center; gap:18px; z-index:200; }
 #nav button { background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.08); color:#fff; font-family:'Inter',sans-serif; font-size:12px; font-weight:700; padding:7px 20px; border-radius:100px; cursor:pointer; } #nav button:disabled { opacity:.18; pointer-events:none; }
@@ -108,8 +116,8 @@ body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; widt
     <div class="bcard"><span class="ic green"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="#4ADE80" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><div class="t">Réservation confirmée</div><div class="s">Julien · mercredi 9:00</div></div><span class="tag">auto</span></div>
     <div class="bcard"><span class="ic green"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="#4ADE80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><div class="t">Paiement reçu</div><div class="s">Sophie Blanc · à la résa</div></div><span class="amt">+50 €</span></div>
     <div class="bcard"><span class="ic lime"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="#CBFF03" stroke-width="2"/><path d="M14 2v6h6" stroke="#CBFF03" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><div class="t">Facture envoyée</div><div class="s">FAC-024 · conforme 2026</div></div><span class="tag">auto</span></div>
+    <div class="bcard"><span class="ic lime"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.6 7.6H22l-6 4.6 2.3 7.4-6.3-4.6L5.7 21.6 8 14.2 2 9.6h7.4z" fill="#CBFF03" stroke="#CBFF03" stroke-width="1.5" stroke-linejoin="round"/></svg></span><div><div class="t">Nouvel avis ★★★★★</div><div class="s">« Coach au top, résa hyper simple »</div></div></div>
   </div>
-  <div class="leo" style="bottom:-16px; right:18px; width:300px;"><div class="floor"></div><div class="aura"></div><img src="../character/coach-point.webp" alt=""></div>
   <div class="cta"><span class="ar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#CBFF03" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="t">Essai gratuit · <b>lien en bio</b></span></div>
   <div class="grain"></div>
 </div>
@@ -129,7 +137,6 @@ body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; widt
       <div class="badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" fill="rgba(74,222,128,0.2)" stroke="#4ADE80" stroke-width="2"/><path d="M9 12l2 2 4-4" stroke="#4ADE80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Conforme réforme e-facture 2026</div>
     </div>
   </div>
-  <div class="leo" style="bottom:-16px; right:18px; width:300px;"><div class="floor"></div><div class="aura"></div><img src="../character/coach-ok.webp" alt=""></div>
   <div class="cta"><span class="ar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#CBFF03" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="t">Essai gratuit · <b>lien en bio</b></span></div>
   <div class="grain"></div>
 </div>
@@ -148,7 +155,6 @@ body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; widt
       <div class="via"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="16" height="11" rx="2" stroke="#6a6a6a" stroke-width="2"/><path d="M8 10V7a4 4 0 018 0v3" stroke="#6a6a6a" stroke-width="2"/></svg>Encaissé via Stripe · à la réservation</div>
     </div>
   </div>
-  <div class="leo" style="bottom:-16px; right:18px; width:300px;"><div class="floor"></div><div class="aura"></div><img src="../character/coach-ok.webp" alt=""></div>
   <div class="cta"><span class="ar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#CBFF03" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="t">Essai gratuit · <b>lien en bio</b></span></div>
   <div class="grain"></div>
 </div>

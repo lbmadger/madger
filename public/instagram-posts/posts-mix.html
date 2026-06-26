@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Madger · Posts variés</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap');
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; width:100vw; height:100vh; }
+#viewer { position:fixed; top:0; left:0; right:0; bottom:56px; }
+#stage  { position:absolute; width:1080px; height:1350px; top:50%; left:50%; transform-origin:center center; }
+.post { position:absolute; inset:0; width:1080px; height:1350px; overflow:hidden; display:none; }
+.post.active { display:block; }
+.grain { position:absolute; inset:0; pointer-events:none; z-index:100; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.03; mix-blend-mode:screen; }
+.logo { position:absolute; top:60px; left:62px; display:flex; align-items:center; gap:12px; z-index:30; }
+.logo .ic { width:50px; height:50px; border-radius:14px; display:flex; align-items:center; justify-content:center; }
+.logo .nm { font-size:21px; font-weight:800; letter-spacing:-.03em; }
+
+@keyframes aUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+@keyframes aDn { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes aIn { from{opacity:0} to{opacity:1} }
+@keyframes aScale { from{opacity:0;transform:scale(.9)} to{opacity:1;transform:scale(1)} }
+
+/* ════════ A · PUNCHLINE (fond clair) ════════ */
+#a { background:#ECEBE4; }
+#a .grain { mix-blend-mode:multiply; opacity:.04; }
+#a .deco { position:absolute; right:-160px; top:-160px; width:620px; height:620px; border-radius:50%; background:radial-gradient(circle, rgba(203,255,3,.55), transparent 62%); filter:blur(10px); }
+#a .deco2 { position:absolute; left:-120px; bottom:-140px; width:420px; height:420px; border-radius:50%; background:radial-gradient(circle, rgba(203,255,3,.3), transparent 64%); filter:blur(8px); }
+#a .logo .ic { background:#0E0E0E; box-shadow:0 6px 20px rgba(0,0,0,.15); }
+#a .logo .nm { color:#0E0E0E; }
+#a .wrap { position:absolute; top:330px; left:62px; right:62px; }
+#a .eyebrow { font-size:16px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:#6f7a1a; margin-bottom:30px; animation:aDn .5s .1s both; }
+#a h1 { font-size:132px; font-weight:900; line-height:.95; letter-spacing:-.05em; color:#0C0D0A; animation:aUp .6s .15s both; }
+#a h1 .mark { display:inline-block; background:#CBFF03; padding:0 18px 8px; border-radius:14px; box-shadow:0 10px 30px rgba(203,255,3,.5); transform:rotate(-1.5deg); }
+#a .sub { margin-top:40px; font-size:30px; font-weight:500; line-height:1.5; color:#43463c; max-width:660px; animation:aUp .6s .4s both; }
+#a .foot { position:absolute; bottom:64px; left:62px; font-size:22px; font-weight:700; color:#0C0D0A; animation:aIn .8s .7s both; }
+#a .foot b { color:#6f7a1a; }
+
+/* ════════ B · AVANT / APRÈS (sombre, 2 colonnes) ════════ */
+#b { background:#0A0A0A; }
+#b .top { position:absolute; top:118px; left:62px; right:62px; }
+#b .eyebrow { font-size:14px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:rgba(255,255,255,.4); margin-bottom:14px; animation:aDn .5s .1s both; }
+#b h2 { font-size:60px; font-weight:900; letter-spacing:-.04em; color:#fff; line-height:1.0; animation:aDn .55s .15s both; }
+#b h2 .hl { color:#CBFF03; }
+#b .cols { position:absolute; top:360px; left:62px; right:62px; display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+#b .panel { border-radius:24px; padding:30px 28px; min-height:640px; animation:aUp .6s both; }
+#b .before { background:rgba(255,80,80,.05); border:1px solid rgba(255,80,80,.2); animation-delay:.2s; }
+#b .after { background:rgba(203,255,3,.05); border:1px solid rgba(203,255,3,.28); animation-delay:.34s; box-shadow:0 0 50px rgba(203,255,3,.08); }
+#b .plabel { font-size:15px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; margin-bottom:26px; display:flex; align-items:center; gap:9px; }
+#b .before .plabel { color:#ff6b6b; } #b .after .plabel { color:#CBFF03; }
+#b .it { display:flex; gap:14px; align-items:flex-start; margin-bottom:22px; font-size:23px; font-weight:600; line-height:1.3; }
+#b .before .it { color:rgba(255,255,255,.6); } #b .after .it { color:#fff; }
+#b .dot { width:28px; height:28px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; margin-top:1px; }
+#b .before .dot { background:rgba(255,80,80,.14); } #b .after .dot { background:rgba(203,255,3,.16); }
+#b .foot { position:absolute; bottom:60px; left:62px; font-size:22px; font-weight:700; color:rgba(255,255,255,.85); animation:aIn .8s .7s both; } #b .foot b { color:#CBFF03; }
+
+/* ════════ C · TÉMOIGNAGE (sombre) ════════ */
+#c { background:radial-gradient(ellipse 80% 50% at 50% 18%, rgba(203,255,3,.10), transparent 60%), #0A0A0A; }
+#c .quoteMark { position:absolute; top:150px; left:54px; font-size:340px; line-height:.7; font-weight:900; color:rgba(203,255,3,.16); font-family:Georgia,serif; }
+#c .wrap { position:absolute; top:392px; left:64px; right:64px; }
+#c .stars { display:flex; gap:8px; margin-bottom:30px; animation:aScale .5s .2s both; }
+#c .q { font-size:64px; font-weight:800; line-height:1.18; letter-spacing:-.03em; color:#fff; animation:aUp .6s .25s both; }
+#c .q .hl { color:#CBFF03; }
+#c .author { position:absolute; bottom:120px; left:64px; display:flex; align-items:center; gap:18px; animation:aUp .6s .5s both; }
+#c .av { width:74px; height:74px; border-radius:50%; background:linear-gradient(150deg,#CBFF03,#7fa800); display:flex; align-items:center; justify-content:center; font-size:30px; font-weight:800; color:#0A0A0A; }
+#c .an { font-size:26px; font-weight:800; color:#fff; } #c .ar { font-size:19px; color:rgba(255,255,255,.5); margin-top:3px; }
+
+/* ════════ D · 3 ÉTAPES (fond clair) ════════ */
+#d { background:#F4F3EE; }
+#d .grain { mix-blend-mode:multiply; opacity:.035; }
+#d .logo .ic { background:#0E0E0E; } #d .logo .nm { color:#0E0E0E; }
+#d .top { position:absolute; top:150px; left:62px; right:62px; }
+#d .eyebrow { font-size:15px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:#6f7a1a; margin-bottom:14px; animation:aDn .5s .1s both; }
+#d h2 { font-size:66px; font-weight:900; letter-spacing:-.04em; color:#0C0D0A; line-height:1.0; animation:aDn .55s .15s both; }
+#d .steps { position:absolute; top:430px; left:62px; right:62px; display:flex; flex-direction:column; gap:24px; }
+#d .step { display:flex; align-items:center; gap:26px; padding:30px 32px; border-radius:24px; background:#fff; border:1px solid rgba(0,0,0,.06); box-shadow:0 16px 40px rgba(0,0,0,.06); animation:aUp .55s both; }
+#d .step:nth-child(2){animation-delay:.15s} #d .step:nth-child(3){animation-delay:.3s}
+#d .num { width:76px; height:76px; flex-shrink:0; border-radius:20px; background:#0C0D0A; color:#CBFF03; display:flex; align-items:center; justify-content:center; font-size:38px; font-weight:900; }
+#d .st { font-size:32px; font-weight:800; color:#0C0D0A; letter-spacing:-.02em; } #d .ss { font-size:20px; color:#5a5d50; margin-top:5px; }
+#d .foot { position:absolute; bottom:62px; left:62px; display:flex; align-items:center; gap:12px; font-size:23px; font-weight:800; color:#0C0D0A; animation:aIn .8s .7s both; }
+#d .foot .pill { background:#CBFF03; color:#0C0D0A; padding:12px 24px; border-radius:100px; box-shadow:0 10px 26px rgba(203,255,3,.4); }
+
+#nav { position:fixed; bottom:0; left:0; right:0; height:56px; background:rgba(7,7,7,.96); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,.055); display:flex; align-items:center; justify-content:center; gap:18px; z-index:200; }
+#nav button { background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.08); color:#fff; font-family:'Inter',sans-serif; font-size:12px; font-weight:700; padding:7px 20px; border-radius:100px; cursor:pointer; } #nav button:disabled { opacity:.18; pointer-events:none; }
+#counter { font-size:12px; color:rgba(255,255,255,.28); min-width:40px; text-align:center; } #post-name { font-size:11px; font-weight:700; color:#CBFF03; letter-spacing:.16em; text-transform:uppercase; min-width:280px; text-align:center; }
+</style>
+</head>
+<body>
+<div id="viewer"><div id="stage">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="lg"><path d="M4 26 L9.5 10 L15 18.5 L20.5 9 L23.5 19C25 18.5 26.5 12 27.5 5.5" stroke="#CBFF03" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="27.5" cy="5.5" r="1.4" fill="#CBFF03"/></g>
+</defs></svg>
+
+<!-- A · PUNCHLINE -->
+<div class="post active" id="a">
+  <div class="deco"></div><div class="deco2"></div>
+  <div class="logo"><span class="ic"><svg width="28" height="28" viewBox="0 0 32 32"><use href="#lg"/></svg></span><span class="nm">Madger</span></div>
+  <div class="wrap">
+    <div class="eyebrow">Pour les coachs sportifs</div>
+    <h1>Tu coaches.<br>Pas de la<br><span class="mark">paperasse.</span></h1>
+    <div class="sub">Madger fait tourner ton activité — réservations, paiements et factures, en automatique.</div>
+  </div>
+  <div class="foot">madger.app · <b>le logiciel des coachs</b></div>
+  <div class="grain"></div>
+</div>
+
+<!-- B · AVANT / APRÈS -->
+<div class="post" id="b">
+  <div class="logo"><span class="ic" style="background:#111;border:1px solid rgba(203,255,3,.18)"><svg width="28" height="28" viewBox="0 0 32 32"><use href="#lg"/></svg></span><span class="nm" style="color:#fff">Madger</span></div>
+  <div class="top"><div class="eyebrow">La même semaine</div><h2>Avant. <span class="hl">Après.</span></h2></div>
+  <div class="cols">
+    <div class="panel before">
+      <div class="plabel">✕ Avant Madger</div>
+      <div class="it"><span class="dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#ff6b6b" stroke-width="3" stroke-linecap="round"/></svg></span>Créneaux calés sur WhatsApp à minuit</div>
+      <div class="it"><span class="dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#ff6b6b" stroke-width="3" stroke-linecap="round"/></svg></span>Relances gênantes pour les impayés</div>
+      <div class="it"><span class="dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#ff6b6b" stroke-width="3" stroke-linecap="round"/></svg></span>Factures Excel le dimanche soir</div>
+      <div class="it"><span class="dot"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#ff6b6b" stroke-width="3" stroke-linecap="round"/></svg></span>+5h perdues chaque semaine</div>
+    </div>
+    <div class="panel after">
+      <div class="plabel">✓ Après Madger</div>
+      <div class="it"><span class="dot"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="#CBFF03" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Un seul lien pour tout réserver</div>
+      <div class="it"><span class="dot"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="#CBFF03" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Payé d'avance, 0 € d'impayés</div>
+      <div class="it"><span class="dot"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="#CBFF03" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Factures générées toutes seules</div>
+      <div class="it"><span class="dot"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="#CBFF03" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span>+5h rendues à ton métier</div>
+    </div>
+  </div>
+  <div class="foot">→ Passe à l'après sur <b>madger.app</b></div>
+  <div class="grain"></div>
+</div>
+
+<!-- C · TÉMOIGNAGE -->
+<div class="post" id="c">
+  <div class="logo"><span class="ic" style="background:#111;border:1px solid rgba(203,255,3,.18)"><svg width="28" height="28" viewBox="0 0 32 32"><use href="#lg"/></svg></span><span class="nm" style="color:#fff">Madger</span></div>
+  <div class="quoteMark">“</div>
+  <div class="wrap">
+    <div class="stars">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="#CBFF03"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="#CBFF03"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="#CBFF03"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="#CBFF03"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="#CBFF03"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z"/></svg>
+    </div>
+    <div class="q">J'ai récupéré mes <span class="hl">dimanches soirs.</span> Plus de factures, plus de relances, plus d'impayés.</div>
+  </div>
+  <div class="author">
+    <div class="av">M</div>
+    <div><div class="an">Marie L.</div><div class="ar">Coach sportive · Paris 11e</div></div>
+  </div>
+  <div class="grain"></div>
+</div>
+
+<!-- D · 3 ÉTAPES -->
+<div class="post" id="d">
+  <div class="logo"><span class="ic"><svg width="28" height="28" viewBox="0 0 32 32"><use href="#lg"/></svg></span><span class="nm">Madger</span></div>
+  <div class="top"><div class="eyebrow">Comment ça marche</div><h2>Lancé en<br>3 étapes.</h2></div>
+  <div class="steps">
+    <div class="step"><div class="num">1</div><div><div class="st">Partage ton lien</div><div class="ss">Dans ta bio, en story, par message.</div></div></div>
+    <div class="step"><div class="num">2</div><div><div class="st">Le client réserve & paie</div><div class="ss">En 30 secondes, depuis son téléphone.</div></div></div>
+    <div class="step"><div class="num">3</div><div><div class="st">Tu coaches, c'est tout</div><div class="ss">Rappels et factures partent tout seuls.</div></div></div>
+  </div>
+  <div class="foot">Essaie gratuitement <span class="pill">madger.app</span></div>
+  <div class="grain"></div>
+</div>
+
+</div></div>
+<div id="nav">
+  <button id="btn-prev" onclick="nav(-1)" disabled>← Préc.</button>
+  <div id="post-name">Punchline</div>
+  <div id="counter">1 / 4</div>
+  <button id="btn-next" onclick="nav(1)">Suiv. →</button>
+</div>
+<script>
+const posts=[{id:'a',name:'Punchline (clair)'},{id:'b',name:'Avant / Après'},{id:'c',name:'Témoignage'},{id:'d',name:'3 étapes (clair)'}];
+let current=0;
+function scaleStage(){const s=document.getElementById('stage');const vw=window.innerWidth,vh=window.innerHeight-56;s.style.transform=`translate(-50%,-50%) scale(${Math.min(vw/1080,vh/1350)*.97})`;}
+function nav(d){document.getElementById(posts[current].id).classList.remove('active');current=Math.max(0,Math.min(posts.length-1,current+d));document.getElementById(posts[current].id).classList.add('active');document.getElementById('counter').textContent=`${current+1} / ${posts.length}`;document.getElementById('post-name').textContent=posts[current].name;document.getElementById('btn-prev').disabled=current===0;document.getElementById('btn-next').disabled=current===posts.length-1;}
+window.addEventListener('resize',scaleStage);window.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown')nav(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')nav(-1);});
+scaleStage();
+</script>
+</body>
+</html>
