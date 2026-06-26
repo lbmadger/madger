@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Madger · Visuels PC</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap');
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; width:100vw; height:100vh; }
+#viewer { position:fixed; top:0; left:0; right:0; bottom:56px; }
+#stage  { position:absolute; width:1080px; height:1350px; top:50%; left:50%; transform-origin:center center; }
+.post { position:absolute; inset:0; width:1080px; height:1350px; overflow:hidden; display:none; background:#0A0A0A; }
+.post.active { display:block; }
+
+.bg { position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden;
+  background:radial-gradient(ellipse 75% 55% at 62% 30%, rgba(203,255,3,.13), transparent 58%), radial-gradient(ellipse 70% 50% at 30% 90%, rgba(203,255,3,.06), transparent 60%), #0A0A0A; }
+.bg::before { content:''; position:absolute; left:-30%; right:-30%; bottom:-2%; height:54%;
+  background-image:linear-gradient(rgba(203,255,3,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(203,255,3,.12) 1px,transparent 1px);
+  background-size:64px 64px; transform:perspective(660px) rotateX(74deg); transform-origin:bottom center;
+  -webkit-mask-image:linear-gradient(to top,#000 6%,transparent 78%); mask-image:linear-gradient(to top,#000 6%,transparent 78%); opacity:.6; }
+.bg::after { content:''; position:absolute; inset:0; box-shadow:inset 0 0 150px rgba(0,0,0,.4); }
+.grain { position:absolute; inset:0; pointer-events:none; z-index:100; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.03; mix-blend-mode:screen; }
+.logo { position:absolute; top:60px; left:62px; display:flex; align-items:center; gap:12px; z-index:30; }
+.logo .ic { width:50px; height:50px; border-radius:14px; background:#111; border:1px solid rgba(203,255,3,.18); display:flex; align-items:center; justify-content:center; box-shadow:0 0 22px rgba(203,255,3,.1); }
+.logo .nm { font-size:21px; font-weight:800; letter-spacing:-.03em; color:#fff; }
+
+.kicker { font-size:14px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:rgba(203,255,3,.78); margin-bottom:16px; display:flex; align-items:center; gap:12px; }
+.kicker::before { content:''; width:26px; height:2px; background:#CBFF03; box-shadow:0 0 10px rgba(203,255,3,.9); border-radius:2px; }
+.title { font-weight:900; line-height:1.0; letter-spacing:-.04em; color:#fff; }
+.hl { background:linear-gradient(90deg,#CBFF03,#a8e600); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; filter:drop-shadow(0 0 20px rgba(203,255,3,.4)); }
+.sub2 { font-size:23px; font-weight:500; line-height:1.5; color:rgba(255,255,255,.58); }
+.pills { display:flex; flex-wrap:wrap; gap:10px; }
+.pill { padding:9px 16px; border-radius:100px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); font-size:16px; font-weight:600; color:rgba(255,255,255,.8); }
+.ctabtn { display:inline-flex; align-items:center; gap:12px; background:#CBFF03; color:#0A0A0A; font-size:21px; font-weight:800; padding:18px 30px; border-radius:100px; box-shadow:0 16px 40px rgba(203,255,3,.28); }
+
+/* ── DASHBOARD (contenu d'écran réutilisable) ── */
+.dash { width:100%; height:100%; background:#0D0D0D; display:flex; flex-direction:column; }
+.dash .dtop { display:flex; align-items:center; justify-content:space-between; padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.06); }
+.dash .dtt { font-size:17px; font-weight:800; color:#fff; } .dash .dtd { font-size:12px; color:#6a6a6a; margin-top:2px; }
+.dash .dbtn { background:#CBFF03; color:#000; font-size:12px; font-weight:700; padding:8px 14px; border-radius:9px; }
+.dash .dbody { flex:1; padding:18px 20px; }
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+.kpi { padding:14px; border-radius:13px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); }
+.kpi .l { font-size:11px; color:#6a6a6a; } .kpi .v { font-size:25px; font-weight:800; color:#fff; letter-spacing:-.03em; margin-top:8px; line-height:1; } .kpi.hot .v { color:#CBFF03; } .kpi .d { font-size:11px; color:#4ADE80; font-weight:600; margin-top:7px; }
+.cwrap { padding:16px; border-radius:14px; background:rgba(255,255,255,.02); border:1px solid rgba(255,255,255,.06); }
+.cwrap .ch { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; } .cwrap .ch .t { font-size:14px; font-weight:700; color:#fff; } .cwrap .ch .v { font-size:15px; font-weight:800; color:#CBFF03; }
+.bars { display:flex; align-items:flex-end; gap:9px; height:150px; }
+.bars .b { flex:1; height:100%; display:flex; align-items:flex-end; } .bars .b i { width:100%; border-radius:6px 6px 0 0; display:block; }
+
+/* écran incliné (pc1) */
+#pc1 .head { position:absolute; top:250px; left:62px; width:470px; z-index:8; }
+#pc1 .title { font-size:66px; }
+#pc1 .sub2 { margin-top:26px; }
+#pc1 .pills { margin-top:26px; }
+#pc1 .ctabtn { margin-top:30px; }
+#pc1 .screen { position:absolute; top:330px; right:-150px; width:820px; height:560px; border-radius:18px; overflow:hidden; border:1px solid rgba(203,255,3,.22); z-index:5;
+  box-shadow:0 50px 120px rgba(0,0,0,.72), 0 0 70px rgba(203,255,3,.18), 0 0 160px rgba(203,255,3,.1);
+  transform:perspective(2400px) rotateY(-23deg) rotateX(5deg) rotateZ(-1deg);
+  animation:aRise 1s .15s cubic-bezier(.16,1,.3,1) both; }
+#pc1 .screen::after { content:''; position:absolute; inset:0; border-radius:18px; padding:1.5px; pointer-events:none; background:linear-gradient(135deg,#e6ff7a,rgba(203,255,3,.05) 40%,rgba(203,255,3,.05) 60%,#a8e600); -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; }
+
+/* laptop + phone (pc2) */
+#pc2 .head { position:absolute; top:130px; left:62px; right:62px; z-index:8; text-align:left; }
+#pc2 .title { font-size:60px; }
+#pc2 .sub2 { margin-top:22px; max-width:640px; }
+#pc2 .stage3d { position:absolute; left:0; right:0; top:470px; display:flex; justify-content:center; perspective:2600px; z-index:5; }
+#pc2 .rig { position:relative; transform:rotateX(8deg) rotateY(-7deg) rotateZ(-1deg); transform-style:preserve-3d; animation:aRise 1s .2s cubic-bezier(.16,1,.3,1) both; }
+#pc2 .lid { width:760px; height:476px; border:14px solid #15161a; border-radius:20px; background:#000; overflow:hidden; box-shadow:0 50px 110px rgba(0,0,0,.7), 0 0 70px rgba(203,255,3,.16), 0 0 150px rgba(203,255,3,.1); position:relative; }
+#pc2 .lid::after { content:''; position:absolute; inset:0; border-radius:8px; padding:1.5px; pointer-events:none; background:linear-gradient(135deg,#e6ff7a,rgba(203,255,3,.04) 45%,#a8e600); -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; }
+#pc2 .base { width:880px; height:30px; margin-left:-74px; margin-top:-2px; background:linear-gradient(180deg,#2a2b30,#0e0e10); border-radius:4px 4px 16px 16px; box-shadow:0 30px 50px rgba(0,0,0,.6); position:relative; }
+#pc2 .base::before { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:130px; height:9px; background:#0a0a0a; border-radius:0 0 10px 10px; }
+#pc2 .pphone { position:absolute; right:-30px; bottom:-46px; width:212px; height:432px; border-radius:34px; background:linear-gradient(150deg,#2c2c2e,#0a0a0a); padding:8px; box-shadow:0 40px 80px rgba(0,0,0,.6), 0 0 50px rgba(203,255,3,.16); z-index:10; transform:rotateY(6deg); }
+#pc2 .pphone .ps { width:100%; height:100%; border-radius:27px; overflow:hidden; background:#0D0D0D; }
+
+@keyframes aRise { from{opacity:0; transform:translateY(40px) perspective(2400px) rotateY(-23deg) rotateX(5deg)} to{opacity:1} }
+@keyframes aGrowH { from{height:0} }
+
+#nav { position:fixed; bottom:0; left:0; right:0; height:56px; background:rgba(7,7,7,.96); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,.055); display:flex; align-items:center; justify-content:center; gap:18px; z-index:200; }
+#nav button { background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.08); color:#fff; font-family:'Inter',sans-serif; font-size:12px; font-weight:700; padding:7px 20px; border-radius:100px; cursor:pointer; } #nav button:disabled { opacity:.18; pointer-events:none; }
+#counter { font-size:12px; color:rgba(255,255,255,.28); min-width:40px; text-align:center; } #post-name { font-size:11px; font-weight:700; color:#CBFF03; letter-spacing:.16em; text-transform:uppercase; min-width:280px; text-align:center; }
+</style>
+</head>
+<body>
+<div id="viewer"><div id="stage">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="lg"><path d="M4 26 L9.5 10 L15 18.5 L20.5 9 L23.5 19C25 18.5 26.5 12 27.5 5.5" stroke="#CBFF03" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="27.5" cy="5.5" r="1.4" fill="#CBFF03"/></g>
+</defs></svg>
+
+<!-- ════ PC1 · ÉCRAN INCLINÉ ════ -->
+<div class="post active" id="pc1">
+  <div class="bg"></div>
+  <div class="logo"><span class="ic"><svg width="28" height="28" viewBox="0 0 32 32"><use href="#lg"/></svg></span><span class="nm">Madger</span></div>
+  <div class="head">
+    <div class="kicker">Sur ordinateur</div>
+    <div class="title">Toute ton activité.<br><span class="hl">Un seul écran.</span></div>
+    <div class="sub2">Réservations, paiements, clients et stats, centralisés.</div>
+    <div class="pills"><span class="pill">Réservations</span><span class="pill">Paiements</span><span class="pill">Factures</span><span class="pill">Statistiques</span></div>
+    <div class="ctabtn">Essai gratuit · lien en bio</div>
+  </div>
+  <div class="screen">
+    <div class="dash">
+      <div class="dtop"><div><div class="dtt">Tableau de bord</div><div class="dtd">Lundi 25 mai · 6 séances aujourd'hui</div></div><div class="dbtn">+ Nouvelle séance</div></div>
+      <div class="dbody">
+        <div class="kpis">
+          <div class="kpi hot"><div class="l">Revenus ce mois</div><div class="v">1 240 €</div><div class="d">↑ +18 %</div></div>
+          <div class="kpi"><div class="l">Séances</div><div class="v">24</div><div class="d">↑ +4</div></div>
+          <div class="kpi"><div class="l">Clients actifs</div><div class="v">12</div><div class="d">↑ +2</div></div>
+          <div class="kpi"><div class="l">Remplissage</div><div class="v">87 %</div><div class="d">↑ +5 %</div></div>
+        </div>
+        <div class="cwrap">
+          <div class="ch"><span class="t">Évolution du chiffre d'affaires</span><span class="v">+18 %</span></div>
+          <div class="bars">
+            <div class="b"><i style="height:34%;background:rgba(203,255,3,.22)"></i></div><div class="b"><i style="height:46%;background:rgba(203,255,3,.28)"></i></div><div class="b"><i style="height:40%;background:rgba(203,255,3,.28)"></i></div><div class="b"><i style="height:58%;background:rgba(203,255,3,.4)"></i></div><div class="b"><i style="height:52%;background:rgba(203,255,3,.36)"></i></div><div class="b"><i style="height:70%;background:rgba(203,255,3,.5)"></i></div><div class="b"><i style="height:64%;background:rgba(203,255,3,.46)"></i></div><div class="b"><i style="height:82%;background:rgba(203,255,3,.62)"></i></div><div class="b"><i style="height:78%;background:rgba(203,255,3,.56)"></i></div><div class="b"><i style="height:100%;background:linear-gradient(180deg,#CBFF03,#9DCC00)"></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="grain"></div>
+</div>
+
+<!-- ════ PC2 · LAPTOP + TÉLÉPHONE ════ -->
+<div class="post" id="pc2">
+  <div class="bg"></div>
+  <div class="logo"><span class="ic"><svg width="28" height="28" viewBox="0 0 32 32"><use href="#lg"/></svg></span><span class="nm">Madger</span></div>
+  <div class="head">
+    <div class="kicker">Sur ordi comme sur mobile</div>
+    <div class="title">Partout avec toi.<br>Du <span class="hl">bureau au terrain.</span></div>
+    <div class="sub2">Le même Madger sur ton ordi et dans ta poche. Tout est synchronisé en temps réel.</div>
+  </div>
+  <div class="stage3d">
+    <div class="rig">
+      <div class="lid">
+        <div class="dash">
+          <div class="dtop"><div><div class="dtt">Tableau de bord</div><div class="dtd">Lundi 25 mai</div></div><div class="dbtn">+ Séance</div></div>
+          <div class="dbody">
+            <div class="kpis">
+              <div class="kpi hot"><div class="l">Revenus</div><div class="v">1 240 €</div><div class="d">↑ +18 %</div></div>
+              <div class="kpi"><div class="l">Séances</div><div class="v">24</div><div class="d">↑ +4</div></div>
+              <div class="kpi"><div class="l">Clients</div><div class="v">12</div><div class="d">↑ +2</div></div>
+              <div class="kpi"><div class="l">Remplissage</div><div class="v">87 %</div><div class="d">↑ +5 %</div></div>
+            </div>
+            <div class="cwrap">
+              <div class="ch"><span class="t">Évolution du CA</span><span class="v">+18 %</span></div>
+              <div class="bars">
+                <div class="b"><i style="height:38%;background:rgba(203,255,3,.25)"></i></div><div class="b"><i style="height:52%;background:rgba(203,255,3,.3)"></i></div><div class="b"><i style="height:46%;background:rgba(203,255,3,.3)"></i></div><div class="b"><i style="height:66%;background:rgba(203,255,3,.42)"></i></div><div class="b"><i style="height:60%;background:rgba(203,255,3,.38)"></i></div><div class="b"><i style="height:84%;background:rgba(203,255,3,.55)"></i></div><div class="b"><i style="height:100%;background:linear-gradient(180deg,#CBFF03,#9DCC00)"></i></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="base"></div>
+      <div class="pphone">
+        <div class="ps">
+          <div style="padding:14px 12px;">
+            <div style="font-size:14px;font-weight:800;color:#fff;">Bonjour, Marie 👋</div>
+            <div style="font-size:9px;color:#6a6a6a;margin-top:2px;">6 séances aujourd'hui</div>
+            <div style="margin-top:12px;padding:11px;border-radius:11px;background:rgba(203,255,3,.06);border:1px solid rgba(203,255,3,.16);">
+              <div style="font-size:9px;color:#6a6a6a;">Revenus ce mois</div><div style="font-size:20px;font-weight:800;color:#CBFF03;margin-top:4px;">1 240 €</div>
+            </div>
+            <div style="margin-top:9px;display:flex;align-items:center;gap:8px;padding:9px;border-radius:10px;background:rgba(203,255,3,.05);border:1px solid rgba(203,255,3,.14);">
+              <div style="font-size:10px;font-weight:700;color:#CBFF03;">09:00</div><div style="flex:1;"><div style="font-size:11px;font-weight:600;color:#fff;">Julien Martin</div><div style="font-size:8px;color:#6a6a6a;">Suivi · 60 min</div></div><div style="font-size:8px;color:#4ADE80;">Payé</div>
+            </div>
+            <div style="margin-top:7px;display:flex;align-items:center;gap:8px;padding:9px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);">
+              <div style="font-size:10px;font-weight:700;color:#6a6a6a;">10:30</div><div style="flex:1;"><div style="font-size:11px;font-weight:600;color:#fff;">Sophie Blanc</div><div style="font-size:8px;color:#6a6a6a;">Coaching · 60 min</div></div><div style="font-size:8px;color:#4ADE80;">Payé</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="grain"></div>
+</div>
+
+</div></div>
+<div id="nav">
+  <button id="btn-prev" onclick="nav(-1)" disabled>← Préc.</button>
+  <div id="post-name">Écran incliné</div>
+  <div id="counter">1 / 2</div>
+  <button id="btn-next" onclick="nav(1)">Suiv. →</button>
+</div>
+<script>
+const posts=[{id:'pc1',name:'Écran incliné'},{id:'pc2',name:'Laptop + téléphone'}];
+let current=0;
+function scaleStage(){const s=document.getElementById('stage');const vw=window.innerWidth,vh=window.innerHeight-56;s.style.transform=`translate(-50%,-50%) scale(${Math.min(vw/1080,vh/1350)*.97})`;}
+function nav(d){document.getElementById(posts[current].id).classList.remove('active');current=Math.max(0,Math.min(posts.length-1,current+d));document.getElementById(posts[current].id).classList.add('active');document.getElementById('counter').textContent=`${current+1} / ${posts.length}`;document.getElementById('post-name').textContent=posts[current].name;document.getElementById('btn-prev').disabled=current===0;document.getElementById('btn-next').disabled=current===posts.length-1;}
+window.addEventListener('resize',scaleStage);window.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown')nav(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')nav(-1);});
+scaleStage();
+</script>
+</body>
+</html>
