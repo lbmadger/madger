@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Madger · Posts variés 2</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap');
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; width:100vw; height:100vh; }
+#viewer { position:fixed; top:0; left:0; right:0; bottom:56px; }
+#stage  { position:absolute; width:1080px; height:1350px; top:50%; left:50%; transform-origin:center center; }
+.post { position:absolute; inset:0; width:1080px; height:1350px; overflow:hidden; display:none; }
+.post.active { display:block; }
+.grain { position:absolute; inset:0; pointer-events:none; z-index:100; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); }
+.logo { position:absolute; top:60px; left:62px; display:flex; align-items:center; gap:12px; z-index:30; }
+.logo .ic { width:50px; height:50px; border-radius:14px; display:flex; align-items:center; justify-content:center; }
+.logo .nm { font-size:21px; font-weight:800; letter-spacing:-.03em; }
+@keyframes aUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+@keyframes aDn { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes aIn { from{opacity:0} to{opacity:1} }
+@keyframes aScale { from{opacity:0;transform:scale(.9)} to{opacity:1;transform:scale(1)} }
+
+/* ── PUNCHLINE (fond clair) ── */
+.punch .grain { mix-blend-mode:multiply; opacity:.04; }
+.punch .logo .ic { background:#0E0E0E; box-shadow:0 6px 20px rgba(0,0,0,.15); }
+.punch .logo .nm { color:#0E0E0E; }
+.punch .wrap { position:absolute; top:340px; left:62px; right:62px; }
+.punch .eyebrow { font-size:16px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:#6f7a1a; margin-bottom:30px; animation:aDn .5s .1s both; }
+.punch h1 { font-size:128px; font-weight:900; line-height:.95; letter-spacing:-.05em; color:#0C0D0A; animation:aUp .6s .15s both; }
+.punch h1 .mark { display:inline-block; background:#CBFF03; padding:0 18px 8px; border-radius:14px; box-shadow:0 10px 30px rgba(203,255,3,.5); transform:rotate(-1.5deg); }
+.punch .sub { margin-top:40px; font-size:30px; font-weight:500; line-height:1.5; color:#43463c; max-width:680px; animation:aUp .6s .4s both; }
+.punch .foot { position:absolute; bottom:64px; left:62px; font-size:22px; font-weight:700; color:#0C0D0A; animation:aIn .8s .7s both; }
+.punch .foot b { color:#6f7a1a; }
+.punch .deco { position:absolute; border-radius:50%; filter:blur(10px); }
+
+/* ── TÉMOIGNAGE (fond sombre) ── */
+.testi { background:radial-gradient(ellipse 80% 50% at 50% 18%, rgba(203,255,3,.10), transparent 60%), #0A0A0A; }
+.testi .logo .ic { background:#111; border:1px solid rgba(203,255,3,.18); } .testi .logo .nm { color:#fff; }
+.testi .quoteMark { position:absolute; top:150px; left:54px; font-size:340px; line-height:.7; font-weight:900; color:rgba(203,255,3,.16); font-family:Georgia,serif; }
+.testi .wrap { position:absolute; top:392px; left:64px; right:64px; }
+.testi .stars { display:flex; gap:8px; margin-bottom:30px; animation:aScale .5s .2s both; }
+.testi .q { font-size:60px; font-weight:800; line-height:1.2; letter-spacing:-.03em; color:#fff; animation:aUp .6s .25s both; }
+.testi .q .hl { color:#CBFF03; }
+.testi .author { position:absolute; bottom:120px; left:64px; display:flex; align-items:center; gap:18px; animation:aUp .6s .5s both; }
+.testi .av { width:74px; height:74px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:30px; font-weight:800; color:#0A0A0A; }
+.testi .an { font-size:26px; font-weight:800; color:#fff; } .testi .ar { font-size:19px; color:rgba(255,255,255,.5); margin-top:3px; }
+
+#nav { position:fixed; bottom:0; left:0; right:0; height:56px; background:rgba(7,7,7,.96); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,.055); display:flex; align-items:center; justify-content:center; gap:18px; z-index:200; }
+#nav button { background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.08); color:#fff; font-family:'Inter',sans-serif; font-size:12px; font-weight:700; padding:7px 20px; border-radius:100px; cursor:pointer; } #nav button:disabled { opacity:.18; pointer-events:none; }
+#counter { font-size:12px; color:rgba(255,255,255,.28); min-width:40px; text-align:center; } #post-name { font-size:11px; font-weight:700; color:#CBFF03; letter-spacing:.16em; text-transform:uppercase; min-width:280px; text-align:center; }
+</style>
+</head>
+<body>
+<div id="viewer"><div id="stage">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="lg"><path d="M4 26 L9.5 10 L15 18.5 L20.5 9 L23.5 19C25 18.5 26.5 12 27.5 5.5" stroke="#CBFF03" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="27.5" cy="5.5" r="1.4" fill="#CBFF03"/></g>
+  <g id="star"><path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.8 5.9 20.4l1.4-6.8L2.2 9l6.9-.7z" fill="#CBFF03"/></g>
+</defs></svg>
+
+<!-- E · PUNCHLINE 1 -->
+<div class="post active punch" id="e" style="background:#ECEBE4;">
+  <div class="deco" style="right:-150px; top:-140px; width:560px; height:560px; background:radial-gradient(circle, rgba(203,255,3,.5), transparent 62%);"></div>
+  <div class="deco" style="left:-120px; bottom:-150px; width:400px; height:400px; background:radial-gradient(circle, rgba(203,255,3,.28), transparent 64%);"></div>
+  <div class="logo"><span class="ic"><svg width="28" height="28" viewBox="0 0 32 32"><use href="#lg"/></svg></span><span class="nm">Madger</span></div>
+  <div class="wrap">
+    <div class="eyebrow">Coach sportif</div>
+    <h1>Coache plus.<br>Gère <span class="mark">moins.</span></h1>
+    <div class="sub">Madger automatise les réservations, les paiements et les factures. Tu gardes ton énergie pour tes clients.</div>
+  </div>
+  <div class="foot">madger.app · <b>le logiciel des coachs</b></div>
+  <div class="grain"></div>
+</div>
+
+<!-- F · TÉMOIGNAGE 1 -->
+<div class="post testi" id="f">
+  <div class="logo"><span class="ic"><svg width="28" height="28" viewBox="0 0 32 32"><use href="#lg"/></svg></span><span class="nm">Madger</span></div>
+  <div class="quoteMark">“</div>
+  <div class="wrap">
+    <div class="stars"><svg width="40" height="40" viewBox="0 0 24 24"><use href="#star"/></svg><svg width="40" height="40" viewBox="0 0 24 24"><use href="#star"/></svg><svg width="40" height="40" viewBox="0 0 24 24"><use href="#star"/></svg><svg width="40" height="40" viewBox="0 0 24 24"><use href="#star"/></svg><svg width="40" height="40" viewBox="0 0 24 24"><use href="#star"/></svg></div>
+    <div class="q">Je sais enfin <span class="hl">qui vient et qui a payé,</span> sans rien vérifier. Grosse tranquillité.</div>
+  </div>
+  <div class="author"><div class="av" style="background:linear-gradient(150deg,#CBFF03,#7fa800);">T</div><div><div class="an">Thomas B.</div><div class="ar">Prépa physique · Lyon</div></div></div>
+  <div class="grain" style="opacity:.03; mix-blend-mode:screen;"></div>
+</div>
+
+<!-- G · PUNCHLINE 2 -->
+<div class="post punch" id="g" style="background:#EAEDE7;">
+  <div class="deco" style="left:-150px; top:-120px; width:520px; height:520px; background:radial-gradient(circle, rgba(203,255,3,.42), transparent 63%);"></div>
+  <div class="deco" style="right:-130px; bottom:-160px; width:460px; height:460px; background:radial-gradient(circle, rgba(203,255,3,.3), transparent 64%);"></div>
+  <div class="logo"><span class="ic"><svg width="28" height="28" viewBox="0 0 32 32"><use href="#lg"/></svg></span><span class="nm">Madger</span></div>
+  <div class="wrap">
+    <div class="eyebrow">Un seul lien</div>
+    <h1>Un lien.<br>Tout est <span class="mark">réglé.</span></h1>
+    <div class="sub">Réservation, paiement et facture partent du même lien. Tu le partages, le reste se fait tout seul.</div>
+  </div>
+  <div class="foot">madger.app · <b>le logiciel des coachs</b></div>
+  <div class="grain"></div>
+</div>
+
+<!-- H · TÉMOIGNAGE 2 -->
+<div class="post testi" id="h">
+  <div class="logo"><span class="ic"><svg width="28" height="28" viewBox="0 0 32 32"><use href="#lg"/></svg></span><span class="nm">Madger</span></div>
+  <div class="quoteMark">“</div>
+  <div class="wrap">
+    <div class="stars"><svg width="40" height="40" viewBox="0 0 24 24"><use href="#star"/></svg><svg width="40" height="40" viewBox="0 0 24 24"><use href="#star"/></svg><svg width="40" height="40" viewBox="0 0 24 24"><use href="#star"/></svg><svg width="40" height="40" viewBox="0 0 24 24"><use href="#star"/></svg><svg width="40" height="40" viewBox="0 0 24 24"><use href="#star"/></svg></div>
+    <div class="q">J'ai mis le lien en bio et les gens réservent direct. <span class="hl">Fini les 30 messages</span> par jour.</div>
+  </div>
+  <div class="author"><div class="av" style="background:linear-gradient(150deg,#7fe0ff,#3aa8d0);">I</div><div><div class="an">Inès K.</div><div class="ar">Coach running · Bordeaux</div></div></div>
+  <div class="grain" style="opacity:.03; mix-blend-mode:screen;"></div>
+</div>
+
+</div></div>
+<div id="nav">
+  <button id="btn-prev" onclick="nav(-1)" disabled>← Préc.</button>
+  <div id="post-name">Punchline</div>
+  <div id="counter">1 / 4</div>
+  <button id="btn-next" onclick="nav(1)">Suiv. →</button>
+</div>
+<script>
+const posts=[{id:'e',name:'Punchline · coache plus'},{id:'f',name:'Témoignage · Thomas'},{id:'g',name:'Punchline · un lien'},{id:'h',name:'Témoignage · Inès'}];
+let current=0;
+function scaleStage(){const s=document.getElementById('stage');const vw=window.innerWidth,vh=window.innerHeight-56;s.style.transform=`translate(-50%,-50%) scale(${Math.min(vw/1080,vh/1350)*.97})`;}
+function nav(d){document.getElementById(posts[current].id).classList.remove('active');current=Math.max(0,Math.min(posts.length-1,current+d));document.getElementById(posts[current].id).classList.add('active');document.getElementById('counter').textContent=`${current+1} / ${posts.length}`;document.getElementById('post-name').textContent=posts[current].name;document.getElementById('btn-prev').disabled=current===0;document.getElementById('btn-next').disabled=current===posts.length-1;}
+window.addEventListener('resize',scaleStage);window.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown')nav(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')nav(-1);});
+scaleStage();
+</script>
+</body>
+</html>
