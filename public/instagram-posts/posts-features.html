@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Madger · Fonctionnalités</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap');
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; width:100vw; height:100vh; }
+#viewer { position:fixed; top:0; left:0; right:0; bottom:56px; }
+#stage  { position:absolute; width:1080px; height:1350px; top:50%; left:50%; transform-origin:center center; }
+.post { position:absolute; inset:0; width:1080px; height:1350px; overflow:hidden; display:none; background:#0A0A0A; }
+.post.active { display:block; }
+
+.bg { position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden;
+  background:radial-gradient(ellipse 70% 50% at 50% 46%, rgba(203,255,3,.12), transparent 62%), radial-gradient(ellipse 85% 50% at 50% -6%, rgba(203,255,3,.10), transparent 54%), #0A0A0A; }
+.bg::before { content:''; position:absolute; left:-30%; right:-30%; bottom:-2%; height:54%;
+  background-image:linear-gradient(rgba(203,255,3,.2) 1px,transparent 1px),linear-gradient(90deg,rgba(203,255,3,.13) 1px,transparent 1px);
+  background-size:64px 64px; transform:perspective(660px) rotateX(74deg); transform-origin:bottom center;
+  -webkit-mask-image:linear-gradient(to top,#000 6%,transparent 78%); mask-image:linear-gradient(to top,#000 6%,transparent 78%); opacity:.7; }
+.bg::after { content:''; position:absolute; inset:0; box-shadow:inset 0 0 150px rgba(0,0,0,.42); }
+
+.grain { position:absolute; inset:0; pointer-events:none; z-index:100; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.03; mix-blend-mode:screen; }
+.logo { position:absolute; top:60px; left:62px; display:flex; align-items:center; gap:12px; z-index:30; }
+.logo .ic { width:50px; height:50px; border-radius:14px; display:flex; align-items:center; justify-content:center; }
+.logo .nm { font-size:21px; font-weight:800; letter-spacing:-.03em; }
+
+.head { position:absolute; top:140px; left:62px; right:62px; z-index:8; }
+.kicker { font-size:14px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:rgba(203,255,3,.78); margin-bottom:16px; display:flex; align-items:center; gap:12px; animation:aDn .5s .1s both; }
+.kicker::before { content:''; width:26px; height:2px; background:#CBFF03; box-shadow:0 0 10px rgba(203,255,3,.9); border-radius:2px; }
+.title { font-weight:900; font-size:60px; line-height:1.02; letter-spacing:-.04em; color:#fff; animation:aDn .55s .15s both; }
+.title .hl { background:linear-gradient(90deg,#CBFF03,#a8e600); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; filter:drop-shadow(0 0 20px rgba(203,255,3,.4)); }
+.cta { position:absolute; left:62px; bottom:62px; z-index:9; display:flex; align-items:center; gap:14px; animation:aIn .8s .6s both; }
+.cta .ar { width:44px; height:44px; border-radius:50%; border:1.5px solid rgba(203,255,3,.6); display:flex; align-items:center; justify-content:center; box-shadow:0 0 18px rgba(203,255,3,.3); }
+.cta .t { font-size:23px; font-weight:700; color:#fff; } .cta .t b { color:#CBFF03; }
+
+@keyframes aUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+@keyframes aDn { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes aIn { from{opacity:0} to{opacity:1} }
+@keyframes aScale { from{opacity:0;transform:scale(.9)} to{opacity:1;transform:scale(1)} }
+@keyframes aGrowH { from{height:0} }
+
+.glass { background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.022)); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border:1px solid rgba(203,255,3,.2); box-shadow:0 24px 60px rgba(0,0,0,.5), 0 0 34px rgba(203,255,3,.1), inset 0 1px 0 rgba(255,255,255,.12); }
+
+/* POST 1 · RAPPELS */
+#f1 .rem { position:absolute; left:130px; right:130px; top:520px; display:flex; flex-direction:column; gap:18px; }
+#f1 .rcard { display:flex; align-items:center; gap:18px; padding:24px 26px; border-radius:22px; animation:aUp .5s .3s both; }
+#f1 .rcard .ic { width:54px; height:54px; flex-shrink:0; border-radius:14px; background:rgba(203,255,3,.12); border:1px solid rgba(203,255,3,.32); display:flex; align-items:center; justify-content:center; box-shadow:0 0 18px rgba(203,255,3,.2); }
+#f1 .rcard .t { font-size:24px; font-weight:700; color:#fff; } #f1 .rcard .s { font-size:17px; color:rgba(255,255,255,.5); margin-top:4px; } #f1 .rcard .tm { margin-left:auto; font-size:15px; color:rgba(255,255,255,.32); font-weight:600; }
+#f1 .reply { align-self:flex-end; max-width:70%; padding:18px 22px; border-radius:22px 22px 6px 22px; background:#CBFF03; color:#0A0A0A; font-size:21px; font-weight:700; box-shadow:0 14px 30px rgba(203,255,3,.22); animation:aUp .5s .5s both; }
+
+/* POST 2 · STATS */
+#f2 .panel { position:absolute; left:120px; right:120px; top:470px; padding:30px; border-radius:24px; }
+#f2 .srow { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }
+#f2 .sc { padding:20px; border-radius:16px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07); }
+#f2 .sc .l { font-size:15px; color:#7a7a7a; } #f2 .sc .v { font-size:42px; font-weight:900; letter-spacing:-.03em; margin-top:8px; line-height:1; color:#fff; } #f2 .sc .v.lime { color:#CBFF03; } #f2 .sc .d { font-size:15px; color:#4ADE80; font-weight:600; margin-top:8px; }
+#f2 .chart { display:flex; align-items:flex-end; gap:14px; height:200px; }
+#f2 .bar { flex:1; height:100%; display:flex; align-items:flex-end; }
+#f2 .bar i { width:100%; display:block; border-radius:8px 8px 0 0; animation:aGrowH 1s .4s cubic-bezier(.16,1,.3,1) both; }
+#f2 .labels { display:flex; gap:14px; margin-top:12px; }
+#f2 .labels span { flex:1; text-align:center; font-size:14px; color:#5a5a5a; }
+
+/* POST 3 · GOOGLE AGENDA (clair) */
+#f3 { background:#EDEDE7; }
+#f3 .bg, #f3 .bg::before, #f3 .bg::after { display:none; }
+#f3 .deco { position:absolute; right:-150px; top:-130px; width:520px; height:520px; border-radius:50%; background:radial-gradient(circle, rgba(203,255,3,.45), transparent 62%); filter:blur(10px); }
+#f3 .grain { mix-blend-mode:multiply; opacity:.04; }
+#f3 .logo .ic { background:#0E0E0E; } #f3 .logo .nm { color:#0E0E0E; }
+#f3 .title { color:#0C0D0A; } #f3 .title .hl { -webkit-text-fill-color:initial; background:none; color:#6f7a1a; filter:none; }
+#f3 .kicker { color:#6f7a1a; } #f3 .kicker::before { background:#0C0D0A; box-shadow:none; }
+#f3 .integ { position:absolute; left:0; right:0; top:560px; display:flex; align-items:center; justify-content:center; gap:36px; }
+#f3 .app { width:170px; height:170px; border-radius:40px; background:#fff; box-shadow:0 26px 60px rgba(0,0,0,.14); display:flex; align-items:center; justify-content:center; animation:aScale .6s both; }
+#f3 .app.m { background:#0E0E0E; } #f3 .app.g { animation-delay:.2s; }
+#f3 .link { display:flex; flex-direction:column; align-items:center; gap:8px; animation:aIn .8s .4s both; }
+#f3 .link .sync { width:64px; height:64px; border-radius:50%; background:#CBFF03; display:flex; align-items:center; justify-content:center; box-shadow:0 10px 26px rgba(203,255,3,.45); }
+#f3 .link .lb { font-size:14px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#4a7a1a; }
+#f3 .gcal { position:relative; width:96px; height:96px; border-radius:20px; background:#fff; box-shadow:inset 0 0 0 3px #eee; }
+#f3 .gcal::before { content:''; position:absolute; inset:0; border-radius:20px; border:8px solid; border-image:linear-gradient(135deg,#4285F4,#EA4335 33%,#FBBC04 66%,#34A853) 1; -webkit-mask:linear-gradient(#000 0 0); }
+#f3 .gcal span { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:42px; font-weight:800; color:#4285F4; }
+#f3 .sub { position:absolute; top:780px; left:62px; right:62px; text-align:center; font-size:26px; font-weight:500; color:#43463c; animation:aUp .6s .4s both; }
+#f3 .foot { position:absolute; bottom:64px; left:62px; font-size:22px; font-weight:700; color:#0C0D0A; } #f3 .foot b { color:#6f7a1a; }
+
+/* POST 4 · LIEN DE RÉSERVATION */
+#f4 .linkbar { position:absolute; left:90px; right:90px; top:540px; padding:26px; border-radius:24px; }
+#f4 .lbtop { display:flex; align-items:center; gap:18px; }
+#f4 .lico { width:58px; height:58px; flex-shrink:0; border-radius:15px; background:rgba(203,255,3,.1); border:1px solid rgba(203,255,3,.3); display:flex; align-items:center; justify-content:center; box-shadow:0 0 18px rgba(203,255,3,.2); }
+#f4 .lurl .ll { font-size:14px; color:#7a7a7a; } #f4 .lurl .lv { font-size:30px; font-weight:800; color:#CBFF03; letter-spacing:-.02em; margin-top:4px; filter:drop-shadow(0 0 14px rgba(203,255,3,.3)); }
+#f4 .lacts { display:flex; gap:12px; margin-top:24px; }
+#f4 .b1 { flex:1; text-align:center; padding:16px; border-radius:14px; background:#CBFF03; color:#0A0A0A; font-size:18px; font-weight:800; box-shadow:0 0 22px rgba(203,255,3,.3); }
+#f4 .b2 { flex:1; text-align:center; padding:16px; border-radius:14px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); color:#fff; font-size:18px; font-weight:700; }
+#f4 .note { position:absolute; top:840px; left:90px; right:90px; text-align:center; font-size:24px; font-weight:500; color:rgba(255,255,255,.5); animation:aIn .8s .5s both; }
+
+#nav { position:fixed; bottom:0; left:0; right:0; height:56px; background:rgba(7,7,7,.96); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,.055); display:flex; align-items:center; justify-content:center; gap:18px; z-index:200; }
+#nav button { background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.08); color:#fff; font-family:'Inter',sans-serif; font-size:12px; font-weight:700; padding:7px 20px; border-radius:100px; cursor:pointer; } #nav button:disabled { opacity:.18; pointer-events:none; }
+#counter { font-size:12px; color:rgba(255,255,255,.28); min-width:40px; text-align:center; } #post-name { font-size:11px; font-weight:700; color:#CBFF03; letter-spacing:.16em; text-transform:uppercase; min-width:280px; text-align:center; }
+</style>
+</head>
+<body>
+<div id="viewer"><div id="stage">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="lg"><path d="M4 26 L9.5 10 L15 18.5 L20.5 9 L23.5 19C25 18.5 26.5 12 27.5 5.5" stroke="#CBFF03" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="27.5" cy="5.5" r="1.4" fill="#CBFF03"/></g>
+</defs></svg>
+
+<!-- F1 · RAPPELS AUTOMATIQUES -->
+<div class="post active" id="f1">
+  <div class="bg"></div>
+  <div class="logo"><span class="ic" style="background:#111;border:1px solid rgba(203,255,3,.18)"><svg width="28" height="28" viewBox="0 0 32 32"><use href="#lg"/></svg></span><span class="nm" style="color:#fff">Madger</span></div>
+  <div class="head"><div class="kicker">Rappels automatiques</div><div class="title">Tes clients oublient<br>plus leurs <span class="hl">séances.</span></div></div>
+  <div class="rem">
+    <div class="rcard glass">
+      <span class="ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" stroke="#CBFF03" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <div><div class="t">Rappel envoyé à Julien</div><div class="s">Séance demain à 18:00</div></div><span class="tm">auto</span>
+    </div>
+    <div class="reply">Confirmé ✓ à demain 💪</div>
+  </div>
+  <div class="cta"><span class="ar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#CBFF03" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="t">Essai gratuit · <b>lien en bio</b></span></div>
+  <div class="grain"></div>
+</div>
+
+<!-- F2 · STATISTIQUES -->
+<div class="post" id="f2">
+  <div class="bg"></div>
+  <div class="logo"><span class="ic" style="background:#111;border:1px solid rgba(203,255,3,.18)"><svg width="28" height="28" viewBox="0 0 32 32"><use href="#lg"/></svg></span><span class="nm" style="color:#fff">Madger</span></div>
+  <div class="head"><div class="kicker">Statistiques</div><div class="title">Tu vois enfin où<br>va ton <span class="hl">business.</span></div></div>
+  <div class="panel glass">
+    <div class="srow">
+      <div class="sc"><div class="l">Revenus ce mois</div><div class="v lime">1 240 €</div><div class="d">↑ +18 % vs avril</div></div>
+      <div class="sc"><div class="l">Taux de remplissage</div><div class="v">87 %</div><div class="d">↑ +5 %</div></div>
+    </div>
+    <div class="chart">
+      <div class="bar"><i style="height:42%;background:rgba(203,255,3,.25)"></i></div>
+      <div class="bar"><i style="height:58%;background:rgba(203,255,3,.3)"></i></div>
+      <div class="bar"><i style="height:48%;background:rgba(203,255,3,.3)"></i></div>
+      <div class="bar"><i style="height:72%;background:rgba(203,255,3,.45)"></i></div>
+      <div class="bar"><i style="height:63%;background:rgba(203,255,3,.4)"></i></div>
+      <div class="bar"><i style="height:90%;background:rgba(203,255,3,.6)"></i></div>
+      <div class="bar"><i style="height:100%;background:linear-gradient(180deg,#CBFF03,#9DCC00);box-shadow:0 0 20px rgba(203,255,3,.5)"></i></div>
+    </div>
+    <div class="labels"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+  </div>
+  <div class="cta"><span class="ar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#CBFF03" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="t">Essai gratuit · <b>lien en bio</b></span></div>
+  <div class="grain"></div>
+</div>
+
+<!-- F3 · SYNCHRO GOOGLE AGENDA (clair) -->
+<div class="post" id="f3">
+  <div class="deco"></div>
+  <div class="logo"><span class="ic"><svg width="28" height="28" viewBox="0 0 32 32"><use href="#lg"/></svg></span><span class="nm">Madger</span></div>
+  <div class="head"><div class="kicker">Synchro agenda</div><div class="title">Connecté à ton<br><span class="hl">Google Agenda.</span></div></div>
+  <div class="integ">
+    <div class="app m"><svg width="86" height="86" viewBox="0 0 32 32"><use href="#lg"/></svg></div>
+    <div class="link"><div class="sync"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 0 1 13.5-5.7L20 8M20 4v4h-4M20 12a8 8 0 0 1-13.5 5.7L4 16M4 20v-4h4" stroke="#0A0A0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="lb">Synchronisé</div></div>
+    <div class="app g"><div class="gcal"><span>31</span></div></div>
+  </div>
+  <div class="sub">Tes séances Madger apparaissent direct dans ton Google Agenda. Zéro double saisie.</div>
+  <div class="foot">madger.app · <b>le logiciel des coachs</b></div>
+  <div class="grain"></div>
+</div>
+
+<!-- F4 · LIEN DE RÉSERVATION -->
+<div class="post" id="f4">
+  <div class="bg"></div>
+  <div class="logo"><span class="ic" style="background:#111;border:1px solid rgba(203,255,3,.18)"><svg width="28" height="28" viewBox="0 0 32 32"><use href="#lg"/></svg></span><span class="nm" style="color:#fff">Madger</span></div>
+  <div class="head"><div class="kicker">Ton lien de réservation</div><div class="title">Un lien.<br><span class="hl">À ton nom.</span></div></div>
+  <div class="linkbar glass">
+    <div class="lbtop">
+      <span class="lico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7" stroke="#CBFF03" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7" stroke="#CBFF03" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <div class="lurl"><div class="ll">Ton lien public</div><div class="lv">madger.app/marie-laurent</div></div>
+    </div>
+    <div class="lacts"><div class="b1">Copier le lien</div><div class="b2">Partager</div></div>
+  </div>
+  <div class="note">Mets-le en bio, en story, par message. Tes clients réservent direct.</div>
+  <div class="cta"><span class="ar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#CBFF03" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="t">Essai gratuit · <b>lien en bio</b></span></div>
+  <div class="grain"></div>
+</div>
+
+</div></div>
+<div id="nav">
+  <button id="btn-prev" onclick="nav(-1)" disabled>← Préc.</button>
+  <div id="post-name">Rappels</div>
+  <div id="counter">1 / 4</div>
+  <button id="btn-next" onclick="nav(1)">Suiv. →</button>
+</div>
+<script>
+const posts=[{id:'f1',name:'Rappels auto'},{id:'f2',name:'Statistiques'},{id:'f3',name:'Synchro Google'},{id:'f4',name:'Lien de réservation'}];
+let current=0;
+function scaleStage(){const s=document.getElementById('stage');const vw=window.innerWidth,vh=window.innerHeight-56;s.style.transform=`translate(-50%,-50%) scale(${Math.min(vw/1080,vh/1350)*.97})`;}
+function nav(d){document.getElementById(posts[current].id).classList.remove('active');current=Math.max(0,Math.min(posts.length-1,current+d));document.getElementById(posts[current].id).classList.add('active');document.getElementById('counter').textContent=`${current+1} / ${posts.length}`;document.getElementById('post-name').textContent=posts[current].name;document.getElementById('btn-prev').disabled=current===0;document.getElementById('btn-next').disabled=current===posts.length-1;}
+window.addEventListener('resize',scaleStage);window.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown')nav(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')nav(-1);});
+scaleStage();
+</script>
+</body>
+</html>
