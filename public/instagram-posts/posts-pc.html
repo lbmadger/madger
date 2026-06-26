@@ -138,21 +138,21 @@ body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; widt
 @keyframes aRise { from{opacity:0; transform:translateY(40px) perspective(2400px) rotateY(-23deg) rotateX(5deg)} to{opacity:1} }
 @keyframes aGrowH { from{height:0} }
 
-/* ════ PC3 · PUBLICATION PRINCIPALE (épinglée) ════ */
-#pc3 .screen { position:absolute; top:-36px; left:44px; width:1150px; height:602px; border-radius:16px; overflow:hidden; border:1px solid rgba(203,255,3,.2); z-index:5;
-  box-shadow:0 50px 120px rgba(0,0,0,.7), 0 0 70px rgba(203,255,3,.14), 0 0 160px rgba(203,255,3,.08);
-  transform:perspective(2600px) rotateX(7deg) rotateY(-9deg) rotateZ(-.5deg); transform-origin:top center; animation:aIn .9s .15s ease both; }
-#pc3 .screen::after { content:''; position:absolute; inset:0; border-radius:16px; padding:1.5px; pointer-events:none; background:linear-gradient(135deg,#e6ff7a,rgba(203,255,3,.05) 40%,rgba(203,255,3,.05) 60%,#a8e600); -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; }
-#pc3 .scrim { position:absolute; left:0; right:0; top:380px; height:280px; z-index:6; background:linear-gradient(180deg, transparent, #0A0A0A 88%); }
-#pc3 .head { position:absolute; top:600px; left:62px; right:62px; z-index:8; }
-#pc3 .title { font-size:54px; }
-#pc3 .sub2 { margin-top:14px; }
-.fgrid { position:absolute; top:790px; left:60px; right:60px; z-index:8; display:grid; grid-template-columns:1fr 1fr; gap:15px; }
-.fitem { display:flex; gap:14px; align-items:flex-start; padding:17px 18px; border-radius:16px; background:rgba(255,255,255,.035); border:1px solid rgba(203,255,3,.14); box-shadow:inset 0 1px 0 rgba(255,255,255,.06); animation:aRise 0s; }
-.fitem .fi { width:46px; height:46px; flex-shrink:0; border-radius:12px; background:rgba(203,255,3,.1); border:1px solid rgba(203,255,3,.28); display:flex; align-items:center; justify-content:center; box-shadow:0 0 16px rgba(203,255,3,.14); }
-.fitem .ft { font-size:20px; font-weight:800; color:#fff; letter-spacing:-.01em; }
-.fitem .fds { font-size:14px; color:rgba(255,255,255,.52); margin-top:3px; line-height:1.3; }
-#pc3 .ctabtn { position:absolute; bottom:52px; left:62px; z-index:9; }
+/* ════ PC3 · PUBLICATION PRINCIPALE (écran entier) ════ */
+#pc3 .screen { position:absolute; top:150px; left:96px; width:888px; height:588px; border-radius:14px; overflow:hidden; border:1px solid rgba(203,255,3,.22); z-index:5;
+  box-shadow:0 50px 110px rgba(0,0,0,.7), 0 0 60px rgba(203,255,3,.14), 0 0 150px rgba(203,255,3,.08);
+  transform:perspective(2900px) rotateX(4deg) rotateY(-7deg) rotateZ(-.5deg); animation:aIn .9s .15s ease both; }
+#pc3 .screen::after { content:''; position:absolute; inset:0; border-radius:14px; padding:1.5px; pointer-events:none; background:linear-gradient(135deg,#e6ff7a,rgba(203,255,3,.05) 40%,rgba(203,255,3,.05) 60%,#a8e600); -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; z-index:2; }
+#pc3 .fdwrap { width:1200px; height:795px; transform:scale(.74); transform-origin:top left; }
+#pc3 .head { position:absolute; top:762px; left:62px; right:62px; z-index:8; }
+#pc3 .title { font-size:46px; }
+#pc3 .sub2 { margin-top:10px; font-size:21px; }
+#pc3 .fgrid { position:absolute; top:884px; left:60px; right:60px; z-index:8; display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+#pc3 .fitem { display:flex; gap:12px; align-items:center; padding:13px 15px; border-radius:14px; background:rgba(255,255,255,.035); border:1px solid rgba(203,255,3,.14); box-shadow:inset 0 1px 0 rgba(255,255,255,.06); }
+#pc3 .fitem .fi { width:40px; height:40px; flex-shrink:0; border-radius:11px; background:rgba(203,255,3,.1); border:1px solid rgba(203,255,3,.28); display:flex; align-items:center; justify-content:center; box-shadow:0 0 14px rgba(203,255,3,.14); }
+#pc3 .fitem .ft { font-size:17px; font-weight:800; color:#fff; letter-spacing:-.01em; }
+#pc3 .fitem .fds { font-size:12px; color:rgba(255,255,255,.5); margin-top:2px; line-height:1.25; }
+#pc3 .ctabtn { position:absolute; bottom:48px; left:62px; z-index:9; font-size:19px; padding:16px 28px; }
 #pc3 .logo { display:none; }
 #nav { position:fixed; bottom:0; left:0; right:0; height:56px; background:rgba(7,7,7,.96); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,.055); display:flex; align-items:center; justify-content:center; gap:18px; z-index:200; }
 #nav button { background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.08); color:#fff; font-family:'Inter',sans-serif; font-size:12px; font-weight:700; padding:7px 20px; border-radius:100px; cursor:pointer; } #nav button:disabled { opacity:.18; pointer-events:none; }
@@ -392,7 +392,7 @@ body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; widt
   <div class="deskbg"></div>
   <div class="bg"></div>
   <div class="logo"><span class="ic"><svg width="28" height="28" viewBox="0 0 32 32"><use href="#lg"/></svg></span><span class="nm">Madger</span></div>
-  <div class="screen"><div class="fd">
+  <div class="screen"><div class="fdwrap"><div class="fd">
       <!-- Sidebar -->
       <div class="fd-side">
         <div class="fd-brand"><span class="bi"><svg width="15" height="15" viewBox="0 0 32 32"><use href="#lg"/></svg></span><span class="nm">Madger</span></div>
@@ -476,9 +476,8 @@ body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; widt
           </div>
         </div>
       </div>
-    </div>
+    </div></div>
   </div>
-  <div class="scrim"></div>
   <div class="head">
     <div class="kicker">Le logiciel des coachs sportifs</div>
     <div class="title">Tout ton business, <span class="hl">en un seul outil.</span></div>
