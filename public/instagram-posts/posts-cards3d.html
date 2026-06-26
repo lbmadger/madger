@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Madger · Objets 3D (niveau pub)</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap');
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#0d0d0d; font-family:'Inter',sans-serif; overflow:hidden; width:100vw; height:100vh; }
+#viewer { position:fixed; top:0; left:0; right:0; bottom:56px; }
+#stage  { position:absolute; width:1080px; height:1350px; top:50%; left:50%; transform-origin:center center; }
+.post { position:absolute; inset:0; width:1080px; height:1350px; overflow:hidden; display:none; background:#0A0A0A; }
+.post.active { display:block; }
+
+.bg { position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden;
+  background:radial-gradient(ellipse 80% 55% at 40% -8%, rgba(203,255,3,.14), transparent 52%), radial-gradient(ellipse 60% 50% at 90% 86%, rgba(203,255,3,.06), transparent 60%), #0A0A0A; }
+.bg::before { content:''; position:absolute; left:-30%; right:-30%; bottom:-2%; height:50%;
+  background-image:linear-gradient(rgba(203,255,3,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(203,255,3,.11) 1px,transparent 1px);
+  background-size:66px 66px; transform:perspective(680px) rotateX(73deg); transform-origin:bottom center;
+  -webkit-mask-image:linear-gradient(to top,#000,transparent 72%); mask-image:linear-gradient(to top,#000,transparent 72%); opacity:.6; }
+.bg::after { content:''; position:absolute; inset:0; box-shadow:inset 0 0 170px rgba(0,0,0,.5); }
+
+.grain { position:absolute; inset:0; pointer-events:none; z-index:100; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E"); opacity:.03; mix-blend-mode:screen; }
+.wordmark { position:absolute; top:58px; left:60px; z-index:30; }
+.wordmark .ic { width:54px; height:54px; background:#111; border-radius:15px; border:1px solid rgba(203,255,3,.18); display:flex; align-items:center; justify-content:center; box-shadow:0 0 22px rgba(203,255,3,.10); }
+
+.head { position:absolute; z-index:8; top:150px; left:556px; right:54px; }
+.kicker { font-size:14px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:rgba(203,255,3,.78); margin-bottom:16px; display:flex; align-items:center; gap:12px; animation:aFadeDown .5s .1s ease both; }
+.kicker::before { content:''; width:26px; height:2px; background:#CBFF03; box-shadow:0 0 10px rgba(203,255,3,.9); border-radius:2px; }
+.title { font-weight:900; line-height:1.03; letter-spacing:-.04em; color:#fff; font-size:58px; animation:aFadeDown .55s .15s ease both; }
+.hl { background:linear-gradient(90deg,#CBFF03,#a8e600); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; filter:drop-shadow(0 0 20px rgba(203,255,3,.4)); }
+.subt { margin-top:22px; font-size:23px; font-weight:500; line-height:1.5; color:rgba(255,255,255,.55); animation:aFadeUp .6s .4s ease both; }
+
+.cta { position:absolute; left:60px; bottom:62px; z-index:9; display:flex; align-items:center; gap:14px; animation:aFadeUp .6s .6s ease both; }
+.cta .ar { width:44px; height:44px; border-radius:50%; border:1.5px solid rgba(203,255,3,.6); display:flex; align-items:center; justify-content:center; box-shadow:0 0 18px rgba(203,255,3,.3); }
+.cta .t { font-size:24px; font-weight:700; color:#fff; } .cta .t b { color:#CBFF03; }
+
+/* objet flottant 3D + reflet */
+.obj { position:absolute; z-index:5; transform:perspective(2000px) rotateY(-15deg) rotateX(3deg) rotateZ(-1deg);
+  -webkit-box-reflect:below 14px linear-gradient(transparent 58%, rgba(0,0,0,.14)); animation:aFadeUp .85s .18s cubic-bezier(.16,1,.3,1) both; }
+
+/* grosses cartes glass */
+.bcard { display:flex; gap:18px; align-items:center; padding:23px 25px; border-radius:24px;
+  background:linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.025)); -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px);
+  border:1px solid rgba(203,255,3,.2); box-shadow:0 26px 64px rgba(0,0,0,.5), 0 0 36px rgba(203,255,3,.1), inset 0 1px 0 rgba(255,255,255,.12); }
+.bcard .ic { width:56px; height:56px; flex-shrink:0; border-radius:15px; display:flex; align-items:center; justify-content:center; }
+.ic.green { background:rgba(74,222,128,.14); border:1px solid rgba(74,222,128,.32); box-shadow:0 0 20px rgba(74,222,128,.2); }
+.ic.lime { background:rgba(203,255,3,.12); border:1px solid rgba(203,255,3,.34); box-shadow:0 0 20px rgba(203,255,3,.2); }
+.bcard .t { font-size:25px; font-weight:700; color:#fff; letter-spacing:-.01em; } .bcard .s { font-size:17px; color:rgba(255,255,255,.5); margin-top:4px; }
+.bcard .amt { margin-left:auto; font-size:34px; font-weight:800; color:#CBFF03; flex-shrink:0; filter:drop-shadow(0 0 16px rgba(203,255,3,.3)); }
+.bcard .tag { margin-left:auto; flex-shrink:0; padding:8px 15px; border-radius:20px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); font-size:14px; color:rgba(255,255,255,.45); font-weight:600; }
+
+/* facture (document) */
+.invoice { width:610px; border-radius:26px; padding:36px 38px; position:relative; overflow:hidden;
+  background:linear-gradient(180deg,#191c20,#101114); border:1px solid rgba(203,255,3,.18);
+  box-shadow:0 34px 80px rgba(0,0,0,.6), 0 0 44px rgba(203,255,3,.12), inset 0 1px 0 rgba(255,255,255,.08); }
+.invoice .ih { display:flex; align-items:flex-start; justify-content:space-between; padding-bottom:24px; border-bottom:1px solid rgba(255,255,255,.08); }
+.invoice .ihl { display:flex; align-items:center; gap:12px; } .invoice .ic2 { width:44px; height:44px; border-radius:12px; background:#111; border:1px solid rgba(203,255,3,.22); display:flex; align-items:center; justify-content:center; } .invoice .bn { font-size:20px; font-weight:800; color:#fff; }
+.invoice .ihr { text-align:right; } .invoice .ihr .l { font-size:13px; letter-spacing:.18em; text-transform:uppercase; color:rgba(255,255,255,.4); } .invoice .ihr .r { font-size:22px; font-weight:800; color:#CBFF03; margin-top:4px; }
+.invoice .meta { display:flex; justify-content:space-between; margin:20px 0 22px; } .invoice .meta .b { font-size:13px; color:rgba(255,255,255,.4); } .invoice .meta .v { font-size:16px; color:#fff; font-weight:600; margin-top:4px; }
+.invoice .row { display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid rgba(255,255,255,.05); }
+.invoice .row .d { font-size:17px; color:#fff; font-weight:600; } .invoice .row .ds { font-size:13px; color:rgba(255,255,255,.4); margin-top:2px; } .invoice .row .p { font-size:18px; font-weight:700; color:#fff; }
+.invoice .tot { display:flex; justify-content:space-between; align-items:center; margin-top:22px; } .invoice .tot .l { font-size:18px; color:rgba(255,255,255,.6); font-weight:600; } .invoice .tot .v { font-size:38px; font-weight:900; color:#CBFF03; letter-spacing:-.03em; filter:drop-shadow(0 0 18px rgba(203,255,3,.3)); }
+.invoice .badge { display:inline-flex; align-items:center; gap:8px; margin-top:22px; padding:9px 16px; border-radius:22px; background:rgba(74,222,128,.08); border:1px solid rgba(74,222,128,.22); font-size:14px; color:#4ADE80; font-weight:600; }
+.invoice .stamp { position:absolute; top:120px; right:30px; transform:rotate(-14deg); padding:8px 20px; border:3px solid rgba(74,222,128,.55); border-radius:12px; color:#4ADE80; font-size:30px; font-weight:900; letter-spacing:.04em; opacity:.9; box-shadow:0 0 24px rgba(74,222,128,.2); text-shadow:0 0 18px rgba(74,222,128,.3); }
+
+/* encaissement (carte paiement) */
+.pcard { width:600px; border-radius:28px; padding:44px 42px; text-align:center; position:relative;
+  background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.022)); -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px);
+  border:1px solid rgba(74,222,128,.28); box-shadow:0 34px 80px rgba(0,0,0,.6), 0 0 50px rgba(74,222,128,.16), inset 0 1px 0 rgba(255,255,255,.12); }
+.pcard .check { width:92px; height:92px; margin:0 auto 26px; border-radius:50%; background:rgba(74,222,128,.14); border:1.5px solid rgba(74,222,128,.4); display:flex; align-items:center; justify-content:center; box-shadow:0 0 36px rgba(74,222,128,.3); }
+.pcard .k { font-size:16px; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.5); font-weight:700; }
+.pcard .big { font-size:130px; font-weight:900; letter-spacing:-.05em; line-height:.9; margin:14px 0 18px; background:linear-gradient(180deg,#dfff6b,#CBFF03 55%,#a8d400); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; filter:drop-shadow(0 0 30px rgba(203,255,3,.32)); }
+.pcard .who { font-size:22px; font-weight:700; color:#fff; } .pcard .via { font-size:16px; color:rgba(255,255,255,.45); margin-top:8px; display:flex; align-items:center; justify-content:center; gap:8px; }
+
+/* LÉO */
+.leo { position:absolute; z-index:20; pointer-events:none; user-select:none; }
+.leo .floor { position:absolute; left:50%; bottom:6%; width:78%; height:42px; transform:translateX(-50%); background:radial-gradient(ellipse 50% 50% at 50% 50%, rgba(0,0,0,.55), transparent 70%); filter:blur(6px); }
+.leo .aura { position:absolute; inset:0; background:radial-gradient(ellipse 44% 50% at 50% 52%, rgba(203,255,3,.14), transparent 64%); filter:blur(16px); }
+.leo img { position:relative; width:100%; height:auto; display:block; filter:drop-shadow(0 20px 36px rgba(0,0,0,.5)); animation:aFloat 5s ease-in-out infinite; }
+
+@keyframes aFadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+@keyframes aFadeDown { from{opacity:0;transform:translateY(-18px)} to{opacity:1;transform:translateY(0)} }
+@keyframes aFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
+
+/* placements */
+#o1 .obj { left:70px; top:360px; width:600px; display:flex; flex-direction:column; gap:18px; }
+#o2 .obj { left:46px; top:344px; }
+#o3 .obj { left:80px; top:380px; }
+
+#nav { position:fixed; bottom:0; left:0; right:0; height:56px; background:rgba(7,7,7,.96); backdrop-filter:blur(20px); border-top:1px solid rgba(255,255,255,.055); display:flex; align-items:center; justify-content:center; gap:18px; z-index:200; }
+#nav button { background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.08); color:#fff; font-family:'Inter',sans-serif; font-size:12px; font-weight:700; padding:7px 20px; border-radius:100px; cursor:pointer; } #nav button:disabled { opacity:.18; pointer-events:none; }
+#counter { font-size:12px; color:rgba(255,255,255,.28); min-width:40px; text-align:center; } #post-name { font-size:11px; font-weight:700; color:#CBFF03; letter-spacing:.16em; text-transform:uppercase; min-width:280px; text-align:center; }
+</style>
+</head>
+<body>
+<div id="viewer"><div id="stage">
+<svg width="0" height="0" style="position:absolute"><defs>
+  <g id="logo-path"><path d="M4 26 L9.5 10 L15 18.5 L20.5 9 L23.5 19C25 18.5 26.5 12 27.5 5.5" stroke="#CBFF03" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="27.5" cy="5.5" r="1.3" fill="#CBFF03"/></g>
+</defs></svg>
+
+<!-- ═══ O1 · CARTES D'ACTIONS 3D ═══ -->
+<div class="post active" id="o1">
+  <div class="bg"></div>
+  <div class="wordmark"><span class="ic"><svg width="30" height="30" viewBox="0 0 32 32"><use href="#logo-path"/></svg></span></div>
+  <div class="head"><div class="kicker">Pendant que tu coaches</div><div class="title">Ça réserve,<br>ça paie, ça <span class="hl">facture.</span></div><div class="subt">Madger s'occupe de tout en arrière-plan, automatiquement.</div></div>
+  <div class="obj">
+    <div class="bcard"><span class="ic green"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="#4ADE80" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><div class="t">Réservation confirmée</div><div class="s">Julien · mercredi 9:00</div></div><span class="tag">auto</span></div>
+    <div class="bcard"><span class="ic green"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke="#4ADE80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><div class="t">Paiement reçu</div><div class="s">Sophie Blanc · à la résa</div></div><span class="amt">+50 €</span></div>
+    <div class="bcard"><span class="ic lime"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="#CBFF03" stroke-width="2"/><path d="M14 2v6h6" stroke="#CBFF03" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><div class="t">Facture envoyée</div><div class="s">FAC-024 · conforme 2026</div></div><span class="tag">auto</span></div>
+  </div>
+  <div class="leo" style="bottom:-16px; right:18px; width:300px;"><div class="floor"></div><div class="aura"></div><img src="../character/coach-point.webp" alt=""></div>
+  <div class="cta"><span class="ar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#CBFF03" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="t">Essai gratuit · <b>lien en bio</b></span></div>
+  <div class="grain"></div>
+</div>
+
+<!-- ═══ O2 · FACTURE 3D ═══ -->
+<div class="post" id="o2">
+  <div class="bg"></div>
+  <div class="wordmark"><span class="ic"><svg width="30" height="30" viewBox="0 0 32 32"><use href="#logo-path"/></svg></span></div>
+  <div class="head"><div class="kicker">Facturation</div><div class="title">Tes factures,<br><span class="hl">déjà prêtes.</span></div></div>
+  <div class="obj">
+    <div class="invoice">
+      <div class="ih"><div class="ihl"><span class="ic2"><svg width="24" height="24" viewBox="0 0 32 32"><use href="#logo-path"/></svg></span><span class="bn">Madger</span></div><div class="ihr"><div class="l">Facture</div><div class="r">FAC-024</div></div></div>
+      <div class="meta"><div><div class="b">Facturé à</div><div class="v">Julien Martin</div></div><div style="text-align:right"><div class="b">Date</div><div class="v">2 mai 2026</div></div></div>
+      <div class="row"><div><div class="d">Coaching individuel</div><div class="ds">60 min · 2 mai</div></div><div class="p">50,00 €</div></div>
+      <div class="row"><div><div class="d">Séance de suivi</div><div class="ds">Inclus dans le forfait</div></div><div class="p">0,00 €</div></div>
+      <div class="tot"><span class="l">Total payé</span><span class="v">50,00 €</span></div>
+      <div class="badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" fill="rgba(74,222,128,0.2)" stroke="#4ADE80" stroke-width="2"/><path d="M9 12l2 2 4-4" stroke="#4ADE80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Conforme réforme e-facture 2026</div>
+      <div class="stamp">PAYÉE</div>
+    </div>
+  </div>
+  <div class="leo" style="bottom:-16px; right:18px; width:300px;"><div class="floor"></div><div class="aura"></div><img src="../character/coach-ok.webp" alt=""></div>
+  <div class="cta"><span class="ar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#CBFF03" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="t">Essai gratuit · <b>lien en bio</b></span></div>
+  <div class="grain"></div>
+</div>
+
+<!-- ═══ O3 · ENCAISSEMENT 3D ═══ -->
+<div class="post" id="o3">
+  <div class="bg"></div>
+  <div class="wordmark"><span class="ic"><svg width="30" height="30" viewBox="0 0 32 32"><use href="#logo-path"/></svg></span></div>
+  <div class="head"><div class="kicker">Paiements</div><div class="title">Payé <span class="hl">avant<br>la séance.</span></div><div class="subt">Le client règle au moment de réserver. 0 € d'impayés, jamais.</div></div>
+  <div class="obj">
+    <div class="pcard">
+      <div class="check"><svg width="44" height="44" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="#4ADE80" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="k">Paiement reçu</div>
+      <div class="big">+50 €</div>
+      <div class="who">Sophie Blanc · Coaching individuel</div>
+      <div class="via"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="16" height="11" rx="2" stroke="#6a6a6a" stroke-width="2"/><path d="M8 10V7a4 4 0 018 0v3" stroke="#6a6a6a" stroke-width="2"/></svg>Encaissé via Stripe · à la réservation</div>
+    </div>
+  </div>
+  <div class="leo" style="bottom:-16px; right:18px; width:300px;"><div class="floor"></div><div class="aura"></div><img src="../character/coach-ok.webp" alt=""></div>
+  <div class="cta"><span class="ar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="#CBFF03" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="t">Essai gratuit · <b>lien en bio</b></span></div>
+  <div class="grain"></div>
+</div>
+
+</div></div>
+<div id="nav">
+  <button id="btn-prev" onclick="nav(-1)" disabled>← Préc.</button>
+  <div id="post-name">Cartes d'actions</div>
+  <div id="counter">1 / 3</div>
+  <button id="btn-next" onclick="nav(1)">Suiv. →</button>
+</div>
+<script>
+const posts=[{id:'o1',name:'Cartes d\'actions'},{id:'o2',name:'Facture'},{id:'o3',name:'Encaissement'}];
+let current=0;
+function scaleStage(){const s=document.getElementById('stage');const vw=window.innerWidth,vh=window.innerHeight-56;s.style.transform=`translate(-50%,-50%) scale(${Math.min(vw/1080,vh/1350)*.97})`;}
+function nav(d){document.getElementById(posts[current].id).classList.remove('active');current=Math.max(0,Math.min(posts.length-1,current+d));document.getElementById(posts[current].id).classList.add('active');document.getElementById('counter').textContent=`${current+1} / ${posts.length}`;document.getElementById('post-name').textContent=posts[current].name;document.getElementById('btn-prev').disabled=current===0;document.getElementById('btn-next').disabled=current===posts.length-1;}
+window.addEventListener('resize',scaleStage);window.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key==='ArrowDown')nav(1);if(e.key==='ArrowLeft'||e.key==='ArrowUp')nav(-1);});
+scaleStage();
+</script>
+</body>
+</html>
