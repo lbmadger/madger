@@ -16,8 +16,8 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL("https://madger.app"),
   title: "Madger · De la demande client à la facture encaissée",
-  description: "Réservations, paiements et facturation automatique en un seul lien. Pensé pour les coachs indépendants en France. Rejoignez l'early access.",
-  keywords: ["coach", "application coach", "réservation séances", "facturation coach", "Stripe coach", "gestion clients coach", "early access"],
+  description: "Réservations, paiements et facturation automatique en un seul lien. Pensé pour les coachs indépendants en France. Rejoignez l'accès anticipé.",
+  keywords: ["coach", "application coach", "réservation séances", "facturation coach", "Stripe coach", "gestion clients coach", "accès anticipé", "early access"],
   openGraph: {
     title: "Madger - De la demande client à la facture encaissée",
     description: "Un seul lien. Vos clients réservent, paient et reçoivent leur facture. Pensé pour les coachs en France.",

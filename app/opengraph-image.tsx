@@ -203,7 +203,7 @@ export default async function Image() {
               fontWeight: 700,
               letterSpacing: "0.08em",
             }}>
-              EARLY ACCESS OUVERT
+              ACCÈS ANTICIPÉ OUVERT
             </span>
           </div>
         </div>
