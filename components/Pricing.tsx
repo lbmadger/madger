@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import SectionLabel from "@/components/ui/SectionLabel";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 import CoachAside from "@/components/ui/CoachAside";
@@ -37,13 +36,6 @@ function Check() {
 }
 
 export default function Pricing() {
-  const [annual, setAnnual] = useState(false);
-
-  const monthlyPrice = 49;
-  const annualTotal = 490;
-  const annualMonthly = Math.round(annualTotal / 12); // 41€/mois
-  const saving = monthlyPrice * 12 - annualTotal; // 98€ = ~2 mois
-
   return (
     <section
       id="tarifs"
@@ -75,60 +67,11 @@ export default function Pricing() {
             }}>Aucune surprise au lancement.</span>
           </h2>
           <p className="text-text-muted text-lg max-w-lg mx-auto mb-6" style={{ lineHeight: 1.6 }}>
-            Ces tarifs entrent en vigueur au lancement. Les membres en accès anticipé bénéficient du plan Pro offert pendant 3 mois.
+            Les tarifs seront communiqués au lancement. Les membres en accès anticipé bénéficient du plan Pro offert pendant 3 mois.
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8" style={{ background: "rgba(203,255,3,0.07)", border: "1px solid rgba(203,255,3,0.18)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-accent block" style={{ background: "#CBFF03" }} />
             <span style={{ color: "#CBFF03", fontSize: 12, fontWeight: 600 }}>Accès anticipé - Plan Pro offert 3 mois pour les premiers membres</span>
-          </div>
-
-          {/* ── Toggle mensuel / annuel ── */}
-          <div
-            className="flex items-center gap-1 p-1 rounded-full"
-            style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.08)" }}
-          >
-            <button
-              onClick={() => setAnnual(false)}
-              aria-pressed={!annual}
-              className="relative px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300"
-              style={{ color: annual ? "#8A8A8A" : "#fff" }}
-            >
-              {!annual && (
-                <motion.div
-                  layoutId="billing-bg"
-                  className="absolute inset-0 rounded-full"
-                  style={{ background: "#2a2a2a" }}
-                  transition={{ type: "spring", stiffness: 400, damping: 35 }}
-                />
-              )}
-              <span className="relative z-10">Mensuel</span>
-            </button>
-            <button
-              onClick={() => setAnnual(true)}
-              aria-pressed={annual}
-              className="relative px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2"
-              style={{ color: annual ? "#000" : "#8A8A8A" }}
-            >
-              {annual && (
-                <motion.div
-                  layoutId="billing-bg"
-                  className="absolute inset-0 rounded-full"
-                  style={{ background: "#CBFF03" }}
-                  transition={{ type: "spring", stiffness: 400, damping: 35 }}
-                />
-              )}
-              <span className="relative z-10">Annuel</span>
-              <span
-                className="relative z-10 px-1.5 py-0.5 rounded-md text-xs font-bold"
-                style={{
-                  background: annual ? "rgba(0,0,0,0.15)" : "rgba(203,255,3,0.12)",
-                  color: annual ? "#000" : "#CBFF03",
-                  fontSize: 10,
-                }}
-              >
-                −{Math.round((saving / (monthlyPrice * 12)) * 100)}%
-              </span>
-            </button>
           </div>
         </motion.div>
 
@@ -153,10 +96,10 @@ export default function Pricing() {
               </div>
               <div style={{ minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "center" }}>
                 <div className="font-extrabold text-white mb-1" style={{ fontSize: "clamp(24px, 6.5vw, 52px)", letterSpacing: "-0.04em", lineHeight: 1 }}>
-                  0 €
+                  Gratuit
                 </div>
                 <div className="text-text-muted text-sm pt-1">
-                  5 % de commission par séance vendue
+                  Pour démarrer · tarif communiqué au lancement
                 </div>
               </div>
               <a
@@ -185,33 +128,12 @@ export default function Pricing() {
           <div className="relative h-full" style={{ overflow: "visible" }}>
 
             {/* Badge flottant - positionné par rapport au wrapper, pas la carte */}
-            <AnimatePresence>
-              {annual ? (
-                <motion.div
-                  key="badge-annual"
-                  initial={{ opacity: 0, scale: 0.85 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.85 }}
-                  transition={{ duration: 0.22 }}
-                  className="absolute -top-3 right-0 px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-black font-bold text-[10px] sm:text-xs uppercase tracking-wider whitespace-nowrap"
-                  style={{ background: "#CBFF03", letterSpacing: "0.07em", zIndex: 20 }}
-                >
-                  Recommandé ⭐
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="badge-monthly"
-                  initial={{ opacity: 0, scale: 0.85 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.85 }}
-                  transition={{ duration: 0.22 }}
-                  className="absolute -top-3 right-0 px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-black font-bold text-[10px] sm:text-xs uppercase tracking-wider whitespace-nowrap"
-                  style={{ background: "#CBFF03", letterSpacing: "0.07em", zIndex: 20 }}
-                >
-                  0 % commission
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <div
+              className="absolute -top-3 right-0 px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-black font-bold text-[10px] sm:text-xs uppercase tracking-wider whitespace-nowrap"
+              style={{ background: "#CBFF03", letterSpacing: "0.07em", zIndex: 20 }}
+            >
+              Recommandé ⭐
+            </div>
 
           <motion.div
             className="spotlight-card rounded-3xl relative h-full"
@@ -239,61 +161,14 @@ export default function Pricing() {
                 </div>
               </div>
 
-              {/* Prix animé */}
+              {/* Prix masqué jusqu'au lancement : on met en avant l'offre fondateur */}
               <div style={{ minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-              <AnimatePresence mode="wait">
-                {annual ? (
-                  <motion.div
-                    key="annual"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.22 }}
-                  >
-                    <div className="flex items-end gap-2 mb-1">
-                      <span className="font-extrabold text-white" style={{ fontSize: "clamp(24px, 6.5vw, 52px)", letterSpacing: "-0.04em", lineHeight: 1 }}>
-                        {annualMonthly} €
-                      </span>
-                      <span className="text-text-muted text-sm sm:text-lg mb-0.5 sm:mb-1">/ mois</span>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <span
-                        className="text-xs sm:text-sm whitespace-nowrap"
-                        style={{ color: "#5A5A5A", textDecoration: "line-through" }}
-                      >
-                        588 € / an
-                      </span>
-                      <span
-                        className="text-xs sm:text-sm font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
-                        style={{ background: "rgba(203,255,3,0.12)", color: "#CBFF03" }}
-                      >
-                        490 € / an
-                      </span>
-                    </div>
-                    <div className="text-text-muted text-xs sm:text-sm">
-                      Vous économisez {saving} € · 0 % de commission
-                    </div>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="monthly"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.22 }}
-                  >
-                    <div className="flex flex-wrap items-end gap-x-2 gap-y-1 mb-2">
-                      <span className="font-extrabold text-white" style={{ fontSize: "clamp(24px, 6.5vw, 52px)", letterSpacing: "-0.04em", lineHeight: 1 }}>
-                        {monthlyPrice} €
-                      </span>
-                      <span className="text-text-muted text-sm sm:text-lg mb-0.5 sm:mb-1">/ mois</span>
-                    </div>
-                    <div className="text-text-muted text-sm">
-                      Aucune commission sur vos ventes
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                <div className="font-extrabold text-white mb-1" style={{ fontSize: "clamp(22px, 5.5vw, 44px)", letterSpacing: "-0.04em", lineHeight: 1.05 }}>
+                  Offert 3 mois
+                </div>
+                <div className="text-text-muted text-sm pt-1">
+                  pour les membres fondateurs · tarif communiqué au lancement
+                </div>
               </div>
 
               <motion.a
