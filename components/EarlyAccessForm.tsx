@@ -32,7 +32,10 @@ function focusOff(e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTM
   e.target.style.borderColor = "rgba(255,255,255,0.12)";
 }
 
-const cls = "w-full px-5 py-3.5 rounded-xl text-white text-sm outline-none";
+// text-base (16px) sur mobile : en dessous de 16px, iOS Safari zoome
+// automatiquement la page au focus d'un champ (et reste zoomé après envoi,
+// d'où l'écran de validation "agrandi"). sm:text-sm garde 14px sur desktop.
+const cls = "w-full px-5 py-3.5 rounded-xl text-white text-base sm:text-sm outline-none";
 
 export default function EarlyAccessForm() {
   const [submitted, setSubmitted] = useState(false);
