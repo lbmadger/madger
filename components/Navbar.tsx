@@ -98,7 +98,7 @@ export default function Navbar() {
               whileTap={{ scale: 0.97 }}
               transition={{ duration: 0.18 }}
             >
-              Rejoindre l'early access
+              Rejoindre l'accès anticipé
             </motion.a>
           </MagneticButton>
 
@@ -109,7 +109,7 @@ export default function Navbar() {
             style={{ background: "#CBFF03", color: "#000", letterSpacing: "-0.01em" }}
             onClick={() => setOpen(false)}
           >
-            Early access
+            Accès anticipé
           </a>
 
           {/* Hamburger */}
@@ -198,7 +198,7 @@ export default function Navbar() {
                 style={{ background: "#CBFF03", fontSize: 16 }}
                 onClick={() => setOpen(false)}
               >
-                Rejoindre l'early access →
+                Rejoindre l'accès anticipé →
               </motion.a>
 
               {/* Sous-texte */}

@@ -33,7 +33,7 @@ const STEPS = [
 export default function HeroScrollExperience() {
   // Accès anticipé complet → on bascule les CTA / badges du hero en liste d'attente.
   const full = useEarlyAccessFull();
-  const ctaLabel = full ? "Rejoindre la liste d'attente" : "Rejoindre l'early access";
+  const ctaLabel = full ? "Rejoindre la liste d'attente" : "Rejoindre l'accès anticipé";
 
   // ── Scroll section refs ──────────────────────────────────────
   const sectionRef = useRef<HTMLElement>(null);

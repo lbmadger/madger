@@ -75,11 +75,11 @@ export default function Pricing() {
             }}>Aucune surprise au lancement.</span>
           </h2>
           <p className="text-text-muted text-lg max-w-lg mx-auto mb-6" style={{ lineHeight: 1.6 }}>
-            Ces tarifs entrent en vigueur au lancement. Les membres early access bénéficient du plan Pro offert pendant 3 mois.
+            Ces tarifs entrent en vigueur au lancement. Les membres en accès anticipé bénéficient du plan Pro offert pendant 3 mois.
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8" style={{ background: "rgba(203,255,3,0.07)", border: "1px solid rgba(203,255,3,0.18)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-accent block" style={{ background: "#CBFF03" }} />
-            <span style={{ color: "#CBFF03", fontSize: 12, fontWeight: 600 }}>Early access - Plan Pro offert 3 mois pour les premiers membres</span>
+            <span style={{ color: "#CBFF03", fontSize: 12, fontWeight: 600 }}>Accès anticipé - Plan Pro offert 3 mois pour les premiers membres</span>
           </div>
 
           {/* ── Toggle mensuel / annuel ── */}
