@@ -4,7 +4,7 @@ sr = 44100
 BPM = 120
 beat = 60.0/BPM            # 0.5s
 bar = beat*4               # 2.0s
-DUR = 36.0
+DUR = 26.4
 N = int(sr*DUR)
 L = np.zeros(N); R = np.zeros(N)
 
@@ -77,6 +77,14 @@ def riser(d):
     tone=np.sin(2*np.pi*np.cumsum(f)/sr)*0.3
     return (noise*0.25+tone)*env
 
+def boom():
+    d=0.9; n=int(sr*d); t=np.arange(n)/sr
+    freq=70*np.exp(-t*6)+38
+    ph=2*np.pi*np.cumsum(freq)/sr
+    sig=np.sin(ph)*np.exp(-t*3.0)
+    sig[:300]+=np.linspace(1,0,300)*0.6
+    return sig*1.1
+
 NOTE={'A2':110.0,'F2':87.31,'C3':130.81,'G2':98.0,
       'A3':220.0,'C4':261.63,'E4':329.63,'F3':174.61,'G3':196.0,'A4':440.0,'E5':659.25}
 # chord roots per bar (Am F C G loop) and arp tones
@@ -118,6 +126,14 @@ for b in range(nbars):
 
 # intro riser into the drop
 place(mono, riser(2.0), 0.0)
+
+# impacts + risers at the video's section transitions (TikTok "slam" feel)
+SECTIONS=[0.0,4.0,6.5,14.5,20.5,24.0]
+for s in SECTIONS:
+    place(mono, boom(), s)
+    place(mono, crash(0.8), s)
+    if s>=1.0:
+        place(mono, riser(0.5), s-0.5)
 
 # ----- sidechain "pump": dip everything on each kick for that driving feel -----
 pump=np.ones(N)

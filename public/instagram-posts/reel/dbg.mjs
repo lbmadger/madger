@@ -1,0 +1,12 @@
+import pkg from '/opt/node22/lib/node_modules/playwright/index.js';
+const { chromium } = pkg;
+import { fileURLToPath } from 'url'; import path from 'path';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const b = await chromium.launch({ executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args:['--disable-gpu']});
+const page = await b.newPage({ viewport:{width:1080,height:1920}});
+page.on('pageerror',e=>console.log('PAGEERROR:',String(e)));
+page.on('console',m=>{ if(m.type()==='error') console.log('CONSOLE:',m.text()); });
+await page.goto('file://'+path.join(__dirname,'reel.html'),{waitUntil:'load'});
+const r=await page.evaluate(()=>{ try{ window.render(0.7); return 'ok'; }catch(e){ return 'ERR: '+e.message+' @ '+e.stack.split('\n')[1]; } });
+console.log('render result:', r);
+await b.close();
