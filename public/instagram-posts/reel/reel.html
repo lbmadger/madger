@@ -24,6 +24,10 @@ html,body{background:#000}
   background-image:linear-gradient(rgba(255,255,255,.6) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.6) 1px,transparent 1px);
   background-size:90px 90px;mask-image:radial-gradient(circle at 50% 45%,#000 40%,transparent 80%)}
 .vig{position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,transparent 45%,rgba(0,0,0,.55) 100%)}
+.fdot{position:absolute;width:10px;height:10px;border-radius:50%;background:rgba(203,255,3,.55);
+  box-shadow:0 0 18px rgba(203,255,3,.5);will-change:transform;opacity:.5}
+#d0{left:140px;top:380px}#d1{left:880px;top:520px}#d2{left:300px;top:1300px}
+#d3{left:820px;top:1500px}#d4{left:520px;top:240px;width:6px;height:6px}
 
 /* ---------- scenes ---------- */
 .scene{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;
@@ -42,7 +46,7 @@ html,body{background:#000}
 .s2head{position:absolute;top:300px;left:0;right:0;font-weight:800;font-size:60px;letter-spacing:-1px;
   line-height:1.15;padding:0 130px;opacity:0}
 .s2head .sub{display:block;margin-top:14px;font-weight:600;font-size:34px;color:var(--muted);letter-spacing:0}
-.chips{position:absolute;top:512px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:28px}
+.chips{position:absolute;top:660px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:34px}
 .chip{display:flex;align-items:center;gap:26px;width:760px;padding:34px 40px;border-radius:26px;
   background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);
   font-weight:600;font-size:42px;opacity:0;text-align:left}
@@ -129,6 +133,11 @@ html,body{background:#000}
     <div class="glow g1" id="g1"></div>
     <div class="glow g2" id="g2"></div>
     <div class="grid"></div>
+    <div class="fdot" id="d0"></div>
+    <div class="fdot" id="d1"></div>
+    <div class="fdot" id="d2"></div>
+    <div class="fdot" id="d3"></div>
+    <div class="fdot" id="d4"></div>
     <div class="vig"></div>
   </div>
 
@@ -143,13 +152,11 @@ html,body{background:#000}
 
   <!-- S2 -->
   <div class="scene" id="s2">
-    <div class="s2head" id="s2h">Gérer un cabinet de coach,<span class="sub">c'est un deuxième métier.</span></div>
+    <div class="s2head" id="s2h">Marre de tout gérer<span class="sub">à la main ?</span></div>
     <div class="chips">
       <div class="chip" id="c0"><span class="x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></span>Courir après les paiements</div>
       <div class="chip" id="c1"><span class="x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></span>Faire les factures à la main</div>
-      <div class="chip" id="c2"><span class="x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></span>Gérer les résa par SMS</div>
-      <div class="chip" id="c3"><span class="x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></span>Un planning éparpillé partout</div>
-      <div class="chip" id="c4"><span class="x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></span>Jongler entre 10 applis</div>
+      <div class="chip" id="c2"><span class="x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></span>Jongler entre 10 applis</div>
     </div>
   </div>
 
@@ -210,8 +217,8 @@ html,body{background:#000}
 </div>
 
 <script>
-window.FPS=25;
-window.DURATION=53.6;
+window.FPS=30;
+window.DURATION=35.7;
 const $=id=>document.getElementById(id);
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const lerp=(a,b,t)=>a+(b-a)*t;
@@ -224,26 +231,34 @@ const E={
 };
 const fr=n=>Math.round(n).toLocaleString('fr-FR');
 
-function scene(el,t,a,b,fin=0.28,fout=0.28){
+function scene(el,t,a,b,fin=0.32,fout=0.32){
   if(t<a-0.0001||t>b+0.0001){el.style.opacity=0;el.style.visibility='hidden';return -1;}
   el.style.visibility='visible';
-  let op=1;
-  if(t<a+fin)op=pr(t,a,a+fin);
-  if(t>b-fout)op=Math.min(op,pr(b,t,b)===0?0:1);
-  if(t>b-fout)op=Math.min(op,clamp((b-t)/fout));
+  let op=1, slide=0;
+  if(t<a+fin){op=pr(t,a,a+fin); slide=lerp(80,0,E.out3(op));}
+  if(t>b-fout){const q=pr(t,b-fout,b); op=Math.min(op,1-q); slide=lerp(0,-80,E.io3(q));}
+  // continuous gentle drift so nothing is ever fully static
+  const bob=Math.sin(t*1.25+a)*5;
   el.style.opacity=op;
+  el.style.transform=`translate3d(0,${slide+bob}px,0)`;
   return t-a;
 }
 function set(el,y,op,sc=1){el.style.opacity=op;el.style.transform=`translate3d(0,${y}px,0) scale(${sc})`;}
 
 // scene windows
-const W={s1:[0,4.4],s2:[4.4,18.2],s3:[18.2,34.3],s4:[34.3,47.2],s5:[47.2,53.6]};
+const W={s1:[0,4.1],s2:[4.1,10.5],s3:[10.5,21.6],s4:[21.6,29.0],s5:[29.0,35.7]};
 
 function render(t){
   // background drift
-  const dx=Math.sin(t*0.4)*40, dy=Math.cos(t*0.33)*30;
+  const dx=Math.sin(t*0.45)*55, dy=Math.cos(t*0.37)*40;
   $('g1').style.transform=`translate3d(${dx}px,${dy}px,0)`;
   $('g2').style.transform=`translate3d(${-dx}px,${-dy*0.7}px,0)`;
+  // floating dots
+  for(let i=0;i<5;i++){
+    const fx=Math.sin(t*(0.5+i*0.13)+i*1.7)*38;
+    const fy=Math.cos(t*(0.42+i*0.11)+i*2.1)*46;
+    $('d'+i).style.transform=`translate3d(${fx}px,${fy}px,0)`;
+  }
 
   // S1
   let L=scene($('s1'),t,...W.s1);
@@ -257,38 +272,38 @@ function render(t){
   // S2
   L=scene($('s2'),t,...W.s2);
   if(L>=0){
-    set($('s2h'),lerp(30,0,E.out3(pr(L,0,0.6))),pr(L,0,0.6));
-    for(let i=0;i<5;i++){
-      const st=2.6+i*1.95, p=pr(L,st,st+0.55);
+    set($('s2h'),lerp(30,0,E.out3(pr(L,0,0.5))),pr(L,0,0.5));
+    for(let i=0;i<3;i++){
+      const st=0.7+i*1.7, p=pr(L,st,st+0.5);
       const dir=i%2?1:-1;
       const el=$('c'+i);
       el.style.opacity=p;
-      el.style.transform=`translate3d(${lerp(dir*120,0,E.out3(p))}px,0,0)`;
+      el.style.transform=`translate3d(${lerp(dir*140,0,E.back(p))}px,0,0)`;
     }
   }
 
   // S3
   L=scene($('s3'),t,...W.s3,0.3,0.35);
   if(L>=0){
-    set($('s3h'),lerp(26,0,E.out3(pr(L,0,0.6))),pr(L,0,0.6));
-    const pp=E.out5(pr(L,0.6,1.8));
+    set($('s3h'),lerp(26,0,E.out3(pr(L,0,0.5))),pr(L,0,0.5));
+    const pp=E.out5(pr(L,0.4,1.6));
     $('phone').style.transform=`translate3d(0,${lerp(1150,0,pp)}px,0)`;
-    $('phone').style.opacity=pr(L,0.6,1.1);
-    // counters (animate as the phone settles)
-    $('bal').innerHTML=fr(lerp(0,1240,E.out3(pr(L,2.2,4.5))))+'&nbsp;€';
-    $('ms1').textContent=fr(lerp(0,24,E.out3(pr(L,2.6,4.8))));
-    $('ms2').textContent=fr(lerp(0,87,E.out3(pr(L,2.6,4.8))))+'%';
+    $('phone').style.opacity=pr(L,0.4,0.9);
+    // counters animate as the phone settles
+    $('bal').innerHTML=fr(lerp(0,1200,E.out3(pr(L,1.9,3.7))))+'&nbsp;€';
+    $('ms1').textContent=fr(lerp(0,24,E.out3(pr(L,2.2,3.9))));
+    $('ms2').textContent=fr(lerp(0,87,E.out3(pr(L,2.2,3.9))))+'%';
     // today rows
     ['tr1','tr2','tr3'].forEach((id,i)=>{
-      const st=3.0+i*0.35,p=pr(L,st,st+0.5);
+      const st=1.8+i*0.3,p=pr(L,st,st+0.45);
       $(id).style.opacity=p;
       $(id).style.transform=`translate3d(0,${lerp(24,0,E.out3(p))}px,0)`;
     });
-    // notifications slide in when the voice mentions them
-    const n1=pr(L,11.0,11.6);
+    // notifications slide in when the voice mentions them ("prévenu à chaque paiement")
+    const n1=pr(L,8.2,8.8);
     $('n1').style.opacity=n1;
     $('n1').style.transform=`translate3d(${lerp(680,0,E.back(n1))}px,0,0)`;
-    const n2=pr(L,12.6,13.2);
+    const n2=pr(L,9.4,10.0);
     $('n2').style.opacity=n2;
     $('n2').style.transform=`translate3d(${lerp(680,0,E.back(n2))}px,0,0)`;
   }
@@ -296,9 +311,9 @@ function render(t){
   // S4
   L=scene($('s4'),t,...W.s4);
   if(L>=0){
-    set($('s4h'),lerp(28,0,E.out3(pr(L,0,0.6))),pr(L,0,0.6));
+    set($('s4h'),lerp(28,0,E.out3(pr(L,0,0.5))),pr(L,0,0.5));
     for(let i=0;i<6;i++){
-      const st=2.8+i*1.45,p=pr(L,st,st+0.55);
+      const st=0.7+i*0.62,p=pr(L,st,st+0.45);
       const el=$('p'+i);
       el.style.opacity=p;
       el.style.transform=`translate3d(0,${lerp(40,0,E.back(p))}px,0) scale(${lerp(0.85,1,E.back(p))})`;
@@ -311,14 +326,14 @@ function render(t){
     const lp=pr(L,0,0.7);
     $('s5logo').style.opacity=lp;
     $('s5logo').style.transform=`scale(${lerp(0.86,1,E.back(lp))})`;
-    set($('s5tag'),lerp(22,0,E.out3(pr(L,0.9,1.5))),pr(L,0.9,1.5));
-    const cp=pr(L,2.0,2.6);
-    const pulse=L>2.6?1+0.03*Math.sin((L-2.6)*6):1;
+    set($('s5tag'),lerp(22,0,E.out3(pr(L,0.7,1.3))),pr(L,0.7,1.3));
+    const cp=pr(L,1.8,2.4);
+    const pulse=L>2.4?1+0.03*Math.sin((L-2.4)*6):1;
     $('s5cta').style.opacity=cp;
     $('s5cta').style.transform=`scale(${lerp(0.9,1,E.back(cp))*pulse})`;
-    const glow=L>2.6?28+18*Math.sin((L-2.6)*6):0;
-    $('s5cta').style.boxShadow=`0 0 ${glow+30}px rgba(203,255,3,${0.35+0.2*Math.max(0,Math.sin((L-2.6)*6))})`;
-    const up=pr(L,2.6,3.2);
+    const glow=L>2.4?28+18*Math.sin((L-2.4)*6):0;
+    $('s5cta').style.boxShadow=`0 0 ${glow+30}px rgba(203,255,3,${0.35+0.2*Math.max(0,Math.sin((L-2.4)*6))})`;
+    const up=pr(L,2.5,3.1);
     $('s5url').style.opacity=up;
     const bob=Math.sin(L*4)*6;
     $('s5url').querySelector('.ar').style.transform=`translateY(${bob}px)`;
