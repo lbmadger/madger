@@ -1,2 +1,6 @@
 frames/
 preview/
+capture.log
+vo/model/
+vo/*.wav
+vo/*.mp3

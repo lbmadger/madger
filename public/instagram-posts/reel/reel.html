@@ -42,7 +42,7 @@ html,body{background:#000}
 .s2head{position:absolute;top:300px;left:0;right:0;font-weight:800;font-size:60px;letter-spacing:-1px;
   line-height:1.15;padding:0 130px;opacity:0}
 .s2head .sub{display:block;margin-top:14px;font-weight:600;font-size:34px;color:var(--muted);letter-spacing:0}
-.chips{position:absolute;top:560px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:34px}
+.chips{position:absolute;top:512px;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:28px}
 .chip{display:flex;align-items:center;gap:26px;width:760px;padding:34px 40px;border-radius:26px;
   background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);
   font-weight:600;font-size:42px;opacity:0;text-align:left}
@@ -98,13 +98,14 @@ html,body{background:#000}
   line-height:1.1;opacity:0}
 .pills{position:absolute;top:560px;left:0;right:0;display:grid;grid-template-columns:1fr 1fr;
   gap:34px;padding:0 110px}
-.pill{display:flex;flex-direction:column;gap:26px;padding:48px 44px;border-radius:34px;
+.pill{display:flex;flex-direction:column;gap:24px;padding:42px 40px;border-radius:34px;
   background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);
   text-align:left;opacity:0;will-change:transform}
-.pill .pic{width:96px;height:96px;border-radius:26px;display:flex;align-items:center;justify-content:center;
+.pill .pic{width:90px;height:90px;border-radius:24px;display:flex;align-items:center;justify-content:center;
   background:rgba(203,255,3,.14);color:var(--lime)}
-.pill .pic svg{width:52px;height:52px}
-.pill .pl{font-weight:800;font-size:44px;letter-spacing:-1px;line-height:1.1}
+.pill .pic svg{width:50px;height:50px}
+.pill .pl{font-weight:800;font-size:42px;letter-spacing:-1px;line-height:1.05}
+.pill .pd{font-weight:500;font-size:29px;color:var(--muted);line-height:1.25;margin-top:10px}
 
 /* S5 */
 .s5logo{display:flex;align-items:center;gap:26px;opacity:0}
@@ -148,6 +149,7 @@ html,body{background:#000}
       <div class="chip" id="c1"><span class="x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></span>Faire les factures à la main</div>
       <div class="chip" id="c2"><span class="x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></span>Gérer les résa par SMS</div>
       <div class="chip" id="c3"><span class="x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></span>Un planning éparpillé partout</div>
+      <div class="chip" id="c4"><span class="x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></span>Jongler entre 10 applis</div>
     </div>
   </div>
 
@@ -187,12 +189,12 @@ html,body{background:#000}
   <div class="scene" id="s4">
     <div class="s4head" id="s4h">Tout au même endroit.<br><span class="lime">Tout automatique.</span></div>
     <div class="pills">
-      <div class="pill" id="p0"><div class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></div><div class="pl">Réservations</div></div>
-      <div class="pill" id="p1"><div class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/></svg></div><div class="pl">Paiements auto</div></div>
-      <div class="pill" id="p2"><div class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l3 3v17H6z"/><path d="M9 12h6M9 16h6"/></svg></div><div class="pl">Factures auto</div></div>
-      <div class="pill" id="p3"><div class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.3 7.3L4 21l1.7-5.7A8 8 0 1 1 21 12z"/></svg></div><div class="pl">Suivi client</div></div>
-      <div class="pill" id="p4"><div class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></div><div class="pl">Rappels auto</div></div>
-      <div class="pill" id="p5"><div class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/><path d="M19 5 5 19"/></svg></div><div class="pl">0% commission</div></div>
+      <div class="pill" id="p0"><div class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></div><div class="ptext"><div class="pl">Réservations</div><div class="pd">Tes clients réservent en ligne, 24h/24</div></div></div>
+      <div class="pill" id="p1"><div class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/></svg></div><div class="ptext"><div class="pl">Paiements auto</div><div class="pd">Encaissés sans que tu y penses</div></div></div>
+      <div class="pill" id="p2"><div class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2h9l3 3v17H6z"/><path d="M9 12h6M9 16h6"/></svg></div><div class="ptext"><div class="pl">Factures auto</div><div class="pd">Générées et envoyées toutes seules</div></div></div>
+      <div class="pill" id="p3"><div class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.3 7.3L4 21l1.7-5.7A8 8 0 1 1 21 12z"/></svg></div><div class="ptext"><div class="pl">Suivi client</div><div class="pd">Historique et progression au même endroit</div></div></div>
+      <div class="pill" id="p4"><div class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></div><div class="ptext"><div class="pl">Rappels auto</div><div class="pd">Fini les oublis et les no-show</div></div></div>
+      <div class="pill" id="p5"><div class="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/><path d="M19 5 5 19"/></svg></div><div class="ptext"><div class="pl">0% commission</div><div class="pd">En plan Pro, tout est à toi</div></div></div>
     </div>
   </div>
 
@@ -208,8 +210,8 @@ html,body{background:#000}
 </div>
 
 <script>
-window.FPS=30;
-window.DURATION=14.4;
+window.FPS=25;
+window.DURATION=53.6;
 const $=id=>document.getElementById(id);
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
 const lerp=(a,b,t)=>a+(b-a)*t;
@@ -235,7 +237,7 @@ function scene(el,t,a,b,fin=0.28,fout=0.28){
 function set(el,y,op,sc=1){el.style.opacity=op;el.style.transform=`translate3d(0,${y}px,0) scale(${sc})`;}
 
 // scene windows
-const W={s1:[0,2.4],s2:[2.4,5.6],s3:[5.6,10.2],s4:[10.2,12.4],s5:[12.4,14.4]};
+const W={s1:[0,4.4],s2:[4.4,18.2],s3:[18.2,34.3],s4:[34.3,47.2],s5:[47.2,53.6]};
 
 function render(t){
   // background drift
@@ -246,18 +248,18 @@ function render(t){
   // S1
   let L=scene($('s1'),t,...W.s1);
   if(L>=0){
-    set($('s1a'),lerp(60,0,E.out3(pr(L,0,0.6))),pr(L,0,0.6));
-    set($('s1b'),lerp(60,0,E.out3(pr(L,0.42,1.05))),pr(L,0.42,1.05));
-    $('s1ul').style.transform=`scaleX(${E.out5(pr(L,1.0,1.6))})`;
-    set($('s1tag'),lerp(20,0,E.out3(pr(L,1.4,2.0))),pr(L,1.4,2.0)*0.9);
+    set($('s1a'),lerp(60,0,E.out3(pr(L,0,0.7))),pr(L,0,0.7));
+    set($('s1b'),lerp(60,0,E.out3(pr(L,0.5,1.3))),pr(L,0.5,1.3));
+    $('s1ul').style.transform=`scaleX(${E.out5(pr(L,1.2,1.9))})`;
+    set($('s1tag'),lerp(20,0,E.out3(pr(L,1.7,2.4))),pr(L,1.7,2.4)*0.9);
   }
 
   // S2
   L=scene($('s2'),t,...W.s2);
   if(L>=0){
-    set($('s2h'),lerp(30,0,E.out3(pr(L,0,0.5))),pr(L,0,0.5));
-    for(let i=0;i<4;i++){
-      const st=0.45+i*0.22, p=pr(L,st,st+0.55);
+    set($('s2h'),lerp(30,0,E.out3(pr(L,0,0.6))),pr(L,0,0.6));
+    for(let i=0;i<5;i++){
+      const st=2.6+i*1.95, p=pr(L,st,st+0.55);
       const dir=i%2?1:-1;
       const el=$('c'+i);
       el.style.opacity=p;
@@ -268,25 +270,25 @@ function render(t){
   // S3
   L=scene($('s3'),t,...W.s3,0.3,0.35);
   if(L>=0){
-    set($('s3h'),lerp(26,0,E.out3(pr(L,0,0.5))),pr(L,0,0.5));
-    const pp=E.out5(pr(L,0.2,1.15));
+    set($('s3h'),lerp(26,0,E.out3(pr(L,0,0.6))),pr(L,0,0.6));
+    const pp=E.out5(pr(L,0.6,1.8));
     $('phone').style.transform=`translate3d(0,${lerp(1150,0,pp)}px,0)`;
-    $('phone').style.opacity=pr(L,0.2,0.6);
-    // counters
-    $('bal').innerHTML=fr(lerp(0,1240,E.out3(pr(L,1.1,2.2))))+'&nbsp;€';
-    $('ms1').textContent=fr(lerp(0,24,E.out3(pr(L,1.2,2.2))));
-    $('ms2').textContent=fr(lerp(0,87,E.out3(pr(L,1.2,2.2))))+'%';
+    $('phone').style.opacity=pr(L,0.6,1.1);
+    // counters (animate as the phone settles)
+    $('bal').innerHTML=fr(lerp(0,1240,E.out3(pr(L,2.2,4.5))))+'&nbsp;€';
+    $('ms1').textContent=fr(lerp(0,24,E.out3(pr(L,2.6,4.8))));
+    $('ms2').textContent=fr(lerp(0,87,E.out3(pr(L,2.6,4.8))))+'%';
     // today rows
     ['tr1','tr2','tr3'].forEach((id,i)=>{
-      const st=1.35+i*0.16,p=pr(L,st,st+0.4);
+      const st=3.0+i*0.35,p=pr(L,st,st+0.5);
       $(id).style.opacity=p;
       $(id).style.transform=`translate3d(0,${lerp(24,0,E.out3(p))}px,0)`;
     });
-    // notifications slide from right
-    const n1=pr(L,2.3,2.7);
+    // notifications slide in when the voice mentions them
+    const n1=pr(L,11.0,11.6);
     $('n1').style.opacity=n1;
     $('n1').style.transform=`translate3d(${lerp(680,0,E.back(n1))}px,0,0)`;
-    const n2=pr(L,3.0,3.4);
+    const n2=pr(L,12.6,13.2);
     $('n2').style.opacity=n2;
     $('n2').style.transform=`translate3d(${lerp(680,0,E.back(n2))}px,0,0)`;
   }
@@ -294,9 +296,9 @@ function render(t){
   // S4
   L=scene($('s4'),t,...W.s4);
   if(L>=0){
-    set($('s4h'),lerp(28,0,E.out3(pr(L,0,0.5))),pr(L,0,0.5));
+    set($('s4h'),lerp(28,0,E.out3(pr(L,0,0.6))),pr(L,0,0.6));
     for(let i=0;i<6;i++){
-      const st=0.4+i*0.12,p=pr(L,st,st+0.5);
+      const st=2.8+i*1.45,p=pr(L,st,st+0.55);
       const el=$('p'+i);
       el.style.opacity=p;
       el.style.transform=`translate3d(0,${lerp(40,0,E.back(p))}px,0) scale(${lerp(0.85,1,E.back(p))})`;
@@ -306,17 +308,17 @@ function render(t){
   // S5
   L=scene($('s5'),t,...W.s5,0.3,0.001);
   if(L>=0){
-    const lp=pr(L,0,0.6);
+    const lp=pr(L,0,0.7);
     $('s5logo').style.opacity=lp;
     $('s5logo').style.transform=`scale(${lerp(0.86,1,E.back(lp))})`;
-    set($('s5tag'),lerp(22,0,E.out3(pr(L,0.4,0.95))),pr(L,0.4,0.95));
-    const cp=pr(L,0.7,1.1);
-    const pulse=L>1.1?1+0.03*Math.sin((L-1.1)*7):1;
+    set($('s5tag'),lerp(22,0,E.out3(pr(L,0.9,1.5))),pr(L,0.9,1.5));
+    const cp=pr(L,2.0,2.6);
+    const pulse=L>2.6?1+0.03*Math.sin((L-2.6)*6):1;
     $('s5cta').style.opacity=cp;
     $('s5cta').style.transform=`scale(${lerp(0.9,1,E.back(cp))*pulse})`;
-    const glow=L>1.1?28+18*Math.sin((L-1.1)*7):0;
-    $('s5cta').style.boxShadow=`0 0 ${glow+30}px rgba(203,255,3,${0.35+0.2*Math.max(0,Math.sin((L-1.1)*7))})`;
-    const up=pr(L,1.0,1.4);
+    const glow=L>2.6?28+18*Math.sin((L-2.6)*6):0;
+    $('s5cta').style.boxShadow=`0 0 ${glow+30}px rgba(203,255,3,${0.35+0.2*Math.max(0,Math.sin((L-2.6)*6))})`;
+    const up=pr(L,2.6,3.2);
     $('s5url').style.opacity=up;
     const bob=Math.sin(L*4)*6;
     $('s5url').querySelector('.ar').style.transform=`translateY(${bob}px)`;
