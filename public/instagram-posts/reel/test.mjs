@@ -10,7 +10,7 @@ await page.goto(htmlPath,{waitUntil:'load'});
 await page.evaluate(()=>document.fonts.ready);
 await page.waitForFunction(()=>window.__ready===true);
 const stage = await page.$('#stage');
-const shots = {s1:1.3, s2:4.6, s3:9.2, s4:11.6, s5:13.6};
+const shots = {s2b:7.6, s3b:13.5, s4b:18.5};
 for (const [k,t] of Object.entries(shots)){
   await page.evaluate(tt=>window.render(tt), t);
   await stage.screenshot({path:path.join(__dirname,'preview',k+'.png')});
