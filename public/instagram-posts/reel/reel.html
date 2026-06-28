@@ -118,13 +118,13 @@ html,body{background:#000}
         <div class="prow" id="pr2"><span class="px">✕</span>Les réservations</div>
         <div class="prow" id="pr3"><span class="px">✕</span>Les rappels</div>
       </div>
-      <div class="cap" id="h3" style="top:1540px;font-size:108px"><span class="word">tout</span> <span class="word box">à la main&nbsp;?!</span></div>
+      <div class="cap" id="h3" style="top:1500px;font-size:100px"><span class="word">tout ça te coûte</span><br><span class="word box">+5h / semaine</span></div>
     </div>
 
     <!-- S2 TURN -->
     <div class="scene" id="s2">
-      <div class="cap" id="t1" style="top:680px;font-size:120px"><span class="word">y'a</span> <span class="word">plus</span> <span class="word box">simple.</span></div>
-      <div class="cap" id="t2" style="top:980px;font-size:0"></div>
+      <div class="cap" id="t1" style="top:560px;font-size:220px"><span class="word box">stop.</span></div>
+      <div class="cap" id="t2" style="top:930px;font-size:120px"><span class="word"><span class="mark"><span>M</span></span></span> <span class="word">y'a madger</span></div>
     </div>
 
     <!-- S3 PHONE -->
@@ -246,7 +246,8 @@ function render(t){
   // ===== S2 =====
   L=showScene($('s2'),t,...W.s2);
   if(L>=0){
-    popWords('#t1',L,0.15,0.18,{from:2.0,rot:4});
+    popWords('#t1',L,0.15,0.1,{from:2.4,rot:-5});
+    popWords('#t2',L,0.9,0.14,{from:1.9});
     const ex=pr(L,2.2,2.5); $('s2').style.opacity=1-ex;
   } else $('s2').style.opacity=1;
 

@@ -9,7 +9,9 @@ await page.goto('file://'+path.join(__dirname,'reel.html'),{waitUntil:'load'});
 await page.evaluate(()=>document.fonts.ready);
 await page.waitForFunction(()=>window.__ready===true);
 const stage = await page.$('#stage');
-await page.evaluate(()=>window.render(19.0));
-await stage.screenshot({path:path.join(__dirname,'preview','s4fix.png')});
+for (const [k,t] of Object.entries({hook:3.6, stop:5.4})){
+  await page.evaluate(tt=>window.render(tt), t);
+  await stage.screenshot({path:path.join(__dirname,'preview',k+'.png')});
+}
 console.log('errs:',errs.slice(0,3));
 await browser.close();
