@@ -31,6 +31,38 @@ const fr = {
     language: "Langue",
     account: "Mon compte",
   },
+  auth: {
+    emailLabel: "Adresse email",
+    passwordLabel: "Mot de passe",
+    or: "ou",
+    googleContinue: "Continuer avec Google",
+    signingIn: "Connexion…",
+    login: {
+      title: "Connexion à Madger",
+      subtitle: "Ravi de te revoir. Connecte-toi pour gérer ton activité.",
+      submit: "Se connecter",
+      noAccount: "Pas encore de compte ?",
+      link: "Créer un compte",
+    },
+    signup: {
+      title: "Créer ton compte coach",
+      subtitle: "Quelques secondes pour démarrer avec Madger.",
+      submit: "Créer mon compte",
+      haveAccount: "Tu as déjà un compte ?",
+      link: "Se connecter",
+      checkEmailTitle: "Vérifie ta boîte mail",
+      checkEmailDesc:
+        "On t'a envoyé un lien de confirmation. Clique dessus pour activer ton compte.",
+    },
+    errors: {
+      generic: "Une erreur est survenue. Réessaie.",
+      invalidCredentials: "Email ou mot de passe incorrect.",
+      passwordTooShort: "Le mot de passe doit faire au moins 8 caractères.",
+    },
+  },
+  account: {
+    signout: "Se déconnecter",
+  },
   overview: {
     title: "Vue d'ensemble",
     greeting: "Bonjour",
@@ -75,6 +107,38 @@ const en: Dictionary = {
   topbar: {
     language: "Language",
     account: "My account",
+  },
+  auth: {
+    emailLabel: "Email address",
+    passwordLabel: "Password",
+    or: "or",
+    googleContinue: "Continue with Google",
+    signingIn: "Signing in…",
+    login: {
+      title: "Sign in to Madger",
+      subtitle: "Welcome back. Sign in to manage your business.",
+      submit: "Sign in",
+      noAccount: "No account yet?",
+      link: "Create an account",
+    },
+    signup: {
+      title: "Create your coach account",
+      subtitle: "A few seconds to get started with Madger.",
+      submit: "Create my account",
+      haveAccount: "Already have an account?",
+      link: "Sign in",
+      checkEmailTitle: "Check your inbox",
+      checkEmailDesc:
+        "We sent you a confirmation link. Click it to activate your account.",
+    },
+    errors: {
+      generic: "Something went wrong. Please try again.",
+      invalidCredentials: "Incorrect email or password.",
+      passwordTooShort: "Password must be at least 8 characters.",
+    },
+  },
+  account: {
+    signout: "Sign out",
   },
   overview: {
     title: "Overview",

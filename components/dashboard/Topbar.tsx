@@ -2,6 +2,7 @@
 
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { LOCALES, type Locale } from "@/lib/i18n/config";
+import AccountMenu from "@/components/dashboard/AccountMenu";
 
 // Barre supérieure du dashboard : titre de page + sélecteur de langue et
 // pastille compte. Le sélecteur pose un cookie et recharge (cf. useI18n).
@@ -33,10 +34,8 @@ export default function Topbar({ title }: { title: string }) {
           ))}
         </div>
 
-        {/* Pastille compte (menu réel en Phase 1) */}
-        <div className="flex h-9 w-9 items-center justify-center rounded-full border border-border-strong bg-bg-card text-sm font-semibold text-text-base">
-          M
-        </div>
+        {/* Menu compte (email + déconnexion) */}
+        <AccountMenu />
       </div>
     </header>
   );
