@@ -9,7 +9,7 @@ await page.goto('file://'+path.join(__dirname,'reel.html'),{waitUntil:'load'});
 await page.evaluate(()=>document.fonts.ready);
 await page.waitForFunction(()=>window.__ready===true);
 const stage = await page.$('#stage');
-for (const [k,t] of Object.entries({hook:3.6, stop:5.4})){
+for (const [k,t] of Object.entries({stop2:5.6, cta2:22.5})){
   await page.evaluate(tt=>window.render(tt), t);
   await stage.screenshot({path:path.join(__dirname,'preview',k+'.png')});
 }
