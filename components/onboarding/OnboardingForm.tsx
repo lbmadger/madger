@@ -56,32 +56,36 @@ export default function OnboardingForm({
     }
 
     setLoading(true);
-    const supabase = createClient();
-    const { error } = await supabase
-      .from("coaches")
-      .update({
-        first_name: firstName.trim(),
-        last_name: lastName.trim() || null,
-        specialty: specialty.trim() || null,
-        slug,
-        onboarding_completed: true,
-      })
-      .eq("id", userId);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from("coaches")
+        .update({
+          first_name: firstName.trim(),
+          last_name: lastName.trim() || null,
+          specialty: specialty.trim() || null,
+          slug,
+          onboarding_completed: true,
+        })
+        .eq("id", userId);
 
-    setLoading(false);
-
-    if (error) {
-      // 23505 = violation d'unicité (slug déjà pris).
-      if (error.code === "23505") {
-        setError(t("onboarding.errors.slugTaken"));
-      } else {
-        setError(t("onboarding.errors.generic"));
+      if (error) {
+        // 23505 = violation d'unicité (slug déjà pris).
+        if (error.code === "23505") {
+          setError(t("onboarding.errors.slugTaken"));
+        } else {
+          setError(t("onboarding.errors.generic"));
+        }
+        return;
       }
-      return;
-    }
 
-    router.push("/dashboard");
-    router.refresh();
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      setError(t("onboarding.errors.generic"));
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

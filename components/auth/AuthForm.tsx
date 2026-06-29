@@ -30,61 +30,88 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     e.preventDefault();
     setError(null);
 
+    // Garde-fou : si les variables Supabase ne sont pas présentes dans le
+    // build (ex : oubliées sur l'environnement Vercel "Preview"), on le dit
+    // clairement au lieu de laisser un appel échouer en silence.
+    if (
+      !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ) {
+      setError("Configuration Supabase manquante (variables Vercel).");
+      return;
+    }
+
     if (isSignup && password.length < 8) {
       setError(t("auth.errors.passwordTooShort"));
       return;
     }
 
     setLoading(true);
-    const supabase = createClient();
+    try {
+      const supabase = createClient();
 
-    if (isSignup) {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`,
-        },
-      });
-      setLoading(false);
-      if (error) {
-        setError(t("auth.errors.generic"));
+      if (isSignup) {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`,
+          },
+        });
+        if (error) {
+          setError(t("auth.errors.generic"));
+          return;
+        }
+        // Si la confirmation email est active, pas de session immédiate : on
+        // invite à vérifier la boîte mail. Sinon, on entre direct.
+        if (data.session) {
+          router.push(redirectTo);
+          router.refresh();
+        } else {
+          setEmailSent(true);
+        }
         return;
       }
-      // Si la confirmation email est active, pas de session immédiate : on
-      // invite à vérifier la boîte mail. Sinon, on entre direct.
-      if (data.session) {
-        router.push(redirectTo);
-        router.refresh();
-      } else {
-        setEmailSent(true);
-      }
-      return;
-    }
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    setLoading(false);
-    if (error) {
-      setError(t("auth.errors.invalidCredentials"));
-      return;
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) {
+        setError(t("auth.errors.invalidCredentials"));
+        return;
+      }
+      router.push(redirectTo);
+      router.refresh();
+    } catch {
+      // Erreur réseau / client mal initialisé : on ne reste jamais bloqué.
+      setError(t("auth.errors.generic"));
+    } finally {
+      setLoading(false);
     }
-    router.push(redirectTo);
-    router.refresh();
   }
 
   async function handleGoogle() {
     setError(null);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`,
-      },
-    });
-    if (error) setError(t("auth.errors.generic"));
+    if (
+      !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ) {
+      setError("Configuration Supabase manquante (variables Vercel).");
+      return;
+    }
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`,
+        },
+      });
+      if (error) setError(t("auth.errors.generic"));
+    } catch {
+      setError(t("auth.errors.generic"));
+    }
   }
 
   // État "vérifie ta boîte mail" après inscription avec confirmation activée.
