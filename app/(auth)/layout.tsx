@@ -18,13 +18,15 @@ export default function AuthLayout({
       <div className="flex min-h-screen items-center justify-center bg-bg px-4 py-12">
         <div className="w-full max-w-sm">
           <div className="mb-8 flex justify-center">
+            {/* Contour + léger halo : l'icône est un carré sombre, sinon ses
+                bords se fondent dans le fond quasi-noir. */}
             <Image
               src="/madger-app-icon.png"
               alt="Madger"
               width={64}
               height={64}
               priority
-              className="h-16 w-16"
+              className="h-16 w-16 rounded-[22%] ring-1 ring-white/15 shadow-lg shadow-black/40"
             />
           </div>
           {children}

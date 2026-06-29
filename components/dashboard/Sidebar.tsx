@@ -41,7 +41,7 @@ const I = {
 
 const NAV: NavItem[] = [
   { href: "/dashboard", labelKey: "nav.overview", icon: I.overview },
-  { href: "/dashboard/clients", labelKey: "nav.clients", icon: I.clients, soon: true },
+  { href: "/dashboard/clients", labelKey: "nav.clients", icon: I.clients },
   { href: "/dashboard/agenda", labelKey: "nav.schedule", icon: I.schedule, soon: true },
   { href: "/dashboard/paiements", labelKey: "nav.payments", icon: I.payments, soon: true },
   { href: "/dashboard/factures", labelKey: "nav.invoices", icon: I.invoices, soon: true },

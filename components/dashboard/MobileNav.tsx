@@ -25,7 +25,6 @@ const TABS: Tab[] = [
   {
     href: "/dashboard/clients",
     labelKey: "nav.clients",
-    soon: true,
     icon: <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM3 21v-1a6 6 0 016-6h6a6 6 0 016 6v1" />,
   },
   {
