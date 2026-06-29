@@ -4,6 +4,7 @@ import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { SessionProvider } from "@/lib/auth/SessionProvider";
 import { createClient } from "@/lib/supabase/server";
+import { getCoach } from "@/lib/coach/getCoach";
 import Sidebar from "@/components/dashboard/Sidebar";
 import MobileNav from "@/components/dashboard/MobileNav";
 
@@ -35,6 +36,13 @@ export default async function DashboardLayout({
 
   if (!user) {
     redirect("/login");
+  }
+
+  // Tant que le profil n'est pas complété, on force l'onboarding. Si la table
+  // n'existe pas encore (SQL non lancé), on laisse passer pour ne pas bloquer.
+  const { coach, missingTable } = await getCoach();
+  if (!missingTable && coach && !coach.onboarding_completed) {
+    redirect("/onboarding");
   }
 
   return (

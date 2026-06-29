@@ -63,6 +63,24 @@ const fr = {
   account: {
     signout: "Se déconnecter",
   },
+  onboarding: {
+    title: "Bienvenue sur Madger 👋",
+    subtitle: "Crée ton profil pour générer ton lien de réservation.",
+    firstName: "Prénom",
+    lastName: "Nom",
+    specialty: "Spécialité",
+    specialtyPlaceholder: "Ex : Coach sportif, prépa physique, yoga…",
+    slugLabel: "Ton lien public",
+    slugHint: "Lettres minuscules, chiffres et tirets uniquement.",
+    submit: "Créer mon profil",
+    saving: "Création…",
+    errors: {
+      generic: "Une erreur est survenue. Réessaie.",
+      slugTaken: "Ce lien est déjà pris, choisis-en un autre.",
+      slugInvalid: "Lien invalide (lettres minuscules, chiffres et tirets).",
+      nameRequired: "Indique au moins ton prénom.",
+    },
+  },
   overview: {
     title: "Vue d'ensemble",
     greeting: "Bonjour",
@@ -139,6 +157,24 @@ const en: Dictionary = {
   },
   account: {
     signout: "Sign out",
+  },
+  onboarding: {
+    title: "Welcome to Madger 👋",
+    subtitle: "Set up your profile to generate your booking link.",
+    firstName: "First name",
+    lastName: "Last name",
+    specialty: "Specialty",
+    specialtyPlaceholder: "E.g. Personal trainer, strength coach, yoga…",
+    slugLabel: "Your public link",
+    slugHint: "Lowercase letters, numbers and hyphens only.",
+    submit: "Create my profile",
+    saving: "Saving…",
+    errors: {
+      generic: "Something went wrong. Please try again.",
+      slugTaken: "This link is already taken, pick another one.",
+      slugInvalid: "Invalid link (lowercase letters, numbers and hyphens).",
+      nameRequired: "Please enter at least your first name.",
+    },
   },
   overview: {
     title: "Overview",

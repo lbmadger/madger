@@ -9,5 +9,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  // Strictement les espaces privés : la landing n'est jamais interceptée.
+  matcher: ["/dashboard/:path*", "/onboarding"],
 };
