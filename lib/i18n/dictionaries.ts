@@ -54,10 +54,16 @@ const fr = {
       checkEmailDesc:
         "On t'a envoyé un lien de confirmation. Clique dessus pour activer ton compte.",
     },
+    password: {
+      len: "Au moins 8 caractères",
+      upper: "Une majuscule",
+      digit: "Un chiffre",
+      special: "Un caractère spécial",
+    },
     errors: {
       generic: "Une erreur est survenue. Réessaie.",
       invalidCredentials: "Email ou mot de passe incorrect.",
-      passwordTooShort: "Le mot de passe doit faire au moins 8 caractères.",
+      passwordWeak: "Le mot de passe ne respecte pas tous les critères.",
     },
   },
   account: {
@@ -149,10 +155,16 @@ const en: Dictionary = {
       checkEmailDesc:
         "We sent you a confirmation link. Click it to activate your account.",
     },
+    password: {
+      len: "At least 8 characters",
+      upper: "One uppercase letter",
+      digit: "One number",
+      special: "One special character",
+    },
     errors: {
       generic: "Something went wrong. Please try again.",
       invalidCredentials: "Incorrect email or password.",
-      passwordTooShort: "Password must be at least 8 characters.",
+      passwordWeak: "Password doesn't meet all the requirements.",
     },
   },
   account: {

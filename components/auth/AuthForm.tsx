@@ -4,7 +4,9 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/supabase/config";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { PASSWORD_RULES, isPasswordStrong } from "@/lib/utils/password";
 
 type Mode = "login" | "signup";
 
@@ -33,16 +35,13 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     // Garde-fou : si les variables Supabase ne sont pas présentes dans le
     // build (ex : oubliées sur l'environnement Vercel "Preview"), on le dit
     // clairement au lieu de laisser un appel échouer en silence.
-    if (
-      !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-      !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    ) {
-      setError("Configuration Supabase manquante (variables Vercel).");
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+      setError("Configuration Supabase manquante.");
       return;
     }
 
-    if (isSignup && password.length < 8) {
-      setError(t("auth.errors.passwordTooShort"));
+    if (isSignup && !isPasswordStrong(password)) {
+      setError(t("auth.errors.passwordWeak"));
       return;
     }
 
@@ -93,11 +92,8 @@ export default function AuthForm({ mode }: { mode: Mode }) {
 
   async function handleGoogle() {
     setError(null);
-    if (
-      !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-      !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    ) {
-      setError("Configuration Supabase manquante (variables Vercel).");
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+      setError("Configuration Supabase manquante.");
       return;
     }
     try {
@@ -194,6 +190,42 @@ export default function AuthForm({ mode }: { mode: Mode }) {
             className="rounded-lg border border-border-strong bg-bg-elevated px-3 py-2.5 text-base text-text-base outline-none transition-colors focus:border-accent"
           />
         </label>
+
+        {/* Critères du mot de passe (création de compte uniquement), cochés
+            en direct au fil de la saisie. */}
+        {isSignup && (
+          <ul className="-mt-1 flex flex-col gap-1.5">
+            {PASSWORD_RULES.map((rule) => {
+              const ok = rule.test(password);
+              return (
+                <li
+                  key={rule.key}
+                  className={`flex items-center gap-2 text-xs transition-colors ${
+                    ok ? "text-accent" : "text-text-dim"
+                  }`}
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    {ok ? (
+                      <path d="M20 6L9 17l-5-5" />
+                    ) : (
+                      <circle cx="12" cy="12" r="9" strokeWidth="1.6" />
+                    )}
+                  </svg>
+                  {t(rule.labelKey)}
+                </li>
+              );
+            })}
+          </ul>
+        )}
 
         {error && <p className="text-sm text-red-400">{error}</p>}
 
