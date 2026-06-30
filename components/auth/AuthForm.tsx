@@ -25,7 +25,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   const role = searchParams.get("role") === "client" ? "client" : "coach";
   const redirectTo =
     searchParams.get("redirect") ||
-    (role === "client" ? "/coachs" : "/dashboard");
+    (role === "client" ? "/messages" : "/dashboard");
 
   const isSignup = mode === "signup";
 
