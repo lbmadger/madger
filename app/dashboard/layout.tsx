@@ -38,9 +38,14 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  // Tant que le profil n'est pas complété, on force l'onboarding. Si la table
-  // n'existe pas encore (SQL non lancé), on laisse passer pour ne pas bloquer.
+  // Un compte sans profil coach (= client) n'a rien à faire dans l'espace
+  // coach → on le renvoie vers la marketplace. (Si la table n'existe pas encore
+  // — SQL non lancé — on laisse passer pour ne pas bloquer le dev.)
   const { coach, missingTable } = await getCoach();
+  if (!missingTable && !coach) {
+    redirect("/coachs");
+  }
+  // Tant que le profil n'est pas complété, on force l'onboarding.
   if (!missingTable && coach && !coach.onboarding_completed) {
     redirect("/onboarding");
   }

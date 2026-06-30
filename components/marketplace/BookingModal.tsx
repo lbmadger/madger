@@ -97,7 +97,7 @@ export default function BookingModal({
               {t("booking.successDesc")}
             </p>
             <div className="mt-6 flex flex-col gap-2">
-              <Link href="/signup" className="w-full">
+              <Link href="/signup?role=client" className="w-full">
                 <Button className="w-full">{t("booking.createAccount")}</Button>
               </Link>
               <Button variant="ghost" onClick={onClose}>

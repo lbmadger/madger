@@ -20,7 +20,12 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirect") || "/dashboard";
+  // Rôle du compte créé : 'client' si ?role=client (parcours client après
+  // réservation), sinon 'coach' (espace coach par défaut).
+  const role = searchParams.get("role") === "client" ? "client" : "coach";
+  const redirectTo =
+    searchParams.get("redirect") ||
+    (role === "client" ? "/coachs" : "/dashboard");
 
   const isSignup = mode === "signup";
 
@@ -61,6 +66,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           email,
           password,
           options: {
+            data: { role },
             emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`,
           },
         });
@@ -100,7 +106,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
       const { error } = await supabase.auth.signInWithOtp({
         phone: p,
         // À l'inscription, on crée le compte si besoin ; à la connexion non.
-        options: { shouldCreateUser: isSignup },
+        options: { shouldCreateUser: isSignup, data: { role } },
       });
       if (error) return setError(t("auth.errors.otpFailed"));
       setCodeSent(true);
