@@ -2,7 +2,6 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
 import { inputClass, labelClass } from "@/lib/ui/styles";
@@ -21,6 +20,7 @@ export default function BookingModal({
 
   // Coach sans ville mais dispo en ligne → réservation en visio par défaut.
   const [online, setOnline] = useState(!coach.city && coach.accepts_online);
+  const [website, setWebsite] = useState(""); // honeypot (invisible)
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [duration, setDuration] = useState(60);
@@ -47,22 +47,28 @@ export default function BookingModal({
 
     setLoading(true);
     try {
-      const supabase = createClient();
-      const { error } = await supabase.rpc("request_booking", {
-        coach_slug: coach.slug,
-        client_first_name: firstName.trim(),
-        client_last_name: lastName.trim() || null,
-        client_email: email.trim(),
-        client_phone: phone.trim() || null,
-        starts_at: starts.toISOString(),
-        duration_min: duration,
-        message: message.trim() || null,
-        online,
+      const res = await fetch("/api/booking-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          coach_slug: coach.slug,
+          first_name: firstName.trim(),
+          last_name: lastName.trim() || null,
+          email: email.trim(),
+          phone: phone.trim() || null,
+          starts_at: starts.toISOString(),
+          duration_min: duration,
+          message: message.trim() || null,
+          online,
+          website, // honeypot
+        }),
       });
-
-      if (error) {
-        const m = error.message || "";
-        if (m.includes("date_in_past")) setError(t("booking.errors.datePast"));
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (data.error === "rate_limited")
+          setError(t("booking.errors.rateLimited"));
+        else if (data.error === "date_in_past")
+          setError(t("booking.errors.datePast"));
         else setError(t("booking.errors.generic"));
         return;
       }
@@ -113,6 +119,17 @@ export default function BookingModal({
             <p className="mt-1 text-sm text-text-muted">{t("booking.desc")}</p>
 
             <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-3">
+              {/* Honeypot : invisible pour les humains, piège à bots. */}
+              <input
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                className="absolute -left-[9999px] h-0 w-0"
+                aria-hidden="true"
+              />
+
               {/* Présentiel / visio si le coach propose les deux */}
               {coach.accepts_online && coach.city && (
                 <div className="flex gap-2">

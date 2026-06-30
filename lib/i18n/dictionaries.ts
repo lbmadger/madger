@@ -309,6 +309,7 @@ const fr = {
       emailRequired: "Indique ton email pour être recontacté.",
       dateRequired: "Choisis une date et une heure.",
       datePast: "Choisis une date à venir.",
+      rateLimited: "Trop de demandes. Réessaie un peu plus tard.",
     },
   },
   settings: {
@@ -642,6 +643,7 @@ const en: Dictionary = {
       emailRequired: "Please enter your email so the coach can reach you.",
       dateRequired: "Pick a date and time.",
       datePast: "Pick a future date.",
+      rateLimited: "Too many requests. Please try again later.",
     },
   },
   settings: {
