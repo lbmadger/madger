@@ -56,7 +56,7 @@ const NAV: NavItem[] = [
   { href: "/dashboard/messages", labelKey: "nav.messages", icon: I.messages },
   { href: "/dashboard/paiements", labelKey: "nav.payments", icon: I.payments, soon: true },
   { href: "/dashboard/factures", labelKey: "nav.invoices", icon: I.invoices, soon: true },
-  { href: "/dashboard/stats", labelKey: "nav.stats", icon: I.stats, soon: true },
+  { href: "/dashboard/stats", labelKey: "nav.stats", icon: I.stats },
 ];
 
 const SECONDARY: NavItem[] = [

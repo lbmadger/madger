@@ -24,24 +24,30 @@ export default async function OverviewPage() {
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekStart.getDate() + 7);
 
-  const [clientsRes, weekRes, upcomingRes] = await Promise.all([
-    supabase.from("clients").select("*", { count: "exact", head: true }),
-    supabase
-      .from("bookings")
-      .select("*", { count: "exact", head: true })
-      .gte("starts_at", weekStart.toISOString())
-      .lt("starts_at", weekEnd.toISOString()),
-    supabase
-      .from("bookings")
-      .select("*, clients(first_name, last_name)")
-      .gte("ends_at", now.toISOString())
-      .order("starts_at", { ascending: true })
-      .limit(5),
-  ]);
+  const [clientsRes, weekRes, upcomingRes, availRes, servicesRes] =
+    await Promise.all([
+      supabase.from("clients").select("*", { count: "exact", head: true }),
+      supabase
+        .from("bookings")
+        .select("*", { count: "exact", head: true })
+        .gte("starts_at", weekStart.toISOString())
+        .lt("starts_at", weekEnd.toISOString()),
+      supabase
+        .from("bookings")
+        .select("*, clients(first_name, last_name)")
+        .gte("ends_at", now.toISOString())
+        .order("starts_at", { ascending: true })
+        .limit(5),
+      supabase.from("availabilities").select("*", { count: "exact", head: true }),
+      supabase.from("services").select("*", { count: "exact", head: true }),
+    ]);
 
   const clientsCount = clientsRes.count ?? 0;
   const weekCount = weekRes.count ?? 0;
   const upcoming = (upcomingRes.data ?? []) as Booking[];
+  const availabilityDone = (availRes.count ?? 0) > 0;
+  const servicesDone = (servicesRes.count ?? 0) > 0;
+  const showChecklist = !availabilityDone || !servicesDone;
 
   const stats = [
     { label: o.revenueMonth, value: "0 €" },
@@ -69,7 +75,7 @@ export default async function OverviewPage() {
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <div className="lg:col-span-2">
+          <div className={showChecklist ? "lg:col-span-2" : "lg:col-span-3"}>
             <section className="rounded-2xl border border-border bg-bg-card p-5">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold text-text-base">
@@ -131,9 +137,14 @@ export default async function OverviewPage() {
             </section>
           </div>
 
-          <div className="lg:col-span-1">
-            <SetupChecklist />
-          </div>
+          {showChecklist && (
+            <div className="lg:col-span-1">
+              <SetupChecklist
+                availabilityDone={availabilityDone}
+                servicesDone={servicesDone}
+              />
+            </div>
+          )}
         </div>
       </main>
     </>

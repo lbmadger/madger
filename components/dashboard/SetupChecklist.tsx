@@ -1,20 +1,34 @@
 "use client";
 
+import Link from "next/link";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
-// Checklist d'onboarding affichée sur la vue d'ensemble tant que la config
-// n'est pas terminée. Phase 0 : statique (toutes non cochées). En Phase 1+,
-// chaque étape se cochera selon l'état réel du compte coach.
-
-const STEPS = [
-  "overview.setupProfile",
-  "overview.setupAvailability",
-  "overview.setupServices",
-  "overview.setupStripe",
-] as const;
-
-export default function SetupChecklist() {
+// Checklist d'onboarding affichée tant que la config n'est pas terminée.
+// Chaque étape est cliquable et reflète l'état réel du compte. L'étape Stripe
+// reste informative (module Paiements à venir).
+export default function SetupChecklist({
+  availabilityDone,
+  servicesDone,
+}: {
+  availabilityDone: boolean;
+  servicesDone: boolean;
+}) {
   const { t } = useI18n();
+
+  const steps = [
+    { labelKey: "overview.setupProfile", href: "/dashboard/reglages", done: true },
+    {
+      labelKey: "overview.setupAvailability",
+      href: "/dashboard/disponibilites",
+      done: availabilityDone,
+    },
+    {
+      labelKey: "overview.setupServices",
+      href: "/dashboard/prestations",
+      done: servicesDone,
+    },
+    { labelKey: "overview.setupStripe", href: null, done: false },
+  ];
 
   return (
     <section className="rounded-2xl border border-accent/20 bg-accent/[0.04] p-5">
@@ -26,19 +40,50 @@ export default function SetupChecklist() {
       </p>
 
       <ul className="mt-4 flex flex-col gap-2">
-        {STEPS.map((step) => (
-          <li
-            key={step}
-            className="flex items-center gap-3 rounded-lg border border-border bg-bg-elevated px-3 py-2.5"
-          >
-            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-border-strong text-text-dim">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 6L9 17l-5-5" />
-              </svg>
-            </span>
-            <span className="text-sm text-text-muted">{t(step)}</span>
-          </li>
-        ))}
+        {steps.map((step) => {
+          const inner = (
+            <>
+              <span
+                className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+                  step.done
+                    ? "border-accent bg-accent text-black"
+                    : "border-border-strong text-text-dim"
+                }`}
+              >
+                {step.done && (
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                )}
+              </span>
+              <span
+                className={`text-sm ${step.done ? "text-text-dim line-through" : "text-text-base"}`}
+              >
+                {t(step.labelKey)}
+              </span>
+              {step.href && !step.done && (
+                <svg className="ml-auto shrink-0 text-text-dim" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              )}
+            </>
+          );
+
+          const base =
+            "flex items-center gap-3 rounded-lg border border-border bg-bg-elevated px-3 py-2.5";
+
+          return (
+            <li key={step.labelKey}>
+              {step.href ? (
+                <Link href={step.href} className={`${base} transition-colors hover:border-border-strong`}>
+                  {inner}
+                </Link>
+              ) : (
+                <div className={base}>{inner}</div>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </section>
   );

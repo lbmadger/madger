@@ -175,6 +175,21 @@ const fr = {
       dateRequired: "Indique une date et une heure.",
     },
   },
+  stats: {
+    title: "Statistiques",
+    clients: "Clients",
+    sessionsMonth: "Séances ce mois",
+    upcoming: "À venir",
+    pending: "En attente",
+    byStatus: "Répartition des séances",
+    none: "Pas encore de données à afficher.",
+    status: {
+      pending: "En attente",
+      confirmed: "Confirmées",
+      completed: "Réalisées",
+      cancelled: "Annulées",
+    },
+  },
   messages: {
     title: "Messages",
     emptyTitle: "Aucune conversation",
@@ -518,6 +533,21 @@ const en: Dictionary = {
       generic: "Something went wrong. Please try again.",
       clientRequired: "Choose a client.",
       dateRequired: "Pick a date and time.",
+    },
+  },
+  stats: {
+    title: "Statistics",
+    clients: "Clients",
+    sessionsMonth: "Sessions this month",
+    upcoming: "Upcoming",
+    pending: "Pending",
+    byStatus: "Sessions breakdown",
+    none: "No data to show yet.",
+    status: {
+      pending: "Pending",
+      confirmed: "Confirmed",
+      completed: "Completed",
+      cancelled: "Cancelled",
     },
   },
   messages: {
