@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
+import BookingModal from "./BookingModal";
 import {
   type PublicCoach,
   coachFullName,
@@ -13,6 +15,7 @@ import {
 // Contacter seront branchés à l'étape suivante (réservation + messagerie).
 export default function CoachProfile({ coach }: { coach: PublicCoach }) {
   const { t } = useI18n();
+  const [booking, setBooking] = useState(false);
 
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6 sm:py-12">
@@ -68,12 +71,22 @@ export default function CoachProfile({ coach }: { coach: PublicCoach }) {
 
         {/* CTA */}
         <div className="mt-7 flex flex-col gap-2 sm:flex-row">
-          <Button className="flex-1">{t("coachProfile.book")}</Button>
-          <Button variant="secondary" className="flex-1">
+          <Button className="flex-1" onClick={() => setBooking(true)}>
+            {t("coachProfile.book")}
+          </Button>
+          <Button
+            variant="secondary"
+            className="flex-1"
+            onClick={() => setBooking(true)}
+          >
             {t("coachProfile.contact")}
           </Button>
         </div>
       </div>
+
+      {booking && (
+        <BookingModal coach={coach} onClose={() => setBooking(false)} />
+      )}
     </main>
   );
 }

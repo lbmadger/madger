@@ -152,15 +152,22 @@ export default function AgendaView({
                         </span>
                       )}
                     </div>
-                    <span
-                      className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                        b.location === "online"
-                          ? "bg-accent/10 text-accent"
-                          : "border border-border-strong text-text-muted"
-                      }`}
-                    >
-                      {t(`agenda.badge.${b.location}`)}
-                    </span>
+                    <div className="flex shrink-0 flex-col items-end gap-1">
+                      {b.status === "pending" && (
+                        <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-black">
+                          {t("agenda.pending")}
+                        </span>
+                      )}
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                          b.location === "online"
+                            ? "bg-accent/10 text-accent"
+                            : "border border-border-strong text-text-muted"
+                        }`}
+                      >
+                        {t(`agenda.badge.${b.location}`)}
+                      </span>
+                    </div>
                   </li>
                 ))}
               </ul>
