@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Booking, ClientOption } from "@/lib/bookings/types";
 import AddSessionModal from "./AddSessionModal";
@@ -25,11 +26,18 @@ export default function AgendaView({
 
   const loc = locale === "fr" ? "fr-FR" : "en-US";
 
+  // Confirme ou refuse une demande de séance.
+  async function setStatus(id: string, status: "confirmed" | "cancelled") {
+    const supabase = createClient();
+    await supabase.from("bookings").update({ status }).eq("id", id);
+    router.refresh();
+  }
+
   // Séances à venir uniquement (>= maintenant), regroupées par jour.
   const groups = useMemo(() => {
     const now = Date.now();
     const upcoming = initialBookings.filter(
-      (b) => new Date(b.ends_at).getTime() >= now
+      (b) => new Date(b.ends_at).getTime() >= now && b.status !== "cancelled"
     );
     const map = new Map<string, Booking[]>();
     for (const b of upcoming) {
@@ -127,8 +135,9 @@ export default function AgendaView({
                 {items.map((b) => (
                   <li
                     key={b.id}
-                    className="flex items-center gap-3 rounded-2xl border border-border bg-bg-card p-3"
+                    className="rounded-2xl border border-border bg-bg-card p-3"
                   >
+                   <div className="flex items-center gap-3">
                     <div className="flex w-20 shrink-0 flex-col">
                       <span className="text-sm font-semibold text-text-base">
                         {new Date(b.starts_at).toLocaleTimeString(loc, {
@@ -168,6 +177,27 @@ export default function AgendaView({
                         {t(`agenda.badge.${b.location}`)}
                       </span>
                     </div>
+                   </div>
+
+                   {/* Actions sur une demande en attente */}
+                   {b.status === "pending" && (
+                     <div className="mt-2 flex gap-2 border-t border-border pt-2">
+                       <button
+                         type="button"
+                         onClick={() => setStatus(b.id, "cancelled")}
+                         className="flex-1 rounded-full border border-border-strong py-1.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base"
+                       >
+                         {t("agenda.decline")}
+                       </button>
+                       <button
+                         type="button"
+                         onClick={() => setStatus(b.id, "confirmed")}
+                         className="flex-1 rounded-full bg-accent py-1.5 text-xs font-semibold text-black transition-opacity hover:opacity-90"
+                       >
+                         {t("agenda.confirm")}
+                       </button>
+                     </div>
+                   )}
                   </li>
                 ))}
               </ul>
