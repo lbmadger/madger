@@ -47,7 +47,7 @@ export default async function DashboardLayout({
 
   return (
     <I18nProvider locale={locale} dict={dict}>
-      <SessionProvider user={{ email: user.email ?? "" }}>
+      <SessionProvider user={{ email: user.email ?? "", slug: coach?.slug ?? null }}>
         <div className="flex min-h-screen bg-bg text-text-base">
           <Sidebar />
           {/* pb-20 réserve la hauteur de la barre d'onglets mobile (md:pb-0) */}

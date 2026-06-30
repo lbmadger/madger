@@ -15,6 +15,10 @@ export type Coach = {
   timezone: string;
   stripe_account_id: string | null;
   onboarding_completed: boolean;
+  // Champs marketplace (migration 0002)
+  city: string | null;
+  accepts_online: boolean;
+  listed: boolean;
 };
 
 // Récupère le profil coach de l'utilisateur connecté. Renvoie:

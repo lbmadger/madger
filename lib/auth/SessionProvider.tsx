@@ -7,6 +7,7 @@ import { createContext, useContext, type ReactNode } from "react";
 
 export type SessionUser = {
   email: string;
+  slug: string | null;
 };
 
 const SessionContext = createContext<SessionUser | null>(null);

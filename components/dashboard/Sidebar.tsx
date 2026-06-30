@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { useSession } from "@/lib/auth/SessionProvider";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 
 // Élément de navigation. `soon` grise l'entrée et la rend non cliquable tant
@@ -50,9 +51,46 @@ const NAV: NavItem[] = [
 ];
 
 const SECONDARY: NavItem[] = [
-  { href: "/dashboard/page-publique", labelKey: "nav.publicPage", icon: I.publicPage, soon: true },
-  { href: "/dashboard/reglages", labelKey: "nav.settings", icon: I.settings, soon: true },
+  { href: "/dashboard/reglages", labelKey: "nav.settings", icon: I.settings },
 ];
+
+// Lien vers la page publique du coach (ouvre /<slug> dans un nouvel onglet).
+// Désactivé tant que le slug n'existe pas (profil pas encore configuré).
+function PublicPageLink() {
+  const { t } = useI18n();
+  const { slug } = useSession();
+
+  const base =
+    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors";
+  const content = (
+    <>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+        {I.publicPage}
+      </svg>
+      <span className="truncate">{t("nav.publicPage")}</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="ml-auto shrink-0 opacity-60">
+        <path d="M7 17L17 7M17 7H8M17 7v9" />
+      </svg>
+    </>
+  );
+
+  if (!slug) {
+    return (
+      <div className={`${base} cursor-not-allowed text-text-dim`} aria-disabled="true">
+        {content}
+      </div>
+    );
+  }
+  return (
+    <Link
+      href={`/${slug}`}
+      target="_blank"
+      className={`${base} text-text-muted hover:bg-bg-elevated hover:text-text-base`}
+    >
+      {content}
+    </Link>
+  );
+}
 
 function NavLink({ item }: { item: NavItem }) {
   const pathname = usePathname();
@@ -128,6 +166,7 @@ export default function Sidebar() {
 
         <div className="my-4 h-px bg-border" />
 
+        <PublicPageLink />
         {SECONDARY.map((item) => (
           <NavLink key={item.href} item={item} />
         ))}
