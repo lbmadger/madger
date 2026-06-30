@@ -8,11 +8,25 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const redirect = searchParams.get("redirect") || "/dashboard";
+  // `as` indique l'intention (coach/client) lors d'une connexion Google : le
+  // flux OAuth ne transmet pas de métadonnées utilisateur, donc on attribue le
+  // rôle ici. Pour un coach, on crée sa ligne `coaches` (la RLS coaches_insert_self
+  // autorise un utilisateur à créer SA propre ligne).
+  const as = searchParams.get("as");
 
   if (code) {
     const supabase = createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      if (as === "coach") {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user) {
+          // Idempotent : ignore le conflit si la ligne existe déjà.
+          await supabase.from("coaches").insert({ id: user.id });
+        }
+      }
       return NextResponse.redirect(`${origin}${redirect}`);
     }
   }
