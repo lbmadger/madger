@@ -8,6 +8,12 @@ export type Locale = (typeof LOCALES)[number];
 
 export const DEFAULT_LOCALE: Locale = "fr";
 
+// Drapeau affiché dans le sélecteur de langue.
+export const LOCALE_FLAGS: Record<Locale, string> = {
+  fr: "🇫🇷",
+  en: "🇬🇧",
+};
+
 // Nom du cookie qui mémorise la langue choisie par le coach.
 export const LOCALE_COOKIE = "madger_locale";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { LOCALES, type Locale } from "@/lib/i18n/config";
+import { LOCALES, LOCALE_FLAGS, type Locale } from "@/lib/i18n/config";
 import AccountMenu from "@/components/dashboard/AccountMenu";
 
 // Barre supérieure du dashboard : titre de page + sélecteur de langue et
@@ -22,14 +22,13 @@ export default function Topbar({ title }: { title: string }) {
               key={l}
               type="button"
               onClick={() => l !== locale && setLocale(l)}
-              className={`rounded-md px-2.5 py-1 text-xs font-semibold uppercase transition-colors ${
-                l === locale
-                  ? "bg-accent text-black"
-                  : "text-text-muted hover:text-text-base"
+              className={`rounded-md px-2 py-1 text-base leading-none transition-opacity ${
+                l === locale ? "opacity-100" : "opacity-40 hover:opacity-70"
               }`}
               aria-pressed={l === locale}
+              aria-label={l}
             >
-              {l}
+              {LOCALE_FLAGS[l]}
             </button>
           ))}
         </div>
