@@ -28,6 +28,8 @@ export default function OnboardingForm({
   const [firstName, setFirstName] = useState(initialFirstName);
   const [lastName, setLastName] = useState(initialLastName);
   const [specialty, setSpecialty] = useState("");
+  const [city, setCity] = useState("");
+  const [acceptsOnline, setAcceptsOnline] = useState(false);
   const [slug, setSlug] = useState(
     slugify(`${initialFirstName} ${initialLastName}`)
   );
@@ -66,7 +68,11 @@ export default function OnboardingForm({
           first_name: firstName.trim(),
           last_name: lastName.trim() || null,
           specialty: specialty.trim() || null,
+          city: city.trim() || null,
+          accepts_online: acceptsOnline,
           slug,
+          // Profil présentable → visible sur la marketplace.
+          listed: true,
           onboarding_completed: true,
         })
         .eq("id", userId);
@@ -136,6 +142,31 @@ export default function OnboardingForm({
             placeholder={t("onboarding.specialtyPlaceholder")}
             className={inputClass}
           />
+        </label>
+
+        <label className="flex flex-col gap-1.5">
+          <span className="text-xs font-medium text-text-muted">
+            {t("onboarding.city")}
+          </span>
+          <input
+            type="text"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            placeholder={t("onboarding.cityPlaceholder")}
+            className={inputClass}
+          />
+        </label>
+
+        <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3">
+          <input
+            type="checkbox"
+            checked={acceptsOnline}
+            onChange={(e) => setAcceptsOnline(e.target.checked)}
+            className="h-4 w-4 shrink-0 accent-accent"
+          />
+          <span className="text-sm text-text-base">
+            {t("onboarding.acceptsOnline")}
+          </span>
         </label>
 
         <label className="flex flex-col gap-1.5">
