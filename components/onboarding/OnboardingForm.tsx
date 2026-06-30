@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { slugify, isValidSlug } from "@/lib/utils/slug";
 import Button from "@/components/ui/Button";
+import CityAutocomplete from "@/components/ui/CityAutocomplete";
 import { inputClass } from "@/lib/ui/styles";
 
 // Formulaire d'onboarding : nom + spécialité + slug du lien public. Écrit
@@ -29,6 +30,7 @@ export default function OnboardingForm({
   const [lastName, setLastName] = useState(initialLastName);
   const [specialty, setSpecialty] = useState("");
   const [city, setCity] = useState("");
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [acceptsOnline, setAcceptsOnline] = useState(false);
   const [slug, setSlug] = useState(
     slugify(`${initialFirstName} ${initialLastName}`)
@@ -69,6 +71,8 @@ export default function OnboardingForm({
           last_name: lastName.trim() || null,
           specialty: specialty.trim() || null,
           city: city.trim() || null,
+          lat: coords?.lat ?? null,
+          lng: coords?.lng ?? null,
           accepts_online: acceptsOnline,
           slug,
           // Profil présentable → visible sur la marketplace.
@@ -148,12 +152,18 @@ export default function OnboardingForm({
           <span className="text-xs font-medium text-text-muted">
             {t("onboarding.city")}
           </span>
-          <input
-            type="text"
+          <CityAutocomplete
             value={city}
-            onChange={(e) => setCity(e.target.value)}
+            onChange={(v) => {
+              setCity(v);
+              setCoords(null);
+            }}
+            onSelect={(c) => {
+              setCity(c.name);
+              setCoords({ lat: c.lat, lng: c.lng });
+            }}
             placeholder={t("onboarding.cityPlaceholder")}
-            className={inputClass}
+            inputClassName={inputClass}
           />
         </label>
 

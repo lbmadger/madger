@@ -10,6 +10,8 @@ export type PublicCoach = {
   avatar_url: string | null;
   city: string | null;
   accepts_online: boolean;
+  lat: number | null;
+  lng: number | null;
   created_at: string;
 };
 

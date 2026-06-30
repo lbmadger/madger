@@ -19,6 +19,9 @@ export type Coach = {
   city: string | null;
   accepts_online: boolean;
   listed: boolean;
+  // Géolocalisation (migration 0009)
+  lat: number | null;
+  lng: number | null;
 };
 
 // Récupère le profil coach de l'utilisateur connecté. Renvoie:

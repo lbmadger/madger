@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { slugify, isValidSlug } from "@/lib/utils/slug";
 import Button from "@/components/ui/Button";
+import CityAutocomplete from "@/components/ui/CityAutocomplete";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import type { Coach } from "@/lib/coach/getCoach";
 
@@ -18,6 +19,11 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   const [lastName, setLastName] = useState(coach.last_name ?? "");
   const [specialty, setSpecialty] = useState(coach.specialty ?? "");
   const [city, setCity] = useState(coach.city ?? "");
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
+    coach.lat != null && coach.lng != null
+      ? { lat: coach.lat, lng: coach.lng }
+      : null
+  );
   const [bio, setBio] = useState(coach.bio ?? "");
   const [acceptsOnline, setAcceptsOnline] = useState(coach.accepts_online);
   const [slug, setSlug] = useState(coach.slug ?? "");
@@ -42,6 +48,8 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           last_name: lastName.trim() || null,
           specialty: specialty.trim() || null,
           city: city.trim() || null,
+          lat: coords?.lat ?? null,
+          lng: coords?.lng ?? null,
           bio: bio.trim() || null,
           accepts_online: acceptsOnline,
           slug,
@@ -97,7 +105,21 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             <Field label={t("settings.lastName")} value={lastName} onChange={setLastName} />
           </div>
           <Field label={t("settings.specialty")} value={specialty} onChange={setSpecialty} />
-          <Field label={t("settings.city")} value={city} onChange={setCity} />
+          <label className="flex flex-col gap-1.5">
+            <span className={labelClass}>{t("settings.city")}</span>
+            <CityAutocomplete
+              value={city}
+              onChange={(v) => {
+                setCity(v);
+                setCoords(null);
+              }}
+              onSelect={(c) => {
+                setCity(c.name);
+                setCoords({ lat: c.lat, lng: c.lng });
+              }}
+              inputClassName={inputClass}
+            />
+          </label>
 
           <label className="flex flex-col gap-1.5">
             <span className={labelClass}>{t("settings.bio")}</span>

@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
+import CityAutocomplete from "@/components/ui/CityAutocomplete";
+import { geocodeCity, distanceKm, type City } from "@/lib/geo/cities";
 import { interactiveCardClass } from "@/lib/ui/styles";
 import {
   type PublicCoach,
@@ -13,6 +15,9 @@ import {
 } from "@/lib/coaches/public-types";
 
 type Filter = "all" | "online";
+type Coords = { lat: number; lng: number };
+// Rayon élargi quand aucun coach n'est trouvé dans la ville exacte.
+const RADIUS_KM = 30;
 
 export default function MarketplaceView({
   initialCoaches,
@@ -21,28 +26,72 @@ export default function MarketplaceView({
 }) {
   const { t } = useI18n();
   const [query, setQuery] = useState("");
+  const [coords, setCoords] = useState<Coords | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
   const [coaches, setCoaches] = useState<PublicCoach[]>(initialCoaches);
   const [loading, setLoading] = useState(false);
+  // Mémorise qu'on a basculé en recherche par rayon (pour le bandeau / message).
+  const [radius, setRadius] = useState<{ city: string; km: number } | null>(
+    null
+  );
 
-  const runSearch = useCallback(async () => {
+  async function runSearch(cityArg = query, coordsArg = coords) {
     setLoading(true);
+    setRadius(null);
     try {
       const supabase = createClient();
-      let q = supabase.from("public_coaches").select("*");
-      if (filter === "online") q = q.eq("accepts_online", true);
-      const city = query.trim();
-      if (city) q = q.ilike("city", `%${city}%`);
-      const { data } = await q
+      const base = () => {
+        const q = supabase.from("public_coaches").select("*");
+        return filter === "online" ? q.eq("accepts_online", true) : q;
+      };
+
+      const city = cityArg.trim();
+
+      // Pas de ville → tous les coachs (récents d'abord).
+      if (!city) {
+        const { data } = await base()
+          .order("created_at", { ascending: false })
+          .limit(50);
+        setCoaches((data ?? []) as PublicCoach[]);
+        return;
+      }
+
+      // 1) Correspondance exacte sur la ville.
+      const { data: exact } = await base()
+        .ilike("city", `%${city}%`)
         .order("created_at", { ascending: false })
         .limit(50);
-      setCoaches((data ?? []) as PublicCoach[]);
+      if ((exact ?? []).length > 0) {
+        setCoaches(exact as PublicCoach[]);
+        return;
+      }
+
+      // 2) Élargissement par rayon : il faut les coordonnées de la ville.
+      const target = coordsArg ?? (await geocodeCity(city));
+      if (target) {
+        const { data: all } = await base().not("lat", "is", null).limit(500);
+        const within = ((all ?? []) as PublicCoach[])
+          .map((c) => ({
+            c,
+            d: distanceKm(target, { lat: c.lat!, lng: c.lng! }),
+          }))
+          .filter((x) => x.d <= RADIUS_KM)
+          .sort((a, b) => a.d - b.d)
+          .map((x) => x.c);
+        setCoaches(within);
+        setRadius({ city, km: RADIUS_KM });
+        return;
+      }
+
+      // Aucune coordonnée → aucun résultat.
+      setCoaches([]);
+      setRadius({ city, km: RADIUS_KM });
     } finally {
       setLoading(false);
     }
-  }, [filter, query]);
+  }
 
-  // Relance la recherche quand on change de filtre (Tout / En ligne).
+  // Relance quand on change de filtre (Tout / En ligne).
   useEffect(() => {
     runSearch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -55,7 +104,6 @@ export default function MarketplaceView({
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
-      {/* Titre */}
       <div className="text-center">
         <h1 className="text-3xl font-extrabold tracking-tight text-text-base sm:text-4xl">
           {t("marketplace.title")}
@@ -65,34 +113,26 @@ export default function MarketplaceView({
         </p>
       </div>
 
-      {/* Barre de recherche */}
+      {/* Recherche ville (autocomplétion communes FR) */}
       <form
         onSubmit={onSubmit}
         className="mx-auto mt-6 flex max-w-xl flex-col gap-2 sm:flex-row"
       >
-        <div className="relative flex-1">
-          <svg
-            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-dim"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0118 0z" />
-            <circle cx="12" cy="10" r="3" />
-          </svg>
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t("marketplace.cityPlaceholder")}
-            className="w-full rounded-full border border-border-strong bg-white/[0.03] py-3 pl-11 pr-4 text-base text-text-base outline-none transition-colors placeholder:text-text-dim focus:border-accent"
-          />
-        </div>
+        <CityAutocomplete
+          value={query}
+          onChange={(v) => {
+            setQuery(v);
+            setCoords(null);
+          }}
+          onSelect={(c: City) => {
+            setQuery(c.name);
+            setCoords({ lat: c.lat, lng: c.lng });
+            runSearch(c.name, { lat: c.lat, lng: c.lng });
+          }}
+          placeholder={t("marketplace.cityPlaceholder")}
+          className="flex-1"
+          inputClassName="w-full rounded-full border border-border-strong bg-white/[0.03] px-4 py-3 text-base text-text-base outline-none transition-colors placeholder:text-text-dim focus:border-accent"
+        />
         <Button type="submit" disabled={loading} className="sm:px-7">
           {t("marketplace.search")}
         </Button>
@@ -118,6 +158,15 @@ export default function MarketplaceView({
         ))}
       </div>
 
+      {/* Bandeau "rayon élargi" */}
+      {radius && coaches.length > 0 && (
+        <p className="mx-auto mt-6 max-w-xl rounded-xl border border-accent/20 bg-accent/[0.05] px-4 py-2.5 text-center text-sm text-text-muted">
+          {t("marketplace.radiusA")}{" "}
+          <span className="font-medium text-text-base">{radius.city}</span>
+          {t("marketplace.radiusB")} {radius.km} {t("marketplace.km")}.
+        </p>
+      )}
+
       {/* Résultats */}
       <div className="mt-8">
         {coaches.length === 0 ? (
@@ -126,7 +175,7 @@ export default function MarketplaceView({
               {t("marketplace.emptyTitle")}
             </h3>
             <p className="mx-auto mt-1 max-w-sm text-sm text-text-muted">
-              {t("marketplace.emptyDesc")}
+              {radius ? t("marketplace.emptyRadiusDesc") : t("marketplace.emptyDesc")}
             </p>
           </div>
         ) : (
