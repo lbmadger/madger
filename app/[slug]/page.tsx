@@ -9,6 +9,7 @@ import {
   type PublicCoach,
   coachFullName,
 } from "@/lib/coaches/public-types";
+import type { PublicService } from "@/lib/services/types";
 
 // Profil public d'un coach : madger.app/<slug>. Route dynamique de premier
 // niveau — les routes statiques (/, /coachs, /cgu, /dashboard…) gardent la
@@ -53,11 +54,21 @@ export default async function CoachPublicPage({
     notFound();
   }
 
+  // Prestations actives du coach (vue publique).
+  const supabase = createClient();
+  const { data: services } = await supabase
+    .from("public_services")
+    .select("*")
+    .eq("coach_id", coach.id);
+
   return (
     <I18nProvider locale={locale} dict={dict}>
       <div className="min-h-screen bg-bg">
         <PublicHeader />
-        <CoachProfile coach={coach} />
+        <CoachProfile
+          coach={coach}
+          services={(services ?? []) as PublicService[]}
+        />
       </div>
     </I18nProvider>
   );

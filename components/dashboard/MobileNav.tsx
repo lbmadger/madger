@@ -33,10 +33,9 @@ const TABS: Tab[] = [
     icon: <path d="M7 3v3m10-3v3M3 9h18M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z" />,
   },
   {
-    href: "/dashboard/paiements",
-    labelKey: "nav.payments",
-    soon: true,
-    icon: <path d="M3 6h18a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V7a1 1 0 011-1zm0 4h20M7 15h3" />,
+    href: "/dashboard/prestations",
+    labelKey: "nav.services",
+    icon: <path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0l-8.1-8.1A2 2 0 012 11.2V4a2 2 0 012-2h7.2a2 2 0 011.4.6l8 8a2 2 0 010 2.8zM7.5 7.5h.01" />,
   },
   {
     href: "/dashboard/stats",

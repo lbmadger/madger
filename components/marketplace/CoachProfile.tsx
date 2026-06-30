@@ -10,12 +10,32 @@ import {
   coachFullName,
   coachInitials,
 } from "@/lib/coaches/public-types";
+import { type PublicService, formatPrice } from "@/lib/services/types";
 
 // Profil public d'un coach (page madger.app/<slug>). Les CTA Réserver /
 // Contacter seront branchés à l'étape suivante (réservation + messagerie).
-export default function CoachProfile({ coach }: { coach: PublicCoach }) {
-  const { t } = useI18n();
+export default function CoachProfile({
+  coach,
+  services = [],
+}: {
+  coach: PublicCoach;
+  services?: PublicService[];
+}) {
+  const { t, locale } = useI18n();
   const [booking, setBooking] = useState(false);
+
+  function priceLine(s: PublicService): string {
+    const base = formatPrice(s.price_cents, s.currency, locale);
+    return s.type === "subscription" ? `${base}${t("services.perMonth")}` : base;
+  }
+
+  function metaLine(s: PublicService): string {
+    const parts: string[] = [t(`services.types.${s.type}`)];
+    if (s.type === "pack" && s.pack_size)
+      parts.push(`${s.pack_size} ${t("services.sessionsLabel")}`);
+    if (s.duration_min) parts.push(`${s.duration_min} min`);
+    return parts.join(" · ");
+  }
 
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6 sm:py-12">
@@ -66,6 +86,33 @@ export default function CoachProfile({ coach }: { coach: PublicCoach }) {
             <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-text-base">
               {coach.bio}
             </p>
+          </div>
+        )}
+
+        {/* Prestations */}
+        {services.length > 0 && (
+          <div className="mt-6 border-t border-border pt-6">
+            <h2 className="text-xs font-medium uppercase tracking-wide text-text-dim">
+              {t("coachProfile.services")}
+            </h2>
+            <ul className="mt-3 flex flex-col gap-2">
+              {services.map((s) => (
+                <li
+                  key={s.id}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-border bg-bg-elevated p-3"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-text-base">
+                      {s.name}
+                    </p>
+                    <p className="text-xs text-text-muted">{metaLine(s)}</p>
+                  </div>
+                  <span className="shrink-0 font-bold text-accent">
+                    {priceLine(s)}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 
