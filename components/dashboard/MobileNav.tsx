@@ -30,7 +30,6 @@ const TABS: Tab[] = [
   {
     href: "/dashboard/agenda",
     labelKey: "nav.schedule",
-    soon: true,
     icon: <path d="M7 3v3m10-3v3M3 9h18M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z" />,
   },
   {
