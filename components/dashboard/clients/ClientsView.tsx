@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Client } from "@/lib/clients/types";
 import AddClientModal from "./AddClientModal";
+import Button from "@/components/ui/Button";
+import { interactiveCardClass } from "@/lib/ui/styles";
 
 function initials(c: Client): string {
   const a = c.first_name?.charAt(0) ?? "";
@@ -55,34 +57,29 @@ export default function ClientsView({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t("clients.search")}
-            className="w-full rounded-lg border border-border-strong bg-bg-elevated px-3 py-2 text-base text-text-base outline-none transition-colors placeholder:text-text-dim focus:border-accent sm:w-56"
+            className="w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-2.5 text-base text-text-base outline-none transition-colors placeholder:text-text-dim focus:border-accent sm:w-56"
           />
-          <button
-            type="button"
+          <Button
             onClick={() => setAdding(true)}
-            className="shrink-0 whitespace-nowrap rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+            className="shrink-0 whitespace-nowrap px-4 py-2.5"
           >
             + {t("clients.add")}
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Liste ou état vide */}
       {initialClients.length === 0 ? (
-        <div className="rounded-xl border border-border bg-bg-card p-10 text-center">
+        <div className="rounded-2xl border border-border bg-bg-card p-10 text-center">
           <h3 className="text-base font-semibold text-text-base">
             {t("clients.emptyTitle")}
           </h3>
           <p className="mx-auto mt-1 max-w-sm text-sm text-text-muted">
             {t("clients.emptyDesc")}
           </p>
-          <button
-            type="button"
-            onClick={() => setAdding(true)}
-            className="mt-5 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90"
-          >
+          <Button onClick={() => setAdding(true)} className="mt-5">
             + {t("clients.add")}
-          </button>
+          </Button>
         </div>
       ) : (
         <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -90,7 +87,7 @@ export default function ClientsView({
             <li key={c.id}>
               <Link
                 href={`/dashboard/clients/${c.id}`}
-                className="flex items-center gap-3 rounded-xl border border-border bg-bg-card p-3 transition-colors hover:border-border-strong"
+                className={`flex items-center gap-3 p-3 ${interactiveCardClass}`}
               >
                 <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/10 text-sm font-semibold text-accent">
                   {initials(c)}

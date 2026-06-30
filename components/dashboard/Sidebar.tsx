@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import MadgerLogo from "@/components/ui/MadgerLogo";
 
 // Élément de navigation. `soon` grise l'entrée et la rend non cliquable tant
 // que le module n'existe pas (Phase 0 : seul "Vue d'ensemble" est actif).
@@ -113,12 +114,10 @@ function NavLink({ item }: { item: NavItem }) {
 export default function Sidebar() {
   return (
     <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-bg-elevated p-4 md:flex">
-      <Link href="/dashboard" className="mb-8 flex items-center gap-2 px-2">
-        <span className="text-xl font-bold tracking-tight text-text-base">
+      <Link href="/dashboard" className="mb-8 flex items-center gap-2.5 px-2">
+        <MadgerLogo size={30} />
+        <span className="text-xl font-extrabold tracking-tight text-text-base">
           Madger
-        </span>
-        <span className="rounded bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-black">
-          App
         </span>
       </Link>
 

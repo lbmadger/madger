@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Booking, ClientOption } from "@/lib/bookings/types";
 import AddSessionModal from "./AddSessionModal";
+import Button from "@/components/ui/Button";
 
 function dayKey(iso: string): string {
   return iso.slice(0, 10); // YYYY-MM-DD (UTC) suffit pour regrouper
@@ -75,7 +76,7 @@ export default function AgendaView({
   // Pas de client → on invite à en créer un d'abord.
   if (clients.length === 0) {
     return (
-      <div className="rounded-xl border border-border bg-bg-card p-10 text-center">
+      <div className="rounded-2xl border border-border bg-bg-card p-10 text-center">
         <h3 className="text-base font-semibold text-text-base">
           {t("agenda.needClientTitle")}
         </h3>
@@ -84,7 +85,7 @@ export default function AgendaView({
         </p>
         <Link
           href="/dashboard/clients"
-          className="mt-5 inline-block rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+          className="cta-shine mt-5 inline-flex rounded-full bg-accent px-5 py-3 text-sm font-semibold text-black transition-all hover:scale-[1.02] hover:shadow-[0_0_22px_rgba(203,255,3,0.45)] active:scale-95"
         >
           {t("agenda.goToClients")}
         </Link>
@@ -98,17 +99,16 @@ export default function AgendaView({
         <h2 className="text-base font-semibold text-text-base">
           {t("agenda.upcoming")}
         </h2>
-        <button
-          type="button"
+        <Button
           onClick={() => setAdding(true)}
-          className="shrink-0 whitespace-nowrap rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+          className="shrink-0 whitespace-nowrap px-4 py-2.5"
         >
           + {t("agenda.add")}
-        </button>
+        </Button>
       </div>
 
       {groups.length === 0 ? (
-        <div className="rounded-xl border border-border bg-bg-card p-10 text-center">
+        <div className="rounded-2xl border border-border bg-bg-card p-10 text-center">
           <h3 className="text-base font-semibold text-text-base">
             {t("agenda.emptyTitle")}
           </h3>
@@ -127,7 +127,7 @@ export default function AgendaView({
                 {items.map((b) => (
                   <li
                     key={b.id}
-                    className="flex items-center gap-3 rounded-xl border border-border bg-bg-card p-3"
+                    className="flex items-center gap-3 rounded-2xl border border-border bg-bg-card p-3"
                   >
                     <div className="flex w-20 shrink-0 flex-col">
                       <span className="text-sm font-semibold text-text-base">

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { slugify, isValidSlug } from "@/lib/utils/slug";
+import Button from "@/components/ui/Button";
+import { inputClass } from "@/lib/ui/styles";
 
 // Formulaire d'onboarding : nom + spécialité + slug du lien public. Écrit
 // directement la ligne coaches via le client navigateur (RLS autorise le coach
@@ -90,7 +92,7 @@ export default function OnboardingForm({
 
   return (
     <div className="rounded-2xl border border-border bg-bg-card p-6">
-      <h1 className="text-xl font-semibold text-text-base">
+      <h1 className="text-2xl font-extrabold tracking-tight text-text-base">
         {t("onboarding.title")}
       </h1>
       <p className="mt-1 text-sm text-text-muted">{t("onboarding.subtitle")}</p>
@@ -106,7 +108,7 @@ export default function OnboardingForm({
               required
               value={firstName}
               onChange={(e) => syncNames({ first: e.target.value })}
-              className="rounded-lg border border-border-strong bg-bg-elevated px-3 py-2.5 text-base text-text-base outline-none transition-colors focus:border-accent"
+              className={inputClass}
             />
           </label>
 
@@ -118,7 +120,7 @@ export default function OnboardingForm({
               type="text"
               value={lastName}
               onChange={(e) => syncNames({ last: e.target.value })}
-              className="rounded-lg border border-border-strong bg-bg-elevated px-3 py-2.5 text-base text-text-base outline-none transition-colors focus:border-accent"
+              className={inputClass}
             />
           </label>
         </div>
@@ -132,7 +134,7 @@ export default function OnboardingForm({
             value={specialty}
             onChange={(e) => setSpecialty(e.target.value)}
             placeholder={t("onboarding.specialtyPlaceholder")}
-            className="rounded-lg border border-border-strong bg-bg-elevated px-3 py-2.5 text-base text-text-base outline-none transition-colors placeholder:text-text-dim focus:border-accent"
+            className={inputClass}
           />
         </label>
 
@@ -140,8 +142,8 @@ export default function OnboardingForm({
           <span className="text-xs font-medium text-text-muted">
             {t("onboarding.slugLabel")}
           </span>
-          <div className="flex items-center rounded-lg border border-border-strong bg-bg-elevated focus-within:border-accent">
-            <span className="pl-3 text-base text-text-dim">madger.app/</span>
+          <div className="flex items-center rounded-xl border border-border-strong bg-white/[0.03] transition-colors focus-within:border-accent">
+            <span className="pl-4 text-base text-text-dim">madger.app/</span>
             <input
               type="text"
               value={slug}
@@ -149,7 +151,7 @@ export default function OnboardingForm({
                 setSlugTouched(true);
                 setSlug(slugify(e.target.value));
               }}
-              className="w-full bg-transparent py-2.5 pr-3 text-base text-text-base outline-none"
+              className="w-full bg-transparent py-3 pr-4 text-base text-text-base outline-none"
             />
           </div>
           <span className="text-xs text-text-dim">
@@ -159,13 +161,9 @@ export default function OnboardingForm({
 
         {error && <p className="text-sm text-red-400">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="mt-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-60"
-        >
+        <Button type="submit" disabled={loading} className="mt-2 w-full">
           {loading ? t("onboarding.saving") : t("onboarding.submit")}
-        </button>
+        </Button>
       </form>
     </div>
   );

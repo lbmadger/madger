@@ -17,7 +17,7 @@ export default function SetupChecklist() {
   const { t } = useI18n();
 
   return (
-    <section className="rounded-xl border border-accent/20 bg-accent/[0.04] p-5">
+    <section className="rounded-2xl border border-accent/20 bg-accent/[0.04] p-5">
       <h3 className="text-base font-semibold text-text-base">
         {t("overview.setupTitle")}
       </h3>

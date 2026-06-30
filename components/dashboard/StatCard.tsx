@@ -11,7 +11,7 @@ export default function StatCard({
   trend?: string | null;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-bg-card p-4 sm:p-5">
+    <div className="rounded-2xl border border-border bg-bg-card p-4 sm:p-5">
       <p className="text-xs font-medium uppercase tracking-wide text-text-dim">
         {label}
       </p>

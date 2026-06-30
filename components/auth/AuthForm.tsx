@@ -7,6 +7,8 @@ import { createClient } from "@/lib/supabase/client";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/supabase/config";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { PASSWORD_RULES, isPasswordStrong } from "@/lib/utils/password";
+import Button from "@/components/ui/Button";
+import { inputClass } from "@/lib/ui/styles";
 
 type Mode = "login" | "signup";
 
@@ -134,7 +136,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
 
   return (
     <div className="rounded-2xl border border-border bg-bg-card p-6">
-      <h1 className="text-xl font-semibold text-text-base">
+      <h1 className="text-2xl font-extrabold tracking-tight text-text-base">
         {t(`${titleKey}.title`)}
       </h1>
       <p className="mt-1 text-sm text-text-muted">{t(`${titleKey}.subtitle`)}</p>
@@ -143,7 +145,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
       <button
         type="button"
         onClick={handleGoogle}
-        className="mt-6 flex w-full items-center justify-center gap-2 rounded-lg border border-border-strong bg-bg-elevated px-4 py-2.5 text-sm font-medium text-text-base transition-colors hover:bg-bg-card"
+        className="mt-6 flex w-full items-center justify-center gap-2 rounded-full border border-border-strong bg-bg-elevated px-4 py-3 text-sm font-medium text-text-base transition-all hover:border-white/20 hover:bg-bg-card active:scale-95"
       >
         <svg width="18" height="18" viewBox="0 0 24 24">
           <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z" />
@@ -173,7 +175,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
-            className="rounded-lg border border-border-strong bg-bg-elevated px-3 py-2.5 text-base text-text-base outline-none transition-colors focus:border-accent"
+            className={inputClass}
           />
         </label>
 
@@ -187,7 +189,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete={isSignup ? "new-password" : "current-password"}
-            className="rounded-lg border border-border-strong bg-bg-elevated px-3 py-2.5 text-base text-text-base outline-none transition-colors focus:border-accent"
+            className={inputClass}
           />
         </label>
 
@@ -229,13 +231,9 @@ export default function AuthForm({ mode }: { mode: Mode }) {
 
         {error && <p className="text-sm text-red-400">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="mt-2 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-60"
-        >
+        <Button type="submit" disabled={loading} className="mt-2 w-full">
           {loading ? t("auth.signingIn") : t(`${titleKey}.submit`)}
-        </button>
+        </Button>
       </form>
 
       {/* Bascule login/signup */}

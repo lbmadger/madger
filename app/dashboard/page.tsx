@@ -56,7 +56,7 @@ export default async function OverviewPage() {
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
         <div className="mb-6 sm:mb-8">
-          <h2 className="text-xl font-semibold text-text-base sm:text-2xl">
+          <h2 className="text-2xl font-extrabold tracking-tight text-text-base sm:text-3xl">
             {o.greeting} 👋
           </h2>
           <p className="mt-1 text-sm text-text-muted">{o.subtitle}</p>
@@ -70,7 +70,7 @@ export default async function OverviewPage() {
 
         <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <section className="rounded-xl border border-border bg-bg-card p-5">
+            <section className="rounded-2xl border border-border bg-bg-card p-5">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold text-text-base">
                   {o.nextSessions}

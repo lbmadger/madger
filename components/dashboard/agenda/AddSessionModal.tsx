@@ -4,6 +4,8 @@ import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { ClientOption, LocationKind } from "@/lib/bookings/types";
+import Button from "@/components/ui/Button";
+import { inputClass } from "@/lib/ui/styles";
 
 const DURATIONS = [30, 45, 60, 90];
 
@@ -82,8 +84,7 @@ export default function AddSessionModal({
     }
   }
 
-  const fieldClass =
-    "rounded-lg border border-border-strong bg-bg-elevated px-3 py-2.5 text-base text-text-base outline-none transition-colors focus:border-accent";
+  const fieldClass = inputClass;
 
   return (
     <div
@@ -232,20 +233,17 @@ export default function AddSessionModal({
           {error && <p className="text-sm text-red-400">{error}</p>}
 
           <div className="mt-1 flex gap-2">
-            <button
+            <Button
               type="button"
+              variant="secondary"
               onClick={onClose}
-              className="flex-1 rounded-lg border border-border-strong px-4 py-2.5 text-sm font-medium text-text-muted transition-colors hover:text-text-base"
+              className="flex-1"
             >
               {t("agenda.form.cancel")}
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-60"
-            >
+            </Button>
+            <Button type="submit" disabled={loading} className="flex-1">
               {loading ? t("agenda.form.creating") : t("agenda.form.create")}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

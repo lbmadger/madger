@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Client } from "@/lib/clients/types";
+import Button from "@/components/ui/Button";
+import { inputClass, labelClass } from "@/lib/ui/styles";
 
 // Fiche client : lecture, modification inline et suppression. Les écritures
 // passent par le client navigateur (RLS borne au coach propriétaire).
@@ -94,7 +96,7 @@ export default function ClientDetail({ client }: { client: Client }) {
         {t("clients.detail.back")}
       </Link>
 
-      <div className="rounded-xl border border-border bg-bg-card p-5 sm:p-6">
+      <div className="rounded-2xl border border-border bg-bg-card p-5 sm:p-6">
         {!editing ? (
           <>
             <div className="flex items-start justify-between gap-4">
@@ -111,13 +113,13 @@ export default function ClientDetail({ client }: { client: Client }) {
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
+              <Button
+                variant="secondary"
                 onClick={() => setEditing(true)}
-                className="shrink-0 rounded-lg border border-border-strong px-3 py-1.5 text-sm font-medium text-text-muted transition-colors hover:text-text-base"
+                className="shrink-0 px-4 py-2"
               >
                 {t("clients.detail.edit")}
-              </button>
+              </Button>
             </div>
 
             <div className="mt-6 space-y-4">
@@ -164,35 +166,28 @@ export default function ClientDetail({ client }: { client: Client }) {
             <EditField label={t("clients.form.email")} value={email} onChange={setEmail} type="email" />
             <EditField label={t("clients.form.phone")} value={phone} onChange={setPhone} type="tel" />
             <label className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium text-text-muted">
-                {t("clients.form.notes")}
-              </span>
+              <span className={labelClass}>{t("clients.form.notes")}</span>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={4}
-                className="resize-none rounded-lg border border-border-strong bg-bg-elevated px-3 py-2.5 text-base text-text-base outline-none transition-colors focus:border-accent"
+                className={`${inputClass} resize-none`}
               />
             </label>
 
             {error && <p className="text-sm text-red-400">{error}</p>}
 
             <div className="mt-1 flex gap-2">
-              <button
-                type="button"
+              <Button
+                variant="secondary"
                 onClick={() => setEditing(false)}
-                className="flex-1 rounded-lg border border-border-strong px-4 py-2.5 text-sm font-medium text-text-muted transition-colors hover:text-text-base"
+                className="flex-1"
               >
                 {t("clients.form.cancel")}
-              </button>
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={loading}
-                className="flex-1 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-60"
-              >
+              </Button>
+              <Button onClick={handleSave} disabled={loading} className="flex-1">
                 {loading ? t("clients.detail.saving") : t("clients.detail.save")}
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -216,12 +211,12 @@ function EditField({
 }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="text-xs font-medium text-text-muted">{label}</span>
+      <span className={labelClass}>{label}</span>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-lg border border-border-strong bg-bg-elevated px-3 py-2.5 text-base text-text-base outline-none transition-colors focus:border-accent"
+        className={inputClass}
       />
     </label>
   );

@@ -3,6 +3,8 @@
 import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import Button from "@/components/ui/Button";
+import { inputClass, labelClass } from "@/lib/ui/styles";
 
 // Modal d'ajout d'un client. Insère via le client navigateur Supabase :
 // la politique RLS impose coach_id = utilisateur courant, qu'on renseigne
@@ -106,35 +108,30 @@ export default function AddClientModal({
             type="tel"
           />
           <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-text-muted">
-              {t("clients.form.notes")}
-            </span>
+            <span className={labelClass}>{t("clients.form.notes")}</span>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder={t("clients.form.notesPlaceholder")}
               rows={3}
-              className="resize-none rounded-lg border border-border-strong bg-bg-elevated px-3 py-2.5 text-base text-text-base outline-none transition-colors placeholder:text-text-dim focus:border-accent"
+              className={`${inputClass} resize-none`}
             />
           </label>
 
           {error && <p className="text-sm text-red-400">{error}</p>}
 
           <div className="mt-1 flex gap-2">
-            <button
+            <Button
               type="button"
+              variant="secondary"
               onClick={onClose}
-              className="flex-1 rounded-lg border border-border-strong px-4 py-2.5 text-sm font-medium text-text-muted transition-colors hover:text-text-base"
+              className="flex-1"
             >
               {t("clients.form.cancel")}
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 rounded-lg bg-accent px-4 py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-60"
-            >
+            </Button>
+            <Button type="submit" disabled={loading} className="flex-1">
               {loading ? t("clients.form.creating") : t("clients.form.create")}
-            </button>
+            </Button>
           </div>
         </form>
       </div>
@@ -159,14 +156,14 @@ function Field({
 }) {
   return (
     <label className="flex flex-col gap-1.5">
-      <span className="text-xs font-medium text-text-muted">{label}</span>
+      <span className={labelClass}>{label}</span>
       <input
         type={type}
         value={value}
         required={required}
         autoFocus={autoFocus}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-lg border border-border-strong bg-bg-elevated px-3 py-2.5 text-base text-text-base outline-none transition-colors focus:border-accent"
+        className={inputClass}
       />
     </label>
   );
