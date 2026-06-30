@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
+import { PostHogProvider } from "@/components/PostHogProvider";
 import GrainOverlay from "@/components/ui/GrainOverlay";
 import CustomCursor from "@/components/ui/CustomCursor";
 import "./globals.css";
@@ -61,10 +62,12 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} antialiased`}>
-        {children}
-        <GrainOverlay />
-        <CustomCursor />
-        <Analytics />
+        <PostHogProvider>
+          {children}
+          <GrainOverlay />
+          <CustomCursor />
+          <Analytics />
+        </PostHogProvider>
       </body>
     </html>
   );

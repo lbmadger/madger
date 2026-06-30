@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePostHog } from "posthog-js/react";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 import { useEarlyAccessFull } from "@/components/ui/useEarlyAccessFull";
 
@@ -38,6 +39,7 @@ function focusOff(e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTM
 const cls = "w-full px-5 py-3.5 rounded-xl text-white text-base sm:text-sm outline-none";
 
 export default function EarlyAccessForm() {
+  const posthog = usePostHog();
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -82,6 +84,12 @@ export default function EarlyAccessForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    // Clic sur le bouton d'inscription : capturé dès le clic, avant toute
+    // validation, pour mesurer l'intention même si la soumission n'aboutit
+    // pas. Aucune donnée saisie n'est envoyée.
+    posthog?.capture("waitlist_cta_clicked");
+
     if (!fields.nb_clients || !fields.telephone.trim() || !fields.defi.trim()) {
       setError("Merci de renseigner tous les champs obligatoires.");
       return;
@@ -98,11 +106,24 @@ export default function EarlyAccessForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(fields),
       });
-      if (!res.ok) throw new Error("Erreur serveur");
+      if (!res.ok) {
+        // Erreur backend : on capture la raison (statut HTTP), jamais les
+        // données du formulaire.
+        posthog?.capture("waitlist_signup_error", { reason: `http_${res.status}` });
+        throw new Error("Erreur serveur");
+      }
       const data = await res.json().catch(() => ({}));
+      // Soumission réussie uniquement (réponse OK du backend), pas au clic.
+      // waitlist = true si l'inscription bascule en liste d'attente (cap
+      // fondateur atteint) ; non sensible.
+      posthog?.capture("waitlist_signup_success", { waitlist: Boolean(data?.waitlist) });
       setJoinedWaitlist(Boolean(data?.waitlist));
       setSubmitted(true);
-    } catch {
+    } catch (err) {
+      // Échec réseau / exception (le cas !res.ok a déjà été capturé ci-dessus).
+      if (!(err instanceof Error) || err.message !== "Erreur serveur") {
+        posthog?.capture("waitlist_signup_error", { reason: "network_error" });
+      }
       setError("Une erreur est survenue. Écris-nous à contact@madger.app");
     } finally {
       setLoading(false);
