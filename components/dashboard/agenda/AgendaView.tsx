@@ -107,12 +107,20 @@ export default function AgendaView({
         <h2 className="text-base font-semibold text-text-base">
           {t("agenda.upcoming")}
         </h2>
-        <Button
-          onClick={() => setAdding(true)}
-          className="shrink-0 whitespace-nowrap px-4 py-2.5"
-        >
-          + {t("agenda.add")}
-        </Button>
+        <div className="flex shrink-0 items-center gap-2">
+          <Link
+            href="/dashboard/disponibilites"
+            className="hidden whitespace-nowrap rounded-full border border-border-strong px-4 py-2.5 text-sm font-medium text-text-muted transition-colors hover:text-text-base sm:inline-flex"
+          >
+            {t("availability.title")}
+          </Link>
+          <Button
+            onClick={() => setAdding(true)}
+            className="whitespace-nowrap px-4 py-2.5"
+          >
+            + {t("agenda.add")}
+          </Button>
+        </div>
       </div>
 
       {groups.length === 0 ? (

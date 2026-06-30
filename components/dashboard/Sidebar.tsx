@@ -39,6 +39,7 @@ const I = {
   settings: (
     <path d="M12 15a3 3 0 100-6 3 3 0 000 6zM3 12h2m14 0h2M12 3v2m0 14v2M5.6 5.6l1.4 1.4m10 10l1.4 1.4m0-12.8l-1.4 1.4m-10 10l-1.4 1.4" />
   ),
+  availability: <path d="M12 7v5l3 2M12 21a9 9 0 110-18 9 9 0 010 18z" />,
   publicPage: (
     <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0zM3 12h18M12 3c2.5 2.5 3.5 6 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-6-3.5-9s1-6.5 3.5-9z" />
   ),
@@ -55,6 +56,7 @@ const NAV: NavItem[] = [
 ];
 
 const SECONDARY: NavItem[] = [
+  { href: "/dashboard/disponibilites", labelKey: "nav.availability", icon: I.availability },
   { href: "/dashboard/reglages", labelKey: "nav.settings", icon: I.settings },
 ];
 
