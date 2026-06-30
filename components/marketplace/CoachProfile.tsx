@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
 import BookingModal from "./BookingModal";
@@ -22,7 +24,70 @@ export default function CoachProfile({
   services?: PublicService[];
 }) {
   const { t, locale } = useI18n();
+  const router = useRouter();
   const [booking, setBooking] = useState(false);
+  const [contacting, setContacting] = useState(false);
+  const [contactError, setContactError] = useState<string | null>(null);
+
+  // Ouvre (ou crée) la conversation avec ce coach, puis redirige vers le fil.
+  // Non connecté → inscription client, avec retour sur le profil ensuite.
+  async function handleContact() {
+    setContactError(null);
+    setContacting(true);
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        router.push(
+          `/signup?role=client&redirect=${encodeURIComponent(`/${coach.slug}`)}`
+        );
+        return;
+      }
+      if (user.id === coach.id) {
+        router.push("/dashboard/messages");
+        return;
+      }
+
+      // Conversation existante ?
+      const { data: existing } = await supabase
+        .from("conversations")
+        .select("id")
+        .eq("coach_id", coach.id)
+        .eq("client_id", user.id)
+        .maybeSingle();
+
+      let convId = existing?.id as string | undefined;
+      if (!convId) {
+        const clientName =
+          (user.user_metadata?.full_name as string | undefined) ||
+          user.email ||
+          "Client";
+        const { data: created, error } = await supabase
+          .from("conversations")
+          .insert({
+            coach_id: coach.id,
+            client_id: user.id,
+            coach_name: coachFullName(coach),
+            client_name: clientName,
+          })
+          .select("id")
+          .single();
+        if (error || !created) {
+          setContactError(t("messages.startError"));
+          return;
+        }
+        convId = created.id as string;
+      }
+      router.push(`/messages/${convId}`);
+    } catch {
+      setContactError(t("messages.startError"));
+    } finally {
+      setContacting(false);
+    }
+  }
 
   function priceLine(s: PublicService): string {
     const base = formatPrice(s.price_cents, s.currency, locale);
@@ -124,11 +189,15 @@ export default function CoachProfile({
           <Button
             variant="secondary"
             className="flex-1"
-            onClick={() => setBooking(true)}
+            onClick={handleContact}
+            disabled={contacting}
           >
             {t("coachProfile.contact")}
           </Button>
         </div>
+        {contactError && (
+          <p className="mt-2 text-sm text-red-400">{contactError}</p>
+        )}
       </div>
 
       {booking && (

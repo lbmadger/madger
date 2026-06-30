@@ -33,6 +33,9 @@ const I = {
     <path d="M7 3h10l3 3v15H4V3h3zm0 7h10M7 14h10M7 18h6" />
   ),
   stats: <path d="M4 20V10m6 10V4m6 16v-6m6 6V8" />,
+  messages: (
+    <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
+  ),
   services: (
     <path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0l-8.1-8.1A2 2 0 012 11.2V4a2 2 0 012-2h7.2a2 2 0 011.4.6l8 8a2 2 0 010 2.8zM7.5 7.5h.01" />
   ),
@@ -50,6 +53,7 @@ const NAV: NavItem[] = [
   { href: "/dashboard/clients", labelKey: "nav.clients", icon: I.clients },
   { href: "/dashboard/agenda", labelKey: "nav.schedule", icon: I.schedule },
   { href: "/dashboard/prestations", labelKey: "nav.services", icon: I.services },
+  { href: "/dashboard/messages", labelKey: "nav.messages", icon: I.messages },
   { href: "/dashboard/paiements", labelKey: "nav.payments", icon: I.payments, soon: true },
   { href: "/dashboard/factures", labelKey: "nav.invoices", icon: I.invoices, soon: true },
   { href: "/dashboard/stats", labelKey: "nav.stats", icon: I.stats, soon: true },

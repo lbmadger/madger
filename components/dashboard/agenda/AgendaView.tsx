@@ -10,7 +10,13 @@ import AddSessionModal from "./AddSessionModal";
 import Button from "@/components/ui/Button";
 
 function dayKey(iso: string): string {
-  return iso.slice(0, 10); // YYYY-MM-DD (UTC) suffit pour regrouper
+  // Regroupe par jour LOCAL (et non UTC), sinon une séance pile à minuit
+  // pourrait tomber sur le mauvais jour.
+  const d = new Date(iso);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 export default function AgendaView({
