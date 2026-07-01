@@ -2,13 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
+import { isPro } from "@/lib/subscription/plan";
 
 export const dynamic = "force-dynamic";
 
+// Commission Madger sur les coachs NON Pro (les Pro sont à 0 %).
+const FREE_COMMISSION_RATE = 0.05;
+
 // Crée une session de paiement Stripe pour réserver une prestation payante.
 // Charge DIRECTE sur le compte connecté du coach (option stripeAccount) →
-// l'argent va au coach, Madger ne prend rien (0%), les frais Stripe sont à la
-// charge du coach.
+// l'argent va au coach. Commission Madger : 0 % si le coach est Pro, sinon 5 %
+// (application_fee_amount). Les frais Stripe restent à la charge du coach.
 export async function POST(req: NextRequest) {
   const stripe = getStripe();
   if (!stripe) {
@@ -42,7 +46,7 @@ export async function POST(req: NextRequest) {
 
   const { data: coach } = await supabase
     .from("coaches")
-    .select("id, stripe_account_id, stripe_charges_enabled")
+    .select("id, stripe_account_id, stripe_charges_enabled, pro_until")
     .eq("slug", coach_slug)
     .eq("listed", true)
     .maybeSingle();
@@ -61,6 +65,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "invalid_service" }, { status: 400 });
   }
 
+  // Commission Madger : 0 % pour un coach Pro, 5 % pour un coach sur le plan
+  // gratuit. Les frais Stripe restent à la charge du coach dans les deux cas.
+  const fee = isPro(coach.pro_until)
+    ? 0
+    : Math.round(service.price_cents * FREE_COMMISSION_RATE);
+
   const session = await stripe.checkout.sessions.create(
     {
       mode: "payment",
@@ -75,6 +85,8 @@ export async function POST(req: NextRequest) {
         },
       ],
       customer_email: String(email),
+      payment_intent_data:
+        fee > 0 ? { application_fee_amount: fee } : undefined,
       success_url: `${origin}/api/stripe/checkout/success?session_id={CHECKOUT_SESSION_ID}&acct=${coach.stripe_account_id}`,
       cancel_url: `${origin}/${coach_slug}`,
       metadata: {
