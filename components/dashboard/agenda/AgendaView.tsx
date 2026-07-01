@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Booking, ClientOption } from "@/lib/bookings/types";
+import type { Availability } from "@/lib/availability/types";
 import AddSessionModal from "./AddSessionModal";
+import WeekView from "./WeekView";
 import Button from "@/components/ui/Button";
 
 function dayKey(iso: string): string {
@@ -22,15 +24,18 @@ function dayKey(iso: string): string {
 export default function AgendaView({
   initialBookings,
   clients,
+  availabilities = [],
 }: {
   initialBookings: Booking[];
   clients: ClientOption[];
+  availabilities?: Availability[];
 }) {
   const { t, locale } = useI18n();
   const router = useRouter();
   const [adding, setAdding] = useState(false);
   const [cancelId, setCancelId] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [view, setView] = useState<"week" | "list">("week");
 
   const loc = locale === "fr" ? "fr-FR" : "en-US";
 
@@ -130,9 +135,23 @@ export default function AgendaView({
   return (
     <>
       <div className="mb-5 flex items-center justify-between gap-3">
-        <h2 className="text-base font-semibold text-text-base">
-          {t("agenda.upcoming")}
-        </h2>
+        {/* Sélecteur de vue Semaine / Liste */}
+        <div className="inline-flex rounded-full border border-border-strong p-0.5">
+          {(["week", "list"] as const).map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setView(v)}
+              className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
+                view === v
+                  ? "bg-accent text-black"
+                  : "text-text-muted hover:text-text-base"
+              }`}
+            >
+              {v === "week" ? t("agenda.viewWeek") : t("agenda.viewList")}
+            </button>
+          ))}
+        </div>
         <div className="flex shrink-0 items-center gap-2">
           <Link
             href="/dashboard/disponibilites"
@@ -149,7 +168,9 @@ export default function AgendaView({
         </div>
       </div>
 
-      {groups.length === 0 ? (
+      {view === "week" ? (
+        <WeekView bookings={initialBookings} availabilities={availabilities} />
+      ) : groups.length === 0 ? (
         <div className="rounded-2xl border border-border bg-bg-card p-10 text-center">
           <h3 className="text-base font-semibold text-text-base">
             {t("agenda.emptyTitle")}

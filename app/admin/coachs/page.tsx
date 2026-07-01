@@ -53,7 +53,7 @@ export default async function AdminCoaches() {
                   <td className="px-4 py-3 text-text-muted">{c.city || "—"}</td>
                   <td className="px-4 py-3">
                     <span className={pro ? "text-accent" : "text-text-muted"}>
-                      {pro ? "Pro" : "Free"}
+                      {pro ? "Pro" : "Gratuit"}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-text-muted">
