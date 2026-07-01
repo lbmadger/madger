@@ -1,0 +1,88 @@
+"use client";
+
+import { useI18n } from "@/lib/i18n/I18nProvider";
+
+// Cartes d'offres Free / Pro, réutilisées à l'onboarding et sur la page
+// Abonnement. `currentPlan` met en avant l'offre active.
+export default function PricingPlans({
+  currentPlan,
+}: {
+  currentPlan: "free" | "pro";
+}) {
+  const { t, dict } = useI18n();
+  const p = dict.plans;
+
+  const Feature = ({ label }: { label: string }) => (
+    <li className="flex items-start gap-2 text-sm text-text-muted">
+      <svg className="mt-0.5 shrink-0 text-accent" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20 6L9 17l-5-5" />
+      </svg>
+      {label}
+    </li>
+  );
+
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      {/* Free */}
+      <div
+        className={`rounded-2xl border p-5 ${
+          currentPlan === "free"
+            ? "border-accent/40 bg-accent/[0.04]"
+            : "border-border bg-bg-card"
+        }`}
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-bold text-text-base">{p.free}</h3>
+          {currentPlan === "free" && (
+            <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-black">
+              {p.currentBadge}
+            </span>
+          )}
+        </div>
+        <p className="mt-0.5 text-sm text-text-muted">{p.freeDesc}</p>
+        <p className="mt-3 text-2xl font-extrabold text-text-base">{p.priceFree}</p>
+        <ul className="mt-4 flex flex-col gap-2">
+          {p.featuresFree.map((f) => (
+            <Feature key={f} label={f} />
+          ))}
+        </ul>
+      </div>
+
+      {/* Pro */}
+      <div
+        className={`relative rounded-2xl border p-5 ${
+          currentPlan === "pro"
+            ? "border-accent/40 bg-accent/[0.04]"
+            : "border-accent/25 bg-bg-card"
+        }`}
+      >
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-bold text-accent">{p.pro}</h3>
+          {currentPlan === "pro" && (
+            <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-black">
+              {p.currentBadge}
+            </span>
+          )}
+        </div>
+        <p className="mt-0.5 text-sm text-text-muted">{p.proDesc}</p>
+        <p className="mt-3 text-2xl font-extrabold text-text-base">{p.pricePro}</p>
+        <p className="text-xs text-text-dim">{p.proNote}</p>
+        <ul className="mt-4 flex flex-col gap-2">
+          {p.featuresPro.map((f) => (
+            <Feature key={f} label={f} />
+          ))}
+        </ul>
+        {currentPlan === "free" && (
+          <button
+            type="button"
+            disabled
+            title={t("plans.upgradeSoon")}
+            className="mt-5 w-full cursor-not-allowed rounded-full border border-accent/40 bg-accent/10 px-4 py-2.5 text-sm font-semibold text-accent"
+          >
+            {t("plans.upgrade")} · {t("plans.upgradeSoon")}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}

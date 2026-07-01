@@ -55,6 +55,7 @@ export function useI18n() {
   const { locale, dict } = ctx;
 
   const t = useCallback((path: string) => resolve(dict, path), [dict]);
+  // `dict` exposé pour lire les valeurs non-string (ex: listes de features).
 
   // Changement de langue : on pose le cookie puis on recharge pour que le
   // serveur re-rende avec le bon dictionnaire (Server Components inclus).
@@ -63,5 +64,5 @@ export function useI18n() {
     window.location.reload();
   }, []);
 
-  return { t, locale, setLocale };
+  return { t, locale, setLocale, dict };
 }

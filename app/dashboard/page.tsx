@@ -4,6 +4,8 @@ import StatCard from "@/components/dashboard/StatCard";
 import SetupChecklist from "@/components/dashboard/SetupChecklist";
 import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
+import { getCoach } from "@/lib/coach/getCoach";
+import { isPro } from "@/lib/subscription/plan";
 import type { Booking } from "@/lib/bookings/types";
 
 // Vue d'ensemble — premier écran après connexion. Les chiffres "clients" et
@@ -49,6 +51,9 @@ export default async function OverviewPage() {
   const servicesDone = (servicesRes.count ?? 0) > 0;
   const showChecklist = !availabilityDone || !servicesDone;
 
+  const { coach } = await getCoach();
+  const pro = isPro(coach?.pro_until);
+
   const stats = [
     { label: o.revenueMonth, value: "0 €" },
     { label: o.sessionsWeek, value: String(weekCount) },
@@ -67,6 +72,26 @@ export default async function OverviewPage() {
           </h2>
           <p className="mt-1 text-sm text-text-muted">{o.subtitle}</p>
         </div>
+
+        {/* Relance vers l'offre Pro (coachs en Free uniquement) */}
+        {!pro && (
+          <Link
+            href="/dashboard/abonnement"
+            className="mb-6 flex items-center justify-between gap-3 rounded-2xl border border-accent/25 bg-accent/[0.05] px-4 py-3 transition-colors hover:border-accent/40"
+          >
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-text-base">
+                {dict.plans.upsellTitle}
+              </p>
+              <p className="truncate text-xs text-text-muted">
+                {dict.plans.upsellDesc}
+              </p>
+            </div>
+            <span className="shrink-0 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-black">
+              {dict.plans.upsellCta}
+            </span>
+          </Link>
+        )}
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
           {stats.map((s) => (

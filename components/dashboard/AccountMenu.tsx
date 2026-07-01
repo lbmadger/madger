@@ -49,6 +49,16 @@ export default function AccountMenu() {
           {/* Raccourcis visibles surtout sur mobile (sidebar masquée) */}
           <div className="md:hidden">
             <Link
+              href="/dashboard/abonnement"
+              onClick={() => setOpen(false)}
+              className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-text-muted transition-colors hover:bg-bg-card hover:text-text-base"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />
+              </svg>
+              {t("nav.subscription")}
+            </Link>
+            <Link
               href="/dashboard/reglages"
               onClick={() => setOpen(false)}
               className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-text-muted transition-colors hover:bg-bg-card hover:text-text-base"

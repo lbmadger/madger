@@ -20,7 +20,7 @@ export default function OnboardingLayout({
   return (
     <I18nProvider locale={locale} dict={dict}>
       <div className="flex min-h-screen items-center justify-center bg-bg px-4 py-12">
-        <div className="w-full max-w-md">{children}</div>
+        <div className="w-full max-w-xl">{children}</div>
       </div>
     </I18nProvider>
   );

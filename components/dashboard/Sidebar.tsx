@@ -43,6 +43,7 @@ const I = {
     <path d="M12 15a3 3 0 100-6 3 3 0 000 6zM3 12h2m14 0h2M12 3v2m0 14v2M5.6 5.6l1.4 1.4m10 10l1.4 1.4m0-12.8l-1.4 1.4m-10 10l-1.4 1.4" />
   ),
   availability: <path d="M12 7v5l3 2M12 21a9 9 0 110-18 9 9 0 010 18z" />,
+  subscription: <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" />,
   publicPage: (
     <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0zM3 12h18M12 3c2.5 2.5 3.5 6 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-6-3.5-9s1-6.5 3.5-9z" />
   ),
@@ -63,6 +64,36 @@ const SECONDARY: NavItem[] = [
   { href: "/dashboard/disponibilites", labelKey: "nav.availability", icon: I.availability },
   { href: "/dashboard/reglages", labelKey: "nav.settings", icon: I.settings },
 ];
+
+// Lien Abonnement avec badge de l'offre actuelle (Free / Pro).
+function SubscriptionLink() {
+  const { t } = useI18n();
+  const { pro } = useSession();
+  const pathname = usePathname();
+  const active = pathname === "/dashboard/abonnement";
+  return (
+    <Link
+      href="/dashboard/abonnement"
+      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+        active
+          ? "bg-accent/10 text-accent"
+          : "text-text-muted hover:bg-bg-elevated hover:text-text-base"
+      }`}
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+        {I.subscription}
+      </svg>
+      <span className="truncate">{t("nav.subscription")}</span>
+      <span
+        className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+          pro ? "bg-accent text-black" : "border border-border-strong text-text-dim"
+        }`}
+      >
+        {pro ? t("plans.pro") : t("plans.free")}
+      </span>
+    </Link>
+  );
+}
 
 // Lien vers la page publique du coach (ouvre /<slug> dans un nouvel onglet).
 // Désactivé tant que le slug n'existe pas (profil pas encore configuré).
@@ -176,6 +207,7 @@ export default function Sidebar() {
 
         <div className="my-4 h-px bg-border" />
 
+        <SubscriptionLink />
         <PublicPageLink />
         {SECONDARY.map((item) => (
           <NavLink key={item.href} item={item} />

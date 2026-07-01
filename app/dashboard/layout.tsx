@@ -5,6 +5,7 @@ import { getServerDictionary } from "@/lib/i18n/server";
 import { SessionProvider } from "@/lib/auth/SessionProvider";
 import { createClient } from "@/lib/supabase/server";
 import { getCoach } from "@/lib/coach/getCoach";
+import { isPro } from "@/lib/subscription/plan";
 import Sidebar from "@/components/dashboard/Sidebar";
 import MobileNav from "@/components/dashboard/MobileNav";
 
@@ -52,7 +53,13 @@ export default async function DashboardLayout({
 
   return (
     <I18nProvider locale={locale} dict={dict}>
-      <SessionProvider user={{ email: user.email ?? "", slug: coach?.slug ?? null }}>
+      <SessionProvider
+        user={{
+          email: user.email ?? "",
+          slug: coach?.slug ?? null,
+          pro: isPro(coach?.pro_until),
+        }}
+      >
         <div className="flex min-h-screen bg-bg text-text-base">
           <Sidebar />
           {/* pb-20 réserve la hauteur de la barre d'onglets mobile (md:pb-0) */}

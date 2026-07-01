@@ -22,6 +22,8 @@ export type Coach = {
   // Géolocalisation (migration 0009)
   lat: number | null;
   lng: number | null;
+  // Abonnement (migration 0010) — Pro tant que pro_until est dans le futur
+  pro_until: string | null;
 };
 
 // Récupère le profil coach de l'utilisateur connecté. Renvoie:

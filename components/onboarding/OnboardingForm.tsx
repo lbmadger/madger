@@ -7,6 +7,8 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import { slugify, isValidSlug } from "@/lib/utils/slug";
 import Button from "@/components/ui/Button";
 import CityAutocomplete from "@/components/ui/CityAutocomplete";
+import PromoCode from "@/components/subscription/PromoCode";
+import PricingPlans from "@/components/subscription/PricingPlans";
 import { inputClass } from "@/lib/ui/styles";
 
 // Formulaire d'onboarding : nom + spécialité + slug du lien public. Écrit
@@ -38,6 +40,8 @@ export default function OnboardingForm({
   const [slugTouched, setSlugTouched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Onboarding en 2 étapes : profil → offre (code promo présenté au bon moment).
+  const [step, setStep] = useState<"profile" | "plan">("profile");
 
   // Tant que le slug n'a pas été modifié manuellement, on le suit le nom.
   function syncNames(next: { first?: string; last?: string }) {
@@ -91,8 +95,8 @@ export default function OnboardingForm({
         return;
       }
 
-      router.push("/dashboard");
-      router.refresh();
+      // Profil enregistré → étape 2 : présentation de l'offre.
+      setStep("plan");
     } catch {
       setError(t("onboarding.errors.generic"));
     } finally {
@@ -100,6 +104,39 @@ export default function OnboardingForm({
     }
   }
 
+  // ── Étape 2 : l'offre (code promo accès anticipé) ────────────────────────
+  if (step === "plan") {
+    return (
+      <div className="rounded-2xl border border-border bg-bg-card p-6">
+        <h1 className="text-2xl font-extrabold tracking-tight text-text-base">
+          {t("onboarding.planTitle")}
+        </h1>
+        <p className="mt-1 text-sm text-text-muted">
+          {t("onboarding.planSubtitle")}
+        </p>
+
+        <div className="mt-5">
+          <PromoCode compact />
+        </div>
+
+        <div className="mt-5">
+          <PricingPlans currentPlan="free" />
+        </div>
+
+        <Button
+          onClick={() => {
+            router.push("/dashboard");
+            router.refresh();
+          }}
+          className="mt-6 w-full"
+        >
+          {t("onboarding.finish")}
+        </Button>
+      </div>
+    );
+  }
+
+  // ── Étape 1 : le profil ──────────────────────────────────────────────────
   return (
     <div className="rounded-2xl border border-border bg-bg-card p-6">
       <h1 className="text-2xl font-extrabold tracking-tight text-text-base">
