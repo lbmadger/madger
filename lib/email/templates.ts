@@ -1,42 +1,119 @@
-// Gabarits d'emails transactionnels Madger (dark, accent #CBFF03), cohérents
-// avec l'email des codes promo. Chaque fonction renvoie { subject, html }.
+// Gabarits d'emails transactionnels Madger — design travaillé, cohérent avec
+// la landing (fond #0A0A0A, accent #CBFF03, Inter). Compatible clients mail :
+// tables + styles inline uniquement. Chaque fonction renvoie { subject, html }.
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
 type Email = { subject: string; html: string };
 
-// Enveloppe commune : en-tête, carte, pied de page.
+// ── Palette / typographie ───────────────────────────────────────────────────
+const C = {
+  bg: "#0A0A0A",
+  card: "#111112",
+  cardSoft: "rgba(255,255,255,0.03)",
+  border: "rgba(255,255,255,0.08)",
+  accent: "#CBFF03",
+  accentSoftBg: "rgba(203,255,3,0.06)",
+  accentSoftBorder: "rgba(203,255,3,0.28)",
+  text: "#F2F2F2",
+  muted: "#9A9A9A",
+  dim: "#5F5F5F",
+};
+const FONT =
+  "font-family:Inter,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;";
+
+// Ligne de détail (libellé à gauche, valeur à droite).
+export type DetailRow = { label: string; value: string; accent?: boolean };
+
+function detailsTable(rows: DetailRow[]): string {
+  const trs = rows
+    .map((r, i) => {
+      const border =
+        i < rows.length - 1
+          ? `border-bottom:1px solid ${C.border};`
+          : "";
+      return `<tr>
+        <td style="${FONT}padding:13px 18px;${border}font-size:13px;color:${C.muted};white-space:nowrap;">${r.label}</td>
+        <td align="right" style="${FONT}padding:13px 18px;${border}font-size:14px;font-weight:${r.accent ? "800" : "600"};color:${r.accent ? C.accent : C.text};">${r.value}</td>
+      </tr>`;
+    })
+    .join("");
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.cardSoft};border:1px solid ${C.border};border-radius:14px;border-collapse:separate;margin:22px 0 0;">${trs}</table>`;
+}
+
+// Encart d'information (ex. paiement sécurisé).
+function infoBox(title: string, body: string): string {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.accentSoftBg};border:1px solid ${C.accentSoftBorder};border-radius:12px;border-collapse:separate;margin:18px 0 0;">
+    <tr><td style="${FONT}padding:14px 18px;">
+      <p style="margin:0;font-size:12px;font-weight:800;letter-spacing:0.04em;color:${C.accent};text-transform:uppercase;">${title}</p>
+      <p style="margin:6px 0 0;font-size:13px;line-height:1.65;color:${C.muted};">${body}</p>
+    </td></tr>
+  </table>`;
+}
+
+// Enveloppe commune : préheader invisible, logo, carte, CTA, pied de page.
 function layout(opts: {
-  eyebrow?: string;
+  preheader: string;
+  eyebrow: string;
   title: string;
-  bodyHtml: string;
+  intro?: string;
+  blocks?: string[];
   cta?: { label: string; url: string };
+  outro?: string;
 }): string {
-  const { eyebrow, title, bodyHtml, cta } = opts;
-  return `<!DOCTYPE html><html><body style="margin:0;background:#0A0A0A;font-family:Inter,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0A0A0A;padding:32px 0;">
-    <tr><td align="center">
-      <table width="100%" style="max-width:480px;background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:16px;">
-        <tr><td style="padding:32px;">
-          ${eyebrow ? `<p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#CBFF03;letter-spacing:0.08em;text-transform:uppercase;">${eyebrow}</p>` : ""}
-          <h1 style="margin:0 0 16px;font-size:22px;color:#fff;line-height:1.25;">${title}</h1>
-          <div style="font-size:14px;color:#9a9a9a;line-height:1.7;">${bodyHtml}</div>
+  const { preheader, eyebrow, title, intro, blocks = [], cta, outro } = opts;
+  return `<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark"></head>
+<body style="margin:0;padding:0;background:${C.bg};">
+  <!-- Préheader : visible dans l'aperçu de la boîte mail, pas dans l'email -->
+  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">${preheader}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.bg};">
+    <tr><td align="center" style="padding:44px 16px 40px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
+
+        <!-- Logo -->
+        <tr><td align="center" style="${FONT}padding:0 0 26px;">
+          <a href="${APP_URL}" style="text-decoration:none;">
+            <span style="font-size:20px;font-weight:900;letter-spacing:0.06em;color:${C.accent};">MADGER</span>
+          </a>
+        </td></tr>
+
+        <!-- Carte principale -->
+        <tr><td style="background:${C.card};border:1px solid ${C.border};border-radius:20px;padding:38px 34px 34px;">
+          <p style="${FONT}margin:0;font-size:11px;font-weight:800;color:${C.accent};letter-spacing:0.14em;text-transform:uppercase;">${eyebrow}</p>
+          <h1 style="${FONT}margin:10px 0 0;font-size:25px;line-height:1.22;font-weight:800;letter-spacing:-0.02em;color:${C.text};">${title}</h1>
+          ${intro ? `<p style="${FONT}margin:12px 0 0;font-size:14px;line-height:1.7;color:${C.muted};">${intro}</p>` : ""}
+          ${blocks.join("")}
           ${
             cta
-              ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;"><tr><td align="center">
-                   <a href="${cta.url}" style="display:inline-block;background:#CBFF03;color:#000;font-size:14px;font-weight:800;padding:14px 32px;border-radius:100px;text-decoration:none;">${cta.label}</a>
+              ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:26px 0 0;"><tr><td align="center">
+                   <a href="${cta.url}" style="${FONT}display:block;background:${C.accent};color:#000;font-size:15px;font-weight:800;letter-spacing:-0.01em;padding:15px 32px;border-radius:100px;text-decoration:none;text-align:center;">${cta.label}</a>
                  </td></tr></table>`
               : ""
           }
-          <p style="margin:28px 0 0;font-size:12px;color:#555;line-height:1.6;">Madger · le tout-en-un des coachs sportifs<br/><a href="${APP_URL}" style="color:#777;">madger.app</a></p>
+          ${outro ? `<p style="${FONT}margin:22px 0 0;font-size:13px;line-height:1.7;color:${C.dim};">${outro}</p>` : ""}
         </td></tr>
+
+        <!-- Pied de page -->
+        <tr><td align="center" style="${FONT}padding:26px 12px 0;">
+          <p style="margin:0;font-size:12px;line-height:1.8;color:${C.dim};">
+            Madger — l'app tout-en-un des coachs indépendants.<br>
+            <a href="${APP_URL}" style="color:${C.muted};text-decoration:none;">madger.app</a>
+            &nbsp;·&nbsp;
+            <a href="${APP_URL}/charte-paiement" style="color:${C.muted};text-decoration:none;">Charte de paiement</a>
+            &nbsp;·&nbsp;
+            <a href="mailto:contact@madger.app" style="color:${C.muted};text-decoration:none;">contact@madger.app</a>
+          </p>
+          <p style="margin:10px 0 0;font-size:11px;color:#3d3d3d;">Tu reçois cet email car une activité est liée à ton compte ou ta réservation Madger.</p>
+        </td></tr>
+
       </table>
     </td></tr>
-  </table></body></html>`;
-}
-
-function row(label: string, value: string): string {
-  return `<p style="margin:0 0 8px;"><span style="color:#666;">${label} :</span> <b style="color:#fff;">${value}</b></p>`;
+  </table>
+</body>
+</html>`;
 }
 
 // ── Client : confirmation de réservation payée ──────────────────────────────
@@ -48,17 +125,27 @@ export function bookingConfirmationClient(p: {
   reservationUrl: string;
 }): Email {
   return {
-    subject: `Séance confirmée avec ${p.coachName} ✅`,
+    subject: `Ta séance avec ${p.coachName} est confirmée ✅`,
     html: layout({
+      preheader: `Séance confirmée ${p.dateStr} — paiement sécurisé jusqu'après la séance.`,
       eyebrow: "Réservation confirmée",
-      title: "Ta séance est réservée 💪",
-      bodyHtml: `
-        ${row("Coach", p.coachName)}
-        ${row("Quand", p.dateStr)}
-        ${row("Format", p.online ? "En visio" : "En présentiel")}
-        ${row("Montant", p.priceStr)}
-        <p style="margin:16px 0 0;">Ton paiement est <b style="color:#fff;">sécurisé</b> : l'argent est versé au coach 24 h après la séance. Un souci ? Tu peux signaler un problème depuis ta réservation.</p>`,
+      title: "C'est réservé. À toi de jouer 💪",
+      intro: `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> est confirmée et ton paiement est bien enregistré. Voici le récap :`,
+      blocks: [
+        detailsTable([
+          { label: "Coach", value: p.coachName },
+          { label: "Date & heure", value: p.dateStr },
+          { label: "Format", value: p.online ? "En visio" : "En présentiel" },
+          { label: "Montant réglé", value: p.priceStr, accent: true },
+        ]),
+        infoBox(
+          "Paiement sécurisé",
+          `Ton argent est conservé par Madger et n'est versé au coach que <b style="color:${C.text};">24 h après la séance</b>. Un imprévu ? Tu peux signaler un problème depuis ta réservation, les fonds restent bloqués le temps qu'on tranche.`
+        ),
+      ],
       cta: { label: "Voir ma réservation", url: p.reservationUrl },
+      outro:
+        "Astuce : ajoute la séance à ton agenda et préviens ton coach en avance si tu dois annuler — les conditions d'annulation sont indiquées sur ta réservation.",
     }),
   };
 }
@@ -73,17 +160,25 @@ export function bookingNotificationCoach(p: {
   dashboardUrl: string;
 }): Email {
   return {
-    subject: `Nouvelle séance réservée · ${p.clientName}`,
+    subject: `Nouvelle réservation — ${p.clientName} · ${p.dateStr}`,
     html: layout({
+      preheader: `${p.clientName} a réservé et payé « ${p.serviceName} » — ${p.priceStr}.`,
       eyebrow: "Nouvelle réservation",
       title: "Un client vient de réserver 🎉",
-      bodyHtml: `
-        ${row("Client", p.clientName)}
-        ${row("Prestation", p.serviceName)}
-        ${row("Quand", p.dateStr)}
-        ${row("Format", p.online ? "En visio" : "En présentiel")}
-        ${row("Montant", p.priceStr)}
-        <p style="margin:16px 0 0;">Le paiement est encaissé et sécurisé. Tu seras crédité 24 h après la séance.</p>`,
+      intro: `Bonne nouvelle : <b style="color:${C.text};">${p.clientName}</b> a réservé <b style="color:${C.text};">et payé</b> une séance. Elle est déjà dans ton agenda.`,
+      blocks: [
+        detailsTable([
+          { label: "Client", value: p.clientName },
+          { label: "Prestation", value: p.serviceName },
+          { label: "Date & heure", value: p.dateStr },
+          { label: "Format", value: p.online ? "En visio" : "En présentiel" },
+          { label: "Montant encaissé", value: p.priceStr, accent: true },
+        ]),
+        infoBox(
+          "Versement",
+          `Le paiement est sécurisé par Madger et te sera <b style="color:${C.text};">transféré 24 h après la séance</b>, directement sur ton compte Stripe.`
+        ),
+      ],
       cta: { label: "Ouvrir mon agenda", url: p.dashboardUrl },
     }),
   };
@@ -97,35 +192,54 @@ export function sessionReminderClient(p: {
   reservationUrl: string;
 }): Email {
   return {
-    subject: `Rappel : séance demain avec ${p.coachName}`,
+    subject: `C'est demain — séance avec ${p.coachName} ⏰`,
     html: layout({
-      eyebrow: "Rappel",
-      title: "Ta séance approche ⏰",
-      bodyHtml: `
-        ${row("Coach", p.coachName)}
-        ${row("Quand", p.dateStr)}
-        ${row("Format", p.online ? "En visio" : "En présentiel")}
-        <p style="margin:16px 0 0;">Pense à prévoir ta tenue et de quoi t'hydrater. À demain !</p>`,
+      preheader: `Rappel : ta séance a lieu ${p.dateStr}.`,
+      eyebrow: "Rappel de séance",
+      title: "Ta séance approche",
+      intro: `Petit rappel : ta séance avec <b style="color:${C.text};">${p.coachName}</b> a lieu <b style="color:${C.text};">${p.dateStr}</b>.`,
+      blocks: [
+        detailsTable([
+          { label: "Coach", value: p.coachName },
+          { label: "Date & heure", value: p.dateStr },
+          { label: "Format", value: p.online ? "En visio" : "En présentiel" },
+        ]),
+      ],
       cta: { label: "Voir ma réservation", url: p.reservationUrl },
+      outro: p.online
+        ? "Pense à tester ta connexion et ton micro quelques minutes avant la séance. Bonne session ! 💪"
+        : "Prévois ta tenue, de quoi t'hydrater, et arrive quelques minutes en avance. Bonne session ! 💪",
     }),
   };
 }
 
-// ── Client : remboursement suite à annulation ───────────────────────────────
+// ── Client : remboursement suite à annulation ou litige ─────────────────────
 export function refundClient(p: {
   coachName: string;
   refundStr: string;
   reason: "cancellation" | "dispute";
 }): Email {
+  const intro =
+    p.reason === "dispute"
+      ? `Suite à l'examen de ton signalement, un remboursement de <b style="color:${C.text};">${p.refundStr}</b> a été émis.`
+      : `Suite à l'annulation de ta séance avec <b style="color:${C.text};">${p.coachName}</b>, un remboursement de <b style="color:${C.text};">${p.refundStr}</b> a été émis.`;
   return {
-    subject: `Remboursement de ${p.refundStr}`,
+    subject: `Ton remboursement de ${p.refundStr} est en route 💸`,
     html: layout({
+      preheader: `Remboursement de ${p.refundStr} émis — visible sous quelques jours ouvrés.`,
       eyebrow: "Remboursement",
-      title: "Ton remboursement est en route",
-      bodyHtml: `
-        ${row("Coach", p.coachName)}
-        ${row("Montant remboursé", p.refundStr)}
-        <p style="margin:16px 0 0;">Le remboursement apparaîtra sur ton moyen de paiement sous quelques jours ouvrés, selon ta banque.</p>`,
+      title: "Remboursement émis",
+      intro,
+      blocks: [
+        detailsTable([
+          { label: "Coach", value: p.coachName },
+          { label: "Montant remboursé", value: p.refundStr, accent: true },
+          { label: "Délai bancaire", value: "2 à 7 jours ouvrés" },
+        ]),
+      ],
+      cta: { label: "Trouver un coach", url: `${APP_URL}/coachs` },
+      outro:
+        "Le remboursement apparaîtra sur le moyen de paiement utilisé lors de la réservation. Une question ? Réponds simplement à cet email.",
     }),
   };
 }
@@ -137,14 +251,19 @@ export function payoutReleasedCoach(p: {
   dashboardUrl: string;
 }): Email {
   return {
-    subject: `Séance réglée · ${p.payoutStr} versés`,
+    subject: `${p.payoutStr} versés sur ton compte 💸`,
     html: layout({
-      eyebrow: "Versement",
-      title: "Tu viens d'être payé 💸",
-      bodyHtml: `
-        ${row("Client", p.clientName)}
-        ${row("Montant versé", p.payoutStr)}
-        <p style="margin:16px 0 0;">Les fonds ont été transférés vers ton compte Stripe.</p>`,
+      preheader: `Séance avec ${p.clientName} réglée — ${p.payoutStr} transférés vers ton compte Stripe.`,
+      eyebrow: "Versement effectué",
+      title: "Tu viens d'être payé",
+      intro: `La séance avec <b style="color:${C.text};">${p.clientName}</b> est passée sans encombre : ta part a été transférée vers ton compte Stripe.`,
+      blocks: [
+        detailsTable([
+          { label: "Client", value: p.clientName },
+          { label: "Montant versé", value: p.payoutStr, accent: true },
+          { label: "Disponibilité", value: "Selon ton calendrier Stripe" },
+        ]),
+      ],
       cta: { label: "Voir mes paiements", url: p.dashboardUrl },
     }),
   };
@@ -159,16 +278,30 @@ export function disputeOpenedAdmin(p: {
   adminUrl: string;
 }): Email {
   return {
-    subject: `⚠️ Litige à trancher · ${p.clientName} / ${p.coachName}`,
+    subject: `⚠️ Litige à trancher — ${p.clientName} / ${p.coachName} (${p.amountStr})`,
     html: layout({
-      eyebrow: "Litige",
+      preheader: `Fonds gelés : ${p.amountStr}. Décision à prendre selon la charte.`,
+      eyebrow: "Litige · action requise",
       title: "Un client a signalé un problème",
-      bodyHtml: `
-        ${row("Client", p.clientName)}
-        ${row("Coach", p.coachName)}
-        ${row("Montant gelé", p.amountStr)}
-        ${p.reason ? `<p style="margin:12px 0 0;color:#666;">Motif :</p><p style="margin:4px 0 0;color:#ccc;">${p.reason}</p>` : ""}`,
+      intro: `Les fonds sont <b style="color:${C.text};">gelés</b> en attendant ta décision, conformément à la charte de paiement.`,
+      blocks: [
+        detailsTable([
+          { label: "Client", value: p.clientName },
+          { label: "Coach", value: p.coachName },
+          { label: "Montant gelé", value: p.amountStr, accent: true },
+        ]),
+        ...(p.reason
+          ? [
+              infoBox(
+                "Motif du signalement",
+                p.reason.replace(/</g, "&lt;").replace(/>/g, "&gt;")
+              ),
+            ]
+          : []),
+      ],
       cta: { label: "Trancher le litige", url: p.adminUrl },
+      outro:
+        "Rappel charte : séance non assurée → remboursement intégral ; non conforme → total ou partiel selon les éléments ; séance correctement assurée ou signalement injustifié → versement au coach.",
     }),
   };
 }
