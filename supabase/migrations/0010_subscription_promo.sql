@@ -56,7 +56,8 @@ end;
 $$;
 grant execute on function public.redeem_promo(text) to authenticated;
 
--- Code d'accès anticipé par défaut : 3 mois Pro offerts.
+-- Code d'accès anticipé : 3 mois Pro offerts. Volontairement difficile à
+-- deviner (à ne partager qu'aux membres early access).
 insert into public.promo_codes (code, months, active)
-values ('EARLY3', 3, true)
+values ('MADGER-EARLY-K7Q9X2F4', 3, true)
 on conflict (code) do nothing;
