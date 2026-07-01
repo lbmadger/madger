@@ -11,7 +11,10 @@ alter table public.coaches add column if not exists lat double precision;
 alter table public.coaches add column if not exists lng double precision;
 
 -- La vue publique expose aussi les coordonnées (pour le calcul de distance).
-create or replace view public.public_coaches as
+-- On DROP puis recrée : create-or-replace refuse d'insérer des colonnes au
+-- milieu de l'ordre existant.
+drop view if exists public.public_coaches;
+create view public.public_coaches as
   select id, slug, first_name, last_name, specialty, bio, avatar_url,
          city, accepts_online, lat, lng, created_at
   from public.coaches
