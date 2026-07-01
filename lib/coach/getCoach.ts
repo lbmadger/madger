@@ -25,6 +25,11 @@ export type Coach = {
   lng: number | null;
   // Abonnement (migration 0010) — Pro tant que pro_until est dans le futur
   pro_until: string | null;
+  // Abonnement Pro Stripe (migration 0015) — le coach paie Madger
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  subscription_status: string | null;
+  subscription_plan: string | null;
 };
 
 // Récupère le profil coach de l'utilisateur connecté. Renvoie:

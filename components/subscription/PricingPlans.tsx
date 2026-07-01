@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
 // Cartes d'offres Free / Pro, réutilisées à l'onboarding et sur la page
-// Abonnement. `currentPlan` met en avant l'offre active.
+// Abonnement. `currentPlan` met en avant l'offre active. Le bouton Pro lance
+// le paiement d'abonnement Stripe (mensuel ou annuel).
 export default function PricingPlans({
   currentPlan,
 }: {
@@ -11,6 +13,31 @@ export default function PricingPlans({
 }) {
   const { t, dict } = useI18n();
   const p = dict.plans;
+  const [period, setPeriod] = useState<"monthly" | "annual">("monthly");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleUpgrade() {
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/stripe/subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan: period }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data.url) {
+        window.location.href = data.url;
+        return;
+      }
+      setError(t("plans.upgradeError"));
+    } catch {
+      setError(t("plans.upgradeError"));
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const Feature = ({ label }: { label: string }) => (
     <li className="flex items-start gap-2 text-sm text-text-muted">
@@ -65,22 +92,57 @@ export default function PricingPlans({
           )}
         </div>
         <p className="mt-0.5 text-sm text-text-muted">{p.proDesc}</p>
-        <p className="mt-3 text-2xl font-extrabold text-text-base">{p.pricePro}</p>
+
+        {/* Sélecteur mensuel / annuel */}
+        <div className="mt-3 inline-flex rounded-full border border-border-strong p-0.5">
+          {(["monthly", "annual"] as const).map((opt) => (
+            <button
+              key={opt}
+              type="button"
+              onClick={() => setPeriod(opt)}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                period === opt
+                  ? "bg-accent text-black"
+                  : "text-text-muted hover:text-text-base"
+              }`}
+            >
+              {opt === "monthly" ? p.billingMonthly : p.billingAnnual}
+            </button>
+          ))}
+        </div>
+
+        <div className="mt-3 flex items-end gap-2">
+          <p className="text-2xl font-extrabold text-text-base">
+            {period === "annual" ? p.priceProAnnual : p.pricePro}
+          </p>
+          {period === "annual" && (
+            <span className="mb-1 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-semibold text-accent">
+              {p.annualSave}
+            </span>
+          )}
+        </div>
         <p className="text-xs text-text-dim">{p.proNote}</p>
+
         <ul className="mt-4 flex flex-col gap-2">
           {p.featuresPro.map((f) => (
             <Feature key={f} label={f} />
           ))}
         </ul>
+
         {currentPlan === "free" && (
-          <button
-            type="button"
-            disabled
-            title={t("plans.upgradeSoon")}
-            className="mt-5 w-full cursor-not-allowed rounded-full border border-accent/40 bg-accent/10 px-4 py-2.5 text-sm font-semibold text-accent"
-          >
-            {t("plans.upgrade")} · {t("plans.upgradeSoon")}
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={handleUpgrade}
+              disabled={loading}
+              className="mt-5 w-full rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-60"
+            >
+              {loading ? t("plans.upgrading") : t("plans.upgrade")}
+            </button>
+            {error && (
+              <p className="mt-2 text-center text-sm text-red-400">{error}</p>
+            )}
+          </>
         )}
       </div>
     </div>

@@ -1,6 +1,7 @@
 import Topbar from "@/components/dashboard/Topbar";
 import PricingPlans from "@/components/subscription/PricingPlans";
 import PromoCode from "@/components/subscription/PromoCode";
+import ManageSubscription from "@/components/subscription/ManageSubscription";
 import { getCoach } from "@/lib/coach/getCoach";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { isPro, proDaysLeft } from "@/lib/subscription/plan";
@@ -45,11 +46,14 @@ export default async function SubscriptionPage() {
               </p>
             )}
           </div>
-          {pro && (
-            <span className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-black">
-              {p.proActive}
-            </span>
-          )}
+          <div className="flex flex-col items-end gap-2">
+            {pro && (
+              <span className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-black">
+                {p.proActive}
+              </span>
+            )}
+            {coach?.stripe_customer_id && <ManageSubscription />}
+          </div>
         </div>
 
         {/* Code promo */}
