@@ -29,6 +29,8 @@ export default function PromoCode({ compact }: { compact?: boolean }) {
         if (m.includes("invalid_code")) setError(t("promo.errors.invalid"));
         else if (m.includes("code_exhausted"))
           setError(t("promo.errors.exhausted"));
+        else if (m.includes("code_not_yours"))
+          setError(t("promo.errors.notYours"));
         else setError(t("promo.errors.generic"));
         return;
       }

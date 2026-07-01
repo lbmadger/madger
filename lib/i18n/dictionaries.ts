@@ -224,6 +224,7 @@ const fr = {
     errors: {
       invalid: "Code invalide ou expiré.",
       exhausted: "Ce code a atteint sa limite d'utilisation.",
+      notYours: "Ce code n'est pas associé à ton compte.",
       generic: "Une erreur est survenue. Réessaie.",
     },
   },
@@ -647,6 +648,7 @@ const en: Dictionary = {
     errors: {
       invalid: "Invalid or expired code.",
       exhausted: "This code reached its usage limit.",
+      notYours: "This code isn't linked to your account.",
       generic: "Something went wrong. Please try again.",
     },
   },
