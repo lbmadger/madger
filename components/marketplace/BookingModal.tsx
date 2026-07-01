@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
+import PolicyTiers from "@/components/booking/PolicyTiers";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import type { PublicCoach } from "@/lib/coaches/public-types";
 import { type PublicService, formatPrice } from "@/lib/services/types";
@@ -189,6 +190,26 @@ export default function BookingModal({
                     ))}
                   </select>
                 </label>
+              )}
+
+              {/* Séquestre : rassure le client au moment de payer */}
+              {payMode && (
+                <div className="rounded-xl border border-border bg-bg-elevated p-3">
+                  <p className="flex items-center gap-1.5 text-xs font-medium text-text-base">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
+                      <rect x="3" y="11" width="18" height="11" rx="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    {t("booking.escrowTitle")}
+                  </p>
+                  <p className="mt-1 text-xs text-text-muted">
+                    {t("booking.escrowDesc")}
+                  </p>
+                  <p className="mt-2 text-[11px] font-medium uppercase tracking-wide text-text-dim">
+                    {t("cancellation.publicLabel")}
+                  </p>
+                  <PolicyTiers policy={coach.cancellation_policy} className="mt-1" />
+                </div>
               )}
 
               {/* Présentiel / visio si le coach propose les deux */}

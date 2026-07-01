@@ -29,6 +29,8 @@ export default function AgendaView({
   const { t, locale } = useI18n();
   const router = useRouter();
   const [adding, setAdding] = useState(false);
+  const [cancelId, setCancelId] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState(false);
 
   const loc = locale === "fr" ? "fr-FR" : "en-US";
 
@@ -37,6 +39,24 @@ export default function AgendaView({
     const supabase = createClient();
     await supabase.from("bookings").update({ status }).eq("id", id);
     router.refresh();
+  }
+
+  // Annule une séance confirmée. Si un paiement est sous séquestre, le
+  // remboursement (selon la formule d'annulation ou intégral si le coach
+  // annule) est exécuté côté serveur.
+  async function cancelBooking(id: string, by: "coach" | "client") {
+    setCancelling(true);
+    try {
+      await fetch("/api/bookings/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ booking_id: id, by }),
+      });
+      setCancelId(null);
+      router.refresh();
+    } finally {
+      setCancelling(false);
+    }
   }
 
   // Séances à venir uniquement (>= maintenant), regroupées par jour.
@@ -210,6 +230,52 @@ export default function AgendaView({
                        >
                          {t("agenda.confirm")}
                        </button>
+                     </div>
+                   )}
+
+                   {/* Annulation d'une séance confirmée */}
+                   {b.status === "confirmed" && (
+                     <div className="mt-2 border-t border-border pt-2">
+                       {cancelId === b.id ? (
+                         <div className="flex flex-col gap-2">
+                           <p className="text-xs text-text-muted">
+                             {t("agenda.cancelWho")}
+                           </p>
+                           <div className="flex gap-2">
+                             <button
+                               type="button"
+                               disabled={cancelling}
+                               onClick={() => cancelBooking(b.id, "client")}
+                               className="flex-1 rounded-full border border-border-strong py-1.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
+                             >
+                               {t("agenda.cancelByClient")}
+                             </button>
+                             <button
+                               type="button"
+                               disabled={cancelling}
+                               onClick={() => cancelBooking(b.id, "coach")}
+                               className="flex-1 rounded-full border border-border-strong py-1.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
+                             >
+                               {t("agenda.cancelByCoach")}
+                             </button>
+                           </div>
+                           <button
+                             type="button"
+                             onClick={() => setCancelId(null)}
+                             className="self-start text-xs text-text-dim hover:text-text-muted"
+                           >
+                             {t("agenda.cancelKeep")}
+                           </button>
+                         </div>
+                       ) : (
+                         <button
+                           type="button"
+                           onClick={() => setCancelId(b.id)}
+                           className="text-xs font-medium text-text-dim transition-colors hover:text-red-400"
+                         >
+                           {t("agenda.cancelBooking")}
+                         </button>
+                       )}
                      </div>
                    )}
                   </li>

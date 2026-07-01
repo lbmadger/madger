@@ -30,6 +30,8 @@ export type Coach = {
   stripe_subscription_id: string | null;
   subscription_status: string | null;
   subscription_plan: string | null;
+  // Politique d'annulation (migration 0016) : flexible | moderate | strict
+  cancellation_policy: "flexible" | "moderate" | "strict";
 };
 
 // Récupère le profil coach de l'utilisateur connecté. Renvoie:

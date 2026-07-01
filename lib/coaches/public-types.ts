@@ -13,6 +13,7 @@ export type PublicCoach = {
   lat: number | null;
   lng: number | null;
   stripe_charges_enabled: boolean;
+  cancellation_policy: "flexible" | "moderate" | "strict";
   created_at: string;
 };
 

@@ -8,8 +8,15 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import { slugify, isValidSlug } from "@/lib/utils/slug";
 import Button from "@/components/ui/Button";
 import CityAutocomplete from "@/components/ui/CityAutocomplete";
+import PolicyTiers from "@/components/booking/PolicyTiers";
 import { inputClass, labelClass } from "@/lib/ui/styles";
+import {
+  normalizePolicy,
+  type CancellationPolicy,
+} from "@/lib/booking/cancellation";
 import type { Coach } from "@/lib/coach/getCoach";
+
+const POLICY_OPTIONS: CancellationPolicy[] = ["flexible", "moderate", "strict"];
 
 export default function SettingsForm({ coach }: { coach: Coach }) {
   const { t } = useI18n();
@@ -28,6 +35,9 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   const [acceptsOnline, setAcceptsOnline] = useState(coach.accepts_online);
   const [slug, setSlug] = useState(coach.slug ?? "");
   const [listed, setListed] = useState(coach.listed);
+  const [policy, setPolicy] = useState<CancellationPolicy>(
+    normalizePolicy(coach.cancellation_policy)
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -54,6 +64,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           accepts_online: acceptsOnline,
           slug,
           listed,
+          cancellation_policy: policy,
         })
         .eq("id", coach.id);
 
@@ -165,6 +176,62 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             {loading ? t("settings.saving") : t("settings.save")}
           </Button>
         </div>
+      </section>
+
+      {/* Politique d'annulation */}
+      <section className="rounded-2xl border border-border bg-bg-card p-5 sm:p-6">
+        <h2 className="text-base font-semibold text-text-base">
+          {t("cancellation.title")}
+        </h2>
+        <p className="mt-1 text-sm text-text-muted">{t("cancellation.subtitle")}</p>
+
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {POLICY_OPTIONS.map((opt) => {
+            const active = policy === opt;
+            return (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => setPolicy(opt)}
+                className={`flex flex-col rounded-xl border p-4 text-left transition-colors ${
+                  active
+                    ? "border-accent bg-accent/[0.06]"
+                    : "border-border-strong hover:border-accent/40"
+                }`}
+              >
+                <span className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-text-base">
+                    {t(`cancellation.${opt}`)}
+                  </span>
+                  <span
+                    className={`h-4 w-4 rounded-full border ${
+                      active ? "border-accent bg-accent" : "border-border-strong"
+                    }`}
+                  />
+                </span>
+                <span className="mt-1 text-xs text-text-dim">
+                  {t(`cancellation.${opt}Desc`)}
+                </span>
+                <PolicyTiers policy={opt} className="mt-3" />
+              </button>
+            );
+          })}
+        </div>
+
+        <Link
+          href="/charte-paiement"
+          target="_blank"
+          className="mt-4 inline-flex items-center gap-1.5 text-sm text-accent hover:underline"
+        >
+          {t("cancellation.seeCharter")}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M7 17L17 7M17 7H8M17 7v9" />
+          </svg>
+        </Link>
+
+        <Button onClick={handleSave} disabled={loading} className="mt-4 self-start">
+          {loading ? t("cancellation.saving") : t("cancellation.save")}
+        </Button>
       </section>
     </div>
   );

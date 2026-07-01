@@ -2,17 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
-import { isPro } from "@/lib/subscription/plan";
 
 export const dynamic = "force-dynamic";
 
-// Commission Madger sur les coachs NON Pro (les Pro sont à 0 %).
-const FREE_COMMISSION_RATE = 0.05;
-
 // Crée une session de paiement Stripe pour réserver une prestation payante.
-// Charge DIRECTE sur le compte connecté du coach (option stripeAccount) →
-// l'argent va au coach. Commission Madger : 0 % si le coach est Pro, sinon 5 %
-// (application_fee_amount). Les frais Stripe restent à la charge du coach.
+// SÉQUESTRE : la charge est faite sur le compte PLATEFORME (pas de stripeAccount)
+// → l'argent est retenu par Madger, puis transféré au coach après la séance
+// (24 h) si rien n'est signalé. Le coach doit avoir un compte Connect actif
+// (stripe_charges_enabled) pour pouvoir recevoir son versement plus tard.
 export async function POST(req: NextRequest) {
   const stripe = getStripe();
   if (!stripe) {
@@ -46,7 +43,7 @@ export async function POST(req: NextRequest) {
 
   const { data: coach } = await supabase
     .from("coaches")
-    .select("id, stripe_account_id, stripe_charges_enabled, pro_until")
+    .select("id, stripe_account_id, stripe_charges_enabled")
     .eq("slug", coach_slug)
     .eq("listed", true)
     .maybeSingle();
@@ -65,46 +62,40 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "invalid_service" }, { status: 400 });
   }
 
-  // Commission Madger : 0 % pour un coach Pro, 5 % pour un coach sur le plan
-  // gratuit. Les frais Stripe restent à la charge du coach dans les deux cas.
-  const fee = isPro(coach.pro_until)
-    ? 0
-    : Math.round(service.price_cents * FREE_COMMISSION_RATE);
-
-  const session = await stripe.checkout.sessions.create(
-    {
-      mode: "payment",
-      line_items: [
-        {
-          price_data: {
-            currency: service.currency || "eur",
-            product_data: { name: service.name },
-            unit_amount: service.price_cents,
-          },
-          quantity: 1,
+  // Charge sur le compte plateforme (pas d'option stripeAccount) → séquestre.
+  const session = await stripe.checkout.sessions.create({
+    mode: "payment",
+    line_items: [
+      {
+        price_data: {
+          currency: service.currency || "eur",
+          product_data: { name: service.name },
+          unit_amount: service.price_cents,
         },
-      ],
-      customer_email: String(email),
-      payment_intent_data:
-        fee > 0 ? { application_fee_amount: fee } : undefined,
-      success_url: `${origin}/api/stripe/checkout/success?session_id={CHECKOUT_SESSION_ID}&acct=${coach.stripe_account_id}`,
-      cancel_url: `${origin}/${coach_slug}`,
-      metadata: {
-        coach_id: coach.id,
-        coach_slug: String(coach_slug),
-        service_id: String(service_id),
-        first_name: String(first_name).slice(0, 80),
-        last_name: last_name ? String(last_name).slice(0, 80) : "",
-        email: String(email).slice(0, 254),
-        phone: phone ? String(phone).slice(0, 30) : "",
-        starts_at: String(starts_at),
-        duration_min: String(Number(duration_min) || 60),
-        online: online ? "1" : "0",
-        message: message ? String(message).slice(0, 500) : "",
+        quantity: 1,
       },
+    ],
+    customer_email: String(email),
+    payment_intent_data: {
+      // Regroupe charge et futur transfert vers le coach (charges séparées).
+      transfer_group: `coach_${coach.id}`,
     },
-    { stripeAccount: coach.stripe_account_id }
-  );
+    success_url: `${origin}/api/stripe/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/${coach_slug}`,
+    metadata: {
+      coach_id: coach.id,
+      coach_slug: String(coach_slug),
+      service_id: String(service_id),
+      first_name: String(first_name).slice(0, 80),
+      last_name: last_name ? String(last_name).slice(0, 80) : "",
+      email: String(email).slice(0, 254),
+      phone: phone ? String(phone).slice(0, 30) : "",
+      starts_at: String(starts_at),
+      duration_min: String(Number(duration_min) || 60),
+      online: online ? "1" : "0",
+      message: message ? String(message).slice(0, 500) : "",
+    },
+  });
 
   return NextResponse.json({ url: session.url });
 }
