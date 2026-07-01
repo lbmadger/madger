@@ -6,17 +6,25 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import type { PublicCoach } from "@/lib/coaches/public-types";
+import { type PublicService, formatPrice } from "@/lib/services/types";
 
 const DURATIONS = [30, 45, 60, 90];
 
 export default function BookingModal({
   coach,
+  services = [],
   onClose,
 }: {
   coach: PublicCoach;
+  services?: PublicService[];
   onClose: () => void;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+
+  // Prestations payantes (paiement possible seulement si le coach encaisse).
+  const paidServices = coach.stripe_charges_enabled
+    ? services.filter((s) => s.price_cents > 0)
+    : [];
 
   // Coach sans ville mais dispo en ligne → réservation en visio par défaut.
   const [online, setOnline] = useState(!coach.city && coach.accepts_online);
@@ -29,9 +37,14 @@ export default function BookingModal({
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
+  const [serviceId, setServiceId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+
+  const selectedService = paidServices.find((s) => s.id === serviceId) ?? null;
+  const payMode = !!selectedService;
+  const effectiveDuration = selectedService?.duration_min ?? duration;
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -47,6 +60,34 @@ export default function BookingModal({
 
     setLoading(true);
     try {
+      // ── Prestation payante : on part sur le paiement Stripe ──────────────
+      if (payMode && selectedService) {
+        const res = await fetch("/api/stripe/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            coach_slug: coach.slug,
+            service_id: selectedService.id,
+            first_name: firstName.trim(),
+            last_name: lastName.trim() || null,
+            email: email.trim(),
+            phone: phone.trim() || null,
+            starts_at: starts.toISOString(),
+            duration_min: effectiveDuration,
+            online,
+            message: message.trim() || null,
+          }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (data.url) {
+          window.location.href = data.url; // page de paiement Stripe
+          return;
+        }
+        setError(t("booking.errors.generic"));
+        return;
+      }
+
+      // ── Demande simple gratuite (à confirmer par le coach) ───────────────
       const res = await fetch("/api/booking-request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -130,6 +171,26 @@ export default function BookingModal({
                 aria-hidden="true"
               />
 
+              {/* Prestation payante (si le coach encaisse via Stripe) */}
+              {paidServices.length > 0 && (
+                <label className="flex flex-col gap-1.5">
+                  <span className={labelClass}>{t("booking.service")}</span>
+                  <select
+                    value={serviceId}
+                    onChange={(e) => setServiceId(e.target.value)}
+                    className={inputClass}
+                  >
+                    <option value="">{t("booking.serviceNone")}</option>
+                    {paidServices.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name} —{" "}
+                        {formatPrice(s.price_cents, s.currency, locale)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+
               {/* Présentiel / visio si le coach propose les deux */}
               {coach.accepts_online && coach.city && (
                 <div className="flex gap-2">
@@ -161,14 +222,17 @@ export default function BookingModal({
                 </label>
               </div>
 
-              <label className="flex flex-col gap-1.5">
-                <span className={labelClass}>{t("booking.duration")}</span>
-                <select value={duration} onChange={(e) => setDuration(Number(e.target.value))} className={inputClass}>
-                  {DURATIONS.map((d) => (
-                    <option key={d} value={d}>{d} min</option>
-                  ))}
-                </select>
-              </label>
+              {/* Durée : masquée si la prestation payante impose sa durée */}
+              {!selectedService?.duration_min && (
+                <label className="flex flex-col gap-1.5">
+                  <span className={labelClass}>{t("booking.duration")}</span>
+                  <select value={duration} onChange={(e) => setDuration(Number(e.target.value))} className={inputClass}>
+                    {DURATIONS.map((d) => (
+                      <option key={d} value={d}>{d} min</option>
+                    ))}
+                  </select>
+                </label>
+              )}
 
               <div className="grid grid-cols-2 gap-3">
                 <label className="flex flex-col gap-1.5">
@@ -203,7 +267,13 @@ export default function BookingModal({
                   {t("booking.cancel")}
                 </Button>
                 <Button type="submit" disabled={loading} className="flex-1">
-                  {loading ? t("booking.sending") : t("booking.submit")}
+                  {loading
+                    ? payMode
+                      ? t("booking.redirecting")
+                      : t("booking.sending")
+                    : payMode && selectedService
+                    ? `${t("booking.pay")} ${formatPrice(selectedService.price_cents, selectedService.currency, locale)}`
+                    : t("booking.submit")}
                 </Button>
               </div>
             </form>

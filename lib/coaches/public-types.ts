@@ -12,6 +12,7 @@ export type PublicCoach = {
   accepts_online: boolean;
   lat: number | null;
   lng: number | null;
+  stripe_charges_enabled: boolean;
   created_at: string;
 };
 

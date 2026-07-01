@@ -201,7 +201,11 @@ export default function CoachProfile({
       </div>
 
       {booking && (
-        <BookingModal coach={coach} onClose={() => setBooking(false)} />
+        <BookingModal
+          coach={coach}
+          services={services}
+          onClose={() => setBooking(false)}
+        />
       )}
     </main>
   );
