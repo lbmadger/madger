@@ -14,6 +14,7 @@ export type Coach = {
   locale: string;
   timezone: string;
   stripe_account_id: string | null;
+  stripe_charges_enabled: boolean;
   onboarding_completed: boolean;
   // Champs marketplace (migration 0002)
   city: string | null;

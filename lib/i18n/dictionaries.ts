@@ -228,6 +228,24 @@ const fr = {
       generic: "Une erreur est survenue. Réessaie.",
     },
   },
+  payments: {
+    title: "Paiements",
+    connectTitle: "Encaisse tes clients",
+    connectDesc:
+      "Branche ton compte Stripe pour recevoir les paiements directement sur ton compte. 0 % de commission Madger.",
+    connect: "Connecter Stripe",
+    connecting: "Redirection…",
+    connectedTitle: "Compte Stripe connecté",
+    connectedDesc:
+      "Tu peux recevoir des paiements de tes clients directement sur ton compte.",
+    pendingTitle: "Configuration à terminer",
+    pendingDesc:
+      "Ton compte Stripe existe mais la configuration n'est pas finie. Termine-la pour encaisser.",
+    finishSetup: "Terminer la configuration",
+    feesNote:
+      "Madger ne prend aucune commission. Seuls les frais Stripe standards s'appliquent (à ta charge, déduits de chaque paiement).",
+    notConfigured: "Paiements bientôt disponibles.",
+  },
   stats: {
     title: "Statistiques",
     clients: "Clients",
@@ -651,6 +669,24 @@ const en: Dictionary = {
       notYours: "This code isn't linked to your account.",
       generic: "Something went wrong. Please try again.",
     },
+  },
+  payments: {
+    title: "Payments",
+    connectTitle: "Get paid by your clients",
+    connectDesc:
+      "Connect your Stripe account to receive payments directly. 0% Madger commission.",
+    connect: "Connect Stripe",
+    connecting: "Redirecting…",
+    connectedTitle: "Stripe account connected",
+    connectedDesc:
+      "You can receive payments from your clients directly to your account.",
+    pendingTitle: "Setup to finish",
+    pendingDesc:
+      "Your Stripe account exists but setup isn't complete. Finish it to get paid.",
+    finishSetup: "Finish setup",
+    feesNote:
+      "Madger takes no commission. Only standard Stripe fees apply (on you, deducted from each payment).",
+    notConfigured: "Payments coming soon.",
   },
   stats: {
     title: "Statistics",
