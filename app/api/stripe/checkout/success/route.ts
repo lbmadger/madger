@@ -3,8 +3,15 @@ import type Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
+import { sendEmail } from "@/lib/email/resend";
+import {
+  bookingConfirmationClient,
+  bookingNotificationCoach,
+} from "@/lib/email/templates";
 
 export const dynamic = "force-dynamic";
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
 // Délai après la fin de la séance avant libération automatique des fonds au
 // coach (si aucun problème n'est signalé par le client).
@@ -127,6 +134,62 @@ export async function GET(req: NextRequest) {
           release_after: releaseAfter.toISOString(),
           paid_at: new Date().toISOString(),
         });
+
+        // Emails de confirmation (client + notification coach). Best-effort :
+        // un échec d'email ne doit pas casser le paiement déjà encaissé.
+        try {
+          const [{ data: coachRow }, { data: coachAuth }] = await Promise.all([
+            supabase
+              .from("coaches")
+              .select("first_name, last_name")
+              .eq("id", m.coach_id)
+              .maybeSingle(),
+            supabase.auth.admin.getUserById(m.coach_id),
+          ]);
+          const coachName =
+            [coachRow?.first_name, coachRow?.last_name]
+              .filter(Boolean)
+              .join(" ") || "Ton coach";
+          const dateStr = starts.toLocaleString("fr-FR", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          const priceStr = ((session.amount_total ?? 0) / 100).toLocaleString(
+            "fr-FR",
+            { style: "currency", currency: (session.currency ?? "eur").toUpperCase() }
+          );
+          const online = m.online === "1";
+          const reservationUrl = `${APP_URL}/reservation/${bookingId}`;
+
+          if (m.email) {
+            const t = bookingConfirmationClient({
+              coachName,
+              dateStr,
+              priceStr,
+              online,
+              reservationUrl,
+            });
+            await sendEmail({ to: m.email, subject: t.subject, html: t.html });
+          }
+          const coachEmail = coachAuth?.user?.email;
+          if (coachEmail) {
+            const t = bookingNotificationCoach({
+              clientName:
+                [m.first_name, m.last_name].filter(Boolean).join(" ") || "Client",
+              dateStr,
+              serviceName: "Séance",
+              priceStr,
+              online,
+              dashboardUrl: `${APP_URL}/dashboard/agenda`,
+            });
+            await sendEmail({ to: coachEmail, subject: t.subject, html: t.html });
+          }
+        } catch {
+          /* emails best-effort */
+        }
       }
     }
   } catch {

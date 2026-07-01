@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_URL } from "@/lib/supabase/config";
+import { sendEmail } from "@/lib/email/resend";
+import { disputeOpenedAdmin } from "@/lib/email/templates";
 
 export const dynamic = "force-dynamic";
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
 // Un client signale un problème sur une séance payée. Tant que les fonds ne sont
 // pas libérés, ils sont GELÉS (escrow_status = 'disputed') jusqu'à la décision
@@ -27,7 +31,7 @@ export async function POST(req: NextRequest) {
 
   const { data: payment } = await supabase
     .from("payments")
-    .select("id, client_id, escrow_status")
+    .select("id, client_id, coach_id, amount_cents, currency, escrow_status")
     .eq("booking_id", bookingId)
     .maybeSingle();
 
@@ -57,6 +61,45 @@ export async function POST(req: NextRequest) {
       dispute_reason: reason,
     })
     .eq("id", payment.id);
+
+  // Alerte email aux admins (best-effort).
+  try {
+    const admins = (process.env.ADMIN_EMAILS || "")
+      .split(",")
+      .map((e) => e.trim())
+      .filter(Boolean);
+    if (admins.length) {
+      const { data: coach } = await supabase
+        .from("coaches")
+        .select("first_name, last_name")
+        .eq("id", payment.coach_id)
+        .maybeSingle();
+      const { data: clientRow } = await supabase
+        .from("clients")
+        .select("first_name, last_name")
+        .eq("id", payment.client_id)
+        .maybeSingle();
+      const amountStr = (payment.amount_cents / 100).toLocaleString("fr-FR", {
+        style: "currency",
+        currency: (payment.currency || "eur").toUpperCase(),
+      });
+      const tpl = disputeOpenedAdmin({
+        clientName:
+          [clientRow?.first_name, clientRow?.last_name].filter(Boolean).join(" ") ||
+          "Client",
+        coachName:
+          [coach?.first_name, coach?.last_name].filter(Boolean).join(" ") || "Coach",
+        amountStr,
+        reason,
+        adminUrl: `${APP_URL}/admin/litiges`,
+      });
+      for (const to of admins) {
+        await sendEmail({ to, subject: tpl.subject, html: tpl.html });
+      }
+    }
+  } catch {
+    /* best-effort */
+  }
 
   return NextResponse.json({ ok: true });
 }

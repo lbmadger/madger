@@ -6,6 +6,8 @@ import { SUPABASE_URL } from "@/lib/supabase/config";
 import { computePayout } from "@/lib/stripe/escrow";
 import { refundCents, normalizePolicy } from "@/lib/booking/cancellation";
 import { isPro } from "@/lib/subscription/plan";
+import { sendEmail } from "@/lib/email/resend";
+import { refundClient } from "@/lib/email/templates";
 
 export const dynamic = "force-dynamic";
 
@@ -52,14 +54,14 @@ export async function POST(req: NextRequest) {
 
   const { data: coach } = await admin
     .from("coaches")
-    .select("stripe_account_id, pro_until, cancellation_policy")
+    .select("stripe_account_id, pro_until, cancellation_policy, first_name, last_name")
     .eq("id", user.id)
     .maybeSingle();
 
   const { data: payment } = await admin
     .from("payments")
     .select(
-      "id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status"
+      "id, client_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status"
     )
     .eq("booking_id", bookingId)
     .maybeSingle();
@@ -129,6 +131,32 @@ export async function POST(req: NextRequest) {
       .from("bookings")
       .update({ status: "cancelled" })
       .eq("id", bookingId);
+
+    // Email de remboursement au client (best-effort).
+    if (refund > 0) {
+      try {
+        const { data: client } = await admin
+          .from("clients")
+          .select("email")
+          .eq("id", payment.client_id)
+          .maybeSingle();
+        if (client?.email) {
+          const tpl = refundClient({
+            coachName:
+              [coach?.first_name, coach?.last_name].filter(Boolean).join(" ") ||
+              "Ton coach",
+            refundStr: (refund / 100).toLocaleString("fr-FR", {
+              style: "currency",
+              currency: (payment.currency || "eur").toUpperCase(),
+            }),
+            reason: "cancellation",
+          });
+          await sendEmail({ to: client.email, subject: tpl.subject, html: tpl.html });
+        }
+      } catch {
+        /* best-effort */
+      }
+    }
 
     return NextResponse.json({
       ok: true,
