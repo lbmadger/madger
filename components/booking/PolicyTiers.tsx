@@ -17,29 +17,33 @@ export default function PolicyTiers({
   const tiers = policyTiers(policy);
 
   return (
-    <ul className={`flex flex-col gap-1 ${className}`}>
-      {tiers.map((tier, i) => {
-        const pct = Math.round(tier.refund * 100);
-        const cond =
-          i === 0
-            ? `≥ ${tier.minHoursBefore} h`
-            : `< ${tiers[i - 1].minHoursBefore} h`;
-        return (
-          <li key={i} className="flex items-baseline justify-between gap-3 text-sm">
-            <span className="text-text-muted">
-              {cond} {t("cancellation.beforeSession")}
-            </span>
-            <span
-              className={`font-semibold ${
-                pct > 0 ? "text-accent" : "text-text-dim"
-              }`}
-            >
-              {pct}% {t("cancellation.refunded")}
-            </span>
-          </li>
-        );
-      })}
-      <li className="mt-0.5 text-xs text-text-dim">{t("cancellation.noShow")}</li>
-    </ul>
+    <div className={`flex flex-col gap-1.5 ${className}`}>
+      <p className="text-xs text-text-dim">{t("cancellation.direction")}</p>
+      <ul className="flex flex-col gap-1">
+        {tiers.map((tier, i) => {
+          const pct = Math.round(tier.refund * 100);
+          const cond =
+            i === 0
+              ? `≥ ${tier.minHoursBefore} h`
+              : `< ${tiers[i - 1].minHoursBefore} h`;
+          return (
+            <li key={i} className="flex items-baseline justify-between gap-3 text-sm">
+              <span className="text-text-muted">
+                {t("cancellation.cancelWord")} {cond}{" "}
+                {t("cancellation.beforeSession")}
+              </span>
+              <span
+                className={`shrink-0 font-semibold ${
+                  pct > 0 ? "text-accent" : "text-text-dim"
+                }`}
+              >
+                {pct}% {t("cancellation.refunded")}
+              </span>
+            </li>
+          );
+        })}
+        <li className="mt-0.5 text-xs text-text-dim">{t("cancellation.noShow")}</li>
+      </ul>
+    </div>
   );
 }

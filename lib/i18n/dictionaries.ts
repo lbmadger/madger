@@ -483,7 +483,10 @@ const fr = {
     subtitle:
       "Ta protection si un client annule. L'argent est retenu par Madger jusqu'après la séance, puis versé.",
     beforeSession: "avant la séance",
-    refunded: "remboursé",
+    refunded: "remboursé au client",
+    cancelWord: "Annulation",
+    direction:
+      "Plus l'annulation est tardive, moins le client est remboursé (donc plus il paie).",
     noShow: "Absence (no-show) : 0 % remboursé",
     flexible: "Flexible",
     moderate: "Modérée",
@@ -987,7 +990,10 @@ const en: Dictionary = {
     subtitle:
       "Your protection if a client cancels. Money is held by Madger until after the session, then paid out.",
     beforeSession: "before the session",
-    refunded: "refunded",
+    refunded: "refunded to client",
+    cancelWord: "Cancellation",
+    direction:
+      "The later the cancellation, the smaller the refund (so the more the client pays).",
     noShow: "No-show: 0% refunded",
     flexible: "Flexible",
     moderate: "Moderate",
