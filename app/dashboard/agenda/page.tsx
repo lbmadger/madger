@@ -28,7 +28,7 @@ export default async function AgendaPage() {
   return (
     <>
       <Topbar title={dict.agenda.title} />
-      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
         <AgendaView
           initialBookings={(bookings ?? []) as Booking[]}
           clients={(clients ?? []) as ClientOption[]}

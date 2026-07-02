@@ -124,7 +124,7 @@ export default function AgendaView({
         </p>
         <Link
           href="/dashboard/clients"
-          className="cta-shine mt-5 inline-flex rounded-full bg-accent px-5 py-3 text-sm font-semibold text-black transition-all hover:scale-[1.02] hover:shadow-[0_0_22px_rgba(203,255,3,0.45)] active:scale-95"
+          className="cta-shine mt-5 inline-flex rounded-full bg-accent px-5 py-3 text-sm font-semibold text-black transition-all hover:scale-[1.02] active:scale-95"
         >
           {t("agenda.goToClients")}
         </Link>

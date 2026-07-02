@@ -2,7 +2,8 @@ import Link from "next/link";
 import Topbar from "@/components/dashboard/Topbar";
 import StatCard, { type Trend } from "@/components/dashboard/StatCard";
 import SetupChecklist from "@/components/dashboard/SetupChecklist";
-import MiniBars, { type BarDatum } from "@/components/dashboard/charts/MiniBars";
+import ChartCard from "@/components/dashboard/charts/ChartCard";
+import { type BarDatum } from "@/components/dashboard/charts/MiniBars";
 import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getCoach } from "@/lib/coach/getCoach";
@@ -25,11 +26,6 @@ export default async function OverviewPage() {
   weekStart.setDate(now.getDate() - dow);
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekStart.getDate() + 7);
-
-  // Fenêtres des graphiques : 6 mois (revenus) et 8 semaines (séances).
-  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-  const eightWeeksAgo = new Date(weekStart);
-  eightWeeksAgo.setDate(weekStart.getDate() - 7 * 7);
 
   const [
     clientsRes,
@@ -55,11 +51,13 @@ export default async function OverviewPage() {
       .limit(5),
     supabase.from("availabilities").select("*", { count: "exact", head: true }),
     supabase.from("services").select("*", { count: "exact", head: true }),
+    // Tout l'historique encaissé : le sélecteur de période des graphiques
+    // choisit lui-même la plage affichée.
     supabase
       .from("payments")
       .select("amount_cents, paid_at")
       .eq("status", "paid")
-      .gte("paid_at", sixMonthsAgo.toISOString()),
+      .not("paid_at", "is", null),
     supabase
       .from("payments")
       .select("amount_cents")
@@ -67,7 +65,6 @@ export default async function OverviewPage() {
     supabase
       .from("bookings")
       .select("starts_at, status")
-      .gte("starts_at", eightWeeksAgo.toISOString())
       .lt("starts_at", weekEnd.toISOString()),
   ]);
 
@@ -88,21 +85,41 @@ export default async function OverviewPage() {
       maximumFractionDigits: cents % 100 === 0 ? 0 : 2,
     });
 
-  // ── Revenus par mois (6 derniers mois) ────────────────────────────────────
+  // ── Revenus par mois (depuis le premier encaissement, 12 mois min, 24 max) ─
   const payments = paymentsRes.data ?? [];
-  const revenueByMonth: BarDatum[] = Array.from({ length: 6 }, (_, i) => {
-    const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
-    const next = new Date(d.getFullYear(), d.getMonth() + 1, 1);
-    const sum = payments
-      .filter((p) => {
-        const t = p.paid_at ? new Date(p.paid_at as string).getTime() : 0;
-        return t >= d.getTime() && t < next.getTime();
-      })
-      .reduce((s, p) => s + ((p.amount_cents as number) || 0), 0);
-    return { label: d.toLocaleDateString(loc, { month: "short" }), value: sum };
-  });
-  const monthRevenue = revenueByMonth[5].value;
-  const lastMonthRevenue = revenueByMonth[4].value;
+  const firstPaid = payments.reduce<number | null>((min, p) => {
+    const t = new Date(p.paid_at as string).getTime();
+    return min === null || t < min ? t : min;
+  }, null);
+  const monthsSinceFirst = firstPaid
+    ? (now.getFullYear() - new Date(firstPaid).getFullYear()) * 12 +
+      (now.getMonth() - new Date(firstPaid).getMonth()) +
+      1
+    : 0;
+  const monthsBack = Math.min(24, Math.max(12, monthsSinceFirst));
+  const revenueByMonth: BarDatum[] = Array.from(
+    { length: monthsBack },
+    (_, i) => {
+      const d = new Date(
+        now.getFullYear(),
+        now.getMonth() - (monthsBack - 1) + i,
+        1
+      );
+      const next = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+      const sum = payments
+        .filter((p) => {
+          const t = p.paid_at ? new Date(p.paid_at as string).getTime() : 0;
+          return t >= d.getTime() && t < next.getTime();
+        })
+        .reduce((s, p) => s + ((p.amount_cents as number) || 0), 0);
+      return {
+        label: d.toLocaleDateString(loc, { month: "short" }),
+        value: sum,
+      };
+    }
+  );
+  const monthRevenue = revenueByMonth[revenueByMonth.length - 1].value;
+  const lastMonthRevenue = revenueByMonth[revenueByMonth.length - 2].value;
   const revenueTrend: Trend =
     lastMonthRevenue > 0
       ? {
@@ -116,13 +133,21 @@ export default async function OverviewPage() {
     0
   );
 
-  // ── Séances par semaine (8 dernières semaines) ────────────────────────────
+  // ── Séances par semaine (depuis la première séance, 12 sem. min, 52 max) ──
   const weekBookings = (weeksRes.data ?? []).filter(
     (b) => b.status !== "cancelled"
   );
-  const sessionsByWeek: BarDatum[] = Array.from({ length: 8 }, (_, i) => {
+  const firstBooking = weekBookings.reduce<number | null>((min, b) => {
+    const t = new Date(b.starts_at as string).getTime();
+    return min === null || t < min ? t : min;
+  }, null);
+  const weeksSinceFirst = firstBooking
+    ? Math.floor((weekStart.getTime() - firstBooking) / (7 * 86400000)) + 1
+    : 0;
+  const weeksBack = Math.min(52, Math.max(12, weeksSinceFirst));
+  const sessionsByWeek: BarDatum[] = Array.from({ length: weeksBack }, (_, i) => {
     const start = new Date(weekStart);
-    start.setDate(weekStart.getDate() - 7 * (7 - i));
+    start.setDate(weekStart.getDate() - 7 * (weeksBack - 1 - i));
     const end = new Date(start);
     end.setDate(start.getDate() + 7);
     const count = weekBookings.filter((b) => {
@@ -149,7 +174,8 @@ export default async function OverviewPage() {
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
         <div className="mb-6 sm:mb-8">
           <h2 className="text-2xl font-extrabold tracking-tight text-text-base sm:text-3xl">
-            {o.greeting} 👋
+            {o.greeting}
+            {coach?.first_name ? ` ${coach.first_name}` : ""} 👋
           </h2>
           <p className="mt-1 text-sm text-text-muted">{o.subtitle}</p>
         </div>
@@ -186,20 +212,22 @@ export default async function OverviewPage() {
           ))}
         </div>
 
-        {/* Graphiques : revenus 6 mois + séances 8 semaines */}
+        {/* Graphiques : revenus par mois + séances par semaine, avec sélecteur
+            de période (la plage s'adapte à l'historique réel du coach). */}
         <div className="mt-4 grid grid-cols-1 gap-3 sm:mt-5 sm:grid-cols-2 sm:gap-4">
-          <section className="rounded-2xl border border-border bg-bg-card p-4 sm:p-5">
-            <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-text-dim">
-              {o.chartRevenue}
-            </h3>
-            <MiniBars data={revenueByMonth} unit="currency" locale={loc} />
-          </section>
-          <section className="rounded-2xl border border-border bg-bg-card p-4 sm:p-5">
-            <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-text-dim">
-              {o.chartSessions}
-            </h3>
-            <MiniBars data={sessionsByWeek} locale={loc} />
-          </section>
+          <ChartCard
+            title={o.chartRevenue}
+            data={revenueByMonth}
+            unit="currency"
+            locale={loc}
+            mode="months"
+          />
+          <ChartCard
+            title={o.chartSessions}
+            data={sessionsByWeek}
+            locale={loc}
+            mode="weeks"
+          />
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">

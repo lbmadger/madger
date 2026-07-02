@@ -159,13 +159,19 @@ p { text-wrap: pretty; }
 /* :focus-visible ne se déclenche qu'au clavier (pas au clic/tap souris ou
    tactile), donc aucun anneau parasite pour la majorité des utilisateurs. */
 a:focus-visible,
-button:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible {
+button:focus-visible {
   outline: 2px solid #CBFF03;
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* Les champs de saisie matchent :focus-visible même au clic/tap : on ne leur
+   met PAS l'anneau (il déformait le champ) — leur bordure passe déjà au lime
+   au focus, ce qui suffit comme indicateur. */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
 }
 
 /* ── Reduced motion ─────────────────────────────────────── */
