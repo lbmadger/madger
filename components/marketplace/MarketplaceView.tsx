@@ -8,6 +8,7 @@ import Button from "@/components/ui/Button";
 import CityAutocomplete from "@/components/ui/CityAutocomplete";
 import Stars from "@/components/reviews/Stars";
 import { geocodeCity, distanceKm, type City } from "@/lib/geo/cities";
+import { SPORT_KEYS, SPECIALTY_KEYS } from "@/lib/coaches/taxonomy";
 import { interactiveCardClass } from "@/lib/ui/styles";
 import {
   type PublicCoach,
@@ -29,6 +30,8 @@ export default function MarketplaceView({
   const [query, setQuery] = useState("");
   const [coords, setCoords] = useState<Coords | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
+  const [sportFilter, setSportFilter] = useState("");
+  const [specialtyFilter, setSpecialtyFilter] = useState("");
   const [coaches, setCoaches] = useState<PublicCoach[]>(initialCoaches);
   const [loading, setLoading] = useState(false);
   // Mémorise qu'on a basculé en recherche par rayon (pour le bandeau / message).
@@ -103,6 +106,13 @@ export default function MarketplaceView({
     runSearch();
   }
 
+  // Filtres sport / accompagnement appliqués côté client sur les résultats.
+  const shown = coaches.filter(
+    (c) =>
+      (!sportFilter || c.sport === sportFilter) &&
+      (!specialtyFilter || (c.specialties ?? []).includes(specialtyFilter))
+  );
+
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
       <div className="text-center">
@@ -140,7 +150,7 @@ export default function MarketplaceView({
       </form>
 
       {/* Filtres */}
-      <div className="mx-auto mt-4 flex max-w-xl justify-center gap-2">
+      <div className="mx-auto mt-4 flex max-w-2xl flex-wrap items-center justify-center gap-2">
         {(["all", "online"] as Filter[]).map((f) => (
           <button
             key={f}
@@ -157,10 +167,43 @@ export default function MarketplaceView({
               : t("marketplace.filterOnline")}
           </button>
         ))}
+        {/* Sport + type d'accompagnement */}
+        <select
+          value={sportFilter}
+          onChange={(e) => setSportFilter(e.target.value)}
+          className={`rounded-full border px-3 py-1.5 text-sm font-medium outline-none transition-colors ${
+            sportFilter
+              ? "border-accent bg-accent/10 text-accent"
+              : "border-border-strong bg-transparent text-text-muted"
+          }`}
+        >
+          <option value="">{t("marketplace.filterSport")}</option>
+          {SPORT_KEYS.map((s) => (
+            <option key={s} value={s}>
+              {t(`taxonomy.sports.${s}`)}
+            </option>
+          ))}
+        </select>
+        <select
+          value={specialtyFilter}
+          onChange={(e) => setSpecialtyFilter(e.target.value)}
+          className={`rounded-full border px-3 py-1.5 text-sm font-medium outline-none transition-colors ${
+            specialtyFilter
+              ? "border-accent bg-accent/10 text-accent"
+              : "border-border-strong bg-transparent text-text-muted"
+          }`}
+        >
+          <option value="">{t("marketplace.filterGoal")}</option>
+          {SPECIALTY_KEYS.map((s) => (
+            <option key={s} value={s}>
+              {t(`clientOnboarding.goals.${s}`)}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Bandeau "rayon élargi" */}
-      {radius && coaches.length > 0 && (
+      {radius && shown.length > 0 && (
         <p className="mx-auto mt-6 max-w-xl rounded-xl border border-accent/20 bg-accent/[0.05] px-4 py-2.5 text-center text-sm text-text-muted">
           {t("marketplace.radiusA")}{" "}
           <span className="font-medium text-text-base">{radius.city}</span>
@@ -170,7 +213,7 @@ export default function MarketplaceView({
 
       {/* Résultats */}
       <div className="mt-8">
-        {coaches.length === 0 ? (
+        {shown.length === 0 ? (
           <div className="rounded-2xl border border-border bg-bg-card p-10 text-center">
             <h3 className="text-base font-semibold text-text-base">
               {t("marketplace.emptyTitle")}
@@ -183,14 +226,14 @@ export default function MarketplaceView({
           <>
             <p className="mb-3 text-sm text-text-muted">
               <span className="font-semibold text-text-base">
-                {coaches.length}
+                {shown.length}
               </span>{" "}
-              {coaches.length === 1
+              {shown.length === 1
                 ? t("marketplace.resultsOne")
                 : t("marketplace.resultsMany")}
             </p>
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {coaches.map((c) => (
+              {shown.map((c) => (
                 <li key={c.id}>
                   <Link
                     href={`/${c.slug}`}

@@ -146,17 +146,50 @@ export default function CoachProfile({
               </p>
             )}
             <div className="mt-3 flex flex-wrap justify-center gap-1.5 sm:justify-start">
+              {coach.sport && (
+                <span className="rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent">
+                  {t(`taxonomy.sports.${coach.sport}`)}
+                </span>
+              )}
               {coach.city && (
                 <span className="rounded-full border border-border-strong px-2.5 py-1 text-xs text-text-muted">
                   📍 {coach.city}
                 </span>
               )}
+              {/* Où se passent les séances (salle nommée, domicile, extérieur) */}
+              {coach.gym_name && (coach.venues ?? []).includes("coach_gym") && (
+                <span className="rounded-full border border-border-strong px-2.5 py-1 text-xs text-text-muted">
+                  🏋️ {coach.gym_name}
+                </span>
+              )}
+              {(coach.venues ?? [])
+                .filter((v) => v === "client_home" || v === "outdoor")
+                .map((v) => (
+                  <span
+                    key={v}
+                    className="rounded-full border border-border-strong px-2.5 py-1 text-xs text-text-muted"
+                  >
+                    {t(`taxonomy.venues.${v}`)}
+                  </span>
+                ))}
               {coach.accepts_online && (
                 <span className="rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent">
                   {t("coachProfile.onlineAvailable")}
                 </span>
               )}
             </div>
+            {(coach.specialties ?? []).length > 0 && (
+              <div className="mt-2 flex flex-wrap justify-center gap-1.5 sm:justify-start">
+                {(coach.specialties ?? []).map((s) => (
+                  <span
+                    key={s}
+                    className="rounded-full border border-accent/25 px-2.5 py-1 text-xs text-text-muted"
+                  >
+                    {t(`clientOnboarding.goals.${s}`)}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 

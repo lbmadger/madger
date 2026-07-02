@@ -15,6 +15,11 @@ import {
   normalizePolicy,
   type CancellationPolicy,
 } from "@/lib/booking/cancellation";
+import {
+  SPORT_KEYS,
+  SPECIALTY_KEYS,
+  VENUE_KEYS,
+} from "@/lib/coaches/taxonomy";
 import type { Coach } from "@/lib/coach/getCoach";
 
 const POLICY_OPTIONS: CancellationPolicy[] = ["flexible", "moderate", "strict"];
@@ -42,6 +47,12 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   const [bookingMode, setBookingMode] = useState<"instant" | "approval">(
     coach.booking_mode === "instant" ? "instant" : "approval"
   );
+  const [sport, setSport] = useState(coach.sport ?? "");
+  const [specialties, setSpecialties] = useState<string[]>(
+    coach.specialties ?? []
+  );
+  const [venues, setVenues] = useState<string[]>(coach.venues ?? []);
+  const [gymName, setGymName] = useState(coach.gym_name ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -70,6 +81,10 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           listed,
           cancellation_policy: policy,
           booking_mode: bookingMode,
+          sport: sport || null,
+          specialties,
+          venues,
+          gym_name: gymName.trim() || null,
         })
         .eq("id", coach.id);
 
@@ -178,6 +193,106 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           {saved && <p className="text-sm text-accent">{t("settings.saved")}</p>}
 
           <Button onClick={handleSave} disabled={loading} className="mt-1 self-start">
+            {loading ? t("settings.saving") : t("settings.save")}
+          </Button>
+        </div>
+      </section>
+
+      {/* Mon activité : sport, accompagnements, lieux d'exercice */}
+      <section className="rounded-2xl border border-border bg-bg-card p-5 sm:p-6">
+        <h2 className="text-base font-semibold text-text-base">
+          {t("settings.activitySection")}
+        </h2>
+        <p className="mt-1 text-sm text-text-muted">
+          {t("settings.activityDesc")}
+        </p>
+
+        <div className="mt-4 flex flex-col gap-4">
+          <label className="flex flex-col gap-1.5">
+            <span className={labelClass}>{t("settings.sport")}</span>
+            <select
+              value={sport}
+              onChange={(e) => setSport(e.target.value)}
+              className={inputClass}
+            >
+              <option value="">—</option>
+              {SPORT_KEYS.map((s) => (
+                <option key={s} value={s}>
+                  {t(`taxonomy.sports.${s}`)}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div>
+            <p className={labelClass}>{t("settings.specialtiesLabel")}</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {SPECIALTY_KEYS.map((s) => {
+                const active = specialties.includes(s);
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() =>
+                      setSpecialties((prev) =>
+                        active ? prev.filter((x) => x !== s) : [...prev, s]
+                      )
+                    }
+                    className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
+                      active
+                        ? "border-accent bg-accent/10 text-accent"
+                        : "border-border-strong text-text-muted hover:text-text-base"
+                    }`}
+                  >
+                    {t(`clientOnboarding.goals.${s}`)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div>
+            <p className={labelClass}>{t("settings.venuesLabel")}</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {VENUE_KEYS.map((v) => {
+                const active = venues.includes(v);
+                return (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() =>
+                      setVenues((prev) =>
+                        active ? prev.filter((x) => x !== v) : [...prev, v]
+                      )
+                    }
+                    className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
+                      active
+                        ? "border-accent bg-accent/10 text-accent"
+                        : "border-border-strong text-text-muted hover:text-text-base"
+                    }`}
+                  >
+                    {t(`taxonomy.venues.${v}`)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Nom de la salle : répond au « chez Basic Fit ou Fitness Park ? » */}
+          {venues.includes("coach_gym") && (
+            <label className="flex flex-col gap-1.5">
+              <span className={labelClass}>{t("settings.gymName")}</span>
+              <input
+                type="text"
+                value={gymName}
+                onChange={(e) => setGymName(e.target.value)}
+                placeholder={t("settings.gymNamePlaceholder")}
+                className={inputClass}
+              />
+            </label>
+          )}
+
+          <Button onClick={handleSave} disabled={loading} className="self-start">
             {loading ? t("settings.saving") : t("settings.save")}
           </Button>
         </div>

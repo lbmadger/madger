@@ -19,6 +19,11 @@ export type PublicCoach = {
   // Avis (vue public_coaches, migration 0020)
   rating_avg: number | null;
   rating_count: number;
+  // Filtres (migration 0021)
+  sport: string | null;
+  specialties: string[];
+  venues: string[];
+  gym_name: string | null;
 };
 
 // Avis public (vue public_reviews) : prénom du client uniquement.

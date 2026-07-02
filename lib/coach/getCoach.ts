@@ -34,6 +34,11 @@ export type Coach = {
   cancellation_policy: "flexible" | "moderate" | "strict";
   // Mode de réservation (migration 0018) : instant | approval
   booking_mode: "instant" | "approval";
+  // Filtres marketplace (migration 0021)
+  sport: string | null;
+  specialties: string[];
+  venues: string[];
+  gym_name: string | null;
 };
 
 // Récupère le profil coach de l'utilisateur connecté. Renvoie:
