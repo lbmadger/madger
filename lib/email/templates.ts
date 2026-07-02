@@ -184,6 +184,70 @@ export function bookingNotificationCoach(p: {
   };
 }
 
+// ── Client : demande de séance envoyée (ou confirmée si mode instantané) ────
+export function requestReceivedClient(p: {
+  coachName: string;
+  dateStr: string;
+  instant: boolean;
+  reservationUrl: string;
+}): Email {
+  if (p.instant) {
+    return {
+      subject: `Séance confirmée avec ${p.coachName} ✅`,
+      html: layout({
+        preheader: `Ton créneau du ${p.dateStr} est confirmé.`,
+        eyebrow: "Réservation confirmée",
+        title: "C'est réservé 💪",
+        intro: `Ton créneau du <b style="color:${C.text};">${p.dateStr}</b> avec <b style="color:${C.text};">${p.coachName}</b> est confirmé.`,
+        cta: { label: "Voir ma réservation", url: p.reservationUrl },
+      }),
+    };
+  }
+  return {
+    subject: `Demande envoyée à ${p.coachName} ⏳`,
+    html: layout({
+      preheader: `${p.coachName} doit confirmer le créneau du ${p.dateStr}.`,
+      eyebrow: "Demande envoyée",
+      title: "Ta demande est partie",
+      intro: `<b style="color:${C.text};">${p.coachName}</b> doit confirmer le créneau du <b style="color:${C.text};">${p.dateStr}</b>. Tu recevras un email dès sa réponse.`,
+      cta: { label: "Voir ma réservation", url: p.reservationUrl },
+    }),
+  };
+}
+
+// ── Coach : nouvelle demande de séance (gratuite) ───────────────────────────
+export function newRequestCoach(p: {
+  clientName: string;
+  dateStr: string;
+  online: boolean;
+  instant: boolean;
+  dashboardUrl: string;
+}): Email {
+  return {
+    subject: p.instant
+      ? `Nouvelle séance réservée · ${p.clientName}`
+      : `✋ Nouvelle demande de séance · ${p.clientName}`,
+    html: layout({
+      preheader: `${p.clientName} — ${p.dateStr}${p.instant ? "" : " · à confirmer"}`,
+      eyebrow: p.instant ? "Nouvelle réservation" : "Demande à confirmer",
+      title: p.instant
+        ? "Un créneau vient d'être réservé ⚡"
+        : "Un client attend ta réponse",
+      intro: p.instant
+        ? `Réservation instantanée : le créneau est confirmé automatiquement.`
+        : `Confirme ou refuse la demande depuis ton agenda — sans réponse, le créneau reste bloqué pour les autres clients.`,
+      blocks: [
+        detailsTable([
+          { label: "Client", value: p.clientName },
+          { label: "Quand", value: p.dateStr },
+          { label: "Format", value: p.online ? "En visio" : "En présentiel" },
+        ]),
+      ],
+      cta: { label: "Ouvrir mon agenda", url: p.dashboardUrl },
+    }),
+  };
+}
+
 // ── Client : rappel 24 h avant la séance ────────────────────────────────────
 export function sessionReminderClient(p: {
   coachName: string;

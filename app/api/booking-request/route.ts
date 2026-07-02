@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/supabase/config";
+import { sendEmail } from "@/lib/email/resend";
+import {
+  requestReceivedClient,
+  newRequestCoach,
+} from "@/lib/email/templates";
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
 // Point d'entrée de la réservation publique. Le formulaire passe par ici (et
 // non plus directement par la fonction Supabase) pour bénéficier d'un filtrage
@@ -76,7 +83,7 @@ export async function POST(req: NextRequest) {
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const { error } = await supabase.rpc("request_booking", {
+    const { data: bookingId, error } = await supabase.rpc("request_booking", {
       coach_slug: String(coach_slug),
       client_first_name: String(first_name),
       client_last_name: last_name ? String(last_name) : null,
@@ -100,6 +107,65 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "coach_not_found" }, { status: 404 });
       }
       return NextResponse.json({ error: "server_error" }, { status: 500 });
+    }
+
+    // ── Emails (best-effort) : confirmation au client + alerte au coach ────
+    try {
+      const { data: coach } = await supabase
+        .from("public_coaches")
+        .select("id, first_name, last_name, booking_mode")
+        .eq("slug", String(coach_slug))
+        .maybeSingle();
+      if (coach) {
+        const instant = coach.booking_mode === "instant";
+        const coachName =
+          [coach.first_name, coach.last_name].filter(Boolean).join(" ") ||
+          "Ton coach";
+        const dateStr = new Date(String(starts_at)).toLocaleString("fr-FR", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        const tplClient = requestReceivedClient({
+          coachName,
+          dateStr,
+          instant,
+          reservationUrl: `${APP_URL}/reservation/${bookingId}`,
+        });
+        await sendEmail({
+          to: String(email),
+          subject: tplClient.subject,
+          html: tplClient.html,
+        });
+
+        // Email du coach : compte auth (service role requis).
+        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        if (serviceKey) {
+          const admin = createClient(SUPABASE_URL, serviceKey);
+          const { data: u } = await admin.auth.admin.getUserById(
+            coach.id as string
+          );
+          if (u?.user?.email) {
+            const tplCoach = newRequestCoach({
+              clientName: [first_name, last_name].filter(Boolean).join(" "),
+              dateStr,
+              online: Boolean(online),
+              instant,
+              dashboardUrl: `${APP_URL}/dashboard/agenda`,
+            });
+            await sendEmail({
+              to: u.user.email,
+              subject: tplCoach.subject,
+              html: tplCoach.html,
+            });
+          }
+        }
+      }
+    } catch {
+      /* un échec d'email ne bloque jamais la demande */
     }
 
     return NextResponse.json({ success: true });

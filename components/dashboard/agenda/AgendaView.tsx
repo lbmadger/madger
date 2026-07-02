@@ -40,10 +40,13 @@ export default function AgendaView({
 
   const loc = locale === "fr" ? "fr-FR" : "en-US";
 
-  // Confirme ou refuse une demande de séance.
-  async function setStatus(id: string, status: "confirmed" | "cancelled") {
-    const supabase = createClient();
-    await supabase.from("bookings").update({ status }).eq("id", id);
+  // Confirme une demande : passe par l'API pour envoyer l'email au client.
+  async function confirmBooking(id: string) {
+    await fetch("/api/bookings/confirm", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ booking_id: id }),
+    });
     router.refresh();
   }
 
@@ -250,7 +253,7 @@ export default function AgendaView({
                        </button>
                        <button
                          type="button"
-                         onClick={() => setStatus(b.id, "confirmed")}
+                         onClick={() => confirmBooking(b.id)}
                          className="flex-1 rounded-full bg-accent py-1.5 text-xs font-semibold text-black transition-opacity hover:opacity-90"
                        >
                          {t("agenda.confirm")}
