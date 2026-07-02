@@ -744,6 +744,81 @@ const fr = {
     usedOf: "utilisées sur",
     empty: "Pack épuisé",
   },
+  leia: {
+    title: "Les conseils de Leia",
+    role: "Ta conseillère Madger",
+    allGood:
+      "Ton profil est au top ! Continue comme ça, Leia garde un œil sur tes chiffres et reviendra avec de nouveaux conseils.",
+    dailyTitle: "Le conseil du jour",
+    showAll: "Voir tous les conseils",
+    showLess: "Réduire",
+    tips: {
+      services: {
+        title: "Crée tes prestations",
+        body: "Sans prestation, personne ne peut réserver chez toi. Commence simple : une séance découverte et une séance classique, tu affineras ensuite.",
+        cta: "Créer une prestation",
+      },
+      availability: {
+        title: "Ouvre tes disponibilités",
+        body: "Ton calendrier est vide, les clients ne voient aucun créneau. Ouvre tes horaires récurrents, tu pourras toujours ajuster après.",
+        cta: "Ouvrir mes créneaux",
+      },
+      photo: {
+        title: "Ajoute une photo de profil",
+        body: "Les coachs avec une vraie photo inspirent confiance et reçoivent bien plus de demandes. Lumière naturelle, sourire, et c'est réglé.",
+        cta: "Ajouter ma photo",
+      },
+      bio: {
+        title: "Étoffe ta présentation",
+        body: "Ta bio est ta vitrine : raconte ton parcours, ta méthode et les résultats de tes clients. Vise au moins 3 ou 4 phrases.",
+        cta: "Compléter ma bio",
+      },
+      activity: {
+        title: "Précise ta ville et ton sport",
+        body: "Les clients filtrent par ville et par sport dans la recherche. Sans ces infos, ta page ressort beaucoup moins souvent.",
+        cta: "Compléter mon activité",
+      },
+      share: {
+        title: "Partage ta page publique",
+        body: "Aucune réservation ces 30 derniers jours. Diffuse le lien de ta page sur Instagram, WhatsApp et en bio TikTok : c'est ton meilleur canal pour remplir ton agenda.",
+      },
+      instant: {
+        title: "Passe en réservation instantanée",
+        body: "Chaque validation manuelle fait perdre des clients pressés. En instantané, une séance se réserve en 30 secondes et ton agenda se remplit tout seul.",
+        cta: "Changer de mode",
+      },
+      pack: {
+        title: "Propose un pack de séances",
+        body: "Un pack de 5 ou 10 séances fidélise tes clients et sécurise ta trésorerie. Les crédits se décomptent automatiquement à chaque séance.",
+        cta: "Ajouter un pack",
+      },
+      reviews: {
+        title: "Vise le badge Super coach",
+        body: "À partir de 5 avis avec une moyenne de 4.8, tu décroches le badge Super coach, très visible dans la recherche. Demande un avis après chaque séance réussie.",
+      },
+      quality: {
+        title: "Soigne chaque séance",
+        body: "Ta moyenne est sous les 4.8, le seuil du badge Super coach. Ponctualité, suivi personnalisé et petit message après la séance font toute la différence.",
+      },
+      pro: {
+        title: "Passe en Pro, garde 100% de tes gains",
+        body: "Tu encaisses régulièrement : avec le plan Pro, la commission Madger passe de 5% à 0%. Il se rembourse souvent tout seul.",
+        cta: "Découvrir Pro",
+      },
+    },
+    daily: {
+      d1: "Réponds aux messages en moins d'une heure : la plupart des clients réservent chez le premier coach qui répond.",
+      d2: "Publie des photos avant/après de tes clients (avec leur accord) : rien ne convainc plus que des résultats réels.",
+      d3: "Relance les clients que tu n'as pas vus depuis 30 jours avec un message personnalisé. Un client fidèle vaut 10 prospects.",
+      d4: "Propose un bilan découverte de 15 minutes offert : c'est le meilleur moyen de transformer un curieux en client régulier.",
+      d5: "Ajoute le lien de ta page Madger dans ta bio Instagram et TikTok, et rappelle-le en story chaque semaine.",
+      d6: "Après chaque séance réussie, demande un avis à chaud : c'est le moment où tes clients sont les plus enthousiastes.",
+      d7: "Ouvre des créneaux tôt le matin ou entre midi et deux : beaucoup de clients cherchent avant ou pendant le travail.",
+      d8: "Envoie un message la veille de chaque séance pour confirmer : moins d'oublis, moins d'annulations.",
+      d9: "Fixe des objectifs mesurables avec chaque client dès la première séance, puis célèbre chaque progrès avec lui.",
+      d10: "Ton prochain avis 5 étoiles vaut de l'or : un profil bien noté ressort mieux et rassure les nouveaux clients.",
+    },
+  },
   reviews: {
     sectionTitle: "Avis clients",
     countLabel: "avis",
@@ -1496,6 +1571,81 @@ const en: Dictionary = {
     remainingMany: "left",
     usedOf: "used out of",
     empty: "Pack used up",
+  },
+  leia: {
+    title: "Leia's tips",
+    role: "Your Madger advisor",
+    allGood:
+      "Your profile is looking great! Keep it up, Leia is keeping an eye on your numbers and will come back with new tips.",
+    dailyTitle: "Tip of the day",
+    showAll: "See all tips",
+    showLess: "Show less",
+    tips: {
+      services: {
+        title: "Create your services",
+        body: "Without a service, nobody can book with you. Start simple: a discovery session and a classic session, refine later.",
+        cta: "Create a service",
+      },
+      availability: {
+        title: "Open your availability",
+        body: "Your calendar is empty, clients see no slots. Open your recurring hours, you can always adjust later.",
+        cta: "Open my slots",
+      },
+      photo: {
+        title: "Add a profile photo",
+        body: "Coaches with a real photo inspire trust and get far more requests. Natural light, a smile, done.",
+        cta: "Add my photo",
+      },
+      bio: {
+        title: "Beef up your presentation",
+        body: "Your bio is your storefront: share your background, your method and your clients' results. Aim for at least 3 or 4 sentences.",
+        cta: "Complete my bio",
+      },
+      activity: {
+        title: "Set your city and sport",
+        body: "Clients filter by city and sport in search. Without this info, your page shows up far less often.",
+        cta: "Complete my activity",
+      },
+      share: {
+        title: "Share your public page",
+        body: "No bookings in the last 30 days. Share your page link on Instagram, WhatsApp and your TikTok bio: it's your best channel to fill your calendar.",
+      },
+      instant: {
+        title: "Switch to instant booking",
+        body: "Every manual approval loses clients in a hurry. With instant booking, a session gets booked in 30 seconds and your calendar fills itself.",
+        cta: "Change mode",
+      },
+      pack: {
+        title: "Offer a session pack",
+        body: "A 5 or 10 session pack builds loyalty and secures your cash flow. Credits are deducted automatically at each session.",
+        cta: "Add a pack",
+      },
+      reviews: {
+        title: "Aim for the Super coach badge",
+        body: "From 5 reviews with a 4.8 average, you earn the Super coach badge, highly visible in search. Ask for a review after every great session.",
+      },
+      quality: {
+        title: "Nail every session",
+        body: "Your average is below 4.8, the Super coach badge threshold. Punctuality, personalized follow-up and a quick message after the session make all the difference.",
+      },
+      pro: {
+        title: "Go Pro, keep 100% of your earnings",
+        body: "You're earning regularly: with the Pro plan, the Madger commission drops from 5% to 0%. It often pays for itself.",
+        cta: "Discover Pro",
+      },
+    },
+    daily: {
+      d1: "Reply to messages within the hour: most clients book with the first coach who answers.",
+      d2: "Post before/after photos of your clients (with their consent): nothing convinces like real results.",
+      d3: "Reach out to clients you haven't seen in 30 days with a personal message. A loyal client is worth 10 prospects.",
+      d4: "Offer a free 15 minute discovery check-in: it's the best way to turn a curious visitor into a regular client.",
+      d5: "Add your Madger page link to your Instagram and TikTok bio, and remind people in a story every week.",
+      d6: "After every great session, ask for a review right away: that's when your clients are most enthusiastic.",
+      d7: "Open early morning or lunchtime slots: many clients look before or during work.",
+      d8: "Send a message the day before each session to confirm: fewer no-shows, fewer cancellations.",
+      d9: "Set measurable goals with every client from the first session, then celebrate each win with them.",
+      d10: "Your next 5 star review is gold: a well rated profile ranks better and reassures new clients.",
+    },
   },
   reviews: {
     sectionTitle: "Client reviews",

@@ -5,6 +5,8 @@ import AnimatedStat, {
   type StatTrend,
 } from "@/components/dashboard/AnimatedStat";
 import SetupChecklist from "@/components/dashboard/SetupChecklist";
+import LeiaTips from "@/components/dashboard/LeiaTips";
+import { computeLeiaTips, dailyTipIndex } from "@/lib/leia/tips";
 import ChartCard from "@/components/dashboard/charts/ChartCard";
 import MiniBars, { type BarDatum } from "@/components/dashboard/charts/MiniBars";
 import { invoiceNumber } from "@/lib/invoices/utils";
@@ -54,7 +56,7 @@ export default async function OverviewPage() {
       .order("starts_at", { ascending: true })
       .limit(5),
     supabase.from("availabilities").select("weekday, start_time, end_time"),
-    supabase.from("services").select("*", { count: "exact", head: true }),
+    supabase.from("services").select("type"),
     // Tout l'historique encaissé : le sélecteur de période des graphiques
     // choisit lui-même la plage affichée.
     supabase
@@ -103,7 +105,8 @@ export default async function OverviewPage() {
   const upcoming = (upcomingRes.data ?? []) as Booking[];
   const availRows = availRes.data ?? [];
   const availabilityDone = availRows.length > 0;
-  const servicesDone = (servicesRes.count ?? 0) > 0;
+  const serviceRows = servicesRes.data ?? [];
+  const servicesDone = serviceRows.length > 0;
   const showChecklist = !availabilityDone || !servicesDone;
   const pendingCount = pendingRes.count ?? 0;
 
@@ -287,6 +290,28 @@ export default async function OverviewPage() {
     availableMinutes > 0
       ? Math.min(100, Math.round((bookedMinutes / availableMinutes) * 100))
       : null;
+
+  // ── Conseils de Leia (personnalisés selon le profil et l'activité) ────────
+  const bookings30d = weekBookings.filter((b) => {
+    const t = new Date(b.starts_at as string).getTime();
+    return t >= now.getTime() - 30 * 86400000;
+  }).length;
+  const leiaTips = computeLeiaTips({
+    hasPhoto: Boolean(coach?.avatar_url),
+    bioLength: (coach?.bio ?? "").trim().length,
+    hasCity: Boolean(coach?.city),
+    hasSport: Boolean(coach?.sport),
+    servicesCount: serviceRows.length,
+    hasPack: serviceRows.some((s) => s.type === "pack"),
+    availabilityCount: availRows.length,
+    bookingMode: coach?.booking_mode ?? "instant",
+    reviewsCount: ratingCount,
+    ratingAvg,
+    bookings30d,
+    isPro: pro,
+    paidCount: payments.length,
+  });
+  const leiaDailyIndex = dailyTipIndex(now);
 
   // ── Tuiles KPI (compteurs animés) ─────────────────────────────────────────
   const stats: {
@@ -486,6 +511,8 @@ export default async function OverviewPage() {
           </div>
 
           <div className="flex flex-col gap-4 lg:col-span-1">
+            <LeiaTips tips={leiaTips} dailyIndex={leiaDailyIndex} />
+
             {showChecklist && (
               <SetupChecklist
                 availabilityDone={availabilityDone}
