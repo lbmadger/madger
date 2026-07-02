@@ -58,6 +58,10 @@ export default async function DashboardLayout({
           email: user.email ?? "",
           slug: coach?.slug ?? null,
           pro: isPro(coach?.pro_until),
+          name:
+            [coach?.first_name, coach?.last_name].filter(Boolean).join(" ") ||
+            null,
+          avatarUrl: coach?.avatar_url ?? null,
         }}
       >
         <div className="flex min-h-screen bg-bg text-text-base">

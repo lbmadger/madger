@@ -4,14 +4,17 @@ import { getServerDictionary } from "@/lib/i18n/server";
 import { getCoach } from "@/lib/coach/getCoach";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe/server";
+import { isPro } from "@/lib/subscription/plan";
 
 export const dynamic = "force-dynamic";
 
-// Page Paiements : connexion Stripe du coach (encaissement direct, 0% Madger).
+// Page Paiements : connexion Stripe du coach. La note de frais dépend du plan
+// réel : Pro = 0 % de commission Madger, Gratuit = 5 %.
 export default async function PaymentsPage() {
   const { dict } = getServerDictionary();
   const pay = dict.payments;
   const { coach } = await getCoach();
+  const feesNote = isPro(coach?.pro_until) ? pay.feesNotePro : pay.feesNoteFree;
 
   const stripe = getStripe();
 
@@ -60,7 +63,7 @@ export default async function PaymentsPage() {
               </h2>
             </div>
             <p className="text-sm text-text-muted">{pay.connectedDesc}</p>
-            <p className="mt-4 text-xs text-text-dim">{pay.feesNote}</p>
+            <p className="mt-4 text-xs text-text-dim">{feesNote}</p>
           </section>
         ) : state === "pending" ? (
           <section className="rounded-2xl border border-border bg-bg-card p-6">
@@ -81,7 +84,7 @@ export default async function PaymentsPage() {
             <div className="mt-5">
               <StripeConnectButton label={pay.connect} />
             </div>
-            <p className="mt-4 text-xs text-text-dim">{pay.feesNote}</p>
+            <p className="mt-4 text-xs text-text-dim">{feesNote}</p>
           </section>
         ) : (
           <section className="rounded-2xl border border-border bg-bg-card p-10 text-center">

@@ -57,6 +57,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   const [avatarUrl, setAvatarUrl] = useState(coach.avatar_url ?? "");
   const [uploading, setUploading] = useState(false);
   const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -143,25 +144,42 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Lien vers la page publique */}
+      {/* Lien public : ouvrir + copier en un clic */}
       {coach.slug && (
-        <Link
-          href={`/${coach.slug}`}
-          target="_blank"
-          className="flex items-center justify-between rounded-2xl border border-accent/20 bg-accent/[0.04] px-4 py-3 transition-colors hover:border-accent/40"
-        >
-          <span className="min-w-0">
-            <span className="block text-sm font-medium text-text-base">
-              {t("settings.viewPublic")}
+        <div className="flex items-center gap-2 rounded-2xl border border-accent/20 bg-accent/[0.04] px-4 py-3">
+          <Link
+            href={`/${coach.slug}`}
+            target="_blank"
+            className="flex min-w-0 flex-1 items-center justify-between gap-2 transition-opacity hover:opacity-80"
+          >
+            <span className="min-w-0">
+              <span className="block text-sm font-medium text-text-base">
+                {t("settings.viewPublic")}
+              </span>
+              <span className="block truncate text-xs font-semibold text-accent">
+                madger.app/{coach.slug}
+              </span>
             </span>
-            <span className="block truncate text-xs text-text-muted">
-              madger.app/{coach.slug}
-            </span>
-          </span>
-          <svg className="shrink-0 text-accent" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M7 17L17 7M17 7H8M17 7v9" />
-          </svg>
-        </Link>
+            <svg className="shrink-0 text-accent" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M7 17L17 7M17 7H8M17 7v9" />
+            </svg>
+          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              navigator.clipboard.writeText(`https://madger.app/${coach.slug}`);
+              setLinkCopied(true);
+              setTimeout(() => setLinkCopied(false), 1800);
+            }}
+            className="flex shrink-0 items-center gap-1.5 rounded-full bg-accent px-3.5 py-2 text-xs font-bold text-black transition-opacity hover:opacity-90"
+          >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" />
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+            {linkCopied ? t("topbar.copied") : t("topbar.copy")}
+          </button>
+        </div>
       )}
 
       <section className="rounded-2xl border border-border bg-bg-card p-5 sm:p-6">

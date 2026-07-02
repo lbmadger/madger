@@ -34,6 +34,12 @@ const fr = {
   topbar: {
     language: "Langue",
     account: "Mon compte",
+    copy: "Copier",
+    copied: "Copié ✅",
+    copyTitle: "Copier mon lien de réservation",
+    notifications: "Notifications",
+    notifEmpty: "Rien à valider 🎉",
+    toConfirm: "À confirmer",
   },
   auth: {
     emailLabel: "Adresse email",
@@ -266,7 +272,7 @@ const fr = {
     title: "Paiements",
     connectTitle: "Encaisse tes clients",
     connectDesc:
-      "Branche ton compte Stripe pour recevoir les paiements directement sur ton compte. 0 % de commission Madger.",
+      "Branche ton compte Stripe pour recevoir les paiements de tes clients directement sur ton compte.",
     connect: "Connecter Stripe",
     connecting: "Redirection…",
     connectedTitle: "Compte Stripe connecté",
@@ -276,8 +282,10 @@ const fr = {
     pendingDesc:
       "Ton compte Stripe existe mais la configuration n'est pas finie. Termine-la pour encaisser.",
     finishSetup: "Terminer la configuration",
-    feesNote:
-      "Madger ne prend aucune commission. Seuls les frais Stripe standards s'appliquent (à ta charge, déduits de chaque paiement).",
+    feesNotePro:
+      "Offre Pro : 0 % de commission Madger. Seuls les frais Stripe standards s'appliquent (à ta charge, déduits de chaque paiement).",
+    feesNoteFree:
+      "Offre Gratuit : 5 % de commission Madger par séance encaissée, plus les frais Stripe standards (à ta charge). Passe à Pro pour 0 % de commission.",
     notConfigured: "Paiements bientôt disponibles.",
   },
   stats: {
@@ -734,6 +742,12 @@ const en: Dictionary = {
   topbar: {
     language: "Language",
     account: "My account",
+    copy: "Copy",
+    copied: "Copied ✅",
+    copyTitle: "Copy my booking link",
+    notifications: "Notifications",
+    notifEmpty: "Nothing to approve 🎉",
+    toConfirm: "To confirm",
   },
   auth: {
     emailLabel: "Email address",
@@ -965,7 +979,7 @@ const en: Dictionary = {
     title: "Payments",
     connectTitle: "Get paid by your clients",
     connectDesc:
-      "Connect your Stripe account to receive payments directly. 0% Madger commission.",
+      "Connect your Stripe account to receive client payments directly.",
     connect: "Connect Stripe",
     connecting: "Redirecting…",
     connectedTitle: "Stripe account connected",
@@ -975,8 +989,10 @@ const en: Dictionary = {
     pendingDesc:
       "Your Stripe account exists but setup isn't complete. Finish it to get paid.",
     finishSetup: "Finish setup",
-    feesNote:
-      "Madger takes no commission. Only standard Stripe fees apply (on you, deducted from each payment).",
+    feesNotePro:
+      "Pro plan: 0% Madger commission. Only standard Stripe fees apply (on you, deducted from each payment).",
+    feesNoteFree:
+      "Free plan: 5% Madger commission per paid session, plus standard Stripe fees (on you). Upgrade to Pro for 0% commission.",
     notConfigured: "Payments coming soon.",
   },
   stats: {

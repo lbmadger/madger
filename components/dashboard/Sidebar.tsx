@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { useSession } from "@/lib/auth/SessionProvider";
 import MadgerLogo from "@/components/ui/MadgerLogo";
+import SidebarProfile from "@/components/dashboard/SidebarProfile";
 
 // Élément de navigation. `soon` grise l'entrée et la rend non cliquable tant
 // que le module n'existe pas (Phase 0 : seul "Vue d'ensemble" est actif).
@@ -62,76 +62,8 @@ const NAV: NavItem[] = [
 
 const SECONDARY: NavItem[] = [
   { href: "/dashboard/disponibilites", labelKey: "nav.availability", icon: I.availability },
-  { href: "/dashboard/reglages", labelKey: "nav.settings", icon: I.settings },
+
 ];
-
-// Lien Abonnement avec badge de l'offre actuelle (Free / Pro).
-function SubscriptionLink() {
-  const { t } = useI18n();
-  const { pro } = useSession();
-  const pathname = usePathname();
-  const active = pathname === "/dashboard/abonnement";
-  return (
-    <Link
-      href="/dashboard/abonnement"
-      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
-        active
-          ? "bg-accent/10 text-accent"
-          : "text-text-muted hover:bg-bg-elevated hover:text-text-base"
-      }`}
-    >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-        {I.subscription}
-      </svg>
-      <span className="truncate">{t("nav.subscription")}</span>
-      <span
-        className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-          pro ? "bg-accent text-black" : "border border-border-strong text-text-dim"
-        }`}
-      >
-        {pro ? t("plans.pro") : t("plans.free")}
-      </span>
-    </Link>
-  );
-}
-
-// Lien vers la page publique du coach (ouvre /<slug> dans un nouvel onglet).
-// Désactivé tant que le slug n'existe pas (profil pas encore configuré).
-function PublicPageLink() {
-  const { t } = useI18n();
-  const { slug } = useSession();
-
-  const base =
-    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors";
-  const content = (
-    <>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-        {I.publicPage}
-      </svg>
-      <span className="truncate">{t("nav.publicPage")}</span>
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="ml-auto shrink-0 opacity-60">
-        <path d="M7 17L17 7M17 7H8M17 7v9" />
-      </svg>
-    </>
-  );
-
-  if (!slug) {
-    return (
-      <div className={`${base} cursor-not-allowed text-text-dim`} aria-disabled="true">
-        {content}
-      </div>
-    );
-  }
-  return (
-    <Link
-      href={`/${slug}`}
-      target="_blank"
-      className={`${base} text-text-muted hover:bg-bg-elevated hover:text-text-base`}
-    >
-      {content}
-    </Link>
-  );
-}
 
 function NavLink({ item }: { item: NavItem }) {
   const pathname = usePathname();
@@ -207,12 +139,16 @@ export default function Sidebar() {
 
         <div className="my-4 h-px bg-border" />
 
-        <SubscriptionLink />
-        <PublicPageLink />
         {SECONDARY.map((item) => (
           <NavLink key={item.href} item={item} />
         ))}
       </nav>
+
+      {/* Profil coach (photo + nom) en bas — menu vers le haut : abonnement,
+          page publique, réglages, déconnexion. Comme le mockup de la landing. */}
+      <div className="mt-4 border-t border-border pt-3">
+        <SidebarProfile />
+      </div>
     </aside>
   );
 }

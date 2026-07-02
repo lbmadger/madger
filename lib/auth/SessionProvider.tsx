@@ -9,6 +9,9 @@ export type SessionUser = {
   email: string;
   slug: string | null;
   pro: boolean;
+  // Affichés dans le bloc profil de la sidebar (bas gauche).
+  name: string | null;
+  avatarUrl: string | null;
 };
 
 const SessionContext = createContext<SessionUser | null>(null);
