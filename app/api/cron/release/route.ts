@@ -29,18 +29,47 @@ export async function GET(req: NextRequest) {
   const { data: due } = await supabase
     .from("payments")
     .select(
-      "id, coach_id, booking_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents"
+      "id, coach_id, booking_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, bookings(status)"
     )
     .eq("escrow_status", "held")
     .lte("release_after", nowIso)
     .limit(100);
 
   let released = 0;
+  let refunded = 0;
   const errors: string[] = [];
 
   for (const p of due ?? []) {
     try {
       if (!p.stripe_charge_id) continue;
+
+      // Séance jamais confirmée par le coach (mode approbation) et déjà
+      // passée : on rembourse intégralement le client au lieu de verser.
+      const bookingRow = Array.isArray(p.bookings) ? p.bookings[0] : p.bookings;
+      if (bookingRow?.status === "pending") {
+        await stripe.refunds.create(
+          { charge: p.stripe_charge_id, amount: p.amount_cents },
+          { idempotencyKey: `release_refund_${p.id}` }
+        );
+        await supabase
+          .from("payments")
+          .update({
+            escrow_status: "refunded",
+            status: "refunded",
+            refunded_cents: p.amount_cents,
+            payout_cents: 0,
+            resolved_at: nowIso,
+          })
+          .eq("id", p.id);
+        if (p.booking_id) {
+          await supabase
+            .from("bookings")
+            .update({ status: "cancelled" })
+            .eq("id", p.booking_id);
+        }
+        refunded++;
+        continue;
+      }
 
       const { data: coach } = await supabase
         .from("coaches")
@@ -102,5 +131,5 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ released, errors });
+  return NextResponse.json({ released, refunded, errors });
 }

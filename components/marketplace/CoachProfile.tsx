@@ -27,6 +27,7 @@ export default function CoachProfile({
   const { t, locale } = useI18n();
   const router = useRouter();
   const [booking, setBooking] = useState(false);
+  const [bookingServiceId, setBookingServiceId] = useState<string | undefined>();
   const [contacting, setContacting] = useState(false);
   const [contactError, setContactError] = useState<string | null>(null);
 
@@ -163,19 +164,30 @@ export default function CoachProfile({
             </h2>
             <ul className="mt-3 flex flex-col gap-2">
               {services.map((s) => (
-                <li
-                  key={s.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-border bg-bg-elevated p-3"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-text-base">
-                      {s.name}
-                    </p>
-                    <p className="text-xs text-text-muted">{metaLine(s)}</p>
-                  </div>
-                  <span className="shrink-0 font-bold text-accent">
-                    {priceLine(s)}
-                  </span>
+                <li key={s.id}>
+                  {/* Cliquer une prestation ouvre la réservation avec le
+                      calendrier des créneaux, prestation présélectionnée. */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBookingServiceId(s.id);
+                      setBooking(true);
+                    }}
+                    className="flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-bg-elevated p-3 text-left transition-colors hover:border-accent/40"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-text-base">
+                        {s.name}
+                      </p>
+                      <p className="text-xs text-text-muted">{metaLine(s)}</p>
+                    </div>
+                    <span className="flex shrink-0 items-center gap-2 font-bold text-accent">
+                      {priceLine(s)}
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 18l6-6-6-6" />
+                      </svg>
+                    </span>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -203,7 +215,13 @@ export default function CoachProfile({
 
         {/* CTA */}
         <div className="mt-7 flex flex-col gap-2 sm:flex-row">
-          <Button className="flex-1" onClick={() => setBooking(true)}>
+          <Button
+            className="flex-1"
+            onClick={() => {
+              setBookingServiceId(undefined);
+              setBooking(true);
+            }}
+          >
             {t("coachProfile.book")}
           </Button>
           <Button
@@ -224,6 +242,7 @@ export default function CoachProfile({
         <BookingModal
           coach={coach}
           services={services}
+          initialServiceId={bookingServiceId}
           onClose={() => setBooking(false)}
         />
       )}

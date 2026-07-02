@@ -32,6 +32,8 @@ export type Coach = {
   subscription_plan: string | null;
   // Politique d'annulation (migration 0016) : flexible | moderate | strict
   cancellation_policy: "flexible" | "moderate" | "strict";
+  // Mode de réservation (migration 0018) : instant | approval
+  booking_mode: "instant" | "approval";
 };
 
 // Récupère le profil coach de l'utilisateur connecté. Renvoie:

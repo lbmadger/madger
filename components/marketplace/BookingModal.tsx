@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
@@ -11,16 +11,27 @@ import { type PublicService, formatPrice } from "@/lib/services/types";
 
 const DURATIONS = [30, 45, 60, 90];
 
+type Slot = { iso: string; label: string };
+type SlotDay = { date: string; slots: Slot[] };
+type SlotState =
+  | { mode: "loading" }
+  | { mode: "free" }
+  | { mode: "slots"; days: SlotDay[] };
+
 export default function BookingModal({
   coach,
   services = [],
+  initialServiceId,
   onClose,
 }: {
   coach: PublicCoach;
   services?: PublicService[];
+  initialServiceId?: string;
   onClose: () => void;
 }) {
   const { t, locale } = useI18n();
+  const loc = locale === "fr" ? "fr-FR" : "en-US";
+  const instant = coach.booking_mode === "instant";
 
   // Prestations payantes (paiement possible seulement si le coach encaisse).
   const paidServices = coach.stripe_charges_enabled
@@ -38,14 +49,52 @@ export default function BookingModal({
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
-  const [serviceId, setServiceId] = useState("");
+  const [serviceId, setServiceId] = useState(
+    initialServiceId && paidServices.some((s) => s.id === initialServiceId)
+      ? initialServiceId
+      : ""
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
+  // Créneaux réels (dispos du coach − séances déjà prises).
+  const [slotState, setSlotState] = useState<SlotState>({ mode: "loading" });
+  const [dayIdx, setDayIdx] = useState(0);
+  const [selectedIso, setSelectedIso] = useState<string | null>(null);
+
   const selectedService = paidServices.find((s) => s.id === serviceId) ?? null;
   const payMode = !!selectedService;
   const effectiveDuration = selectedService?.duration_min ?? duration;
+
+  // Charge les créneaux ; re-calcule si la durée change (prestation choisie).
+  useEffect(() => {
+    let alive = true;
+    setSlotState({ mode: "loading" });
+    setSelectedIso(null);
+    fetch(`/api/slots?coach=${coach.slug}&duration=${effectiveDuration}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (!alive) return;
+        if (data.mode === "slots") {
+          const days = data.days as SlotDay[];
+          setSlotState({ mode: "slots", days });
+          const first = days.findIndex((d) => d.slots.length > 0);
+          setDayIdx(first === -1 ? 0 : first);
+        } else {
+          setSlotState({ mode: "free" });
+        }
+      })
+      .catch(() => alive && setSlotState({ mode: "free" }));
+    return () => {
+      alive = false;
+    };
+  }, [coach.slug, effectiveDuration]);
+
+  function dayChipLabel(dateISO: string): string {
+    const d = new Date(dateISO + "T12:00:00");
+    return d.toLocaleDateString(loc, { weekday: "short", day: "2-digit", month: "2-digit" });
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -53,11 +102,18 @@ export default function BookingModal({
 
     if (!firstName.trim()) return setError(t("booking.errors.nameRequired"));
     if (!email.trim()) return setError(t("booking.errors.emailRequired"));
-    if (!date || !time) return setError(t("booking.errors.dateRequired"));
 
-    const starts = new Date(`${date}T${time}`);
-    if (starts.getTime() < Date.now())
-      return setError(t("booking.errors.datePast"));
+    // Départ de séance : créneau choisi (mode slots) ou saisie libre.
+    let starts: Date;
+    if (slotState.mode === "slots") {
+      if (!selectedIso) return setError(t("booking.errors.slotRequired"));
+      starts = new Date(selectedIso);
+    } else {
+      if (!date || !time) return setError(t("booking.errors.dateRequired"));
+      starts = new Date(`${date}T${time}`);
+      if (starts.getTime() < Date.now())
+        return setError(t("booking.errors.datePast"));
+    }
 
     setLoading(true);
     try {
@@ -88,7 +144,7 @@ export default function BookingModal({
         return;
       }
 
-      // ── Demande simple gratuite (à confirmer par le coach) ───────────────
+      // ── Demande simple gratuite ───────────────────────────────────────────
       const res = await fetch("/api/booking-request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -99,7 +155,7 @@ export default function BookingModal({
           email: email.trim(),
           phone: phone.trim() || null,
           starts_at: starts.toISOString(),
-          duration_min: duration,
+          duration_min: effectiveDuration,
           message: message.trim() || null,
           online,
           website, // honeypot
@@ -122,6 +178,12 @@ export default function BookingModal({
     }
   }
 
+  const currentDay =
+    slotState.mode === "slots" ? slotState.days[dayIdx] : undefined;
+  const anySlots =
+    slotState.mode === "slots" &&
+    slotState.days.some((d) => d.slots.length > 0);
+
   return (
     <div
       className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center sm:p-4"
@@ -139,10 +201,10 @@ export default function BookingModal({
               </svg>
             </div>
             <h2 className="text-lg font-extrabold tracking-tight text-text-base">
-              {t("booking.successTitle")}
+              {instant ? t("booking.confirmedTitle") : t("booking.successTitle")}
             </h2>
             <p className="mx-auto mt-1 max-w-xs text-sm text-text-muted">
-              {t("booking.successDesc")}
+              {instant ? t("booking.confirmedDesc") : t("booking.successDesc")}
             </p>
             <div className="mt-6 flex flex-col gap-2">
               <Link href="/signup?role=client" className="w-full">
@@ -158,7 +220,9 @@ export default function BookingModal({
             <h2 className="text-lg font-extrabold tracking-tight text-text-base">
               {t("booking.title")}
             </h2>
-            <p className="mt-1 text-sm text-text-muted">{t("booking.desc")}</p>
+            <p className="mt-1 text-sm text-text-muted">
+              {instant ? t("booking.descInstant") : t("booking.desc")}
+            </p>
 
             <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-3">
               {/* Honeypot : invisible pour les humains, piège à bots. */}
@@ -192,26 +256,6 @@ export default function BookingModal({
                 </label>
               )}
 
-              {/* Séquestre : rassure le client au moment de payer */}
-              {payMode && (
-                <div className="rounded-xl border border-border bg-bg-elevated p-3">
-                  <p className="flex items-center gap-1.5 text-xs font-medium text-text-base">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
-                      <rect x="3" y="11" width="18" height="11" rx="2" />
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                    </svg>
-                    {t("booking.escrowTitle")}
-                  </p>
-                  <p className="mt-1 text-xs text-text-muted">
-                    {t("booking.escrowDesc")}
-                  </p>
-                  <p className="mt-2 text-[11px] font-medium uppercase tracking-wide text-text-dim">
-                    {t("cancellation.publicLabel")}
-                  </p>
-                  <PolicyTiers policy={coach.cancellation_policy} className="mt-1" />
-                </div>
-              )}
-
               {/* Présentiel / visio si le coach propose les deux */}
               {coach.accepts_online && coach.city && (
                 <div className="flex gap-2">
@@ -232,16 +276,92 @@ export default function BookingModal({
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3">
-                <label className="flex flex-col gap-1.5">
-                  <span className={labelClass}>{t("booking.date")}</span>
-                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputClass} />
-                </label>
-                <label className="flex flex-col gap-1.5">
-                  <span className={labelClass}>{t("booking.time")}</span>
-                  <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className={inputClass} />
-                </label>
-              </div>
+              {/* ── Créneaux réels ──────────────────────────────────────── */}
+              {slotState.mode === "loading" && (
+                <div className="rounded-xl border border-border bg-bg-elevated p-4 text-center text-sm text-text-dim">
+                  {t("booking.slotsLoading")}
+                </div>
+              )}
+
+              {slotState.mode === "slots" && (
+                <div className="flex flex-col gap-2">
+                  <span className={labelClass}>{t("booking.chooseSlot")}</span>
+                  {!anySlots ? (
+                    <p className="rounded-xl border border-border bg-bg-elevated p-4 text-center text-sm text-text-muted">
+                      {t("booking.noSlotsRange")}
+                    </p>
+                  ) : (
+                    <>
+                      {/* Jours (14 prochains) */}
+                      <div className="flex gap-1.5 overflow-x-auto pb-1">
+                        {slotState.days.map((d, i) => {
+                          const empty = d.slots.length === 0;
+                          const active = i === dayIdx;
+                          return (
+                            <button
+                              key={d.date}
+                              type="button"
+                              disabled={empty}
+                              onClick={() => {
+                                setDayIdx(i);
+                                setSelectedIso(null);
+                              }}
+                              className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
+                                active
+                                  ? "border-accent bg-accent/10 text-accent"
+                                  : empty
+                                  ? "border-border text-text-dim opacity-40"
+                                  : "border-border-strong text-text-muted hover:text-text-base"
+                              }`}
+                            >
+                              {dayChipLabel(d.date)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      {/* Heures du jour sélectionné */}
+                      {currentDay && currentDay.slots.length > 0 ? (
+                        <div className="grid grid-cols-4 gap-1.5">
+                          {currentDay.slots.map((s) => (
+                            <button
+                              key={s.iso}
+                              type="button"
+                              onClick={() => setSelectedIso(s.iso)}
+                              className={`rounded-lg border py-2 text-sm font-medium transition-colors ${
+                                selectedIso === s.iso
+                                  ? "border-accent bg-accent text-black"
+                                  : "border-border-strong text-text-base hover:border-accent/50"
+                              }`}
+                            >
+                              {s.label}
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="rounded-xl border border-border bg-bg-elevated p-3 text-center text-xs text-text-dim">
+                          {t("booking.noSlotsDay")}
+                        </p>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* ── Saisie libre (coach sans disponibilités définies) ───── */}
+              {slotState.mode === "free" && (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    <label className="flex flex-col gap-1.5">
+                      <span className={labelClass}>{t("booking.date")}</span>
+                      <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputClass} />
+                    </label>
+                    <label className="flex flex-col gap-1.5">
+                      <span className={labelClass}>{t("booking.time")}</span>
+                      <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className={inputClass} />
+                    </label>
+                  </div>
+                </>
+              )}
 
               {/* Durée : masquée si la prestation payante impose sa durée */}
               {!selectedService?.duration_min && (
@@ -253,6 +373,26 @@ export default function BookingModal({
                     ))}
                   </select>
                 </label>
+              )}
+
+              {/* Séquestre : rassure le client au moment de payer */}
+              {payMode && (
+                <div className="rounded-xl border border-border bg-bg-elevated p-3">
+                  <p className="flex items-center gap-1.5 text-xs font-medium text-text-base">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
+                      <rect x="3" y="11" width="18" height="11" rx="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    {t("booking.escrowTitle")}
+                  </p>
+                  <p className="mt-1 text-xs text-text-muted">
+                    {t("booking.escrowDesc")}
+                  </p>
+                  <p className="mt-2 text-[11px] font-medium uppercase tracking-wide text-text-dim">
+                    {t("cancellation.publicLabel")}
+                  </p>
+                  <PolicyTiers policy={coach.cancellation_policy} className="mt-1" />
+                </div>
               )}
 
               <div className="grid grid-cols-2 gap-3">

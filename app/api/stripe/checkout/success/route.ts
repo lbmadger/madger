@@ -103,6 +103,16 @@ export async function GET(req: NextRequest) {
         const ends = new Date(starts.getTime() + durationMin * 60 * 1000);
         const releaseAfter = new Date(ends.getTime() + RELEASE_DELAY_MS);
 
+        // Mode de réservation du coach : instant → confirmée d'office,
+        // approbation → à valider (refus = remboursement intégral).
+        const { data: coachMode } = await supabase
+          .from("coaches")
+          .select("booking_mode")
+          .eq("id", m.coach_id)
+          .maybeSingle();
+        const bookingStatus =
+          coachMode?.booking_mode === "approval" ? "pending" : "confirmed";
+
         const { data: booking } = await supabase
           .from("bookings")
           .insert({
@@ -111,7 +121,7 @@ export async function GET(req: NextRequest) {
             service_id: m.service_id || null,
             starts_at: starts.toISOString(),
             ends_at: ends.toISOString(),
-            status: "confirmed",
+            status: bookingStatus,
             location: m.online === "1" ? "online" : "in_person",
             notes: m.message || null,
           })

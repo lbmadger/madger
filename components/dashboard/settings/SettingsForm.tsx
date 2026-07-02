@@ -39,6 +39,9 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   const [policy, setPolicy] = useState<CancellationPolicy>(
     normalizePolicy(coach.cancellation_policy)
   );
+  const [bookingMode, setBookingMode] = useState<"instant" | "approval">(
+    coach.booking_mode === "instant" ? "instant" : "approval"
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -66,6 +69,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           slug,
           listed,
           cancellation_policy: policy,
+          booking_mode: bookingMode,
         })
         .eq("id", coach.id);
 
@@ -177,6 +181,51 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             {loading ? t("settings.saving") : t("settings.save")}
           </Button>
         </div>
+      </section>
+
+      {/* Mode de réservation */}
+      <section className="rounded-2xl border border-border bg-bg-card p-5 sm:p-6">
+        <h2 className="text-base font-semibold text-text-base">
+          {t("settings.bookingSection")}
+        </h2>
+        <p className="mt-1 text-sm text-text-muted">
+          {t("settings.bookingSectionDesc")}
+        </p>
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {(["instant", "approval"] as const).map((mode) => {
+            const active = bookingMode === mode;
+            return (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setBookingMode(mode)}
+                className={`flex flex-col rounded-xl border p-4 text-left transition-colors ${
+                  active
+                    ? "border-accent bg-accent/[0.06]"
+                    : "border-border-strong hover:border-accent/40"
+                }`}
+              >
+                <span className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-text-base">
+                    {mode === "instant" ? "⚡ " : "✋ "}
+                    {t(`settings.bookingMode.${mode}`)}
+                  </span>
+                  <span
+                    className={`h-4 w-4 rounded-full border ${
+                      active ? "border-accent bg-accent" : "border-border-strong"
+                    }`}
+                  />
+                </span>
+                <span className="mt-1 text-xs text-text-dim">
+                  {t(`settings.bookingMode.${mode}Desc`)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <Button onClick={handleSave} disabled={loading} className="mt-4 self-start">
+          {loading ? t("settings.saving") : t("settings.save")}
+        </Button>
       </section>
 
       {/* Politique d'annulation */}

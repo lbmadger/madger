@@ -234,13 +234,16 @@ export default function AgendaView({
                     </div>
                    </div>
 
-                   {/* Actions sur une demande en attente */}
+                   {/* Actions sur une demande en attente. Le refus passe par
+                       l'API d'annulation : si la demande était payée (séquestre),
+                       le client est remboursé à 100 %. */}
                    {b.status === "pending" && (
                      <div className="mt-2 flex gap-2 border-t border-border pt-2">
                        <button
                          type="button"
-                         onClick={() => setStatus(b.id, "cancelled")}
-                         className="flex-1 rounded-full border border-border-strong py-1.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base"
+                         disabled={cancelling}
+                         onClick={() => cancelBooking(b.id, "coach")}
+                         className="flex-1 rounded-full border border-border-strong py-1.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
                        >
                          {t("agenda.decline")}
                        </button>

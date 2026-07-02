@@ -14,6 +14,7 @@ export type PublicCoach = {
   lng: number | null;
   stripe_charges_enabled: boolean;
   cancellation_policy: "flexible" | "moderate" | "strict";
+  booking_mode: "instant" | "approval";
   created_at: string;
 };
 
