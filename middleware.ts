@@ -30,6 +30,7 @@ const AUTH_PREFIXES = [
   "/onboarding",
   "/onboarding-client",
   "/messages",
+  "/espace",
   "/reset-password", // session posée par le lien email (recovery)
 ];
 

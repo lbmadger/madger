@@ -43,6 +43,15 @@ export function coachFullName(c: {
   return [c.first_name, c.last_name].filter(Boolean).join(" ");
 }
 
+// Badge « Super coach » : gagné par les avis, pas acheté. Seuil volontairement
+// exigeant : au moins 5 avis ET une moyenne ≥ 4,8/5.
+export function isSuperCoach(c: {
+  rating_avg: number | null;
+  rating_count: number;
+}): boolean {
+  return c.rating_count >= 5 && Number(c.rating_avg ?? 0) >= 4.8;
+}
+
 export function coachInitials(c: {
   first_name: string;
   last_name: string | null;

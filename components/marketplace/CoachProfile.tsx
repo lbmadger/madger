@@ -15,6 +15,7 @@ import {
   type PublicReview,
   coachFullName,
   coachInitials,
+  isSuperCoach,
 } from "@/lib/coaches/public-types";
 import { type PublicService, formatPrice } from "@/lib/services/types";
 
@@ -138,8 +139,13 @@ export default function CoachProfile({
             </span>
           )}
           <div className="mt-4 sm:ml-5 sm:mt-1">
-            <h1 className="text-2xl font-extrabold tracking-tight text-text-base">
+            <h1 className="flex flex-wrap items-center justify-center gap-2 text-2xl font-extrabold tracking-tight text-text-base sm:justify-start">
               {coachFullName(coach)}
+              {isSuperCoach(coach) && (
+                <span className="rounded-full bg-accent px-2.5 py-1 text-[11px] font-bold text-black">
+                  🏆 {t("marketplace.superCoach")}
+                </span>
+              )}
             </h1>
             {coach.specialty && (
               <p className="mt-1 text-sm text-text-muted">{coach.specialty}</p>

@@ -35,11 +35,23 @@ export async function generateMetadata({
   const coach = await getCoachBySlug(params.slug);
   if (!coach) return { title: "Madger" };
   const name = coachFullName(coach);
+  const title = `${name} — Coach sportif${coach.city ? ` à ${coach.city}` : ""} · Madger`;
+  const description = coach.specialty
+    ? `${name}, ${coach.specialty}${coach.city ? ` à ${coach.city}` : ""}. Réserve ta séance en ligne, paiement sécurisé, annulation flexible.`
+    : `Réserve une séance avec ${name} sur Madger. Paiement sécurisé, annulation flexible.`;
   return {
-    title: `${name} · Madger`,
-    description: coach.specialty
-      ? `${name} — ${coach.specialty}${coach.city ? ` à ${coach.city}` : ""}. Réserve ta séance sur Madger.`
-      : `Réserve une séance avec ${name} sur Madger.`,
+    title,
+    description,
+    alternates: { canonical: `https://madger.app/${coach.slug}` },
+    openGraph: {
+      title,
+      description,
+      url: `https://madger.app/${coach.slug}`,
+      type: "profile",
+      siteName: "Madger",
+      ...(coach.avatar_url ? { images: [{ url: coach.avatar_url }] } : {}),
+    },
+    twitter: { card: "summary", title, description },
   };
 }
 
@@ -67,9 +79,36 @@ export default async function CoachPublicPage({
       .limit(10),
   ]);
 
+  // Données structurées (Google) : personne + note agrégée si avis.
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: coachFullName(coach),
+    jobTitle: coach.specialty || "Coach sportif",
+    url: `https://madger.app/${coach.slug}`,
+    ...(coach.avatar_url ? { image: coach.avatar_url } : {}),
+    ...(coach.city
+      ? { address: { "@type": "PostalAddress", addressLocality: coach.city } }
+      : {}),
+    ...(coach.rating_avg != null && coach.rating_count > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: Number(coach.rating_avg),
+            reviewCount: coach.rating_count,
+            bestRating: 5,
+          },
+        }
+      : {}),
+  };
+
   return (
     <I18nProvider locale={locale} dict={dict}>
       <div className="min-h-screen bg-bg">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <PublicHeader />
         <CoachProfile
           coach={coach}

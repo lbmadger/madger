@@ -15,6 +15,7 @@ import {
   type PublicCoach,
   coachFullName,
   coachInitials,
+  isSuperCoach,
 } from "@/lib/coaches/public-types";
 
 type Filter = "all" | "online";
@@ -274,6 +275,11 @@ export default function MarketplaceView({
                       </div>
                     </div>
                     <div className="mt-auto flex flex-wrap items-center gap-1.5">
+                      {isSuperCoach(c) && (
+                        <span className="rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-black">
+                          🏆 {t("marketplace.superCoach")}
+                        </span>
+                      )}
                       {c.city && (
                         <span className="rounded-full border border-border-strong px-2 py-0.5 text-[11px] text-text-muted">
                           {c.city}

@@ -150,8 +150,8 @@ export default function ClientOnboarding() {
           <Button className="w-full" onClick={() => router.push(redirect)}>
             {t("clientOnboarding.findCoach")}
           </Button>
-          <Button variant="ghost" onClick={() => router.push("/messages")}>
-            {t("clientOnboarding.goMessages")}
+          <Button variant="ghost" onClick={() => router.push("/espace")}>
+            {t("clientSpace.title")}
           </Button>
         </div>
       </div>
