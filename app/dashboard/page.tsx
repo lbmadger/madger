@@ -3,7 +3,8 @@ import Topbar from "@/components/dashboard/Topbar";
 import StatCard, { type Trend } from "@/components/dashboard/StatCard";
 import SetupChecklist from "@/components/dashboard/SetupChecklist";
 import ChartCard from "@/components/dashboard/charts/ChartCard";
-import { type BarDatum } from "@/components/dashboard/charts/MiniBars";
+import MiniBars, { type BarDatum } from "@/components/dashboard/charts/MiniBars";
+import { invoiceNumber } from "@/lib/invoices/utils";
 import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getCoach } from "@/lib/coach/getCoach";
@@ -67,6 +68,14 @@ export default async function OverviewPage() {
       .select("starts_at, status")
       .lt("starts_at", weekEnd.toISOString()),
   ]);
+
+  // Dernières factures (une par paiement encaissé).
+  const { data: latestInvoices } = await supabase
+    .from("payments")
+    .select("id, amount_cents, currency, paid_at, clients(first_name, last_name)")
+    .not("paid_at", "is", null)
+    .order("paid_at", { ascending: false })
+    .limit(3);
 
   const clientsCount = clientsRes.count ?? 0;
   const weekCount = weekRes.count ?? 0;
@@ -160,6 +169,39 @@ export default async function OverviewPage() {
     };
   });
 
+  // ── Cette semaine, jour par jour (lundi → dimanche) ───────────────────────
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(weekStart);
+    d.setDate(weekStart.getDate() + i);
+    return d;
+  });
+  const dayLabel = (d: Date) =>
+    d.toLocaleDateString(loc, { weekday: "short" }).replace(".", "");
+  const sessionsByDay: BarDatum[] = weekDays.map((d) => {
+    const end = new Date(d);
+    end.setDate(d.getDate() + 1);
+    return {
+      label: dayLabel(d),
+      value: weekBookings.filter((b) => {
+        const t = new Date(b.starts_at as string).getTime();
+        return t >= d.getTime() && t < end.getTime();
+      }).length,
+    };
+  });
+  const revenueByDay: BarDatum[] = weekDays.map((d) => {
+    const end = new Date(d);
+    end.setDate(d.getDate() + 1);
+    return {
+      label: dayLabel(d),
+      value: payments
+        .filter((p) => {
+          const t = p.paid_at ? new Date(p.paid_at as string).getTime() : 0;
+          return t >= d.getTime() && t < end.getTime();
+        })
+        .reduce((s, p) => s + ((p.amount_cents as number) || 0), 0),
+    };
+  });
+
   const stats: { label: string; value: string; trend?: Trend }[] = [
     { label: o.revenueMonth, value: euros(monthRevenue), trend: revenueTrend },
     { label: o.sessionsWeek, value: String(weekCount) },
@@ -230,8 +272,24 @@ export default async function OverviewPage() {
           />
         </div>
 
+        {/* Cette semaine, jour par jour */}
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+          <section className="rounded-2xl border border-border bg-bg-card p-4 sm:p-5">
+            <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-text-dim">
+              {o.chartWeekSessions}
+            </h3>
+            <MiniBars data={sessionsByDay} locale={loc} />
+          </section>
+          <section className="rounded-2xl border border-border bg-bg-card p-4 sm:p-5">
+            <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-text-dim">
+              {o.chartWeekRevenue}
+            </h3>
+            <MiniBars data={revenueByDay} unit="currency" locale={loc} />
+          </section>
+        </div>
+
         <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
-          <div className={showChecklist ? "lg:col-span-2" : "lg:col-span-3"}>
+          <div className="lg:col-span-2">
             <section className="rounded-2xl border border-border bg-bg-card p-5">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold text-text-base">
@@ -293,14 +351,71 @@ export default async function OverviewPage() {
             </section>
           </div>
 
-          {showChecklist && (
-            <div className="lg:col-span-1">
+          <div className="flex flex-col gap-4 lg:col-span-1">
+            {showChecklist && (
               <SetupChecklist
                 availabilityDone={availabilityDone}
                 servicesDone={servicesDone}
               />
-            </div>
-          )}
+            )}
+
+            {/* Dernières factures + téléchargement */}
+            <section className="rounded-2xl border border-border bg-bg-card p-5">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-semibold text-text-base">
+                  {o.latestInvoices}
+                </h3>
+                <Link
+                  href="/dashboard/factures"
+                  className="text-xs font-medium text-accent hover:underline"
+                >
+                  {o.allInvoices}
+                </Link>
+              </div>
+              {(latestInvoices ?? []).length === 0 ? (
+                <p className="mt-4 text-center text-sm text-text-dim">
+                  {o.noInvoices}
+                </p>
+              ) : (
+                <ul className="mt-3 flex flex-col gap-2">
+                  {(latestInvoices ?? []).map((p) => {
+                    const cl = Array.isArray(p.clients)
+                      ? p.clients[0]
+                      : p.clients;
+                    return (
+                      <li
+                        key={p.id as string}
+                        className="flex items-center gap-2.5 rounded-lg border border-border bg-bg-elevated p-2.5"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-xs font-semibold text-text-base">
+                            {invoiceNumber(p.id as string, p.paid_at as string)}
+                          </p>
+                          <p className="truncate text-[11px] text-text-dim">
+                            {[cl?.first_name, cl?.last_name]
+                              .filter(Boolean)
+                              .join(" ") || "—"}
+                          </p>
+                        </div>
+                        <span className="shrink-0 text-xs font-bold text-text-base">
+                          {euros((p.amount_cents as number) || 0)}
+                        </span>
+                        <Link
+                          href={`/dashboard/factures/${p.id}`}
+                          aria-label={dict.invoices.download}
+                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border-strong text-text-muted transition-colors hover:border-accent hover:text-accent"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                          </svg>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </section>
+          </div>
         </div>
       </main>
     </>

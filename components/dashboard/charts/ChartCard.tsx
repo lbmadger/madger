@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import MiniBars, { type BarDatum } from "./MiniBars";
 
 // Carte graphique avec sélecteur de période (en haut à droite). La plage par
@@ -49,6 +49,33 @@ export default function ChartCard({
   }, [presets, usefulLen]);
 
   const [sel, setSel] = useState(defaultIdx);
+
+  // Mémorise le dernier réglage choisi (par type de graphique) : on le
+  // retrouve en revenant sur la page. Hydraté après montage pour ne pas
+  // désynchroniser le rendu serveur.
+  const storageKey = `madger_chart_range_${mode}_${title}`;
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved !== null) {
+        const i = Number(saved);
+        if (Number.isInteger(i) && i >= 0 && i <= presets.length) setSel(i);
+      }
+    } catch {
+      /* stockage indisponible : on garde le défaut */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function select(i: number) {
+    setSel(i);
+    try {
+      localStorage.setItem(storageKey, String(i));
+    } catch {
+      /* ignore */
+    }
+  }
+
   const isMax = sel >= presets.length;
   const count = isMax ? data.length : presets[sel].count;
   const shown = data.slice(-Math.min(Math.max(count, 2), data.length));
@@ -67,7 +94,7 @@ export default function ChartCard({
             <button
               key={p.label}
               type="button"
-              onClick={() => setSel(i)}
+              onClick={() => select(i)}
               className={`rounded-full px-2 py-0.5 text-[10px] font-semibold transition-colors ${
                 sel === i
                   ? "bg-accent text-black"
@@ -80,7 +107,7 @@ export default function ChartCard({
           {showMax && (
             <button
               type="button"
-              onClick={() => setSel(presets.length)}
+              onClick={() => select(presets.length)}
               className={`rounded-full px-2 py-0.5 text-[10px] font-semibold transition-colors ${
                 isMax
                   ? "bg-accent text-black"

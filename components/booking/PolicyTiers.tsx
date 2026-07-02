@@ -29,13 +29,18 @@ export default function PolicyTiers({
               ? `${t("cancellation.moreThan")} ${tier.minHoursBefore} h`
               : `${t("cancellation.lessThan")} ${tiers[i - 1].minHoursBefore} h`;
           return (
-            <li key={i} className="flex items-baseline justify-between gap-3 text-sm">
+            // flex-wrap : sur carte étroite, la valeur passe à la ligne au
+            // lieu de déborder sur la carte voisine.
+            <li
+              key={i}
+              className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 text-sm"
+            >
               <span className="text-text-muted">
                 {t("cancellation.cancelWord")} {cond}{" "}
                 {t("cancellation.beforeSession")}
               </span>
               <span
-                className={`shrink-0 font-semibold ${
+                className={`text-right font-semibold ${
                   pct > 0 ? "text-accent" : "text-text-dim"
                 }`}
               >

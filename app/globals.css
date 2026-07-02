@@ -10,6 +10,15 @@
 
 html {
   scroll-behavior: smooth;
+  /* Les contrôles natifs (liste des <select>, date pickers…) se rendent en
+     sombre : sans ça, certaines options s'affichaient blanc sur blanc. */
+  color-scheme: dark;
+}
+
+/* Liste déroulante des <select> : fond sombre + texte lisible partout. */
+select option {
+  background-color: #141414;
+  color: #f2f2f2;
 }
 
 body {
@@ -172,6 +181,32 @@ input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
   outline: none;
+}
+
+/* ── Impression : seule la facture s'imprime, en noir sur blanc ── */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .invoice-print,
+  .invoice-print * {
+    visibility: visible;
+  }
+  .invoice-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: #fff !important;
+  }
+  .invoice-print * {
+    color: #000 !important;
+    border-color: #ddd !important;
+    background: transparent !important;
+  }
+  .no-print {
+    display: none !important;
+  }
 }
 
 /* ── Reduced motion ─────────────────────────────────────── */
