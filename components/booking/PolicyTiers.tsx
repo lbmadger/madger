@@ -22,10 +22,12 @@ export default function PolicyTiers({
       <ul className="flex flex-col gap-1">
         {tiers.map((tier, i) => {
           const pct = Math.round(tier.refund * 100);
+          // Deux paliers, séparés par la frontière des 24 h : "plus de 24 h
+          // avant" puis "moins de 24 h avant".
           const cond =
             i === 0
-              ? `≥ ${tier.minHoursBefore} h`
-              : `< ${tiers[i - 1].minHoursBefore} h`;
+              ? `${t("cancellation.moreThan")} ${tier.minHoursBefore} h`
+              : `${t("cancellation.lessThan")} ${tiers[i - 1].minHoursBefore} h`;
           return (
             <li key={i} className="flex items-baseline justify-between gap-3 text-sm">
               <span className="text-text-muted">

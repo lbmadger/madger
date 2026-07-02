@@ -517,6 +517,8 @@ const fr = {
     beforeSession: "avant la séance",
     refunded: "remboursé au client",
     cancelWord: "Annulation",
+    moreThan: "plus de",
+    lessThan: "moins de",
     direction:
       "Plus l'annulation est tardive, moins le client est remboursé (donc plus il paie).",
     noShow: "Absence (no-show) : 0 % remboursé",
@@ -1052,6 +1054,8 @@ const en: Dictionary = {
     beforeSession: "before the session",
     refunded: "refunded to client",
     cancelWord: "Cancellation",
+    moreThan: "more than",
+    lessThan: "less than",
     direction:
       "The later the cancellation, the smaller the refund (so the more the client pays).",
     noShow: "No-show: 0% refunded",

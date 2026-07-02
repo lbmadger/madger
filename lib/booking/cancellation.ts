@@ -18,29 +18,31 @@ type PolicyDef = {
 };
 
 // ⚠️ Les pourcentages ici font foi. Modifier = changer les droits des clients.
+// Toutes les formules partagent la MÊME frontière : plus de 24 h avant la
+// séance / moins de 24 h avant. Seuls les pourcentages changent.
 const POLICIES: Record<CancellationPolicy, PolicyDef> = {
-  // Souple : le client peut annuler librement jusqu'à 24 h avant.
+  // Souple : annulation gratuite jusqu'à 24 h avant.
   flexible: {
     id: "flexible",
     tiers: [
-      { minHoursBefore: 24, refund: 1 }, // +24 h : 100 % remboursé
-      { minHoursBefore: 0, refund: 0.5 }, // -24 h : 50 % remboursé
+      { minHoursBefore: 24, refund: 1 }, // plus de 24 h avant : 100 % remboursé
+      { minHoursBefore: 0, refund: 0.5 }, // moins de 24 h avant : 50 %
     ],
   },
-  // Modérée (par défaut) : coach garde 25 % si annulation +24 h, 100 % si -24 h.
+  // Modérée (par défaut) : le coach garde 25 % même en annulation anticipée.
   moderate: {
     id: "moderate",
     tiers: [
-      { minHoursBefore: 24, refund: 0.75 }, // +24 h : 75 % remboursé
-      { minHoursBefore: 0, refund: 0 }, //  -24 h : 0 %
+      { minHoursBefore: 24, refund: 0.75 }, // plus de 24 h avant : 75 % remboursé
+      { minHoursBefore: 0, refund: 0 }, // moins de 24 h avant : 0 %
     ],
   },
-  // Stricte : 50 % remboursé si +48 h, rien en dessous.
+  // Stricte : moitié remboursée même en anticipé, rien à moins de 24 h.
   strict: {
     id: "strict",
     tiers: [
-      { minHoursBefore: 48, refund: 0.5 }, // +48 h : 50 % remboursé
-      { minHoursBefore: 0, refund: 0 }, //  -48 h : 0 %
+      { minHoursBefore: 24, refund: 0.5 }, // plus de 24 h avant : 50 % remboursé
+      { minHoursBefore: 0, refund: 0 }, // moins de 24 h avant : 0 %
     ],
   },
 };

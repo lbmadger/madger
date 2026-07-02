@@ -60,7 +60,11 @@ export default function ChartePaiement() {
             </h2>
             <p>
               Chaque coach choisit une formule, affichée sur sa page publique et
-              au moment de la réservation. Le pourcentage indiqué est{" "}
+              au moment de la réservation. Toutes les formules distinguent{" "}
+              <strong className="text-white">deux cas</strong> : annulation{" "}
+              <strong className="text-white">plus de 24 heures avant</strong> la
+              séance, ou <strong className="text-white">moins de 24 heures
+              avant</strong>. Le pourcentage indiqué est{" "}
               <strong className="text-white">remboursé au client</strong> ; le
               reste revient au coach (moins frais et commission). Ces règles
               s'appliquent lorsqu'un <strong className="text-white">client</strong>{" "}
@@ -68,16 +72,16 @@ export default function ChartePaiement() {
             </p>
             <ul className="mt-3 flex flex-col gap-2" style={{ paddingLeft: 20, listStyleType: "disc" }}>
               <li>
-                <strong className="text-white">Flexible</strong> — annulation
-                +24 h avant : 100 % remboursé ; -24 h : 50 % ; absence : 0 %.
+                <strong className="text-white">Flexible</strong> — plus de 24 h
+                avant : 100 % remboursé ; moins de 24 h : 50 % ; absence : 0 %.
               </li>
               <li>
-                <strong className="text-white">Modérée</strong> — annulation
-                +24 h avant : 75 % remboursé ; -24 h : 0 % ; absence : 0 %.
+                <strong className="text-white">Modérée</strong> — plus de 24 h
+                avant : 75 % remboursé ; moins de 24 h : 0 % ; absence : 0 %.
               </li>
               <li>
-                <strong className="text-white">Stricte</strong> — annulation
-                +48 h avant : 50 % remboursé ; -48 h : 0 % ; absence : 0 %.
+                <strong className="text-white">Stricte</strong> — plus de 24 h
+                avant : 50 % remboursé ; moins de 24 h : 0 % ; absence : 0 %.
               </li>
             </ul>
             <p className="mt-3">
