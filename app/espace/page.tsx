@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import PublicHeader from "@/components/marketplace/PublicHeader";
 import ClientSpace, {
   type ClientBooking,
+  type ClientPack,
 } from "@/components/client/ClientSpace";
 
 export const metadata: Metadata = {
@@ -27,6 +28,7 @@ export default async function ClientSpacePage() {
   } = await supabase.auth.getUser();
 
   const bookings: ClientBooking[] = [];
+  const packs: ClientPack[] = [];
   const admin = createAdminClient();
 
   if (user?.email && admin) {
@@ -38,6 +40,27 @@ export default async function ClientSpacePage() {
     const clientIds = (clientRows ?? []).map((c) => c.id as string);
 
     if (clientIds.length > 0) {
+      // Packs de séances (crédits restants chez chaque coach).
+      const { data: creditRows } = await admin
+        .from("pack_credits")
+        .select(
+          "id, total, used, services(name), coaches(first_name, last_name)"
+        )
+        .in("client_id", clientIds)
+        .order("created_at", { ascending: false });
+      for (const c of creditRows ?? []) {
+        const svc = Array.isArray(c.services) ? c.services[0] : c.services;
+        const co = Array.isArray(c.coaches) ? c.coaches[0] : c.coaches;
+        packs.push({
+          id: c.id as string,
+          total: c.total as number,
+          used: c.used as number,
+          service_name: (svc?.name as string) ?? "Pack",
+          coach_name:
+            [co?.first_name, co?.last_name].filter(Boolean).join(" ") || "-",
+        });
+      }
+
       const { data: rows } = await admin
         .from("bookings")
         .select(
@@ -84,7 +107,7 @@ export default async function ClientSpacePage() {
     <I18nProvider locale={locale} dict={dict}>
       <div className="min-h-screen bg-bg">
         <PublicHeader />
-        <ClientSpace bookings={bookings} />
+        <ClientSpace bookings={bookings} packs={packs} />
       </div>
     </I18nProvider>
   );

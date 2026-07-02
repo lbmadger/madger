@@ -736,6 +736,14 @@ const fr = {
     cancelError: "Impossible d'annuler. Réessaie ou contacte le support.",
     rate: "Noter",
   },
+  packs: {
+    title: "Packs de séances",
+    at: "chez",
+    remainingOne: "restante",
+    remainingMany: "restantes",
+    usedOf: "utilisées sur",
+    empty: "Pack épuisé",
+  },
   reviews: {
     sectionTitle: "Avis clients",
     countLabel: "avis",
@@ -1480,6 +1488,14 @@ const en: Dictionary = {
     cancelling: "Cancelling…",
     cancelError: "Could not cancel. Try again or contact support.",
     rate: "Rate",
+  },
+  packs: {
+    title: "Session packs",
+    at: "with",
+    remainingOne: "left",
+    remainingMany: "left",
+    usedOf: "used out of",
+    empty: "Pack used up",
   },
   reviews: {
     sectionTitle: "Client reviews",

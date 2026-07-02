@@ -34,8 +34,11 @@ export default function BookingModal({
   const instant = coach.booking_mode === "instant";
 
   // Prestations payantes (paiement possible seulement si le coach encaisse).
+  // Les abonnements récurrents ne sont pas encore facturables en ligne : ils
+  // passent en demande simple pour ne pas facturer une seule fois un prix
+  // affiché "/mois".
   const paidServices = coach.stripe_charges_enabled
-    ? services.filter((s) => s.price_cents > 0)
+    ? services.filter((s) => s.price_cents > 0 && s.type !== "subscription")
     : [];
 
   // Coach sans ville mais dispo en ligne → réservation en visio par défaut.

@@ -113,6 +113,10 @@ export async function GET(req: NextRequest) {
         const bookingStatus =
           coachMode?.booking_mode === "approval" ? "pending" : "confirmed";
 
+        // Ordre volontaire : séance en 'pending' D'ABORD, puis le paiement,
+        // puis la confirmation. Ainsi le trigger des packs (0023) voit le
+        // paiement attaché et ne consomme jamais de crédit sur une séance
+        // déjà payée à part.
         const { data: booking } = await supabase
           .from("bookings")
           .insert({
@@ -121,7 +125,7 @@ export async function GET(req: NextRequest) {
             service_id: m.service_id || null,
             starts_at: starts.toISOString(),
             ends_at: ends.toISOString(),
-            status: bookingStatus,
+            status: "pending",
             location: m.online === "1" ? "online" : "in_person",
             notes: m.message || null,
           })
@@ -129,21 +133,64 @@ export async function GET(req: NextRequest) {
           .single();
         bookingId = booking?.id ?? "";
 
-        await supabase.from("payments").insert({
-          coach_id: m.coach_id,
-          client_id: clientId,
-          booking_id: booking?.id ?? null,
-          service_id: m.service_id || null,
-          amount_cents: session.amount_total ?? 0,
-          currency: session.currency ?? "eur",
-          status: "paid",
-          stripe_payment_intent_id: piId,
-          stripe_charge_id: chargeId,
-          stripe_fee_cents: feeCents,
-          escrow_status: "held",
-          release_after: releaseAfter.toISOString(),
-          paid_at: new Date().toISOString(),
-        });
+        const { data: payment } = await supabase
+          .from("payments")
+          .insert({
+            coach_id: m.coach_id,
+            client_id: clientId,
+            booking_id: booking?.id ?? null,
+            service_id: m.service_id || null,
+            amount_cents: session.amount_total ?? 0,
+            currency: session.currency ?? "eur",
+            status: "paid",
+            stripe_payment_intent_id: piId,
+            stripe_charge_id: chargeId,
+            stripe_fee_cents: feeCents,
+            escrow_status: "held",
+            release_after: releaseAfter.toISOString(),
+            paid_at: new Date().toISOString(),
+          })
+          .select("id")
+          .single();
+
+        // Achat d'un PACK : crée le solde de crédits (la séance réservée à
+        // l'achat compte pour 1) et rattache la séance au pack.
+        if (m.service_id && clientId) {
+          const { data: svc } = await supabase
+            .from("services")
+            .select("type, pack_size")
+            .eq("id", m.service_id)
+            .maybeSingle();
+          if (svc?.type === "pack" && (svc.pack_size ?? 0) > 1) {
+            const { data: credit } = await supabase
+              .from("pack_credits")
+              .insert({
+                coach_id: m.coach_id,
+                client_id: clientId,
+                service_id: m.service_id,
+                payment_id: payment?.id ?? null,
+                total: svc.pack_size,
+                used: 1,
+              })
+              .select("id")
+              .single();
+            if (credit && booking) {
+              await supabase
+                .from("bookings")
+                .update({ pack_credit_id: credit.id })
+                .eq("id", booking.id);
+            }
+          }
+        }
+
+        // Confirmation (mode instantané) : après le paiement, pour que le
+        // trigger pack ignore cette séance déjà payée.
+        if (bookingStatus === "confirmed" && booking) {
+          await supabase
+            .from("bookings")
+            .update({ status: "confirmed" })
+            .eq("id", booking.id);
+        }
 
         // Emails de confirmation (client + notification coach). Best-effort :
         // un échec d'email ne doit pas casser le paiement déjà encaissé.

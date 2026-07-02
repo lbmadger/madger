@@ -10,6 +10,14 @@ import {
   type CancellationPolicy,
 } from "@/lib/booking/cancellation";
 
+export type ClientPack = {
+  id: string;
+  total: number;
+  used: number;
+  service_name: string;
+  coach_name: string;
+};
+
 export type ClientBooking = {
   id: string;
   starts_at: string;
@@ -28,8 +36,10 @@ export type ClientBooking = {
 // pour noter). Raccourcis profil / messages / recherche de coach.
 export default function ClientSpace({
   bookings,
+  packs = [],
 }: {
   bookings: ClientBooking[];
+  packs?: ClientPack[];
 }) {
   const { t, locale } = useI18n();
   const router = useRouter();
@@ -133,6 +143,57 @@ export default function ClientSpace({
           {t("clientSpace.myProfile")}
         </Link>
       </div>
+
+      {/* Packs de séances */}
+      {packs.length > 0 && (
+        <>
+          <h2 className="mt-8 text-xs font-semibold uppercase tracking-wide text-text-dim">
+            {t("packs.title")}
+          </h2>
+          <ul className="mt-3 flex flex-col gap-2">
+            {packs.map((p) => {
+              const left = Math.max(0, p.total - p.used);
+              return (
+                <li
+                  key={p.id}
+                  className="rounded-2xl border border-border bg-bg-card p-4"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-text-base">
+                        🎟️ {p.service_name}
+                      </p>
+                      <p className="mt-0.5 text-xs text-text-muted">
+                        {t("packs.at")} {p.coach_name} · {p.used}{" "}
+                        {t("packs.usedOf")} {p.total}
+                      </p>
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${
+                        left > 0
+                          ? "bg-accent/10 text-accent"
+                          : "border border-border-strong text-text-dim"
+                      }`}
+                    >
+                      {left > 0
+                        ? `${left} ${left === 1 ? t("packs.remainingOne") : t("packs.remainingMany")}`
+                        : t("packs.empty")}
+                    </span>
+                  </div>
+                  <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-bg-elevated">
+                    <div
+                      className="h-full rounded-full bg-accent transition-all"
+                      style={{
+                        width: `${Math.min(100, Math.round((p.used / p.total) * 100))}%`,
+                      }}
+                    />
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      )}
 
       {/* À venir */}
       <h2 className="mt-8 text-xs font-semibold uppercase tracking-wide text-text-dim">
