@@ -1,16 +1,16 @@
 import Link from "next/link";
 import Topbar from "@/components/dashboard/Topbar";
-import StatCard from "@/components/dashboard/StatCard";
+import StatCard, { type Trend } from "@/components/dashboard/StatCard";
 import SetupChecklist from "@/components/dashboard/SetupChecklist";
+import MiniBars, { type BarDatum } from "@/components/dashboard/charts/MiniBars";
 import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getCoach } from "@/lib/coach/getCoach";
 import { isPro } from "@/lib/subscription/plan";
 import type { Booking } from "@/lib/bookings/types";
 
-// Vue d'ensemble — premier écran après connexion. Les chiffres "clients" et
-// "séances de la semaine" sont réels ; revenus et paiements en attente
-// restent à 0 tant que le module Paiements (Phase 4) n'est pas branché.
+// Vue d'ensemble — premier écran après connexion. KPI réels (revenus issus des
+// paiements encaissés, fonds en séquestre) + graphiques revenus/séances.
 export default async function OverviewPage() {
   const { dict, locale } = getServerDictionary();
   const o = dict.overview;
@@ -26,23 +26,50 @@ export default async function OverviewPage() {
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekStart.getDate() + 7);
 
-  const [clientsRes, weekRes, upcomingRes, availRes, servicesRes] =
-    await Promise.all([
-      supabase.from("clients").select("*", { count: "exact", head: true }),
-      supabase
-        .from("bookings")
-        .select("*", { count: "exact", head: true })
-        .gte("starts_at", weekStart.toISOString())
-        .lt("starts_at", weekEnd.toISOString()),
-      supabase
-        .from("bookings")
-        .select("*, clients(first_name, last_name)")
-        .gte("ends_at", now.toISOString())
-        .order("starts_at", { ascending: true })
-        .limit(5),
-      supabase.from("availabilities").select("*", { count: "exact", head: true }),
-      supabase.from("services").select("*", { count: "exact", head: true }),
-    ]);
+  // Fenêtres des graphiques : 6 mois (revenus) et 8 semaines (séances).
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+  const eightWeeksAgo = new Date(weekStart);
+  eightWeeksAgo.setDate(weekStart.getDate() - 7 * 7);
+
+  const [
+    clientsRes,
+    weekRes,
+    upcomingRes,
+    availRes,
+    servicesRes,
+    paymentsRes,
+    heldRes,
+    weeksRes,
+  ] = await Promise.all([
+    supabase.from("clients").select("*", { count: "exact", head: true }),
+    supabase
+      .from("bookings")
+      .select("*", { count: "exact", head: true })
+      .gte("starts_at", weekStart.toISOString())
+      .lt("starts_at", weekEnd.toISOString()),
+    supabase
+      .from("bookings")
+      .select("*, clients(first_name, last_name)")
+      .gte("ends_at", now.toISOString())
+      .order("starts_at", { ascending: true })
+      .limit(5),
+    supabase.from("availabilities").select("*", { count: "exact", head: true }),
+    supabase.from("services").select("*", { count: "exact", head: true }),
+    supabase
+      .from("payments")
+      .select("amount_cents, paid_at")
+      .eq("status", "paid")
+      .gte("paid_at", sixMonthsAgo.toISOString()),
+    supabase
+      .from("payments")
+      .select("amount_cents")
+      .eq("escrow_status", "held"),
+    supabase
+      .from("bookings")
+      .select("starts_at, status")
+      .gte("starts_at", eightWeeksAgo.toISOString())
+      .lt("starts_at", weekEnd.toISOString()),
+  ]);
 
   const clientsCount = clientsRes.count ?? 0;
   const weekCount = weekRes.count ?? 0;
@@ -54,11 +81,65 @@ export default async function OverviewPage() {
   const { coach } = await getCoach();
   const pro = isPro(coach?.pro_until);
 
-  const stats = [
-    { label: o.revenueMonth, value: "0 €" },
+  const euros = (cents: number) =>
+    (cents / 100).toLocaleString(loc, {
+      style: "currency",
+      currency: "EUR",
+      maximumFractionDigits: cents % 100 === 0 ? 0 : 2,
+    });
+
+  // ── Revenus par mois (6 derniers mois) ────────────────────────────────────
+  const payments = paymentsRes.data ?? [];
+  const revenueByMonth: BarDatum[] = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
+    const next = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+    const sum = payments
+      .filter((p) => {
+        const t = p.paid_at ? new Date(p.paid_at as string).getTime() : 0;
+        return t >= d.getTime() && t < next.getTime();
+      })
+      .reduce((s, p) => s + ((p.amount_cents as number) || 0), 0);
+    return { label: d.toLocaleDateString(loc, { month: "short" }), value: sum };
+  });
+  const monthRevenue = revenueByMonth[5].value;
+  const lastMonthRevenue = revenueByMonth[4].value;
+  const revenueTrend: Trend =
+    lastMonthRevenue > 0
+      ? {
+          text: `${monthRevenue >= lastMonthRevenue ? "+" : ""}${Math.round(((monthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100)}% ${o.vsLastMonth}`,
+          positive: monthRevenue >= lastMonthRevenue,
+        }
+      : null;
+
+  const heldSum = (heldRes.data ?? []).reduce(
+    (s, p) => s + ((p.amount_cents as number) || 0),
+    0
+  );
+
+  // ── Séances par semaine (8 dernières semaines) ────────────────────────────
+  const weekBookings = (weeksRes.data ?? []).filter(
+    (b) => b.status !== "cancelled"
+  );
+  const sessionsByWeek: BarDatum[] = Array.from({ length: 8 }, (_, i) => {
+    const start = new Date(weekStart);
+    start.setDate(weekStart.getDate() - 7 * (7 - i));
+    const end = new Date(start);
+    end.setDate(start.getDate() + 7);
+    const count = weekBookings.filter((b) => {
+      const t = new Date(b.starts_at as string).getTime();
+      return t >= start.getTime() && t < end.getTime();
+    }).length;
+    return {
+      label: start.toLocaleDateString(loc, { day: "2-digit", month: "2-digit" }),
+      value: count,
+    };
+  });
+
+  const stats: { label: string; value: string; trend?: Trend }[] = [
+    { label: o.revenueMonth, value: euros(monthRevenue), trend: revenueTrend },
     { label: o.sessionsWeek, value: String(weekCount) },
     { label: o.activeClients, value: String(clientsCount) },
-    { label: o.pendingPayments, value: "0 €" },
+    { label: o.pendingPayments, value: euros(heldSum) },
   ];
 
   return (
@@ -93,10 +174,32 @@ export default async function OverviewPage() {
           </Link>
         )}
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+        {/* KPI en 2×2 sur mobile, 4 colonnes sur desktop */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {stats.map((s) => (
-            <StatCard key={s.label} label={s.label} value={s.value} />
+            <StatCard
+              key={s.label}
+              label={s.label}
+              value={s.value}
+              trend={s.trend ?? null}
+            />
           ))}
+        </div>
+
+        {/* Graphiques : revenus 6 mois + séances 8 semaines */}
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:mt-5 sm:grid-cols-2 sm:gap-4">
+          <section className="rounded-2xl border border-border bg-bg-card p-4 sm:p-5">
+            <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-text-dim">
+              {o.chartRevenue}
+            </h3>
+            <MiniBars data={revenueByMonth} unit="currency" locale={loc} />
+          </section>
+          <section className="rounded-2xl border border-border bg-bg-card p-4 sm:p-5">
+            <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-text-dim">
+              {o.chartSessions}
+            </h3>
+            <MiniBars data={sessionsByWeek} locale={loc} />
+          </section>
         </div>
 
         <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">

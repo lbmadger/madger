@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import { slugify, isValidSlug } from "@/lib/utils/slug";
 import Button from "@/components/ui/Button";
 import CityAutocomplete from "@/components/ui/CityAutocomplete";
+import LanguagePicker from "@/components/settings/LanguagePicker";
 import PolicyTiers from "@/components/booking/PolicyTiers";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import {
@@ -232,6 +233,17 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         <Button onClick={handleSave} disabled={loading} className="mt-4 self-start">
           {loading ? t("cancellation.saving") : t("cancellation.save")}
         </Button>
+      </section>
+
+      {/* Préférences (langue de l'app) */}
+      <section className="rounded-2xl border border-border bg-bg-card p-5 sm:p-6">
+        <h2 className="text-base font-semibold text-text-base">
+          {t("settings.prefsSection")}
+        </h2>
+        <p className="mt-1 text-sm text-text-muted">{t("settings.language")}</p>
+        <div className="mt-3">
+          <LanguagePicker />
+        </div>
       </section>
     </div>
   );

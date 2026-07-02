@@ -1,39 +1,29 @@
 "use client";
 
-import { useI18n } from "@/lib/i18n/I18nProvider";
-import { LOCALES, LOCALE_FLAGS, type Locale } from "@/lib/i18n/config";
+import Link from "next/link";
+import MadgerLogo from "@/components/ui/MadgerLogo";
 import AccountMenu from "@/components/dashboard/AccountMenu";
 
-// Barre supérieure du dashboard : titre de page + sélecteur de langue et
-// pastille compte. Le sélecteur pose un cookie et recharge (cf. useI18n).
+// Barre supérieure du dashboard : titre de page, logo centré (mobile) et
+// pastille compte. Le choix de langue vit dans Réglages (pas ici).
 
 export default function Topbar({ title }: { title: string }) {
-  const { locale, setLocale } = useI18n();
-
   return (
-    <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-border bg-bg/80 px-6 backdrop-blur">
+    <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-border bg-bg/80 px-4 backdrop-blur sm:px-6">
       <h1 className="text-base font-semibold text-text-base">{title}</h1>
 
-      <div className="ml-auto flex items-center gap-3">
-        {/* Sélecteur de langue FR / EN */}
-        <div className="flex items-center rounded-lg border border-border p-0.5">
-          {LOCALES.map((l: Locale) => (
-            <button
-              key={l}
-              type="button"
-              onClick={() => l !== locale && setLocale(l)}
-              className={`rounded-md px-2 py-1 text-base leading-none transition-opacity ${
-                l === locale ? "opacity-100" : "opacity-40 hover:opacity-70"
-              }`}
-              aria-pressed={l === locale}
-              aria-label={l}
-            >
-              {LOCALE_FLAGS[l]}
-            </button>
-          ))}
-        </div>
+      {/* Logo (icône iOS) centré — mobile uniquement */}
+      <Link
+        href="/dashboard"
+        aria-label="Madger"
+        className="absolute left-1/2 -translate-x-1/2 sm:hidden"
+      >
+        <span className="block overflow-hidden rounded-[9px] border border-border-strong">
+          <MadgerLogo size={30} />
+        </span>
+      </Link>
 
-        {/* Menu compte (email + déconnexion) */}
+      <div className="ml-auto flex items-center gap-3">
         <AccountMenu />
       </div>
     </header>
