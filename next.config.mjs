@@ -1,4 +1,15 @@
 /** @type {import("next").NextConfig} */
-const nextConfig = {};
+const nextConfig = {
+  images: {
+    // Photos de profil servies depuis le Storage Supabase.
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
+  },
+};
 
 export default nextConfig;

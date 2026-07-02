@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, type FormEvent } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -240,9 +241,19 @@ export default function MarketplaceView({
                     className={`flex h-full flex-col gap-3 p-4 ${interactiveCardClass}`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent/10 text-base font-semibold text-accent">
-                        {coachInitials(c)}
-                      </span>
+                      {c.avatar_url ? (
+                        <Image
+                          src={c.avatar_url}
+                          alt=""
+                          width={48}
+                          height={48}
+                          className="h-12 w-12 shrink-0 rounded-full border border-border-strong object-cover"
+                        />
+                      ) : (
+                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent/10 text-base font-semibold text-accent">
+                          {coachInitials(c)}
+                        </span>
+                      )}
                       <div className="min-w-0">
                         <span className="block truncate font-semibold text-text-base">
                           {coachFullName(c)}

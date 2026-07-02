@@ -179,6 +179,15 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           />
         </label>
 
+        {!isSignup && (
+          <Link
+            href="/forgot-password"
+            className="-mt-1 self-end text-xs text-text-muted transition-colors hover:text-accent"
+          >
+            {t("auth.forgot.link")}
+          </Link>
+        )}
+
         {isSignup && (
           <ul className="-mt-1 flex flex-col gap-1.5">
             {PASSWORD_RULES.map((rule) => {

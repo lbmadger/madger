@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -123,9 +124,19 @@ export default function CoachProfile({
       <div className="rounded-2xl border border-border bg-bg-card p-6 sm:p-8">
         {/* En-tête */}
         <div className="flex flex-col items-center text-center sm:flex-row sm:items-start sm:text-left">
-          <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-accent/10 text-2xl font-bold text-accent">
-            {coachInitials(coach)}
-          </span>
+          {coach.avatar_url ? (
+            <Image
+              src={coach.avatar_url}
+              alt={coachFullName(coach)}
+              width={80}
+              height={80}
+              className="h-20 w-20 shrink-0 rounded-full border border-border-strong object-cover"
+            />
+          ) : (
+            <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-accent/10 text-2xl font-bold text-accent">
+              {coachInitials(coach)}
+            </span>
+          )}
           <div className="mt-4 sm:ml-5 sm:mt-1">
             <h1 className="text-2xl font-extrabold tracking-tight text-text-base">
               {coachFullName(coach)}

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -53,9 +54,47 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   );
   const [venues, setVenues] = useState<string[]>(coach.venues ?? []);
   const [gymName, setGymName] = useState(coach.gym_name ?? "");
+  const [avatarUrl, setAvatarUrl] = useState(coach.avatar_url ?? "");
+  const [uploading, setUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+
+  // Upload de la photo de profil vers le Storage (avatars/<uid>/avatar).
+  async function uploadAvatar(file: File) {
+    setAvatarError(null);
+    if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
+      setAvatarError(t("settings.photoErr"));
+      return;
+    }
+    setUploading(true);
+    try {
+      const supabase = createClient();
+      const path = `${coach.id}/avatar`;
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) {
+        setAvatarError(t("settings.photoErr"));
+        return;
+      }
+      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+      // Cache-buster : l'URL est stable, on force le rafraîchissement.
+      const url = `${data.publicUrl}?v=${Date.now()}`;
+      await supabase
+        .from("coaches")
+        .update({ avatar_url: url })
+        .eq("id", coach.id);
+      setAvatarUrl(url);
+      router.refresh();
+    } catch {
+      setAvatarError(t("settings.photoErr"));
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function handleSave() {
     setError(null);
@@ -129,6 +168,47 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         <h2 className="text-base font-semibold text-text-base">
           {t("settings.profileSection")}
         </h2>
+
+        {/* Photo de profil */}
+        <div className="mt-4 flex items-center gap-4">
+          {avatarUrl ? (
+            <Image
+              src={avatarUrl}
+              alt=""
+              width={64}
+              height={64}
+              className="h-16 w-16 shrink-0 rounded-full border border-border-strong object-cover"
+            />
+          ) : (
+            <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-accent/10 text-xl font-bold text-accent">
+              {(firstName.charAt(0) + (lastName.charAt(0) || "")).toUpperCase() || "?"}
+            </span>
+          )}
+          <div>
+            <button
+              type="button"
+              disabled={uploading}
+              onClick={() => fileRef.current?.click()}
+              className="rounded-full border border-border-strong px-4 py-2 text-sm font-medium text-text-base transition-colors hover:border-accent disabled:opacity-60"
+            >
+              {uploading ? t("settings.photoUploading") : t("settings.photoChange")}
+            </button>
+            {avatarError && (
+              <p className="mt-1 text-xs text-red-400">{avatarError}</p>
+            )}
+          </div>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) uploadAvatar(f);
+              e.target.value = "";
+            }}
+          />
+        </div>
 
         <div className="mt-4 flex flex-col gap-3">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

@@ -38,6 +38,20 @@ const fr = {
   auth: {
     emailLabel: "Adresse email",
     passwordLabel: "Mot de passe",
+    forgot: {
+      link: "Mot de passe oublié ?",
+      title: "Mot de passe oublié",
+      desc: "Entre ton email : on t'envoie un lien pour le réinitialiser.",
+      submit: "Envoyer le lien",
+      sent: "Email envoyé ✅ Vérifie ta boîte mail (et tes spams).",
+      back: "Retour à la connexion",
+    },
+    reset: {
+      title: "Nouveau mot de passe",
+      desc: "Choisis ton nouveau mot de passe.",
+      submit: "Changer mon mot de passe",
+      success: "Mot de passe changé ✅ Redirection…",
+    },
     or: "ou",
     googleContinue: "Continuer avec Google",
     signingIn: "Connexion…",
@@ -477,6 +491,9 @@ const fr = {
     slugHint: "madger.app/ton-lien — minuscules, chiffres et tirets.",
     listed: "Visible sur la marketplace",
     listedHint: "Décoche pour masquer ton profil public temporairement.",
+    photoChange: "Changer la photo",
+    photoUploading: "Envoi…",
+    photoErr: "Impossible d'envoyer la photo (image, 5 Mo max).",
     activitySection: "Mon activité",
     activityDesc:
       "Ton sport, tes accompagnements et tes lieux de séance — utilisés par les filtres de la marketplace.",
@@ -697,6 +714,20 @@ const en: Dictionary = {
   auth: {
     emailLabel: "Email address",
     passwordLabel: "Password",
+    forgot: {
+      link: "Forgot password?",
+      title: "Forgot password",
+      desc: "Enter your email: we'll send you a reset link.",
+      submit: "Send the link",
+      sent: "Email sent ✅ Check your inbox (and spam).",
+      back: "Back to login",
+    },
+    reset: {
+      title: "New password",
+      desc: "Pick your new password.",
+      submit: "Change my password",
+      success: "Password changed ✅ Redirecting…",
+    },
     or: "or",
     googleContinue: "Continue with Google",
     signingIn: "Signing in…",
@@ -1134,6 +1165,9 @@ const en: Dictionary = {
     slugHint: "madger.app/your-link — lowercase, numbers and hyphens.",
     listed: "Visible on the marketplace",
     listedHint: "Uncheck to temporarily hide your public profile.",
+    photoChange: "Change photo",
+    photoUploading: "Uploading…",
+    photoErr: "Could not upload the photo (image, 5 MB max).",
     activitySection: "My activity",
     activityDesc:
       "Your sport, coaching types and session venues — used by marketplace filters.",

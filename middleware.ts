@@ -8,6 +8,10 @@ import { ACCESS_COOKIE, getAccessCode } from "@/lib/access";
 const PUBLIC_EXACT = new Set([
   "/",
   "/acces",
+  // Réinitialisation de mot de passe : accessible sans code d'accès pour que
+  // le lien reçu par email fonctionne dans n'importe quel navigateur.
+  "/forgot-password",
+  "/reset-password",
   "/opengraph-image",
   "/robots.txt",
   "/sitemap.xml",
@@ -26,6 +30,7 @@ const AUTH_PREFIXES = [
   "/onboarding",
   "/onboarding-client",
   "/messages",
+  "/reset-password", // session posée par le lien email (recovery)
 ];
 
 function matchesPrefix(pathname: string, prefixes: string[]): boolean {
