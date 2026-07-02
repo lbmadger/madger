@@ -49,7 +49,7 @@ export default async function InvoicesPage() {
   return (
     <>
       <Topbar title={inv.title} />
-      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
         <p className="mb-5 text-sm text-text-muted">{inv.subtitle}</p>
 
         {rows.length === 0 ? (

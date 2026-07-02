@@ -103,7 +103,7 @@ export default async function StatsPage() {
   return (
     <>
       <Topbar title={s.title} />
-      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
         {/* Ligne 1 */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <StatCard label={s.revenue} value="—" hint={s.revenueHint} />

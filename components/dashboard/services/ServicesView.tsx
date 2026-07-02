@@ -68,7 +68,7 @@ export default function ServicesView({
           </Button>
         </div>
       ) : (
-        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {initialServices.map((s) => (
             <li
               key={s.id}
