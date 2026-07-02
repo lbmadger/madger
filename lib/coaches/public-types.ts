@@ -16,6 +16,19 @@ export type PublicCoach = {
   cancellation_policy: "flexible" | "moderate" | "strict";
   booking_mode: "instant" | "approval";
   created_at: string;
+  // Avis (vue public_coaches, migration 0020)
+  rating_avg: number | null;
+  rating_count: number;
+};
+
+// Avis public (vue public_reviews) : prénom du client uniquement.
+export type PublicReview = {
+  id: string;
+  coach_id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  client_first_name: string;
 };
 
 export function coachFullName(c: {

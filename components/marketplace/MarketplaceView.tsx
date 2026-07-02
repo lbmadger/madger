@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
 import CityAutocomplete from "@/components/ui/CityAutocomplete";
+import Stars from "@/components/reviews/Stars";
 import { geocodeCity, distanceKm, type City } from "@/lib/geo/cities";
 import { interactiveCardClass } from "@/lib/ui/styles";
 import {
@@ -206,6 +207,14 @@ export default function MarketplaceView({
                         {c.specialty && (
                           <span className="block truncate text-xs text-text-muted">
                             {c.specialty}
+                          </span>
+                        )}
+                        {c.rating_avg != null && c.rating_count > 0 && (
+                          <span className="mt-0.5 flex items-center gap-1">
+                            <Stars value={Number(c.rating_avg)} size={11} />
+                            <span className="text-[11px] text-text-dim">
+                              {Number(c.rating_avg)} ({c.rating_count})
+                            </span>
                           </span>
                         )}
                       </div>

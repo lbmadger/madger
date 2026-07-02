@@ -269,6 +269,29 @@ export function payoutReleasedCoach(p: {
   };
 }
 
+// ── Client : demande d'avis après la séance ─────────────────────────────────
+export function reviewRequestClient(p: {
+  coachName: string;
+  reservationUrl: string;
+}): Email {
+  return {
+    subject: `Comment s'est passée ta séance avec ${p.coachName} ? ⭐`,
+    html: layout({
+      preheader: `Note ta séance avec ${p.coachName} — 30 secondes, ça aide toute la communauté.`,
+      eyebrow: "Ton avis compte",
+      title: "Comment s'est passée ta séance ?",
+      intro: `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> est terminée. Prends 30 secondes pour la noter : ton avis aide les autres à choisir leur coach — et ton coach à progresser.`,
+      blocks: [
+        infoBox(
+          "Un avis par client",
+          "Si tu refais des séances avec ce coach, tu pourras mettre ton avis à jour à tout moment — c'est ta note la plus récente qui compte."
+        ),
+      ],
+      cta: { label: "⭐ Noter ma séance", url: p.reservationUrl },
+    }),
+  };
+}
+
 // ── Admin : nouveau litige à trancher ───────────────────────────────────────
 export function disputeOpenedAdmin(p: {
   clientName: string;

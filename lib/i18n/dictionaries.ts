@@ -607,6 +607,26 @@ const fr = {
     age: "ans",
     bmi: "IMC",
   },
+  reviews: {
+    sectionTitle: "Avis clients",
+    countLabel: "avis",
+    leaveTitle: "Comment s'est passée ta séance ?",
+    oneNote:
+      "Un avis par client : si tu re-notes ce coach plus tard, ton avis sera mis à jour.",
+    commentLabel: "Ton commentaire (facultatif)",
+    commentPlaceholder: "Ambiance, pédagogie, résultats…",
+    emailLabel: "Ton email (celui de la réservation)",
+    submit: "Publier mon avis",
+    sending: "Publication…",
+    thanks: "Merci pour ton avis ! ⭐ Il aide les autres à choisir leur coach.",
+    errors: {
+      ratingRequired: "Choisis une note de 1 à 5 étoiles.",
+      emailMismatch: "Cet email ne correspond pas à la réservation.",
+      tooEarly: "Tu pourras noter après la séance.",
+      notEligible: "Cette séance ne peut pas être notée.",
+      generic: "Une erreur est survenue. Réessaie.",
+    },
+  },
 };
 
 // Le type contractuel : toute langue doit fournir exactement ces clés.
@@ -1204,6 +1224,26 @@ const en: Dictionary = {
     title: "Client profile",
     age: "y.o.",
     bmi: "BMI",
+  },
+  reviews: {
+    sectionTitle: "Client reviews",
+    countLabel: "reviews",
+    leaveTitle: "How was your session?",
+    oneNote:
+      "One review per client: if you rate this coach again later, your review gets updated.",
+    commentLabel: "Your comment (optional)",
+    commentPlaceholder: "Vibe, coaching, results…",
+    emailLabel: "Your email (the one used to book)",
+    submit: "Post my review",
+    sending: "Posting…",
+    thanks: "Thanks for your review! ⭐ It helps others pick their coach.",
+    errors: {
+      ratingRequired: "Pick a rating from 1 to 5 stars.",
+      emailMismatch: "This email doesn't match the booking.",
+      tooEarly: "You can rate after the session.",
+      notEligible: "This session can't be rated.",
+      generic: "Something went wrong. Please try again.",
+    },
   },
 };
 

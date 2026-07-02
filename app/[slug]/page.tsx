@@ -7,6 +7,7 @@ import PublicHeader from "@/components/marketplace/PublicHeader";
 import CoachProfile from "@/components/marketplace/CoachProfile";
 import {
   type PublicCoach,
+  type PublicReview,
   coachFullName,
 } from "@/lib/coaches/public-types";
 import type { PublicService } from "@/lib/services/types";
@@ -54,12 +55,17 @@ export default async function CoachPublicPage({
     notFound();
   }
 
-  // Prestations actives du coach (vue publique).
+  // Prestations actives + derniers avis du coach (vues publiques).
   const supabase = createClient();
-  const { data: services } = await supabase
-    .from("public_services")
-    .select("*")
-    .eq("coach_id", coach.id);
+  const [{ data: services }, { data: reviews }] = await Promise.all([
+    supabase.from("public_services").select("*").eq("coach_id", coach.id),
+    supabase
+      .from("public_reviews")
+      .select("*")
+      .eq("coach_id", coach.id)
+      .order("created_at", { ascending: false })
+      .limit(10),
+  ]);
 
   return (
     <I18nProvider locale={locale} dict={dict}>
@@ -68,6 +74,7 @@ export default async function CoachPublicPage({
         <CoachProfile
           coach={coach}
           services={(services ?? []) as PublicService[]}
+          reviews={(reviews ?? []) as PublicReview[]}
         />
       </div>
     </I18nProvider>

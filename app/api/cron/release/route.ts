@@ -4,8 +4,12 @@ import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { computePayout } from "@/lib/stripe/escrow";
 import { isPro } from "@/lib/subscription/plan";
+import { sendEmail } from "@/lib/email/resend";
+import { reviewRequestClient } from "@/lib/email/templates";
 
 export const dynamic = "force-dynamic";
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
 // Job planifié (Vercel Cron) : libère les paiements sous séquestre arrivés à
 // maturité (release_after dépassé) et non gelés → transfert de la part du coach
@@ -124,6 +128,28 @@ export async function GET(req: NextRequest) {
           .from("bookings")
           .update({ status: "completed" })
           .eq("id", p.booking_id);
+
+        // Invite le client à noter sa séance (1 client = 1 avis). Best-effort.
+        try {
+          const { data: bk } = await supabase
+            .from("bookings")
+            .select("client_id, clients(email), coaches(first_name, last_name)")
+            .eq("id", p.booking_id)
+            .maybeSingle();
+          const cl = Array.isArray(bk?.clients) ? bk?.clients[0] : bk?.clients;
+          const co = Array.isArray(bk?.coaches) ? bk?.coaches[0] : bk?.coaches;
+          if (cl?.email) {
+            const tpl = reviewRequestClient({
+              coachName:
+                [co?.first_name, co?.last_name].filter(Boolean).join(" ") ||
+                "ton coach",
+              reservationUrl: `${APP_URL}/reservation/${p.booking_id}`,
+            });
+            await sendEmail({ to: cl.email, subject: tpl.subject, html: tpl.html });
+          }
+        } catch {
+          /* best-effort */
+        }
       }
       released++;
     } catch (e) {

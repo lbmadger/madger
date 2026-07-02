@@ -5,6 +5,7 @@ import { getServerDictionary } from "@/lib/i18n/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import PublicHeader from "@/components/marketplace/PublicHeader";
 import ReportProblem from "@/components/booking/ReportProblem";
+import ReviewForm from "@/components/reviews/ReviewForm";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,8 @@ export const dynamic = "force-dynamic";
 // (les bookings sont protégés par RLS côté client).
 type BookingInfo = {
   starts_at: string;
+  ends_at: string;
+  status: string;
   coach_name: string;
   escrow_status: string | null;
 };
@@ -24,7 +27,7 @@ async function getBooking(id: string): Promise<BookingInfo | null> {
   const admin = createClient(SUPABASE_URL, key);
   const { data: booking } = await admin
     .from("bookings")
-    .select("starts_at, coaches(first_name, last_name)")
+    .select("starts_at, ends_at, status, coaches(first_name, last_name)")
     .eq("id", id)
     .maybeSingle();
   if (!booking) return null;
@@ -40,6 +43,8 @@ async function getBooking(id: string): Promise<BookingInfo | null> {
   const c = Array.isArray(coach) ? coach[0] : coach;
   return {
     starts_at: booking.starts_at as string,
+    ends_at: booking.ends_at as string,
+    status: booking.status as string,
     coach_name: [c?.first_name, c?.last_name].filter(Boolean).join(" "),
     escrow_status: payment?.escrow_status ?? null,
   };
@@ -109,6 +114,14 @@ export default async function ReservationPage({
                   <ReportProblem bookingId={params.id} />
                 </div>
               )}
+
+              {/* Avis après la séance (1 client = 1 avis par coach) */}
+              {booking.status !== "cancelled" &&
+                new Date(booking.ends_at).getTime() < Date.now() && (
+                  <div className="mt-6 border-t border-border pt-6">
+                    <ReviewForm bookingId={params.id} />
+                  </div>
+                )}
             </div>
           )}
         </main>

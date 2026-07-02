@@ -7,9 +7,11 @@ import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
 import PolicyTiers from "@/components/booking/PolicyTiers";
+import Stars from "@/components/reviews/Stars";
 import BookingModal from "./BookingModal";
 import {
   type PublicCoach,
+  type PublicReview,
   coachFullName,
   coachInitials,
 } from "@/lib/coaches/public-types";
@@ -20,9 +22,11 @@ import { type PublicService, formatPrice } from "@/lib/services/types";
 export default function CoachProfile({
   coach,
   services = [],
+  reviews = [],
 }: {
   coach: PublicCoach;
   services?: PublicService[];
+  reviews?: PublicReview[];
 }) {
   const { t, locale } = useI18n();
   const router = useRouter();
@@ -129,6 +133,18 @@ export default function CoachProfile({
             {coach.specialty && (
               <p className="mt-1 text-sm text-text-muted">{coach.specialty}</p>
             )}
+            {/* Note moyenne (1 client = 1 avis) */}
+            {coach.rating_avg != null && coach.rating_count > 0 && (
+              <p className="mt-1.5 flex items-center justify-center gap-1.5 sm:justify-start">
+                <Stars value={Number(coach.rating_avg)} />
+                <span className="text-sm font-semibold text-text-base">
+                  {Number(coach.rating_avg).toLocaleString(locale === "fr" ? "fr-FR" : "en-US")}
+                </span>
+                <span className="text-xs text-text-dim">
+                  ({coach.rating_count} {t("reviews.countLabel")})
+                </span>
+              </p>
+            )}
             <div className="mt-3 flex flex-wrap justify-center gap-1.5 sm:justify-start">
               {coach.city && (
                 <span className="rounded-full border border-border-strong px-2.5 py-1 text-xs text-text-muted">
@@ -188,6 +204,41 @@ export default function CoachProfile({
                       </svg>
                     </span>
                   </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Avis clients */}
+        {reviews.length > 0 && (
+          <div className="mt-6 border-t border-border pt-6">
+            <h2 className="text-xs font-medium uppercase tracking-wide text-text-dim">
+              {t("reviews.sectionTitle")}
+            </h2>
+            <ul className="mt-3 flex flex-col gap-2">
+              {reviews.map((r) => (
+                <li
+                  key={r.id}
+                  className="rounded-xl border border-border bg-bg-elevated p-3"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-medium text-text-base">
+                      {r.client_first_name}
+                    </span>
+                    <Stars value={r.rating} size={12} />
+                  </div>
+                  {r.comment && (
+                    <p className="mt-1.5 text-sm leading-relaxed text-text-muted">
+                      {r.comment}
+                    </p>
+                  )}
+                  <p className="mt-1.5 text-[11px] text-text-dim">
+                    {new Date(r.created_at).toLocaleDateString(
+                      locale === "fr" ? "fr-FR" : "en-US",
+                      { month: "long", year: "numeric" }
+                    )}
+                  </p>
                 </li>
               ))}
             </ul>
