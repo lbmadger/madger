@@ -15,12 +15,15 @@ export default function MessageThread({
   otherName,
   backPath,
   initialMessages,
+  headerExtra,
 }: {
   conversationId: string;
   currentUserId: string;
   otherName: string;
   backPath: string;
   initialMessages: Message[];
+  // Bloc optionnel affiché sous l'en-tête (ex. fiche client côté coach).
+  headerExtra?: React.ReactNode;
 }) {
   const { t } = useI18n();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
@@ -90,6 +93,8 @@ export default function MessageThread({
         </span>
         <span className="font-semibold text-text-base">{otherName}</span>
       </div>
+
+      {headerExtra}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4">

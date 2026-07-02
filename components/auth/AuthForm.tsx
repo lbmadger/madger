@@ -23,9 +23,11 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   // Rôle du compte créé : 'client' si ?role=client (parcours client après
   // réservation), sinon 'coach' (espace coach par défaut).
   const role = searchParams.get("role") === "client" ? "client" : "coach";
+  // Client : direction le profil sportif (3 étapes) après inscription — sauf
+  // destination explicite (ex. retour sur la page d'un coach pour le contacter).
   const redirectTo =
     searchParams.get("redirect") ||
-    (role === "client" ? "/messages" : "/dashboard");
+    (role === "client" ? "/onboarding-client" : "/dashboard");
 
   const isSignup = mode === "signup";
 

@@ -21,7 +21,12 @@ const PUBLIC_PREFIXES = [
 ];
 
 // Espaces nécessitant une session Supabase valide (redirigent vers /login).
-const AUTH_PREFIXES = ["/dashboard", "/onboarding", "/messages"];
+const AUTH_PREFIXES = [
+  "/dashboard",
+  "/onboarding",
+  "/onboarding-client",
+  "/messages",
+];
 
 function matchesPrefix(pathname: string, prefixes: string[]): boolean {
   return prefixes.some((p) => pathname === p || pathname.startsWith(p + "/"));
