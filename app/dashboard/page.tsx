@@ -127,7 +127,7 @@ export default async function OverviewPage() {
         ((Array.isArray(m.conversations)
           ? m.conversations[0]
           : m.conversations
-        )?.client_name as string) || "—",
+        )?.client_name as string) || "-",
     }));
   const msgs24h = receivedMsgs.filter(
     (m) => Date.now() - new Date(m.created_at).getTime() < 24 * 3600 * 1000
@@ -467,7 +467,7 @@ export default async function OverviewPage() {
                           ? [b.clients.first_name, b.clients.last_name]
                               .filter(Boolean)
                               .join(" ")
-                          : "—"}
+                          : "-"}
                       </span>
                       <span
                         className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
@@ -577,7 +577,7 @@ export default async function OverviewPage() {
                           <p className="truncate text-[11px] text-text-dim">
                             {[cl?.first_name, cl?.last_name]
                               .filter(Boolean)
-                              .join(" ") || "—"}
+                              .join(" ") || "-"}
                           </p>
                         </div>
                         <span className="shrink-0 text-xs font-bold text-text-base">

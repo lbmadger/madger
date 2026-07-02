@@ -36,7 +36,7 @@ export default function ConversationList({
     <ul className="flex flex-col gap-2">
       {conversations.map((c) => {
         const name =
-          (perspective === "coach" ? c.client_name : c.coach_name) || "—";
+          (perspective === "coach" ? c.client_name : c.coach_name) || "-";
         const initial = name.charAt(0).toUpperCase() || "?";
         return (
           <li key={c.id}>

@@ -116,7 +116,7 @@ export default function StripeSetup() {
                 <Ok
                   ok={result.webhook.envSet}
                   yes="présente"
-                  no="absente — si tu as perdu le secret, supprime le webhook dans Stripe et relance ce bouton"
+                  no="absente : si tu as perdu le secret, supprime le webhook dans Stripe et relance ce bouton"
                 />
               </p>
             )}

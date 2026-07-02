@@ -110,7 +110,7 @@ export default function AgendaView({
   }
 
   function clientName(b: Booking): string {
-    if (!b.clients) return "—";
+    if (!b.clients) return "-";
     return [b.clients.first_name, b.clients.last_name]
       .filter(Boolean)
       .join(" ");

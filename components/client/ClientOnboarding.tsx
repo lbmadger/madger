@@ -231,7 +231,7 @@ export default function ClientOnboarding() {
                   <span className="text-text-dim">{t("clientOnboarding.sexOptional")}</span>
                 </span>
                 <select value={sex} onChange={(e) => setSex(e.target.value as typeof sex)} className={inputClass}>
-                  <option value="">—</option>
+                  <option value="">-</option>
                   <option value="male">{t("clientOnboarding.sexes.male")}</option>
                   <option value="female">{t("clientOnboarding.sexes.female")}</option>
                   <option value="other">{t("clientOnboarding.sexes.other")}</option>

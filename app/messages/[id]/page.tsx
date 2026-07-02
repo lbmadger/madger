@@ -35,7 +35,7 @@ export default async function ClientThreadPage({
     <MessageThread
       conversationId={conversation.id}
       currentUserId={user.id}
-      otherName={conversation.coach_name || "—"}
+      otherName={conversation.coach_name || "-"}
       backPath="/messages"
       initialMessages={(msgs ?? []) as Message[]}
     />

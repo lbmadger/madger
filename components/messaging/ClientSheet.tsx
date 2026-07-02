@@ -48,7 +48,7 @@ export default function ClientSheet({ profile }: { profile: ClientProfile }) {
             {facts.join(" · ")}
             {value && (
               <span className="ml-2 text-xs text-text-muted">
-                {t("clientSheet.bmi")} {value} —{" "}
+                {t("clientSheet.bmi")} {value} :{" "}
                 {t(`clientOnboarding.bmi.${bmiCategory(value)}`)}
               </span>
             )}

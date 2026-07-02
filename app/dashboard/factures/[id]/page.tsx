@@ -97,7 +97,7 @@ export default async function InvoicePage({
               {inv.billedTo}
             </p>
             <p className="mt-1 font-semibold text-text-base">
-              {[client?.first_name, client?.last_name].filter(Boolean).join(" ") || "—"}
+              {[client?.first_name, client?.last_name].filter(Boolean).join(" ") || "-"}
             </p>
             {client?.email && <p className="text-text-muted">{client.email}</p>}
           </div>
@@ -139,7 +139,7 @@ export default async function InvoicePage({
             <p className="mt-2 text-right text-xs font-semibold text-accent">
               {refunded
                 ? `${inv.statusRefunded} · ${money(p.refunded_cents as number)}`
-                : `✓ ${inv.statusPaid} — ${dateStr(p.paid_at as string)}`}
+                : `✓ ${inv.statusPaid} le ${dateStr(p.paid_at as string)}`}
             </p>
           </div>
         </div>

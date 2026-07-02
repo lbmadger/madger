@@ -36,8 +36,8 @@ export default async function InvoicesPage() {
       }),
       client:
         [client?.first_name, client?.last_name].filter(Boolean).join(" ") ||
-        "—",
-      service: (service?.name as string) ?? "—",
+        "-",
+      service: (service?.name as string) ?? "-",
       amount: ((p.amount_cents as number) / 100).toLocaleString(loc, {
         style: "currency",
         currency: ((p.currency as string) || "eur").toUpperCase(),

@@ -138,7 +138,7 @@ export function NotificationBell() {
                       <span className="block truncate text-sm text-text-base">
                         {[b.clients?.first_name, b.clients?.last_name]
                           .filter(Boolean)
-                          .join(" ") || "—"}
+                          .join(" ") || "-"}
                       </span>
                       <span className="block text-[11px] capitalize text-text-dim">
                         {new Date(b.starts_at).toLocaleString(loc, {

@@ -99,7 +99,7 @@ function layout(opts: {
         <!-- Pied de page -->
         <tr><td align="center" style="${FONT}padding:26px 12px 0;">
           <p style="margin:0;font-size:12px;line-height:1.8;color:${C.dim};">
-            Madger — l'app tout-en-un des coachs indépendants.<br>
+            Madger · l'app tout-en-un des coachs indépendants.<br>
             <a href="${APP_URL}" style="color:${C.muted};text-decoration:none;">madger.app</a>
             &nbsp;·&nbsp;
             <a href="${APP_URL}/charte-paiement" style="color:${C.muted};text-decoration:none;">Charte de paiement</a>
@@ -127,7 +127,7 @@ export function bookingConfirmationClient(p: {
   return {
     subject: `Ta séance avec ${p.coachName} est confirmée ✅`,
     html: layout({
-      preheader: `Séance confirmée ${p.dateStr} — paiement sécurisé jusqu'après la séance.`,
+      preheader: `Séance confirmée ${p.dateStr} · paiement sécurisé jusqu'après la séance.`,
       eyebrow: "Réservation confirmée",
       title: "C'est réservé. À toi de jouer 💪",
       intro: `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> est confirmée et ton paiement est bien enregistré. Voici le récap :`,
@@ -145,7 +145,7 @@ export function bookingConfirmationClient(p: {
       ],
       cta: { label: "Voir ma réservation", url: p.reservationUrl },
       outro:
-        "Astuce : ajoute la séance à ton agenda et préviens ton coach en avance si tu dois annuler — les conditions d'annulation sont indiquées sur ta réservation.",
+        "Astuce : ajoute la séance à ton agenda et préviens ton coach en avance si tu dois annuler : les conditions d'annulation sont indiquées sur ta réservation.",
     }),
   };
 }
@@ -160,9 +160,9 @@ export function bookingNotificationCoach(p: {
   dashboardUrl: string;
 }): Email {
   return {
-    subject: `Nouvelle réservation — ${p.clientName} · ${p.dateStr}`,
+    subject: `Nouvelle réservation : ${p.clientName} · ${p.dateStr}`,
     html: layout({
-      preheader: `${p.clientName} a réservé et payé « ${p.serviceName} » — ${p.priceStr}.`,
+      preheader: `${p.clientName} a réservé et payé « ${p.serviceName} » · ${p.priceStr}.`,
       eyebrow: "Nouvelle réservation",
       title: "Un client vient de réserver 🎉",
       intro: `Bonne nouvelle : <b style="color:${C.text};">${p.clientName}</b> a réservé <b style="color:${C.text};">et payé</b> une séance. Elle est déjà dans ton agenda.`,
@@ -228,14 +228,14 @@ export function newRequestCoach(p: {
       ? `Nouvelle séance réservée · ${p.clientName}`
       : `✋ Nouvelle demande de séance · ${p.clientName}`,
     html: layout({
-      preheader: `${p.clientName} — ${p.dateStr}${p.instant ? "" : " · à confirmer"}`,
+      preheader: `${p.clientName} · ${p.dateStr}${p.instant ? "" : " · à confirmer"}`,
       eyebrow: p.instant ? "Nouvelle réservation" : "Demande à confirmer",
       title: p.instant
         ? "Un créneau vient d'être réservé ⚡"
         : "Un client attend ta réponse",
       intro: p.instant
         ? `Réservation instantanée : le créneau est confirmé automatiquement.`
-        : `Confirme ou refuse la demande depuis ton agenda — sans réponse, le créneau reste bloqué pour les autres clients.`,
+        : `Confirme ou refuse la demande depuis ton agenda : sans réponse, le créneau reste bloqué pour les autres clients.`,
       blocks: [
         detailsTable([
           { label: "Client", value: p.clientName },
@@ -256,7 +256,7 @@ export function sessionReminderClient(p: {
   reservationUrl: string;
 }): Email {
   return {
-    subject: `C'est demain — séance avec ${p.coachName} ⏰`,
+    subject: `C'est demain : séance avec ${p.coachName} ⏰`,
     html: layout({
       preheader: `Rappel : ta séance a lieu ${p.dateStr}.`,
       eyebrow: "Rappel de séance",
@@ -290,7 +290,7 @@ export function refundClient(p: {
   return {
     subject: `Ton remboursement de ${p.refundStr} est en route 💸`,
     html: layout({
-      preheader: `Remboursement de ${p.refundStr} émis — visible sous quelques jours ouvrés.`,
+      preheader: `Remboursement de ${p.refundStr} émis, visible sous quelques jours ouvrés.`,
       eyebrow: "Remboursement",
       title: "Remboursement émis",
       intro,
@@ -317,7 +317,7 @@ export function payoutReleasedCoach(p: {
   return {
     subject: `${p.payoutStr} versés sur ton compte 💸`,
     html: layout({
-      preheader: `Séance avec ${p.clientName} réglée — ${p.payoutStr} transférés vers ton compte Stripe.`,
+      preheader: `Séance avec ${p.clientName} réglée : ${p.payoutStr} transférés vers ton compte Stripe.`,
       eyebrow: "Versement effectué",
       title: "Tu viens d'être payé",
       intro: `La séance avec <b style="color:${C.text};">${p.clientName}</b> est passée sans encombre : ta part a été transférée vers ton compte Stripe.`,
@@ -341,14 +341,14 @@ export function reviewRequestClient(p: {
   return {
     subject: `Comment s'est passée ta séance avec ${p.coachName} ? ⭐`,
     html: layout({
-      preheader: `Note ta séance avec ${p.coachName} — 30 secondes, ça aide toute la communauté.`,
+      preheader: `Note ta séance avec ${p.coachName} : 30 secondes, ça aide toute la communauté.`,
       eyebrow: "Ton avis compte",
       title: "Comment s'est passée ta séance ?",
-      intro: `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> est terminée. Prends 30 secondes pour la noter : ton avis aide les autres à choisir leur coach — et ton coach à progresser.`,
+      intro: `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> est terminée. Prends 30 secondes pour la noter : ton avis aide les autres à choisir leur coach, et ton coach à progresser.`,
       blocks: [
         infoBox(
           "Un avis par client",
-          "Si tu refais des séances avec ce coach, tu pourras mettre ton avis à jour à tout moment — c'est ta note la plus récente qui compte."
+          "Si tu refais des séances avec ce coach, tu pourras mettre ton avis à jour à tout moment : c'est ta note la plus récente qui compte."
         ),
       ],
       cta: { label: "⭐ Noter ma séance", url: p.reservationUrl },
@@ -365,7 +365,7 @@ export function disputeOpenedAdmin(p: {
   adminUrl: string;
 }): Email {
   return {
-    subject: `⚠️ Litige à trancher — ${p.clientName} / ${p.coachName} (${p.amountStr})`,
+    subject: `⚠️ Litige à trancher : ${p.clientName} / ${p.coachName} (${p.amountStr})`,
     html: layout({
       preheader: `Fonds gelés : ${p.amountStr}. Décision à prendre selon la charte.`,
       eyebrow: "Litige · action requise",

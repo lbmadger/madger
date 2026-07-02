@@ -46,7 +46,7 @@ export default async function CoachThreadPage({
     <MessageThread
       conversationId={conversation.id}
       currentUserId={user.id}
-      otherName={conversation.client_name || "—"}
+      otherName={conversation.client_name || "-"}
       backPath="/dashboard/messages"
       initialMessages={(msgs ?? []) as Message[]}
       headerExtra={

@@ -65,7 +65,11 @@ export default function BookingModal({
 
   const selectedService = paidServices.find((s) => s.id === serviceId) ?? null;
   const payMode = !!selectedService;
-  const effectiveDuration = selectedService?.duration_min ?? duration;
+  // Prestation choisie = durée imposée par la prestation (60 min par défaut) :
+  // le client ne choisit jamais la durée d'une prestation payante.
+  const effectiveDuration = selectedService
+    ? selectedService.duration_min ?? 60
+    : duration;
 
   // Charge les créneaux ; re-calcule si la durée change (prestation choisie).
   useEffect(() => {
@@ -167,7 +171,12 @@ export default function BookingModal({
           setError(t("booking.errors.rateLimited"));
         else if (data.error === "date_in_past")
           setError(t("booking.errors.datePast"));
-        else setError(t("booking.errors.generic"));
+        else
+          setError(
+            data.detail
+              ? `${t("booking.errors.generic")} (${data.detail})`
+              : t("booking.errors.generic")
+          );
         return;
       }
       setDone(true);
@@ -248,7 +257,7 @@ export default function BookingModal({
                     <option value="">{t("booking.serviceNone")}</option>
                     {paidServices.map((s) => (
                       <option key={s.id} value={s.id}>
-                        {s.name} —{" "}
+                        {s.name} ·{" "}
                         {formatPrice(s.price_cents, s.currency, locale)}
                       </option>
                     ))}
@@ -363,8 +372,8 @@ export default function BookingModal({
                 </>
               )}
 
-              {/* Durée : masquée si la prestation payante impose sa durée */}
-              {!selectedService?.duration_min && (
+              {/* Durée : visible uniquement en demande libre (sans prestation) */}
+              {!selectedService && (
                 <label className="flex flex-col gap-1.5">
                   <span className={labelClass}>{t("booking.duration")}</span>
                   <select value={duration} onChange={(e) => setDuration(Number(e.target.value))} className={inputClass}>

@@ -72,16 +72,16 @@ export default function ChartePaiement() {
             </p>
             <ul className="mt-3 flex flex-col gap-2" style={{ paddingLeft: 20, listStyleType: "disc" }}>
               <li>
-                <strong className="text-white">Flexible</strong> — plus de 24 h
-                avant : 100 % remboursé ; moins de 24 h : 50 % ; absence : 0 %.
+                <strong className="text-white">Flexible</strong> : plus de 24 h
+                avant, 100 % remboursé ; moins de 24 h : 50 % ; absence : 0 %.
               </li>
               <li>
-                <strong className="text-white">Modérée</strong> — plus de 24 h
-                avant : 75 % remboursé ; moins de 24 h : 0 % ; absence : 0 %.
+                <strong className="text-white">Modérée</strong> : plus de 24 h
+                avant, 75 % remboursé ; moins de 24 h : 0 % ; absence : 0 %.
               </li>
               <li>
-                <strong className="text-white">Stricte</strong> — plus de 24 h
-                avant : 50 % remboursé ; moins de 24 h : 0 % ; absence : 0 %.
+                <strong className="text-white">Stricte</strong> : plus de 24 h
+                avant, 50 % remboursé ; moins de 24 h : 0 % ; absence : 0 %.
               </li>
             </ul>
             <p className="mt-3">
@@ -108,7 +108,7 @@ export default function ChartePaiement() {
 
           <section>
             <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>
-              4. Résolution des litiges — dans quels cas
+              4. Résolution des litiges : dans quels cas
             </h2>
             <p>
               En cas de signalement, Madger examine la situation et tranche selon

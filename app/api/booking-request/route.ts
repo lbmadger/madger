@@ -97,6 +97,8 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       const m = error.message || "";
+      // Trace serveur (visible dans les logs Vercel) pour diagnostiquer.
+      console.error("request_booking failed:", m, error.code, error.details);
       if (m.includes("rate_limited")) {
         return NextResponse.json({ error: "rate_limited" }, { status: 429 });
       }
@@ -106,7 +108,12 @@ export async function POST(req: NextRequest) {
       if (m.includes("coach_not_found")) {
         return NextResponse.json({ error: "coach_not_found" }, { status: 404 });
       }
-      return NextResponse.json({ error: "server_error" }, { status: 500 });
+      return NextResponse.json(
+        // `detail` est affiché en petit dans le formulaire : il donne la
+        // cause technique exacte sans exposer de secret.
+        { error: "server_error", detail: m.slice(0, 200) },
+        { status: 500 }
+      );
     }
 
     // ── Emails (best-effort) : confirmation au client + alerte au coach ────

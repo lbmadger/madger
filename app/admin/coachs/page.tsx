@@ -37,7 +37,7 @@ export default async function AdminCoaches() {
           <tbody>
             {(coaches ?? []).map((c) => {
               const name =
-                [c.first_name, c.last_name].filter(Boolean).join(" ") || "—";
+                [c.first_name, c.last_name].filter(Boolean).join(" ") || "-";
               const pro = isPro(c.pro_until as string | null);
               return (
                 <tr key={c.id as string} className="border-b border-border/60">
@@ -50,17 +50,17 @@ export default async function AdminCoaches() {
                       name
                     )}
                   </td>
-                  <td className="px-4 py-3 text-text-muted">{c.city || "—"}</td>
+                  <td className="px-4 py-3 text-text-muted">{c.city || "-"}</td>
                   <td className="px-4 py-3">
                     <span className={pro ? "text-accent" : "text-text-muted"}>
                       {pro ? "Pro" : "Gratuit"}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-text-muted">
-                    {c.stripe_charges_enabled ? "✅" : "—"}
+                    {c.stripe_charges_enabled ? "✅" : "-"}
                   </td>
                   <td className="px-4 py-3 text-text-muted">
-                    {c.listed ? "✅" : "—"}
+                    {c.listed ? "✅" : "-"}
                   </td>
                 </tr>
               );

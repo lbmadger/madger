@@ -37,13 +37,13 @@ export default async function AdminClients() {
               return (
                 <tr key={c.id as string} className="border-b border-border/60">
                   <td className="px-4 py-3 font-medium text-text-base">
-                    {[c.first_name, c.last_name].filter(Boolean).join(" ") || "—"}
+                    {[c.first_name, c.last_name].filter(Boolean).join(" ") || "-"}
                   </td>
-                  <td className="px-4 py-3 text-text-muted">{c.email || "—"}</td>
-                  <td className="px-4 py-3 text-text-muted">{c.phone || "—"}</td>
+                  <td className="px-4 py-3 text-text-muted">{c.email || "-"}</td>
+                  <td className="px-4 py-3 text-text-muted">{c.phone || "-"}</td>
                   <td className="px-4 py-3 text-text-muted">
                     {[coach?.first_name, coach?.last_name].filter(Boolean).join(" ") ||
-                      "—"}
+                      "-"}
                   </td>
                 </tr>
               );

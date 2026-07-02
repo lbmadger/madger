@@ -68,7 +68,7 @@ export default async function ClientSpacePage() {
           status: b.status as string,
           location: b.location as string,
           coach_name:
-            [co?.first_name, co?.last_name].filter(Boolean).join(" ") || "—",
+            [co?.first_name, co?.last_name].filter(Boolean).join(" ") || "-",
           coach_slug: (co?.slug as string) ?? null,
           cancellation_policy:
             (co?.cancellation_policy as ClientBooking["cancellation_policy"]) ??

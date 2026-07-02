@@ -313,7 +313,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
               onChange={(e) => setSport(e.target.value)}
               className={inputClass}
             >
-              <option value="">—</option>
+              <option value="">-</option>
               {SPORT_KEYS.map((s) => (
                 <option key={s} value={s}>
                   {t(`taxonomy.sports.${s}`)}
