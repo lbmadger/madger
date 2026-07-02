@@ -33,6 +33,7 @@ export default function AgendaView({
   const { t, locale } = useI18n();
   const router = useRouter();
   const [adding, setAdding] = useState(false);
+  const [editing, setEditing] = useState<Booking | null>(null);
   const [cancelId, setCancelId] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const [view, setView] = useState<"week" | "list">("week");
@@ -257,7 +258,18 @@ export default function AgendaView({
                      </div>
                    )}
 
-                   {/* Annulation d'une séance confirmée */}
+                   {/* Modifier une demande en attente */}
+                   {b.status === "pending" && (
+                     <button
+                       type="button"
+                       onClick={() => setEditing(b)}
+                       className="mt-1.5 self-start text-xs font-medium text-text-dim transition-colors hover:text-accent"
+                     >
+                       ✏️ {t("agenda.edit")}
+                     </button>
+                   )}
+
+                   {/* Modifier / annuler une séance confirmée */}
                    {b.status === "confirmed" && (
                      <div className="mt-2 border-t border-border pt-2">
                        {cancelId === b.id ? (
@@ -292,13 +304,22 @@ export default function AgendaView({
                            </button>
                          </div>
                        ) : (
-                         <button
-                           type="button"
-                           onClick={() => setCancelId(b.id)}
-                           className="text-xs font-medium text-text-dim transition-colors hover:text-red-400"
-                         >
-                           {t("agenda.cancelBooking")}
-                         </button>
+                         <div className="flex items-center gap-4">
+                           <button
+                             type="button"
+                             onClick={() => setEditing(b)}
+                             className="text-xs font-medium text-text-dim transition-colors hover:text-accent"
+                           >
+                             ✏️ {t("agenda.edit")}
+                           </button>
+                           <button
+                             type="button"
+                             onClick={() => setCancelId(b.id)}
+                             className="text-xs font-medium text-text-dim transition-colors hover:text-red-400"
+                           >
+                             {t("agenda.cancelBooking")}
+                           </button>
+                         </div>
                        )}
                      </div>
                    )}
@@ -316,6 +337,18 @@ export default function AgendaView({
           onClose={() => setAdding(false)}
           onCreated={() => {
             setAdding(false);
+            router.refresh();
+          }}
+        />
+      )}
+
+      {editing && (
+        <AddSessionModal
+          clients={clients}
+          booking={editing}
+          onClose={() => setEditing(null)}
+          onCreated={() => {
+            setEditing(null);
             router.refresh();
           }}
         />

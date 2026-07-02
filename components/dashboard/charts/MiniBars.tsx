@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export type BarDatum = { label: string; value: number };
 
@@ -19,6 +19,12 @@ export default function MiniBars({
   locale?: string;
 }) {
   const [active, setActive] = useState<number | null>(null);
+  // Animation d'entrée : les barres poussent depuis la baseline, en cascade.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
   const format = (v: number) =>
     unit === "currency"
       ? (v / 100).toLocaleString(locale, {
@@ -55,10 +61,13 @@ export default function MiniBars({
                 </span>
               )}
               <span
-                className={`w-full max-w-[26px] rounded-t transition-colors ${
+                className={`w-full max-w-[26px] rounded-t transition-[height,background-color] duration-700 ease-out ${
                   isActive ? "bg-accent" : "bg-accent/70"
                 }`}
-                style={{ height: `max(${hPct}%, 3px)` }}
+                style={{
+                  height: mounted ? `max(${hPct}%, 3px)` : "3px",
+                  transitionDelay: `${i * 45}ms`,
+                }}
               />
             </button>
           );

@@ -1,6 +1,9 @@
 import Link from "next/link";
 import Topbar from "@/components/dashboard/Topbar";
-import StatCard, { type Trend } from "@/components/dashboard/StatCard";
+import AnimatedStat, {
+  type StatKind,
+  type StatTrend,
+} from "@/components/dashboard/AnimatedStat";
 import SetupChecklist from "@/components/dashboard/SetupChecklist";
 import ChartCard from "@/components/dashboard/charts/ChartCard";
 import MiniBars, { type BarDatum } from "@/components/dashboard/charts/MiniBars";
@@ -50,7 +53,7 @@ export default async function OverviewPage() {
       .gte("ends_at", now.toISOString())
       .order("starts_at", { ascending: true })
       .limit(5),
-    supabase.from("availabilities").select("*", { count: "exact", head: true }),
+    supabase.from("availabilities").select("weekday, start_time, end_time"),
     supabase.from("services").select("*", { count: "exact", head: true }),
     // Tout l'historique encaissé : le sélecteur de période des graphiques
     // choisit lui-même la plage affichée.
@@ -65,27 +68,71 @@ export default async function OverviewPage() {
       .eq("escrow_status", "held"),
     supabase
       .from("bookings")
-      .select("starts_at, status")
+      .select("starts_at, ends_at, status")
       .lt("starts_at", weekEnd.toISOString()),
   ]);
 
-  // Dernières factures (une par paiement encaissé).
-  const { data: latestInvoices } = await supabase
-    .from("payments")
-    .select("id, amount_cents, currency, paid_at, clients(first_name, last_name)")
-    .not("paid_at", "is", null)
-    .order("paid_at", { ascending: false })
-    .limit(3);
+  // Dernières factures, avis, demandes à confirmer, derniers messages reçus.
+  const [{ data: latestInvoices }, reviewsRes, pendingRes, msgsRes] =
+    await Promise.all([
+      supabase
+        .from("payments")
+        .select(
+          "id, amount_cents, currency, paid_at, clients(first_name, last_name)"
+        )
+        .not("paid_at", "is", null)
+        .order("paid_at", { ascending: false })
+        .limit(3),
+      supabase.from("reviews").select("rating"),
+      supabase
+        .from("bookings")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending")
+        .gte("ends_at", now.toISOString()),
+      supabase
+        .from("messages")
+        .select(
+          "id, body, created_at, sender_id, conversations(client_name, coach_id)"
+        )
+        .order("created_at", { ascending: false })
+        .limit(12),
+    ]);
 
   const clientsCount = clientsRes.count ?? 0;
   const weekCount = weekRes.count ?? 0;
   const upcoming = (upcomingRes.data ?? []) as Booking[];
-  const availabilityDone = (availRes.count ?? 0) > 0;
+  const availRows = availRes.data ?? [];
+  const availabilityDone = availRows.length > 0;
   const servicesDone = (servicesRes.count ?? 0) > 0;
   const showChecklist = !availabilityDone || !servicesDone;
+  const pendingCount = pendingRes.count ?? 0;
 
   const { coach } = await getCoach();
   const pro = isPro(coach?.pro_until);
+
+  // Note moyenne du coach (avis clients).
+  const ratings = (reviewsRes.data ?? []).map((r) => r.rating as number);
+  const ratingCount = ratings.length;
+  const ratingAvg =
+    ratingCount > 0 ? ratings.reduce((s, r) => s + r, 0) / ratingCount : 0;
+
+  // Derniers messages REÇUS (envoyés par les clients, pas par le coach).
+  const receivedMsgs = (msgsRes.data ?? [])
+    .filter((m) => m.sender_id !== coach?.id)
+    .map((m) => ({
+      id: m.id as string,
+      body: m.body as string,
+      created_at: m.created_at as string,
+      from:
+        ((Array.isArray(m.conversations)
+          ? m.conversations[0]
+          : m.conversations
+        )?.client_name as string) || "—",
+    }));
+  const msgs24h = receivedMsgs.filter(
+    (m) => Date.now() - new Date(m.created_at).getTime() < 24 * 3600 * 1000
+  ).length;
+  const msgPreview = receivedMsgs.slice(0, 3);
 
   const euros = (cents: number) =>
     (cents / 100).toLocaleString(loc, {
@@ -129,7 +176,7 @@ export default async function OverviewPage() {
   );
   const monthRevenue = revenueByMonth[revenueByMonth.length - 1].value;
   const lastMonthRevenue = revenueByMonth[revenueByMonth.length - 2].value;
-  const revenueTrend: Trend =
+  const revenueTrend: StatTrend =
     lastMonthRevenue > 0
       ? {
           text: `${monthRevenue >= lastMonthRevenue ? "+" : ""}${Math.round(((monthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100)}% ${o.vsLastMonth}`,
@@ -202,12 +249,83 @@ export default async function OverviewPage() {
     };
   });
 
-  const stats: { label: string; value: string; trend?: Trend }[] = [
-    { label: o.revenueMonth, value: euros(monthRevenue), trend: revenueTrend },
-    { label: o.sessionsWeek, value: String(weekCount) },
-    { label: o.activeClients, value: String(clientsCount) },
-    { label: o.pendingPayments, value: euros(heldSum) },
+  // ── Aujourd'hui + taux de remplissage (heures réservées / heures ouvertes) ─
+  const todayStart = new Date(now);
+  todayStart.setHours(0, 0, 0, 0);
+  const todayEnd = new Date(todayStart);
+  todayEnd.setDate(todayStart.getDate() + 1);
+  const todayCount = weekBookings.filter((b) => {
+    const t = new Date(b.starts_at as string).getTime();
+    return t >= todayStart.getTime() && t < todayEnd.getTime();
+  }).length;
+
+  const toMin = (t: string) => {
+    const [h, m] = t.split(":").map(Number);
+    return h * 60 + (m || 0);
+  };
+  const availableMinutes = availRows.reduce(
+    (s, a) => s + Math.max(0, toMin(a.end_time as string) - toMin(a.start_time as string)),
+    0
+  );
+  const bookedMinutes = weekBookings
+    .filter((b) => {
+      const t = new Date(b.starts_at as string).getTime();
+      return t >= weekStart.getTime() && t < weekEnd.getTime();
+    })
+    .reduce(
+      (s, b) =>
+        s +
+        Math.max(
+          0,
+          (new Date(b.ends_at as string).getTime() -
+            new Date(b.starts_at as string).getTime()) /
+            60000
+        ),
+      0
+    );
+  const fillRate =
+    availableMinutes > 0
+      ? Math.min(100, Math.round((bookedMinutes / availableMinutes) * 100))
+      : null;
+
+  // ── Tuiles KPI (compteurs animés) ─────────────────────────────────────────
+  const stats: {
+    label: string;
+    value: number;
+    kind: StatKind;
+    trend?: StatTrend;
+    hint?: string;
+    prefix?: string;
+  }[] = [
+    {
+      label: o.revenueMonth,
+      value: monthRevenue,
+      kind: "currency",
+      trend: revenueTrend,
+    },
+    { label: o.sessionsWeek, value: weekCount, kind: "int" },
+    { label: o.today, value: todayCount, kind: "int", hint: o.sessionsToday },
+    { label: o.activeClients, value: clientsCount, kind: "int" },
+    { label: o.pendingPayments, value: heldSum, kind: "currency" },
+    { label: o.toConfirm, value: pendingCount, kind: "int" },
   ];
+  if (fillRate !== null) {
+    stats.push({
+      label: o.fillRate,
+      value: fillRate,
+      kind: "percent",
+      hint: o.fillRateHint,
+    });
+  }
+  if (ratingCount > 0) {
+    stats.push({
+      label: o.rating,
+      value: ratingAvg,
+      kind: "decimal1",
+      prefix: "⭐ ",
+      hint: `${ratingCount} ${dict.reviews.countLabel}`,
+    });
+  }
 
   return (
     <>
@@ -219,7 +337,18 @@ export default async function OverviewPage() {
             {o.greeting}
             {coach?.first_name ? ` ${coach.first_name}` : ""} 👋
           </h2>
-          <p className="mt-1 text-sm text-text-muted">{o.subtitle}</p>
+          {/* Comme le mockup : date du jour + séances du jour */}
+          <p className="mt-1 text-sm capitalize text-text-muted">
+            {now.toLocaleDateString(loc, {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+            })}
+            <span className="normal-case">
+              {" "}
+              · {todayCount} {o.sessionsToday}
+            </span>
+          </p>
         </div>
 
         {/* Relance vers l'offre Pro (coachs en Free uniquement) */}
@@ -242,14 +371,19 @@ export default async function OverviewPage() {
           </Link>
         )}
 
-        {/* KPI en 2×2 sur mobile, 4 colonnes sur desktop */}
+        {/* KPI animés (compteurs) : 2 colonnes mobile, 4 desktop */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-          {stats.map((s) => (
-            <StatCard
+          {stats.map((s, i) => (
+            <AnimatedStat
               key={s.label}
               label={s.label}
               value={s.value}
+              kind={s.kind}
+              locale={loc}
               trend={s.trend ?? null}
+              hint={s.hint}
+              prefix={s.prefix}
+              index={i}
             />
           ))}
         </div>
@@ -358,6 +492,55 @@ export default async function OverviewPage() {
                 servicesDone={servicesDone}
               />
             )}
+
+            {/* Aperçu messagerie (comme le mockup landing) */}
+            <section className="rounded-2xl border border-border bg-bg-card p-5">
+              <div className="flex items-center justify-between">
+                <h3 className="flex items-center gap-2 text-base font-semibold text-text-base">
+                  {dict.nav.messages}
+                  {msgs24h > 0 && (
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[10px] font-bold text-black">
+                      {msgs24h}
+                    </span>
+                  )}
+                </h3>
+                <Link
+                  href="/dashboard/messages"
+                  className="text-xs font-medium text-accent hover:underline"
+                >
+                  {o.allInvoices}
+                </Link>
+              </div>
+              {msgPreview.length === 0 ? (
+                <p className="mt-4 text-center text-sm text-text-dim">
+                  {o.noMessages}
+                </p>
+              ) : (
+                <ul className="mt-3 flex flex-col gap-2">
+                  {msgPreview.map((m) => (
+                    <li
+                      key={m.id}
+                      className="rounded-lg border border-border bg-bg-elevated p-2.5"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="truncate text-xs font-semibold text-text-base">
+                          {m.from}
+                        </span>
+                        <span className="shrink-0 text-[10px] text-text-dim">
+                          {new Date(m.created_at).toLocaleTimeString(loc, {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 truncate text-xs text-text-muted">
+                        {m.body}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
 
             {/* Dernières factures + téléchargement */}
             <section className="rounded-2xl border border-border bg-bg-card p-5">

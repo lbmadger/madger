@@ -3,32 +3,62 @@
 import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import type { ClientOption, LocationKind } from "@/lib/bookings/types";
+import type { Booking, ClientOption, LocationKind } from "@/lib/bookings/types";
 import Button from "@/components/ui/Button";
 import { inputClass } from "@/lib/ui/styles";
 
 const DURATIONS = [30, 45, 60, 90];
 
+const pad = (n: number) => String(n).padStart(2, "0");
+
+// Création OU modification d'une séance : passer `booking` pré-remplit les
+// champs et bascule en mode édition (update au lieu d'insert).
 export default function AddSessionModal({
   clients,
+  booking,
   onClose,
   onCreated,
 }: {
   clients: ClientOption[];
+  booking?: Booking | null;
   onClose: () => void;
   onCreated: () => void;
 }) {
   const { t } = useI18n();
-  const [clientId, setClientId] = useState("");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
-  const [duration, setDuration] = useState(60);
-  const [location, setLocation] = useState<LocationKind>("in_person");
-  const [locationText, setLocationText] = useState("");
-  const [meetingUrl, setMeetingUrl] = useState("");
-  const [notes, setNotes] = useState("");
+  const editing = !!booking;
+  const init = booking ? new Date(booking.starts_at) : null;
+  const initDuration = booking
+    ? Math.max(
+        15,
+        Math.round(
+          (new Date(booking.ends_at).getTime() -
+            new Date(booking.starts_at).getTime()) /
+            60000
+        )
+      )
+    : 60;
+
+  const [clientId, setClientId] = useState(booking?.client_id ?? "");
+  const [date, setDate] = useState(
+    init ? `${init.getFullYear()}-${pad(init.getMonth() + 1)}-${pad(init.getDate())}` : ""
+  );
+  const [time, setTime] = useState(
+    init ? `${pad(init.getHours())}:${pad(init.getMinutes())}` : ""
+  );
+  const [duration, setDuration] = useState(initDuration);
+  const [location, setLocation] = useState<LocationKind>(
+    booking?.location ?? "in_person"
+  );
+  const [locationText, setLocationText] = useState(booking?.location_text ?? "");
+  const [meetingUrl, setMeetingUrl] = useState(booking?.meeting_url ?? "");
+  const [notes, setNotes] = useState(booking?.notes ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Durée existante hors presets (ex. 75 min) : on l'ajoute aux options.
+  const durations = DURATIONS.includes(duration)
+    ? DURATIONS
+    : [...DURATIONS, duration].sort((a, b) => a - b);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -59,18 +89,24 @@ export default function AddSessionModal({
         return;
       }
 
-      const { error } = await supabase.from("bookings").insert({
-        coach_id: user.id,
+      const payload = {
         client_id: clientId,
         starts_at: starts.toISOString(),
         ends_at: ends.toISOString(),
-        status: "confirmed",
         location,
         location_text:
           location === "in_person" ? locationText.trim() || null : null,
         meeting_url: location === "online" ? meetingUrl.trim() || null : null,
         notes: notes.trim() || null,
-      });
+      };
+
+      const { error } = editing
+        ? await supabase.from("bookings").update(payload).eq("id", booking!.id)
+        : await supabase.from("bookings").insert({
+            ...payload,
+            coach_id: user.id,
+            status: "confirmed",
+          });
 
       if (error) {
         setError(t("agenda.errors.generic"));
@@ -96,7 +132,7 @@ export default function AddSessionModal({
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-lg font-semibold text-text-base">
-          {t("agenda.form.title")}
+          {editing ? t("agenda.form.editTitle") : t("agenda.form.title")}
         </h2>
 
         <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-3">
@@ -155,7 +191,7 @@ export default function AddSessionModal({
               onChange={(e) => setDuration(Number(e.target.value))}
               className={fieldClass}
             >
-              {DURATIONS.map((d) => (
+              {durations.map((d) => (
                 <option key={d} value={d}>
                   {d} min
                 </option>
@@ -242,7 +278,13 @@ export default function AddSessionModal({
               {t("agenda.form.cancel")}
             </Button>
             <Button type="submit" disabled={loading} className="flex-1">
-              {loading ? t("agenda.form.creating") : t("agenda.form.create")}
+              {loading
+                ? editing
+                  ? t("agenda.form.saving")
+                  : t("agenda.form.creating")
+                : editing
+                ? t("agenda.form.save")
+                : t("agenda.form.create")}
             </Button>
           </div>
         </form>
