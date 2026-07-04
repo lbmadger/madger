@@ -535,7 +535,14 @@ const fr = {
       datePast: "Choisis une date à venir.",
       slotRequired: "Choisis un créneau.",
       rateLimited: "Trop de demandes. Réessaie un peu plus tard.",
+      slotTaken:
+        "Ce créneau vient d'être pris par quelqu'un d'autre. Choisis-en un autre.",
     },
+    viewBooking: "Suivre ma réservation",
+    paidBanner:
+      "Paiement reçu ! Ta confirmation arrive par email d'ici quelques minutes.",
+    conflictBanner:
+      "Ce créneau venait d'être pris par quelqu'un d'autre : tu as été intégralement remboursé. Choisis un autre créneau.",
   },
   settings: {
     title: "Réglages",
@@ -1397,7 +1404,14 @@ const en: Dictionary = {
       datePast: "Pick a future date.",
       slotRequired: "Pick a slot.",
       rateLimited: "Too many requests. Please try again later.",
+      slotTaken:
+        "This slot was just taken by someone else. Please pick another one.",
     },
+    viewBooking: "Track my booking",
+    paidBanner:
+      "Payment received! Your confirmation is on its way by email within a few minutes.",
+    conflictBanner:
+      "This slot had just been taken by someone else: you have been fully refunded. Please pick another slot.",
   },
   settings: {
     title: "Settings",

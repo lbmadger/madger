@@ -105,6 +105,9 @@ export async function POST(req: NextRequest) {
       if (m.includes("date_in_past")) {
         return NextResponse.json({ error: "date_in_past" }, { status: 400 });
       }
+      if (m.includes("slot_taken")) {
+        return NextResponse.json({ error: "slot_taken" }, { status: 409 });
+      }
       if (m.includes("coach_not_found")) {
         return NextResponse.json({ error: "coach_not_found" }, { status: 404 });
       }
@@ -134,6 +137,7 @@ export async function POST(req: NextRequest) {
           month: "long",
           hour: "2-digit",
           minute: "2-digit",
+          timeZone: "Europe/Paris",
         });
 
         const tplClient = requestReceivedClient({
@@ -175,7 +179,8 @@ export async function POST(req: NextRequest) {
       /* un échec d'email ne bloque jamais la demande */
     }
 
-    return NextResponse.json({ success: true });
+    // booking_id : permet au client de suivre sa demande sans compte.
+    return NextResponse.json({ success: true, booking_id: bookingId });
   } catch {
     return NextResponse.json({ error: "server_error" }, { status: 500 });
   }

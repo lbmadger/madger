@@ -4,19 +4,26 @@ import Link from "next/link";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
 // Checklist d'onboarding affichée tant que la config n'est pas terminée.
-// Chaque étape est cliquable et reflète l'état réel du compte. L'étape Stripe
-// reste informative (module Paiements à venir).
+// Chaque étape est cliquable et reflète l'état réel du compte.
 export default function SetupChecklist({
+  profileDone = true,
   availabilityDone,
   servicesDone,
+  stripeDone = false,
 }: {
+  profileDone?: boolean;
   availabilityDone: boolean;
   servicesDone: boolean;
+  stripeDone?: boolean;
 }) {
   const { t } = useI18n();
 
   const steps = [
-    { labelKey: "overview.setupProfile", href: "/dashboard/reglages", done: true },
+    {
+      labelKey: "overview.setupProfile",
+      href: "/dashboard/reglages",
+      done: profileDone,
+    },
     {
       labelKey: "overview.setupAvailability",
       href: "/dashboard/disponibilites",
@@ -27,7 +34,11 @@ export default function SetupChecklist({
       href: "/dashboard/prestations",
       done: servicesDone,
     },
-    { labelKey: "overview.setupStripe", href: null, done: false },
+    {
+      labelKey: "overview.setupStripe",
+      href: "/dashboard/paiements",
+      done: stripeDone,
+    },
   ];
 
   return (

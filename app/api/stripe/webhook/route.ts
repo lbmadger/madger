@@ -47,6 +47,37 @@ export async function POST(req: NextRequest) {
 
   try {
     switch (event.type) {
+      // Paiement d'une séance (séquestre) : enregistre la réservation même si
+      // le client ne revient jamais de la page Stripe. Idempotent (index
+      // unique sur stripe_payment_intent_id).
+      case "checkout.session.completed": {
+        const s = event.data.object as Stripe.Checkout.Session;
+        if (s.mode === "payment") {
+          const { fulfillCheckoutSession } = await import(
+            "@/lib/stripe/fulfillCheckout"
+          );
+          await fulfillCheckoutSession(s.id);
+        }
+        break;
+      }
+      // Litige (chargeback) : gèle le paiement pour bloquer tout versement
+      // au coach tant que le litige n'est pas résolu.
+      case "charge.dispute.created": {
+        const dispute = event.data.object as Stripe.Dispute;
+        const chargeId =
+          typeof dispute.charge === "string" ? dispute.charge : dispute.charge?.id;
+        if (chargeId) {
+          await supabase
+            .from("payments")
+            .update({
+              escrow_status: "disputed",
+              disputed_at: new Date().toISOString(),
+            })
+            .eq("stripe_charge_id", chargeId)
+            .eq("escrow_status", "held");
+        }
+        break;
+      }
       case "invoice.paid": {
         const invoice = event.data.object as Stripe.Invoice;
         const subId = invoiceSubscriptionId(invoice);

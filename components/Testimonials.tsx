@@ -52,7 +52,7 @@ export default function Testimonials() {
             <p>
               Je n'ai pas créé Madger après une étude de marché. Je l'ai créé en voyant des
               coachs passionnés perdre leurs soirées sur WhatsApp, Excel et des relances de
-              paiement — au lieu de faire ce pour quoi ils sont doués&nbsp;: coacher.
+              paiement, au lieu de faire ce pour quoi ils sont doués&nbsp;: coacher.
             </p>
             <p>
               Madger, c'est l'outil que j'aurais voulu leur mettre entre les mains&nbsp;: un seul
@@ -60,7 +60,7 @@ export default function Testimonials() {
               en arrière-plan.
             </p>
             <p>
-              On le construit en ce moment — et pas dans notre coin. Les premiers membres ont une
+              On le construit en ce moment, et pas dans notre coin. Les premiers membres ont une
               vraie voix&nbsp;: leurs retours décident des prochaines fonctionnalités. Le produit
               se façonne <span className="text-white font-semibold">avec</span> les coachs, pas pour eux.
             </p>

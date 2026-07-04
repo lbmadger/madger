@@ -64,10 +64,12 @@ export function NotificationBell() {
   const [items, setItems] = useState<PendingItem[]>([]);
   const ref = useRef<HTMLDivElement>(null);
 
-  // Demandes en attente (à confirmer), rafraîchies toutes les 60 s.
+  // Demandes en attente (à confirmer), rafraîchies toutes les 2 min et en
+  // pause quand l'onglet est en arrière-plan (économise la base à l'échelle).
   useEffect(() => {
     let alive = true;
     async function load() {
+      if (document.hidden) return;
       const supabase = createClient();
       const { data } = await supabase
         .from("bookings")
@@ -79,10 +81,15 @@ export function NotificationBell() {
       if (alive && data) setItems(data as unknown as PendingItem[]);
     }
     load();
-    const id = setInterval(load, 60_000);
+    const id = setInterval(load, 120_000);
+    const onVisible = () => {
+      if (!document.hidden) load();
+    };
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       alive = false;
       clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, []);
 

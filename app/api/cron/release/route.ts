@@ -6,17 +6,20 @@ import { computePayout } from "@/lib/stripe/escrow";
 import { isPro } from "@/lib/subscription/plan";
 import { sendEmail } from "@/lib/email/resend";
 import { reviewRequestClient } from "@/lib/email/templates";
+import { cronAuthorized } from "@/lib/cron/auth";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
 // Job planifié (Vercel Cron) : libère les paiements sous séquestre arrivés à
-// maturité (release_after dépassé) et non gelés → transfert de la part du coach
-// vers son compte Connect. Sécurisé par CRON_SECRET.
+// maturité (release_after dépassé) et non gelés → transfert de la part du
+// coach vers son compte Connect. Toutes les transitions d'état sont
+// CONDITIONNELLES (where escrow_status='held') : si une annulation, un litige
+// ou un autre run traite la même ligne en même temps, un seul gagne.
 export async function GET(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  if (secret && req.headers.get("authorization") !== `Bearer ${secret}`) {
+  if (!cronAuthorized(req)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
@@ -29,14 +32,18 @@ export async function GET(req: NextRequest) {
   const supabase = createClient(SUPABASE_URL, serviceKey);
   const nowIso = new Date().toISOString();
 
-  // Paiements mûrs, retenus, avec une charge à transférer.
+  // Paiements mûrs, retenus, avec une charge à transférer. Les lignes sans
+  // charge Stripe sont exclues (intraitables : elles ne doivent pas occuper
+  // le lot).
   const { data: due } = await supabase
     .from("payments")
     .select(
-      "id, coach_id, booking_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, bookings(status)"
+      "id, coach_id, booking_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, refunded_cents, bookings(status)"
     )
     .eq("escrow_status", "held")
     .lte("release_after", nowIso)
+    .not("stripe_charge_id", "is", null)
+    .order("release_after", { ascending: true })
     .limit(100);
 
   let released = 0;
@@ -45,17 +52,33 @@ export async function GET(req: NextRequest) {
 
   for (const p of due ?? []) {
     try {
-      if (!p.stripe_charge_id) continue;
+      const alreadyRefunded = (p.refunded_cents as number | null) ?? 0;
+      const remaining = Math.max(0, p.amount_cents - alreadyRefunded);
+
+      // Déjà tout remboursé (dashboard Stripe, incident…) : on clôt sans verser.
+      if (remaining === 0) {
+        await supabase
+          .from("payments")
+          .update({ escrow_status: "refunded", status: "refunded", resolved_at: nowIso })
+          .eq("id", p.id)
+          .eq("escrow_status", "held");
+        continue;
+      }
 
       // Séance jamais confirmée par le coach (mode approbation) et déjà
-      // passée : on rembourse intégralement le client au lieu de verser.
+      // passée : remboursement intégral du restant au lieu de verser.
       const bookingRow = Array.isArray(p.bookings) ? p.bookings[0] : p.bookings;
-      if (bookingRow?.status === "pending") {
-        await stripe.refunds.create(
-          { charge: p.stripe_charge_id, amount: p.amount_cents },
-          { idempotencyKey: `release_refund_${p.id}` }
-        );
-        await supabase
+      if (bookingRow?.status === "pending" && p.booking_id) {
+        // Le coach peut confirmer pendant ce run : transition conditionnelle.
+        const { data: claimedBooking } = await supabase
+          .from("bookings")
+          .update({ status: "cancelled" })
+          .eq("id", p.booking_id)
+          .eq("status", "pending")
+          .select("id");
+        if (!claimedBooking?.length) continue; // confirmée entre-temps
+
+        const { data: claimedPay } = await supabase
           .from("payments")
           .update({
             escrow_status: "refunded",
@@ -64,12 +87,23 @@ export async function GET(req: NextRequest) {
             payout_cents: 0,
             resolved_at: nowIso,
           })
-          .eq("id", p.id);
-        if (p.booking_id) {
+          .eq("id", p.id)
+          .eq("escrow_status", "held")
+          .select("id");
+        if (!claimedPay?.length) continue;
+
+        try {
+          await stripe.refunds.create(
+            { charge: p.stripe_charge_id as string, amount: remaining },
+            { idempotencyKey: `release_refund_${p.id}` }
+          );
+        } catch (e) {
+          // Remboursement raté : on rend la ligne au prochain run.
           await supabase
-            .from("bookings")
-            .update({ status: "cancelled" })
-            .eq("id", p.booking_id);
+            .from("payments")
+            .update({ escrow_status: "held", status: "paid", refunded_cents: alreadyRefunded, resolved_at: null })
+            .eq("id", p.id);
+          throw e;
         }
         refunded++;
         continue;
@@ -86,48 +120,55 @@ export async function GET(req: NextRequest) {
         p.amount_cents,
         p.stripe_fee_cents ?? 0,
         isPro(coach.pro_until),
-        0
+        alreadyRefunded
       );
 
+      // Réclame la ligne AVANT l'appel Stripe : un seul processus gagne.
+      const { data: claimed } = await supabase
+        .from("payments")
+        .update({
+          escrow_status: "released",
+          commission_cents: breakdown.commissionCents,
+          payout_cents: breakdown.payoutCents,
+          released_at: nowIso,
+        })
+        .eq("id", p.id)
+        .eq("escrow_status", "held")
+        .select("id");
+      if (!claimed?.length) continue;
+
       if (breakdown.payoutCents > 0) {
-        const transfer = await stripe.transfers.create(
-          {
-            amount: breakdown.payoutCents,
-            currency: p.currency || "eur",
-            destination: coach.stripe_account_id,
-            source_transaction: p.stripe_charge_id,
-            transfer_group: `coach_${p.coach_id}`,
-          },
-          { idempotencyKey: `release_${p.id}` }
-        );
-        await supabase
-          .from("payments")
-          .update({
-            escrow_status: "released",
-            stripe_transfer_id: transfer.id,
-            commission_cents: breakdown.commissionCents,
-            payout_cents: breakdown.payoutCents,
-            released_at: nowIso,
-          })
-          .eq("id", p.id);
-      } else {
-        // Rien à transférer (montant absorbé par frais/commission) : on clôt.
-        await supabase
-          .from("payments")
-          .update({
-            escrow_status: "released",
-            commission_cents: breakdown.commissionCents,
-            payout_cents: 0,
-            released_at: nowIso,
-          })
-          .eq("id", p.id);
+        try {
+          const transfer = await stripe.transfers.create(
+            {
+              amount: breakdown.payoutCents,
+              currency: p.currency || "eur",
+              destination: coach.stripe_account_id,
+              source_transaction: p.stripe_charge_id as string,
+              transfer_group: `coach_${p.coach_id}`,
+            },
+            { idempotencyKey: `release_${p.id}` }
+          );
+          await supabase
+            .from("payments")
+            .update({ stripe_transfer_id: transfer.id })
+            .eq("id", p.id);
+        } catch (e) {
+          // Transfert raté : on rend la ligne au prochain run.
+          await supabase
+            .from("payments")
+            .update({ escrow_status: "held", released_at: null })
+            .eq("id", p.id);
+          throw e;
+        }
       }
 
       if (p.booking_id) {
         await supabase
           .from("bookings")
           .update({ status: "completed" })
-          .eq("id", p.booking_id);
+          .eq("id", p.booking_id)
+          .neq("status", "cancelled");
 
         // Invite le client à noter sa séance (1 client = 1 avis). Best-effort.
         try {

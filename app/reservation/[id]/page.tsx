@@ -64,7 +64,16 @@ export default async function ReservationPage({
   const dateStr = booking
     ? new Date(booking.starts_at).toLocaleString(
         locale === "fr" ? "fr-FR" : "en-US",
-        { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }
+        {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          hour: "2-digit",
+          minute: "2-digit",
+          // Le serveur tourne en UTC : sans fuseau explicite, l'heure
+          // affichée serait décalée de 1 à 2 h.
+          timeZone: "Europe/Paris",
+        }
       )
     : "";
 

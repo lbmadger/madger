@@ -3,17 +3,17 @@ import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
 import { sessionReminderClient } from "@/lib/email/templates";
+import { cronAuthorized } from "@/lib/cron/auth";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
 // Job planifié : envoie un rappel par email aux clients dont la séance a lieu
-// dans les ~24 h à venir et qui n'ont pas encore été rappelés. Sécurisé par
-// CRON_SECRET.
+// dans les ~24 h à venir et qui n'ont pas encore été rappelés.
 export async function GET(req: NextRequest) {
-  const secret = process.env.CRON_SECRET;
-  if (secret && req.headers.get("authorization") !== `Bearer ${secret}`) {
+  if (!cronAuthorized(req)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
     const client = Array.isArray(b.clients) ? b.clients[0] : b.clients;
     const coach = Array.isArray(b.coaches) ? b.coaches[0] : b.coaches;
     const email = client?.email as string | undefined;
-    // On marque comme rappelé même sans email pour ne pas réessayer en boucle.
+    let delivered = false;
     if (email) {
       const coachName =
         [coach?.first_name, coach?.last_name].filter(Boolean).join(" ") ||
@@ -53,6 +53,7 @@ export async function GET(req: NextRequest) {
         month: "long",
         hour: "2-digit",
         minute: "2-digit",
+        timeZone: "Europe/Paris",
       });
       const t = sessionReminderClient({
         coachName,
@@ -60,13 +61,17 @@ export async function GET(req: NextRequest) {
         online: b.location === "online",
         reservationUrl: `${APP_URL}/reservation/${b.id}`,
       });
-      const ok = await sendEmail({ to: email, subject: t.subject, html: t.html });
-      if (ok) sent++;
+      delivered = await sendEmail({ to: email, subject: t.subject, html: t.html });
+      if (delivered) sent++;
     }
-    await supabase
-      .from("bookings")
-      .update({ reminder_sent_at: nowIso })
-      .eq("id", b.id);
+    // Marqué rappelé seulement si l'email est parti (ou s'il n'y a pas
+    // d'adresse : inutile de rescanner la ligne à chaque run).
+    if (delivered || !email) {
+      await supabase
+        .from("bookings")
+        .update({ reminder_sent_at: nowIso })
+        .eq("id", b.id);
+    }
   }
 
   return NextResponse.json({ sent, scanned: (bookings ?? []).length });

@@ -60,6 +60,8 @@ export default function BookingModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  // Id renvoyé par l'API : lien de suivi de la demande sans compte.
+  const [bookingId, setBookingId] = useState<string | null>(null);
 
   // Créneaux réels (dispos du coach − séances déjà prises).
   const [slotState, setSlotState] = useState<SlotState>({ mode: "loading" });
@@ -174,6 +176,8 @@ export default function BookingModal({
           setError(t("booking.errors.rateLimited"));
         else if (data.error === "date_in_past")
           setError(t("booking.errors.datePast"));
+        else if (data.error === "slot_taken")
+          setError(t("booking.errors.slotTaken"));
         else
           setError(
             data.detail
@@ -182,6 +186,7 @@ export default function BookingModal({
           );
         return;
       }
+      if (data.booking_id) setBookingId(data.booking_id as string);
       setDone(true);
     } catch {
       setError(t("booking.errors.generic"));
@@ -219,8 +224,18 @@ export default function BookingModal({
               {instant ? t("booking.confirmedDesc") : t("booking.successDesc")}
             </p>
             <div className="mt-6 flex flex-col gap-2">
+              {bookingId && (
+                <Link href={`/reservation/${bookingId}`} className="w-full">
+                  <Button className="w-full">{t("booking.viewBooking")}</Button>
+                </Link>
+              )}
               <Link href="/signup?role=client" className="w-full">
-                <Button className="w-full">{t("booking.createAccount")}</Button>
+                <Button
+                  variant={bookingId ? "secondary" : "primary"}
+                  className="w-full"
+                >
+                  {t("booking.createAccount")}
+                </Button>
               </Link>
               <Button variant="ghost" onClick={onClose}>
                 {t("booking.cancel")}

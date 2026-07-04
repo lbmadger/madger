@@ -49,30 +49,41 @@ export default async function OverviewPage() {
       .from("bookings")
       .select("*", { count: "exact", head: true })
       .gte("starts_at", weekStart.toISOString())
-      .lt("starts_at", weekEnd.toISOString()),
+      .lt("starts_at", weekEnd.toISOString())
+      .neq("status", "cancelled"),
     supabase
       .from("bookings")
       .select("*, clients(first_name, last_name)")
       .gte("ends_at", now.toISOString())
+      .neq("status", "cancelled")
       .order("starts_at", { ascending: true })
       .limit(5),
     supabase.from("availabilities").select("weekday, start_time, end_time"),
     supabase.from("services").select("type"),
-    // Tout l'historique encaissé : le sélecteur de période des graphiques
-    // choisit lui-même la plage affichée.
+    // Historique encaissé borné à 24 mois (le max affiché par les
+    // graphiques) : inutile de rapatrier plus.
     supabase
       .from("payments")
       .select("amount_cents, paid_at")
       .eq("status", "paid")
-      .not("paid_at", "is", null),
+      .not("paid_at", "is", null)
+      .gte(
+        "paid_at",
+        new Date(now.getFullYear(), now.getMonth() - 23, 1).toISOString()
+      ),
     supabase
       .from("payments")
       .select("amount_cents")
       .eq("escrow_status", "held"),
+    // Borné à 52 semaines (le max affiché) au lieu de tout l'historique.
     supabase
       .from("bookings")
       .select("starts_at, ends_at, status, client_id")
-      .lt("starts_at", weekEnd.toISOString()),
+      .lt("starts_at", weekEnd.toISOString())
+      .gte(
+        "starts_at",
+        new Date(weekStart.getTime() - 52 * 7 * 86400000).toISOString()
+      ),
   ]);
 
   // Dernières factures, avis, demandes à confirmer, derniers messages reçus,
@@ -118,11 +129,17 @@ export default async function OverviewPage() {
   const availabilityDone = availRows.length > 0;
   const serviceRows = servicesRes.data ?? [];
   const servicesDone = serviceRows.length > 0;
-  const showChecklist = !availabilityDone || !servicesDone;
   const pendingCount = pendingRes.count ?? 0;
 
   const { coach } = await getCoach();
   const pro = isPro(coach?.pro_until);
+
+  // Checklist de démarrage : reflète l'état réel (photo + bio, dispos,
+  // prestations, paiements Stripe).
+  const profileDone = Boolean(coach?.avatar_url && (coach?.bio ?? "").trim());
+  const stripeDone = Boolean(coach?.stripe_charges_enabled);
+  const showChecklist =
+    !profileDone || !availabilityDone || !servicesDone || !stripeDone;
 
   // Note moyenne du coach (avis clients).
   const ratings = (reviewsRes.data ?? []).map((r) => r.rating as number);
@@ -653,8 +670,10 @@ export default async function OverviewPage() {
 
             {showChecklist && (
               <SetupChecklist
+                profileDone={profileDone}
                 availabilityDone={availabilityDone}
                 servicesDone={servicesDone}
+                stripeDone={stripeDone}
               />
             )}
 

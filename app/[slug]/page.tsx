@@ -57,8 +57,10 @@ export async function generateMetadata({
 
 export default async function CoachPublicPage({
   params,
+  searchParams,
 }: {
   params: { slug: string };
+  searchParams: { paid?: string; conflict?: string };
 }) {
   const { locale, dict } = getServerDictionary();
   const coach = await getCoachBySlug(params.slug);
@@ -110,6 +112,17 @@ export default async function CoachPublicPage({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <PublicHeader />
+        {/* Retour de paiement sans réservation retrouvée : on rassure. */}
+        {searchParams.paid === "1" && (
+          <p className="mx-auto mt-4 w-full max-w-2xl rounded-xl border border-accent/25 bg-accent/[0.06] px-4 py-3 text-center text-sm text-text-base">
+            {dict.booking.paidBanner}
+          </p>
+        )}
+        {searchParams.conflict === "1" && (
+          <p className="mx-auto mt-4 w-full max-w-2xl rounded-xl border border-yellow-400/25 bg-yellow-400/[0.06] px-4 py-3 text-center text-sm text-text-base">
+            {dict.booking.conflictBanner}
+          </p>
+        )}
         <CoachProfile
           coach={coach}
           services={(services ?? []) as PublicService[]}

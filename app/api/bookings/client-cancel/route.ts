@@ -79,6 +79,12 @@ export async function POST(req: NextRequest) {
     .eq("booking_id", bookingId)
     .maybeSingle();
 
+  // Paiement gelé par un litige : rien ne bouge tant que l'admin n'a pas
+  // tranché.
+  if (payment?.escrow_status === "disputed") {
+    return NextResponse.json({ error: "disputed" }, { status: 409 });
+  }
+
   // Pas de paiement retenu : simple annulation.
   if (!payment || payment.escrow_status !== "held") {
     await admin
@@ -89,10 +95,24 @@ export async function POST(req: NextRequest) {
   }
 
   const amount = payment.amount_cents;
+
+  // Achat de PACK : remboursement au prorata des séances non consommées
+  // (celle qu'on annule comprise), puis pack clôturé.
+  const { data: pack } = await admin
+    .from("pack_credits")
+    .select("id, total, used")
+    .eq("payment_id", payment.id)
+    .maybeSingle();
+  const baseAmount = pack
+    ? Math.round(
+        (amount * Math.max(0, pack.total - pack.used + 1)) / pack.total
+      )
+    : amount;
+
   const refund = refundCents(
     normalizePolicy(coach?.cancellation_policy),
     new Date(booking.starts_at),
-    amount
+    baseAmount
   );
   const breakdown = computePayout(
     amount,
@@ -100,6 +120,25 @@ export async function POST(req: NextRequest) {
     isPro(coach?.pro_until),
     refund
   );
+
+  // Réclame le paiement AVANT les appels Stripe (anti-course avec le cron,
+  // une annulation coach simultanée ou un double clic).
+  const { data: claimed } = await admin
+    .from("payments")
+    .update({
+      escrow_status: refund >= amount ? "refunded" : "canceled",
+      status: refund >= amount ? "refunded" : "paid",
+      refunded_cents: refund,
+      commission_cents: breakdown.commissionCents,
+      payout_cents: breakdown.payoutCents,
+      resolved_at: new Date().toISOString(),
+    })
+    .eq("id", payment.id)
+    .eq("escrow_status", "held")
+    .select("id");
+  if (!claimed?.length) {
+    return NextResponse.json({ error: "already_processed" }, { status: 409 });
+  }
 
   try {
     if (refund > 0 && payment.stripe_charge_id) {
@@ -129,21 +168,21 @@ export async function POST(req: NextRequest) {
 
     await admin
       .from("payments")
-      .update({
-        escrow_status: refund >= amount ? "refunded" : "canceled",
-        status: refund >= amount ? "refunded" : "paid",
-        refunded_cents: refund,
-        commission_cents: breakdown.commissionCents,
-        payout_cents: breakdown.payoutCents,
-        stripe_transfer_id: transferId,
-        resolved_at: new Date().toISOString(),
-      })
+      .update({ stripe_transfer_id: transferId })
       .eq("id", payment.id);
 
     await admin
       .from("bookings")
       .update({ status: "cancelled" })
       .eq("id", bookingId);
+
+    // Pack clôturé : plus aucun crédit utilisable après remboursement.
+    if (pack) {
+      await admin
+        .from("pack_credits")
+        .update({ used: pack.total })
+        .eq("id", pack.id);
+    }
 
     // Email de confirmation de remboursement (best-effort).
     if (refund > 0) {
@@ -170,6 +209,11 @@ export async function POST(req: NextRequest) {
       payout_cents: breakdown.payoutCents,
     });
   } catch (e) {
+    // Échec Stripe après la réclamation : on rend la ligne (retraitable).
+    await admin
+      .from("payments")
+      .update({ escrow_status: "held", status: "paid", resolved_at: null })
+      .eq("id", payment.id);
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "stripe_error" },
       { status: 500 }
