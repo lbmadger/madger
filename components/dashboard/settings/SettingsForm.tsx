@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -74,6 +74,15 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   const [venues, setVenues] = useState<string[]>(coach.venues ?? []);
   const [gymName, setGymName] = useState(coach.gym_name ?? "");
   const [timezone, setTimezone] = useState(coach.timezone || "Europe/Paris");
+  // Retour de la connexion Google (?google=...) : affiche la cause au lieu
+  // d'échouer en silence.
+  const [googleMsg, setGoogleMsg] = useState<
+    "notconfigured" | "error" | null
+  >(null);
+  useEffect(() => {
+    const v = new URLSearchParams(window.location.search).get("google");
+    if (v === "notconfigured" || v === "error") setGoogleMsg(v);
+  }, []);
   const [avatarUrl, setAvatarUrl] = useState(coach.avatar_url ?? "");
   const [uploading, setUploading] = useState(false);
   const [avatarError, setAvatarError] = useState<string | null>(null);
@@ -542,6 +551,13 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           <p className="mt-1 text-xs text-text-dim">
             {t("settings.googleHint")}
           </p>
+          {googleMsg && (
+            <p className="mt-2 rounded-lg border border-yellow-400/25 bg-yellow-400/[0.06] px-3 py-2 text-xs text-yellow-400">
+              {googleMsg === "notconfigured"
+                ? t("settings.googleNotConfigured")
+                : t("settings.googleError")}
+            </p>
+          )}
           {coach.google_connected_at ? (
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <span className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1.5 text-xs font-semibold text-accent">

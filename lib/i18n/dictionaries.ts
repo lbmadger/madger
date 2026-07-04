@@ -630,6 +630,10 @@ const fr = {
     googleConnect: "Connecter mon compte Google",
     googleConnected: "Compte Google connecté",
     googleDisconnect: "Déconnecter",
+    googleNotConfigured:
+      "Les clés Google ne sont pas encore actives côté serveur : ajoute GOOGLE_CLIENT_ID et GOOGLE_CLIENT_SECRET dans Vercel, puis redéploie.",
+    googleError:
+      "La connexion Google a échoué. Réessaie, et vérifie que ton email est bien dans les utilisateurs test de l'app Google.",
     viewPublic: "Voir ma page publique",
     save: "Enregistrer",
     saving: "Enregistrement…",
@@ -1557,6 +1561,10 @@ const en: Dictionary = {
     googleConnect: "Connect my Google account",
     googleConnected: "Google account connected",
     googleDisconnect: "Disconnect",
+    googleNotConfigured:
+      "Google keys are not active on the server yet: add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Vercel, then redeploy.",
+    googleError:
+      "Google connection failed. Try again, and check your email is listed as a test user of the Google app.",
     viewPublic: "View my public page",
     save: "Save",
     saving: "Saving…",
