@@ -349,6 +349,7 @@ export default async function OverviewPage() {
     trend?: StatTrend;
     hint?: string;
     prefix?: string;
+    href?: string;
   }[] = [
     {
       label: o.revenueMonth,
@@ -359,8 +360,18 @@ export default async function OverviewPage() {
     { label: o.sessionsWeek, value: weekCount, kind: "int" },
     { label: o.today, value: todayCount, kind: "int", hint: o.sessionsToday },
     { label: o.activeClients, value: clientsCount, kind: "int" },
-    { label: o.pendingPayments, value: heldSum, kind: "currency" },
-    { label: o.toConfirm, value: pendingCount, kind: "int" },
+    {
+      label: o.pendingPayments,
+      value: heldSum,
+      kind: "currency",
+      href: "/dashboard/paiements",
+    },
+    {
+      label: o.toConfirm,
+      value: pendingCount,
+      kind: "int",
+      href: "/dashboard/agenda",
+    },
   ];
   // ── Statistiques avancées (plan Pro) ──────────────────────────────────────
   // En Gratuit on n'envoie que des valeurs factices (les tuiles sont floutées
@@ -549,19 +560,31 @@ export default async function OverviewPage() {
 
         {/* KPI animés (compteurs) : 2 colonnes mobile, 4 desktop */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-          {stats.map((s, i) => (
-            <AnimatedStat
-              key={s.label}
-              label={s.label}
-              value={s.value}
-              kind={s.kind}
-              locale={loc}
-              trend={s.trend ?? null}
-              hint={s.hint}
-              prefix={s.prefix}
-              index={i}
-            />
-          ))}
+          {stats.map((s, i) => {
+            const tile = (
+              <AnimatedStat
+                label={s.label}
+                value={s.value}
+                kind={s.kind}
+                locale={loc}
+                trend={s.trend ?? null}
+                hint={s.hint}
+                prefix={s.prefix}
+                index={i}
+              />
+            );
+            return s.href ? (
+              <Link
+                key={s.label}
+                href={s.href}
+                className="block transition-transform hover:-translate-y-0.5"
+              >
+                {tile}
+              </Link>
+            ) : (
+              <div key={s.label}>{tile}</div>
+            );
+          })}
         </div>
 
         {/* Statistiques avancées : floutées + cadenas en Gratuit, réelles en

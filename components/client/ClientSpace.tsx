@@ -18,6 +18,15 @@ export type ClientPack = {
   coach_name: string;
 };
 
+export type ClientSub = {
+  id: string;
+  service_name: string;
+  coach_name: string;
+  price_cents: number;
+  status: string;
+  current_period_end: string | null;
+};
+
 export type ClientBooking = {
   id: string;
   starts_at: string;
@@ -37,9 +46,11 @@ export type ClientBooking = {
 export default function ClientSpace({
   bookings,
   packs = [],
+  subs = [],
 }: {
   bookings: ClientBooking[];
   packs?: ClientPack[];
+  subs?: ClientSub[];
 }) {
   const { t, locale } = useI18n();
   const router = useRouter();
@@ -47,6 +58,32 @@ export default function ClientSpace({
   const [cancelId, setCancelId] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [subCancelling, setSubCancelling] = useState<string | null>(null);
+  const [subError, setSubError] = useState<string | null>(null);
+
+  // Arrêt d'un abonnement mensuel : reste actif jusqu'à la fin de la période
+  // payée, puis plus aucun prélèvement.
+  async function cancelSub(id: string) {
+    if (!window.confirm(t("clientSubs.confirmStop"))) return;
+    setSubCancelling(id);
+    setSubError(null);
+    try {
+      const res = await fetch("/api/subscriptions/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subscription_id: id }),
+      });
+      if (!res.ok) {
+        setSubError(id);
+        return;
+      }
+      router.refresh();
+    } catch {
+      setSubError(id);
+    } finally {
+      setSubCancelling(null);
+    }
+  }
 
   const now = Date.now();
   const upcoming = bookings
@@ -143,6 +180,84 @@ export default function ClientSpace({
           {t("clientSpace.myProfile")}
         </Link>
       </div>
+
+      {/* Abonnements mensuels */}
+      {subs.length > 0 && (
+        <>
+          <h2 className="mt-8 text-xs font-semibold uppercase tracking-wide text-text-dim">
+            {t("clientSubs.title")}
+          </h2>
+          <ul className="mt-3 flex flex-col gap-2">
+            {subs.map((s) => {
+              const active = s.status === "active";
+              const canceling = s.status === "canceling";
+              return (
+                <li
+                  key={s.id}
+                  className="rounded-2xl border border-border bg-bg-card p-4"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-text-base">
+                        🔁 {s.service_name}
+                      </p>
+                      <p className="mt-0.5 text-xs text-text-muted">
+                        {t("packs.at")} {s.coach_name} ·{" "}
+                        {(s.price_cents / 100).toLocaleString(loc, {
+                          style: "currency",
+                          currency: "EUR",
+                          maximumFractionDigits:
+                            s.price_cents % 100 === 0 ? 0 : 2,
+                        })}
+                        {t("clientSubs.perMonth")}
+                      </p>
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${
+                        active
+                          ? "bg-accent/10 text-accent"
+                          : canceling
+                          ? "bg-yellow-400/10 text-yellow-400"
+                          : "border border-border-strong text-text-dim"
+                      }`}
+                    >
+                      {active
+                        ? t("clientSubs.active")
+                        : canceling
+                        ? t("clientSubs.canceling")
+                        : t("clientSubs.inactive")}
+                    </span>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between border-t border-border pt-2.5">
+                    <p className="text-xs text-text-dim">
+                      {s.current_period_end
+                        ? `${canceling ? t("clientSubs.endsOn") : t("clientSubs.renewsOn")} ${new Date(s.current_period_end).toLocaleDateString(loc, { day: "numeric", month: "long" })}`
+                        : ""}
+                    </p>
+                    {active && (
+                      <button
+                        type="button"
+                        disabled={subCancelling === s.id}
+                        onClick={() => cancelSub(s.id)}
+                        className="text-xs font-medium text-text-dim transition-colors hover:text-red-400 disabled:opacity-50"
+                      >
+                        {subCancelling === s.id
+                          ? t("clientSpace.cancelling")
+                          : t("clientSubs.stopBtn")}
+                      </button>
+                    )}
+                  </div>
+                  {subError === s.id && (
+                    <p className="mt-2 text-xs text-red-400">
+                      {t("clientSpace.cancelError")}
+                    </p>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      )}
 
       {/* Packs de séances */}
       {packs.length > 0 && (

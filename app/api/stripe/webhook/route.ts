@@ -39,7 +39,12 @@ export async function POST(req: NextRequest) {
       await supabase
         .from("client_subscriptions")
         .update({
-          status: sub.status,
+          // « canceling » : encore actif mais s'arrête à la fin de la
+          // période payée (le client a demandé l'arrêt).
+          status:
+            sub.cancel_at_period_end && sub.status === "active"
+              ? "canceling"
+              : sub.status,
           current_period_end: subPeriodEnd(sub),
         })
         .eq("stripe_subscription_id", sub.id);

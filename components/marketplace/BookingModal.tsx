@@ -16,6 +16,7 @@ type SlotDay = { date: string; slots: Slot[] };
 type SlotState =
   | { mode: "loading" }
   | { mode: "free" }
+  | { mode: "error" }
   | { mode: "slots"; days: SlotDay[] };
 
 export default function BookingModal({
@@ -78,12 +79,17 @@ export default function BookingModal({
     : duration;
 
   // Charge les créneaux ; re-calcule si la durée change (prestation choisie).
+  // `retry` force un rechargement après une erreur réseau.
+  const [slotRetry, setSlotRetry] = useState(0);
   useEffect(() => {
     let alive = true;
     setSlotState({ mode: "loading" });
     setSelectedIso(null);
     fetch(`/api/slots?coach=${coach.slug}&duration=${effectiveDuration}`)
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error("slots_failed");
+        return r.json();
+      })
       .then((data) => {
         if (!alive) return;
         if (data.mode === "slots") {
@@ -95,11 +101,14 @@ export default function BookingModal({
           setSlotState({ mode: "free" });
         }
       })
-      .catch(() => alive && setSlotState({ mode: "free" }));
+      // Erreur réseau/serveur : on n'ouvre PAS la saisie libre (elle
+      // permettrait de réserver un créneau déjà pris), on propose de
+      // réessayer.
+      .catch(() => alive && setSlotState({ mode: "error" }));
     return () => {
       alive = false;
     };
-  }, [coach.slug, effectiveDuration]);
+  }, [coach.slug, effectiveDuration, slotRetry]);
 
   function dayChipLabel(dateISO: string): string {
     const d = new Date(dateISO + "T12:00:00");
@@ -117,6 +126,9 @@ export default function BookingModal({
     // Abonnement : aucun créneau requis (le coach planifie ensuite).
     let starts: Date | null = null;
     if (!isSubscription) {
+      if (slotState.mode === "error" || slotState.mode === "loading") {
+        return setError(t("booking.errors.slotsUnavailable"));
+      }
       if (slotState.mode === "slots") {
         if (!selectedIso) return setError(t("booking.errors.slotRequired"));
         starts = new Date(selectedIso);
@@ -287,6 +299,17 @@ export default function BookingModal({
                 </label>
               )}
 
+              {/* Prestation cliquée mais non payable en ligne (coach sans
+                  Stripe actif) : on l'explique au lieu de l'ignorer. */}
+              {Boolean(initialServiceId) &&
+                !paidServices.some((s) => s.id === initialServiceId) && (
+                  <div className="rounded-xl border border-border bg-bg-elevated p-3">
+                    <p className="text-xs text-text-muted">
+                      💳 {t("booking.unpayableService")}
+                    </p>
+                  </div>
+                )}
+
               {/* Abonnement mensuel : pas de créneau, le coach planifie */}
               {isSubscription && (
                 <div className="rounded-xl border border-accent/25 bg-accent/[0.05] p-3">
@@ -323,6 +346,23 @@ export default function BookingModal({
               {!isSubscription && slotState.mode === "loading" && (
                 <div className="rounded-xl border border-border bg-bg-elevated p-4 text-center text-sm text-text-dim">
                   {t("booking.slotsLoading")}
+                </div>
+              )}
+
+              {/* Erreur de chargement : proposer de réessayer plutôt que de
+                  laisser réserver à l'aveugle */}
+              {!isSubscription && slotState.mode === "error" && (
+                <div className="rounded-xl border border-border bg-bg-elevated p-4 text-center">
+                  <p className="text-sm text-text-muted">
+                    {t("booking.slotsError")}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setSlotRetry((n) => n + 1)}
+                    className="mt-2 rounded-full border border-accent/40 px-4 py-1.5 text-xs font-semibold text-accent transition-colors hover:bg-accent/10"
+                  >
+                    {t("booking.retry")}
+                  </button>
                 </div>
               )}
 
@@ -396,7 +436,13 @@ export default function BookingModal({
                   <div className="grid grid-cols-2 gap-3">
                     <label className="flex flex-col gap-1.5">
                       <span className={labelClass}>{t("booking.date")}</span>
-                      <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputClass} />
+                      <input
+                        type="date"
+                        value={date}
+                        min={new Date().toISOString().slice(0, 10)}
+                        onChange={(e) => setDate(e.target.value)}
+                        className={inputClass}
+                      />
                     </label>
                     <label className="flex flex-col gap-1.5">
                       <span className={labelClass}>{t("booking.time")}</span>

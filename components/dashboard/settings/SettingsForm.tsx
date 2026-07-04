@@ -16,6 +16,25 @@ import {
   normalizePolicy,
   type CancellationPolicy,
 } from "@/lib/booking/cancellation";
+
+// Fuseaux proposés : France métropolitaine + DOM-TOM + grandes villes
+// francophones. Le fuseau pilote les créneaux affichés aux clients.
+const TIMEZONES = [
+  "Europe/Paris",
+  "Europe/Brussels",
+  "Europe/Zurich",
+  "America/Martinique",
+  "America/Guadeloupe",
+  "America/Cayenne",
+  "Indian/Reunion",
+  "Indian/Mayotte",
+  "Pacific/Noumea",
+  "Pacific/Tahiti",
+  "America/Montreal",
+  "Africa/Casablanca",
+  "Africa/Dakar",
+  "Africa/Abidjan",
+];
 import {
   SPORT_KEYS,
   SPECIALTY_KEYS,
@@ -54,6 +73,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   );
   const [venues, setVenues] = useState<string[]>(coach.venues ?? []);
   const [gymName, setGymName] = useState(coach.gym_name ?? "");
+  const [timezone, setTimezone] = useState(coach.timezone || "Europe/Paris");
   const [avatarUrl, setAvatarUrl] = useState(coach.avatar_url ?? "");
   const [uploading, setUploading] = useState(false);
   const [avatarError, setAvatarError] = useState<string | null>(null);
@@ -125,6 +145,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           specialties,
           venues,
           gym_name: gymName.trim() || null,
+          timezone,
         })
         .eq("id", coach.id);
 
@@ -505,7 +526,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         </Button>
       </section>
 
-      {/* Préférences (langue de l'app) */}
+      {/* Préférences (langue de l'app + fuseau horaire) */}
       <section className="rounded-2xl border border-border bg-bg-card p-5 sm:p-6">
         <h2 className="text-base font-semibold text-text-base">
           {t("settings.prefsSection")}
@@ -513,6 +534,33 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         <p className="mt-1 text-sm text-text-muted">{t("settings.language")}</p>
         <div className="mt-3">
           <LanguagePicker />
+        </div>
+
+        <div className="mt-5 border-t border-border pt-4">
+          <label className="flex flex-col gap-1.5">
+            <span className={labelClass}>{t("settings.timezone")}</span>
+            <select
+              value={timezone}
+              onChange={(e) => setTimezone(e.target.value)}
+              className={inputClass}
+            >
+              {TIMEZONES.map((tz) => (
+                <option key={tz} value={tz}>
+                  {tz.replace(/_/g, " ")}
+                </option>
+              ))}
+            </select>
+            <span className="text-xs text-text-dim">
+              {t("settings.timezoneHint")}
+            </span>
+          </label>
+          <div className="mt-3 flex items-center gap-3">
+            <Button onClick={handleSave} disabled={loading} className="self-start">
+              {loading ? t("settings.saving") : t("settings.save")}
+            </Button>
+            {error && <p className="text-sm text-red-400">{error}</p>}
+            {saved && <p className="text-sm text-accent">{t("settings.saved")}</p>}
+          </div>
         </div>
       </section>
     </div>

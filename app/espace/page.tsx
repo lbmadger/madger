@@ -7,6 +7,7 @@ import PublicHeader from "@/components/marketplace/PublicHeader";
 import ClientSpace, {
   type ClientBooking,
   type ClientPack,
+  type ClientSub,
 } from "@/components/client/ClientSpace";
 
 export const metadata: Metadata = {
@@ -29,6 +30,7 @@ export default async function ClientSpacePage() {
 
   const bookings: ClientBooking[] = [];
   const packs: ClientPack[] = [];
+  const subs: ClientSub[] = [];
   const admin = createAdminClient();
 
   if (user?.email && admin) {
@@ -40,6 +42,28 @@ export default async function ClientSpacePage() {
     const clientIds = (clientRows ?? []).map((c) => c.id as string);
 
     if (clientIds.length > 0) {
+      // Abonnements mensuels (actifs ou en cours d'arrêt).
+      const { data: subRows } = await admin
+        .from("client_subscriptions")
+        .select(
+          "id, status, current_period_end, services(name, price_cents), coaches(first_name, last_name)"
+        )
+        .in("client_id", clientIds)
+        .order("created_at", { ascending: false });
+      for (const s of subRows ?? []) {
+        const svc = Array.isArray(s.services) ? s.services[0] : s.services;
+        const co = Array.isArray(s.coaches) ? s.coaches[0] : s.coaches;
+        subs.push({
+          id: s.id as string,
+          status: s.status as string,
+          current_period_end: (s.current_period_end as string | null) ?? null,
+          service_name: (svc?.name as string) ?? "Abonnement",
+          price_cents: (svc?.price_cents as number) ?? 0,
+          coach_name:
+            [co?.first_name, co?.last_name].filter(Boolean).join(" ") || "-",
+        });
+      }
+
       // Packs de séances (crédits restants chez chaque coach).
       const { data: creditRows } = await admin
         .from("pack_credits")
@@ -107,7 +131,7 @@ export default async function ClientSpacePage() {
     <I18nProvider locale={locale} dict={dict}>
       <div className="min-h-screen bg-bg">
         <PublicHeader />
-        <ClientSpace bookings={bookings} packs={packs} />
+        <ClientSpace bookings={bookings} packs={packs} subs={subs} />
       </div>
     </I18nProvider>
   );

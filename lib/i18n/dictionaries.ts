@@ -564,7 +564,13 @@ const fr = {
       rateLimited: "Trop de demandes. Réessaie un peu plus tard.",
       slotTaken:
         "Ce créneau vient d'être pris par quelqu'un d'autre. Choisis-en un autre.",
+      slotsUnavailable:
+        "Les créneaux n'ont pas pu être chargés. Réessaie d'abord de les recharger.",
     },
+    slotsError: "Impossible de charger les créneaux du coach.",
+    retry: "Réessayer",
+    unpayableService:
+      "Cette prestation se règle directement avec le coach (paiement en ligne pas encore activé chez lui). Envoie ta demande, il te précisera les modalités.",
     viewBooking: "Suivre ma réservation",
     paidBanner:
       "Paiement reçu ! Ta confirmation arrive par email d'ici quelques minutes.",
@@ -615,6 +621,9 @@ const fr = {
     },
     prefsSection: "Préférences",
     language: "Langue de l'application",
+    timezone: "Fuseau horaire",
+    timezoneHint:
+      "Les créneaux proposés à tes clients et tes horaires s'affichent dans ce fuseau.",
     viewPublic: "Voir ma page publique",
     save: "Enregistrer",
     saving: "Enregistrement…",
@@ -805,6 +814,18 @@ const fr = {
     cancelling: "Annulation…",
     cancelError: "Impossible d'annuler. Réessaie ou contacte le support.",
     rate: "Noter",
+  },
+  clientSubs: {
+    title: "Mes abonnements",
+    perMonth: "/mois",
+    active: "Actif",
+    canceling: "S'arrête bientôt",
+    inactive: "Terminé",
+    renewsOn: "Se renouvelle le",
+    endsOn: "S'arrête le",
+    stopBtn: "Arrêter l'abonnement",
+    confirmStop:
+      "L'abonnement restera actif jusqu'à la fin de la période déjà payée, puis s'arrêtera sans nouveau prélèvement. Confirmer ?",
   },
   packs: {
     title: "Packs de séances",
@@ -1467,7 +1488,13 @@ const en: Dictionary = {
       rateLimited: "Too many requests. Please try again later.",
       slotTaken:
         "This slot was just taken by someone else. Please pick another one.",
+      slotsUnavailable:
+        "Slots could not be loaded. Try reloading them first.",
     },
+    slotsError: "Could not load this coach's slots.",
+    retry: "Try again",
+    unpayableService:
+      "This service is paid directly with the coach (online payment not enabled yet on their side). Send your request and they will confirm the details.",
     viewBooking: "Track my booking",
     paidBanner:
       "Payment received! Your confirmation is on its way by email within a few minutes.",
@@ -1515,6 +1542,9 @@ const en: Dictionary = {
     },
     prefsSection: "Preferences",
     language: "App language",
+    timezone: "Time zone",
+    timezoneHint:
+      "Slots offered to your clients and your schedule are shown in this time zone.",
     viewPublic: "View my public page",
     save: "Save",
     saving: "Saving…",
@@ -1702,6 +1732,18 @@ const en: Dictionary = {
     cancelling: "Cancelling…",
     cancelError: "Could not cancel. Try again or contact support.",
     rate: "Rate",
+  },
+  clientSubs: {
+    title: "My subscriptions",
+    perMonth: "/mo",
+    active: "Active",
+    canceling: "Ending soon",
+    inactive: "Ended",
+    renewsOn: "Renews on",
+    endsOn: "Ends on",
+    stopBtn: "Stop subscription",
+    confirmStop:
+      "The subscription stays active until the end of the paid period, then stops with no further charge. Confirm?",
   },
   packs: {
     title: "Session packs",
