@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { LOCALES, LOCALE_FLAGS, type Locale } from "@/lib/i18n/config";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 
-// En-tête léger des pages publiques de la marketplace (logo + langue).
+// En-tête léger des pages publiques de la marketplace. Le choix de la langue
+// vit dans les réglages, pas ici.
 export default function PublicHeader() {
-  const { locale, setLocale } = useI18n();
+  const { t } = useI18n();
 
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-bg/80 backdrop-blur">
@@ -19,22 +19,12 @@ export default function PublicHeader() {
           </span>
         </Link>
 
-        <div className="flex items-center gap-1">
-          {LOCALES.map((l: Locale) => (
-            <button
-              key={l}
-              type="button"
-              onClick={() => l !== locale && setLocale(l)}
-              className={`rounded-md px-2 py-1 text-base leading-none transition-opacity ${
-                l === locale ? "opacity-100" : "opacity-40 hover:opacity-70"
-              }`}
-              aria-pressed={l === locale}
-              aria-label={l}
-            >
-              {LOCALE_FLAGS[l]}
-            </button>
-          ))}
-        </div>
+        <Link
+          href="/espace"
+          className="rounded-full border border-border-strong px-3.5 py-1.5 text-sm font-medium text-text-muted transition-colors hover:border-accent hover:text-text-base"
+        >
+          {t("clientSpace.title")}
+        </Link>
       </div>
     </header>
   );

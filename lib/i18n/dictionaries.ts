@@ -38,7 +38,8 @@ const fr = {
     copied: "Copié ✅",
     copyTitle: "Copier mon lien de réservation",
     notifications: "Notifications",
-    notifEmpty: "Rien à valider 🎉",
+    notifEmpty:
+      "C'est tout calme ici. Dès qu'un client fait une demande, elle atterrit juste là.",
     toConfirm: "À confirmer",
   },
   auth: {
@@ -893,7 +894,8 @@ const en: Dictionary = {
     copied: "Copied ✅",
     copyTitle: "Copy my booking link",
     notifications: "Notifications",
-    notifEmpty: "Nothing to approve 🎉",
+    notifEmpty:
+      "All quiet here. As soon as a client sends a request, it lands right here.",
     toConfirm: "To confirm",
   },
   auth: {
