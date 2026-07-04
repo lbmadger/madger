@@ -58,22 +58,38 @@ export async function POST() {
   };
 
   try {
-    // ── 1. Webhook (abonnement Pro) ──────────────────────────────────────
+    // ── 1. Webhook (abonnement Pro + paiements de séances + litiges) ─────
+    const WEBHOOK_EVENTS: import("stripe").Stripe.WebhookEndpointCreateParams.EnabledEvent[] =
+      [
+        "invoice.paid",
+        "customer.subscription.updated",
+        "customer.subscription.deleted",
+        // Séances : enregistre la réservation même sans retour navigateur.
+        "checkout.session.completed",
+        // Chargeback : gèle le paiement en litige.
+        "charge.dispute.created",
+      ];
     const hooks = await stripe.webhookEndpoints.list({ limit: 100 });
     const existing = hooks.data.find((h) => h.url === result.webhook.url);
     if (!existing) {
       const created = await stripe.webhookEndpoints.create({
         url: result.webhook.url,
-        enabled_events: [
-          "invoice.paid",
-          "customer.subscription.updated",
-          "customer.subscription.deleted",
-        ],
-        description: "Madger · abonnement Pro (renouvellements/annulations)",
+        enabled_events: WEBHOOK_EVENTS,
+        description: "Madger · abonnements, paiements de séances, litiges",
       });
       result.webhook.status = "created";
       // Le secret n'est lisible qu'à la création : à coller dans Vercel.
       result.webhook.secret = created.secret ?? undefined;
+    } else {
+      // Complète les événements manquants sur l'endpoint existant.
+      const missing = WEBHOOK_EVENTS.filter(
+        (e) => !existing.enabled_events.includes(e)
+      );
+      if (missing.length > 0) {
+        await stripe.webhookEndpoints.update(existing.id, {
+          enabled_events: WEBHOOK_EVENTS,
+        });
+      }
     }
 
     // ── 2. Portail de facturation ────────────────────────────────────────
