@@ -18,6 +18,7 @@ export default function AvailabilityEditor({
   const { t } = useI18n();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
+  const [saveError, setSaveError] = useState(false);
 
   // Regroupe les créneaux par jour.
   const byDay = new Map<number, Availability[]>();
@@ -28,32 +29,46 @@ export default function AvailabilityEditor({
 
   async function remove(id: string) {
     setBusy(true);
+    setSaveError(false);
     const supabase = createClient();
-    await supabase.from("availabilities").delete().eq("id", id);
-    router.refresh();
+    const { error } = await supabase
+      .from("availabilities")
+      .delete()
+      .eq("id", id);
+    if (error) setSaveError(true);
+    else router.refresh();
     setBusy(false);
   }
 
   async function add(weekday: number, start: string, end: string) {
     setBusy(true);
+    setSaveError(false);
     const supabase = createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
     if (user) {
-      await supabase.from("availabilities").insert({
+      const { error } = await supabase.from("availabilities").insert({
         coach_id: user.id,
         weekday,
         start_time: start,
         end_time: end,
       });
-      router.refresh();
+      if (error) setSaveError(true);
+      else router.refresh();
+    } else {
+      setSaveError(true);
     }
     setBusy(false);
   }
 
   return (
     <div className="flex flex-col gap-2">
+      {saveError && (
+        <p className="rounded-xl border border-red-500/25 bg-red-500/10 px-3 py-2 text-sm text-red-400">
+          {t("availability.errors.saveFailed")}
+        </p>
+      )}
       {WEEK_ORDER.map(({ weekday, key }) => (
         <DayRow
           key={weekday}

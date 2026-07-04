@@ -390,9 +390,13 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             </label>
           )}
 
-          <Button onClick={handleSave} disabled={loading} className="self-start">
-            {loading ? t("settings.saving") : t("settings.save")}
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button onClick={handleSave} disabled={loading} className="self-start">
+              {loading ? t("settings.saving") : t("settings.save")}
+            </Button>
+            {error && <p className="text-sm text-red-400">{error}</p>}
+            {saved && <p className="text-sm text-accent">{t("settings.saved")}</p>}
+          </div>
         </div>
       </section>
 
@@ -436,9 +440,13 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             );
           })}
         </div>
-        <Button onClick={handleSave} disabled={loading} className="mt-4 self-start">
-          {loading ? t("settings.saving") : t("settings.save")}
-        </Button>
+        <div className="mt-4 flex items-center gap-3">
+          <Button onClick={handleSave} disabled={loading} className="self-start">
+            {loading ? t("settings.saving") : t("settings.save")}
+          </Button>
+          {error && <p className="text-sm text-red-400">{error}</p>}
+          {saved && <p className="text-sm text-accent">{t("settings.saved")}</p>}
+        </div>
       </section>
 
       {/* Politique d'annulation */}

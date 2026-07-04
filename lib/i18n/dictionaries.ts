@@ -163,6 +163,8 @@ const fr = {
     errors: {
       generic: "Une erreur est survenue. Réessaie.",
       invalidRange: "L'heure de fin doit être après le début.",
+      saveFailed:
+        "Impossible d'enregistrer le changement. Vérifie ta connexion et réessaie.",
     },
   },
   agenda: {
@@ -223,6 +225,8 @@ const fr = {
       generic: "Une erreur est survenue. Réessaie.",
       clientRequired: "Choisis un client.",
       dateRequired: "Indique une date et une heure.",
+      overlap:
+        "Ce créneau chevauche une autre séance. Choisis un autre horaire.",
     },
   },
   plans: {
@@ -1064,6 +1068,8 @@ const en: Dictionary = {
     errors: {
       generic: "Something went wrong. Please try again.",
       invalidRange: "End time must be after start time.",
+      saveFailed:
+        "Could not save the change. Check your connection and try again.",
     },
   },
   agenda: {
@@ -1124,6 +1130,7 @@ const en: Dictionary = {
       generic: "Something went wrong. Please try again.",
       clientRequired: "Choose a client.",
       dateRequired: "Pick a date and time.",
+      overlap: "This slot overlaps another session. Pick another time.",
     },
   },
   plans: {

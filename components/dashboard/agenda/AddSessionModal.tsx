@@ -89,6 +89,24 @@ export default function AddSessionModal({
         return;
       }
 
+      // Prévention du double-booking : une autre séance (non annulée)
+      // chevauche-t-elle ce créneau ?
+      let overlapQuery = supabase
+        .from("bookings")
+        .select("id")
+        .in("status", ["pending", "confirmed"])
+        .lt("starts_at", ends.toISOString())
+        .gt("ends_at", starts.toISOString())
+        .limit(1);
+      if (editing && booking) {
+        overlapQuery = overlapQuery.neq("id", booking.id);
+      }
+      const { data: overlapping } = await overlapQuery;
+      if ((overlapping ?? []).length > 0) {
+        setError(t("agenda.errors.overlap"));
+        return;
+      }
+
       const payload = {
         client_id: clientId,
         starts_at: starts.toISOString(),
