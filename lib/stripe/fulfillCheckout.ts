@@ -7,7 +7,8 @@ import {
   bookingConfirmationClient,
   bookingNotificationCoach,
 } from "@/lib/email/templates";
-import { googleCalendarUrl, meetingUrlFor } from "@/lib/calendar/links";
+import { googleCalendarUrl } from "@/lib/calendar/links";
+import { attachMeetToBooking } from "@/lib/google/calendar";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
@@ -218,16 +219,6 @@ export async function fulfillCheckoutSession(
     }
   }
 
-  // Séance en visio : salle dédiée générée automatiquement.
-  const meetUrl =
-    m.online === "1" && booking ? meetingUrlFor(booking.id) : undefined;
-  if (meetUrl && booking) {
-    await supabase
-      .from("bookings")
-      .update({ meeting_url: meetUrl })
-      .eq("id", booking.id);
-  }
-
   // Confirmation (mode instantané) : après le paiement, pour que le trigger
   // pack ignore cette séance déjà payée.
   if (bookingStatus === "confirmed" && booking) {
@@ -235,6 +226,23 @@ export async function fulfillCheckoutSession(
       .from("bookings")
       .update({ status: "confirmed" })
       .eq("id", booking.id);
+  }
+
+  // Séance en visio confirmée : Google Meet + agenda du coach (si son compte
+  // Google est connecté). En mode approbation, le Meet est créé à la
+  // confirmation par le coach.
+  let meetUrl: string | undefined;
+  if (m.online === "1" && booking && bookingStatus === "confirmed") {
+    meetUrl =
+      (await attachMeetToBooking(supabase, {
+        bookingId: booking.id,
+        coachId: m.coach_id,
+        starts,
+        ends,
+        clientName:
+          [m.first_name, m.last_name].filter(Boolean).join(" ") || undefined,
+        clientEmail: m.email || null,
+      })) ?? undefined;
   }
 
   // Emails de confirmation (client + notification coach). Best-effort : un

@@ -7,6 +7,7 @@ import { isPro } from "@/lib/subscription/plan";
 import { sendEmail } from "@/lib/email/resend";
 import { reviewRequestClient } from "@/lib/email/templates";
 import { cronAuthorized } from "@/lib/cron/auth";
+import { detachMeetFromBooking } from "@/lib/google/calendar";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -77,6 +78,7 @@ export async function GET(req: NextRequest) {
           .eq("status", "pending")
           .select("id");
         if (!claimedBooking?.length) continue; // confirmée entre-temps
+        await detachMeetFromBooking(supabase, p.booking_id as string);
 
         const { data: claimedPay } = await supabase
           .from("payments")

@@ -1,6 +1,6 @@
-// Liens calendrier et visio, sans aucune intégration OAuth : un lien
-// Google Calendar pré-rempli (fonctionne aussi depuis mobile) et une salle de
-// visio dédiée par séance (Jitsi Meet, gratuit, sans compte).
+// Lien « Ajouter à Google Calendar » pré-rempli (fonctionne aussi depuis
+// mobile, sans OAuth). La visio, elle, passe par Google Meet via le compte
+// Google connecté du coach (lib/google/calendar.ts).
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -27,9 +27,4 @@ export function googleCalendarUrl(p: {
   if (p.details) params.set("details", p.details);
   if (p.location) params.set("location", p.location);
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
-}
-
-// Salle de visio dédiée à une séance (URL non devinable : id de réservation).
-export function meetingUrlFor(bookingId: string): string {
-  return `https://meet.jit.si/Madger-${bookingId}`;
 }

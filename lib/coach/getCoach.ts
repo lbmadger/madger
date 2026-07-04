@@ -39,6 +39,9 @@ export type Coach = {
   specialties: string[];
   venues: string[];
   gym_name: string | null;
+  // Google Calendar + Meet (migration 0027)
+  google_refresh_token: string | null;
+  google_connected_at: string | null;
 };
 
 // Récupère le profil coach de l'utilisateur connecté. Renvoie:

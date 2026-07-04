@@ -8,6 +8,7 @@ import { refundCents, normalizePolicy } from "@/lib/booking/cancellation";
 import { isPro } from "@/lib/subscription/plan";
 import { sendEmail } from "@/lib/email/resend";
 import { refundClient, bookingCancelledClient } from "@/lib/email/templates";
+import { detachMeetFromBooking } from "@/lib/google/calendar";
 
 export const dynamic = "force-dynamic";
 
@@ -79,6 +80,7 @@ export async function POST(req: NextRequest) {
   // le client par email (sinon il attend une réponse qui ne vient jamais).
   if (!payment || payment.escrow_status !== "held") {
     const wasPending = booking.status === "pending";
+    await detachMeetFromBooking(admin, bookingId);
     await supabase
       .from("bookings")
       .update({ status: "cancelled" })
@@ -195,6 +197,7 @@ export async function POST(req: NextRequest) {
       .update({ stripe_transfer_id: transferId })
       .eq("id", payment.id);
 
+    await detachMeetFromBooking(admin, bookingId);
     await supabase
       .from("bookings")
       .update({ status: "cancelled" })

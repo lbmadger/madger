@@ -624,6 +624,12 @@ const fr = {
     timezone: "Fuseau horaire",
     timezoneHint:
       "Les créneaux proposés à tes clients et tes horaires s'affichent dans ce fuseau.",
+    googleTitle: "Google Calendar et Meet",
+    googleHint:
+      "Connecte ton compte Google : chaque séance en visio crée un événement dans ton agenda avec un vrai lien Google Meet, envoyé automatiquement à ton client. L'événement est supprimé si la séance est annulée.",
+    googleConnect: "Connecter mon compte Google",
+    googleConnected: "Compte Google connecté",
+    googleDisconnect: "Déconnecter",
     viewPublic: "Voir ma page publique",
     save: "Enregistrer",
     saving: "Enregistrement…",
@@ -1545,6 +1551,12 @@ const en: Dictionary = {
     timezone: "Time zone",
     timezoneHint:
       "Slots offered to your clients and your schedule are shown in this time zone.",
+    googleTitle: "Google Calendar and Meet",
+    googleHint:
+      "Connect your Google account: every online session creates an event in your calendar with a real Google Meet link, sent automatically to your client. The event is removed if the session is cancelled.",
+    googleConnect: "Connect my Google account",
+    googleConnected: "Google account connected",
+    googleDisconnect: "Disconnect",
     viewPublic: "View my public page",
     save: "Save",
     saving: "Saving…",

@@ -6,7 +6,8 @@ import {
   requestReceivedClient,
   newRequestCoach,
 } from "@/lib/email/templates";
-import { googleCalendarUrl, meetingUrlFor } from "@/lib/calendar/links";
+import { googleCalendarUrl } from "@/lib/calendar/links";
+import { attachMeetToBooking } from "@/lib/google/calendar";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
@@ -120,22 +121,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Visio : salle dédiée générée automatiquement pour la séance.
-    let meetUrl: string | undefined;
-    const svcKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (online && svcKey && bookingId) {
-      meetUrl = meetingUrlFor(String(bookingId));
-      try {
-        const adminC = createClient(SUPABASE_URL, svcKey);
-        await adminC
-          .from("bookings")
-          .update({ meeting_url: meetUrl })
-          .eq("id", bookingId);
-      } catch {
-        /* best-effort */
-      }
-    }
-
     // ── Emails (best-effort) : confirmation au client + alerte au coach ────
     try {
       const { data: coach } = await supabase
@@ -148,6 +133,27 @@ export async function POST(req: NextRequest) {
         const coachName =
           [coach.first_name, coach.last_name].filter(Boolean).join(" ") ||
           "Ton coach";
+
+        // Visio confirmée d'office (mode instantané) : Google Meet + agenda
+        // du coach, si son compte Google est connecté. En mode approbation,
+        // le Meet est créé quand le coach confirme.
+        let meetUrl: string | undefined;
+        const svcKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        if (instant && online && svcKey && bookingId) {
+          const adminC = createClient(SUPABASE_URL, svcKey);
+          const s0 = new Date(String(starts_at));
+          meetUrl =
+            (await attachMeetToBooking(adminC, {
+              bookingId: String(bookingId),
+              coachId: coach.id as string,
+              starts: s0,
+              ends: new Date(
+                s0.getTime() + (Number(duration_min) || 60) * 60000
+              ),
+              clientName: [first_name, last_name].filter(Boolean).join(" "),
+              clientEmail: String(email),
+            })) ?? undefined;
+        }
         const dateStr = new Date(String(starts_at)).toLocaleString("fr-FR", {
           weekday: "long",
           day: "numeric",

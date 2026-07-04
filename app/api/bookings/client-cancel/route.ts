@@ -8,6 +8,7 @@ import { refundCents, normalizePolicy } from "@/lib/booking/cancellation";
 import { isPro } from "@/lib/subscription/plan";
 import { sendEmail } from "@/lib/email/resend";
 import { refundClient } from "@/lib/email/templates";
+import { detachMeetFromBooking } from "@/lib/google/calendar";
 
 export const dynamic = "force-dynamic";
 
@@ -87,6 +88,7 @@ export async function POST(req: NextRequest) {
 
   // Pas de paiement retenu : simple annulation.
   if (!payment || payment.escrow_status !== "held") {
+    await detachMeetFromBooking(admin, bookingId);
     await admin
       .from("bookings")
       .update({ status: "cancelled" })
@@ -171,6 +173,7 @@ export async function POST(req: NextRequest) {
       .update({ stripe_transfer_id: transferId })
       .eq("id", payment.id);
 
+    await detachMeetFromBooking(admin, bookingId);
     await admin
       .from("bookings")
       .update({ status: "cancelled" })

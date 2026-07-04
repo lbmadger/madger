@@ -4,7 +4,8 @@ import { createClient as createAdmin } from "@supabase/supabase-js";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
 import { requestReceivedClient } from "@/lib/email/templates";
-import { googleCalendarUrl, meetingUrlFor } from "@/lib/calendar/links";
+import { googleCalendarUrl } from "@/lib/calendar/links";
+import { attachMeetToBooking } from "@/lib/google/calendar";
 
 export const dynamic = "force-dynamic";
 
@@ -38,15 +39,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
-  // Visio : garantit une salle dédiée dès la confirmation.
+  // Visio : Google Meet + agenda du coach dès la confirmation (si son
+  // compte Google est connecté). Alimenté dans le bloc email ci-dessous.
   let meetUrl = (booking.meeting_url as string | null) ?? undefined;
-  if (booking.location === "online" && !meetUrl) {
-    meetUrl = meetingUrlFor(booking.id as string);
-    await supabase
-      .from("bookings")
-      .update({ meeting_url: meetUrl })
-      .eq("id", booking.id);
-  }
 
   // Email au client (best-effort).
   try {
@@ -65,6 +60,19 @@ export async function POST(req: NextRequest) {
           .eq("id", user.id)
           .maybeSingle(),
       ]);
+      if (booking.location === "online" && !meetUrl) {
+        meetUrl =
+          (await attachMeetToBooking(admin, {
+            bookingId: booking.id as string,
+            coachId: user.id,
+            starts: new Date(booking.starts_at as string),
+            ends: new Date(
+              (booking.ends_at as string) ?? (booking.starts_at as string)
+            ),
+            clientEmail: client?.email ?? null,
+          })) ?? undefined;
+      }
+
       if (client?.email) {
         const tpl = requestReceivedClient({
           coachName:
