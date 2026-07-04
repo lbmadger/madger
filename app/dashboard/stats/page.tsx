@@ -12,19 +12,44 @@ export default async function StatsPage() {
   const s = dict.stats;
   const supabase = createClient();
 
-  const [clientsRes, bookingsRes] = await Promise.all([
-    supabase.from("clients").select("created_at"),
-    supabase.from("bookings").select("starts_at, ends_at, status"),
-  ]);
-
-  const clients = (clientsRes.data ?? []) as ClientRow[];
-  const bookings = (bookingsRes.data ?? []) as Booking[];
-
   const now = new Date();
   const nowMs = now.getTime();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
   const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  // Historique borné à 1 an : suffisant pour toutes les stats affichées.
+  const yearAgo = new Date(nowMs - 366 * 86400000).toISOString();
+
+  const [clientsRes, bookingsRes, paymentsRes] = await Promise.all([
+    supabase.from("clients").select("created_at"),
+    supabase
+      .from("bookings")
+      .select("starts_at, ends_at, status")
+      .gte("starts_at", yearAgo),
+    supabase
+      .from("payments")
+      .select("amount_cents, paid_at")
+      .eq("status", "paid")
+      .gte("paid_at", lastMonthStart.toISOString()),
+  ]);
+
+  const clients = (clientsRes.data ?? []) as ClientRow[];
+  const bookings = (bookingsRes.data ?? []) as Booking[];
+  const payments = (paymentsRes.data ?? []) as {
+    amount_cents: number;
+    paid_at: string | null;
+  }[];
+
+  // Revenus du mois (encaissés) et tendance vs mois dernier.
+  const paidIn = (a: Date, b: Date) =>
+    payments
+      .filter((p) => {
+        const t = p.paid_at ? new Date(p.paid_at).getTime() : 0;
+        return t >= a.getTime() && t < b.getTime();
+      })
+      .reduce((sum, p) => sum + (p.amount_cents || 0), 0);
+  const revenueMonth = paidIn(monthStart, monthEnd);
+  const revenueLastMonth = paidIn(lastMonthStart, monthStart);
 
   const inRange = (iso: string, a: Date, b: Date) => {
     const t = new Date(iso).getTime();
@@ -106,7 +131,16 @@ export default async function StatsPage() {
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
         {/* Ligne 1 */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-          <StatCard label={s.revenue} value="-" hint={s.revenueHint} />
+          <StatCard
+            label={s.revenue}
+            value={(revenueMonth / 100).toLocaleString("fr-FR", {
+              style: "currency",
+              currency: "EUR",
+              maximumFractionDigits: revenueMonth % 100 === 0 ? 0 : 2,
+            })}
+            trend={trend(revenueMonth, revenueLastMonth)}
+            hint={s.vsLastMonth}
+          />
           <StatCard
             label={s.sessionsMonth}
             value={String(sessionsMonth)}

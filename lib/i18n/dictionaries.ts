@@ -62,6 +62,7 @@ const fr = {
     or: "ou",
     googleContinue: "Continuer avec Google",
     signingIn: "Connexion…",
+    signingUp: "Création du compte…",
     method: { email: "Email", phone: "SMS" },
     phone: {
       label: "Numéro de téléphone",
@@ -86,6 +87,9 @@ const fr = {
     signup: {
       title: "Créer ton compte coach",
       subtitle: "Quelques secondes pour démarrer avec Madger.",
+      clientTitle: "Crée ton compte",
+      clientSubtitle:
+        "Suis tes séances, tes packs et échange avec ton coach au même endroit.",
       submit: "Créer mon compte",
       haveAccount: "Tu as déjà un compte ?",
       link: "Se connecter",
@@ -175,6 +179,7 @@ const fr = {
     cancelByClient: "Le client (formule appliquée)",
     cancelByCoach: "Moi (remboursement total)",
     cancelKeep: "Ne rien faire",
+    actionError: "Action impossible pour le moment. Réessaie.",
     viewWeek: "Semaine",
     viewList: "Liste",
     todayBtn: "Aujourd'hui",
@@ -226,6 +231,8 @@ const fr = {
     free: "Gratuit",
     pro: "Pro",
     proActive: "Pro actif",
+    welcomePro:
+      "Bienvenue en Pro ! 0% de commission, statistiques avancées débloquées.",
     proUntil: "Pro jusqu'au",
     daysLeft: "j restants",
     freeDesc: "Pour démarrer.",
@@ -295,6 +302,19 @@ const fr = {
     feesNoteFree:
       "Offre Gratuit : 5 % de commission Madger par séance encaissée, plus les frais Stripe standards (à ta charge). Passe à Pro pour 0 % de commission.",
     notConfigured: "Paiements bientôt disponibles.",
+    historyTitle: "Historique des paiements",
+    historyEmpty:
+      "Tes encaissements apparaîtront ici dès ta première séance payée en ligne.",
+    escrowHeld: "Fonds retenus",
+    escrowReleased: "Versé",
+    escrowRefunded: "Remboursé",
+    escrowCanceled: "Annulé",
+    escrowDisputed: "En litige",
+    escrowDisputedNote:
+      "Fonds gelés le temps de l'arbitrage. Tu seras prévenu par email.",
+    releasePlanned: "Versement prévu le",
+    netPaid: "Net versé :",
+    refundedLabel: "Remboursé au client :",
   },
   stats: {
     title: "Statistiques",
@@ -338,10 +358,13 @@ const fr = {
     perMonth: "/mois",
     sessionsLabel: "séances",
     free: "Gratuit",
+    edit: "Modifier",
     delete: "Supprimer",
     deleteConfirm: "Supprimer cette prestation ?",
     form: {
       title: "Nouvelle prestation",
+      editTitle: "Modifier la prestation",
+      save: "Enregistrer",
       name: "Nom",
       namePlaceholder: "Ex : Séance individuelle, Pack 10 séances…",
       type: "Type",
@@ -933,6 +956,7 @@ const en: Dictionary = {
     or: "or",
     googleContinue: "Continue with Google",
     signingIn: "Signing in…",
+    signingUp: "Creating your account…",
     method: { email: "Email", phone: "SMS" },
     phone: {
       label: "Phone number",
@@ -957,6 +981,9 @@ const en: Dictionary = {
     signup: {
       title: "Create your coach account",
       subtitle: "A few seconds to get started with Madger.",
+      clientTitle: "Create your account",
+      clientSubtitle:
+        "Track your sessions, your packs and chat with your coach in one place.",
       submit: "Create my account",
       haveAccount: "Already have an account?",
       link: "Sign in",
@@ -1045,6 +1072,7 @@ const en: Dictionary = {
     cancelByClient: "The client (policy applies)",
     cancelByCoach: "Me (full refund)",
     cancelKeep: "Do nothing",
+    actionError: "Action not possible right now. Please try again.",
     viewWeek: "Week",
     viewList: "List",
     todayBtn: "Today",
@@ -1096,6 +1124,8 @@ const en: Dictionary = {
     free: "Free",
     pro: "Pro",
     proActive: "Pro active",
+    welcomePro:
+      "Welcome to Pro! 0% commission, advanced stats unlocked.",
     proUntil: "Pro until",
     daysLeft: "d left",
     freeDesc: "To get started.",
@@ -1165,6 +1195,19 @@ const en: Dictionary = {
     feesNoteFree:
       "Free plan: 5% Madger commission per paid session, plus standard Stripe fees (on you). Upgrade to Pro for 0% commission.",
     notConfigured: "Payments coming soon.",
+    historyTitle: "Payment history",
+    historyEmpty:
+      "Your payments will show up here after your first session paid online.",
+    escrowHeld: "Funds held",
+    escrowReleased: "Paid out",
+    escrowRefunded: "Refunded",
+    escrowCanceled: "Cancelled",
+    escrowDisputed: "In dispute",
+    escrowDisputedNote:
+      "Funds frozen during arbitration. You will be notified by email.",
+    releasePlanned: "Payout planned on",
+    netPaid: "Net paid:",
+    refundedLabel: "Refunded to client:",
   },
   stats: {
     title: "Statistics",
@@ -1208,10 +1251,13 @@ const en: Dictionary = {
     perMonth: "/mo",
     sessionsLabel: "sessions",
     free: "Free",
+    edit: "Edit",
     delete: "Delete",
     deleteConfirm: "Delete this service?",
     form: {
       title: "New service",
+      editTitle: "Edit service",
+      save: "Save",
       name: "Name",
       namePlaceholder: "E.g. 1:1 session, 10-session pack…",
       type: "Type",

@@ -7,7 +7,7 @@ import { computePayout } from "@/lib/stripe/escrow";
 import { refundCents, normalizePolicy } from "@/lib/booking/cancellation";
 import { isPro } from "@/lib/subscription/plan";
 import { sendEmail } from "@/lib/email/resend";
-import { refundClient } from "@/lib/email/templates";
+import { refundClient, bookingCancelledClient } from "@/lib/email/templates";
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
   // Séance du coach connecté (RLS via user.id) + paiement retenu associé.
   const { data: booking } = await supabase
     .from("bookings")
-    .select("id, coach_id, starts_at, status")
+    .select("id, coach_id, client_id, starts_at, status")
     .eq("id", bookingId)
     .maybeSingle();
   if (!booking || booking.coach_id !== user.id) {
@@ -75,12 +75,46 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "disputed" }, { status: 409 });
   }
 
-  // Pas de paiement retenu : simple annulation de la séance.
+  // Pas de paiement retenu : simple annulation de la séance, mais on prévient
+  // le client par email (sinon il attend une réponse qui ne vient jamais).
   if (!payment || payment.escrow_status !== "held") {
+    const wasPending = booking.status === "pending";
     await supabase
       .from("bookings")
       .update({ status: "cancelled" })
       .eq("id", bookingId);
+    try {
+      if (booking.client_id) {
+        const { data: client } = await admin
+          .from("clients")
+          .select("email")
+          .eq("id", booking.client_id)
+          .maybeSingle();
+        if (client?.email) {
+          const tpl = bookingCancelledClient({
+            coachName:
+              [coach?.first_name, coach?.last_name].filter(Boolean).join(" ") ||
+              "Ton coach",
+            dateStr: new Date(booking.starts_at).toLocaleString("fr-FR", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              hour: "2-digit",
+              minute: "2-digit",
+              timeZone: "Europe/Paris",
+            }),
+            declined: wasPending,
+          });
+          await sendEmail({
+            to: client.email,
+            subject: tpl.subject,
+            html: tpl.html,
+          });
+        }
+      }
+    } catch {
+      /* email best-effort */
+    }
     return NextResponse.json({ ok: true, refunded_cents: 0 });
   }
 

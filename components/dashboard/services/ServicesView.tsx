@@ -16,11 +16,18 @@ export default function ServicesView({
   const { t, locale } = useI18n();
   const router = useRouter();
   const [adding, setAdding] = useState(false);
+  const [editing, setEditing] = useState<Service | null>(null);
+  const [deleteError, setDeleteError] = useState(false);
 
   async function handleDelete(id: string) {
     if (!window.confirm(t("services.deleteConfirm"))) return;
+    setDeleteError(false);
     const supabase = createClient();
-    await supabase.from("services").delete().eq("id", id);
+    const { error } = await supabase.from("services").delete().eq("id", id);
+    if (error) {
+      setDeleteError(true);
+      return;
+    }
     router.refresh();
   }
 
@@ -104,17 +111,30 @@ export default function ServicesView({
                     ? t("services.form.online")
                     : t("services.form.inPerson")}
                 </span>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(s.id)}
-                  className="text-xs font-medium text-red-400 transition-opacity hover:opacity-80"
-                >
-                  {t("services.delete")}
-                </button>
+                <span className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setEditing(s)}
+                    className="text-xs font-medium text-text-muted transition-colors hover:text-accent"
+                  >
+                    {t("services.edit")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(s.id)}
+                    className="text-xs font-medium text-red-400 transition-opacity hover:opacity-80"
+                  >
+                    {t("services.delete")}
+                  </button>
+                </span>
               </div>
             </li>
           ))}
         </ul>
+      )}
+
+      {deleteError && (
+        <p className="mt-3 text-sm text-red-400">{t("services.errors.generic")}</p>
       )}
 
       {adding && (
@@ -122,6 +142,16 @@ export default function ServicesView({
           onClose={() => setAdding(false)}
           onCreated={() => {
             setAdding(false);
+            router.refresh();
+          }}
+        />
+      )}
+      {editing && (
+        <AddServiceModal
+          service={editing}
+          onClose={() => setEditing(null)}
+          onCreated={() => {
+            setEditing(null);
             router.refresh();
           }}
         />

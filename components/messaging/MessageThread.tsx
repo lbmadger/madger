@@ -31,20 +31,46 @@ export default function MessageThread({
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  // Chargement INCRÉMENTAL : on ne demande que les messages plus récents que
+  // le dernier reçu (au lieu de re-télécharger tout le fil toutes les 4 s).
+  const lastSeenRef = useRef<string | null>(
+    initialMessages.length
+      ? initialMessages[initialMessages.length - 1].created_at
+      : null
+  );
   const fetchMessages = useCallback(async () => {
+    if (document.hidden) return;
     const supabase = createClient();
-    const { data } = await supabase
+    let q = supabase
       .from("messages")
       .select("*")
       .eq("conversation_id", conversationId)
-      .order("created_at", { ascending: true });
-    if (data) setMessages(data as Message[]);
+      .order("created_at", { ascending: true })
+      .limit(100);
+    if (lastSeenRef.current) q = q.gt("created_at", lastSeenRef.current);
+    const { data } = await q;
+    if (data && data.length > 0) {
+      setMessages((prev) => {
+        const seen = new Set(prev.map((m) => m.id));
+        const fresh = (data as Message[]).filter((m) => !seen.has(m.id));
+        if (fresh.length === 0) return prev;
+        lastSeenRef.current = fresh[fresh.length - 1].created_at;
+        return [...prev, ...fresh];
+      });
+    }
   }, [conversationId]);
 
-  // Rafraîchissement périodique tant que le fil est ouvert.
+  // Rafraîchissement périodique tant que le fil est ouvert et visible.
   useEffect(() => {
     const id = setInterval(fetchMessages, 4000);
-    return () => clearInterval(id);
+    const onVisible = () => {
+      if (!document.hidden) fetchMessages();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [fetchMessages]);
 
   // Auto-scroll en bas à l'arrivée de nouveaux messages.

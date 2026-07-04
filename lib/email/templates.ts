@@ -278,6 +278,39 @@ export function sessionReminderClient(p: {
 }
 
 // ── Client : remboursement suite à annulation ou litige ─────────────────────
+// ── Client : demande déclinée / séance annulée SANS paiement en jeu ─────────
+export function bookingCancelledClient(p: {
+  coachName: string;
+  dateStr: string;
+  declined: boolean;
+}): Email {
+  const intro = p.declined
+    ? `<b style="color:${C.text};">${p.coachName}</b> ne peut pas assurer la séance demandée. Rien n'a été débité, tu peux choisir un autre créneau en quelques secondes.`
+    : `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> a été annulée. Aucun paiement n'était en jeu.`;
+  return {
+    subject: p.declined
+      ? "Ta demande de séance n'a pas pu être acceptée"
+      : "Ta séance a été annulée",
+    html: layout({
+      preheader: p.declined
+        ? "Le coach ne peut pas assurer ce créneau. Choisis-en un autre."
+        : "Séance annulée, aucun paiement en jeu.",
+      eyebrow: "Réservation",
+      title: p.declined ? "Demande déclinée" : "Séance annulée",
+      intro,
+      blocks: [
+        detailsTable([
+          { label: "Coach", value: p.coachName },
+          { label: "Séance", value: p.dateStr },
+        ]),
+      ],
+      cta: { label: "Choisir un autre créneau", url: `${APP_URL}/coachs` },
+      outro:
+        "Une question ? Réponds simplement à cet email, on est là pour aider.",
+    }),
+  };
+}
+
 export function refundClient(p: {
   coachName: string;
   refundStr: string;

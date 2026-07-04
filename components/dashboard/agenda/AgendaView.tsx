@@ -36,18 +36,35 @@ export default function AgendaView({
   const [editing, setEditing] = useState<Booking | null>(null);
   const [cancelId, setCancelId] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [actionError, setActionError] = useState(false);
   const [view, setView] = useState<"week" | "list">("week");
+  // Séance sélectionnée depuis la grille semaine (confirmer/refuser/modifier).
+  const [selected, setSelected] = useState<Booking | null>(null);
 
   const loc = locale === "fr" ? "fr-FR" : "en-US";
 
   // Confirme une demande : passe par l'API pour envoyer l'email au client.
   async function confirmBooking(id: string) {
-    await fetch("/api/bookings/confirm", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ booking_id: id }),
-    });
-    router.refresh();
+    setConfirming(true);
+    setActionError(false);
+    try {
+      const res = await fetch("/api/bookings/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ booking_id: id }),
+      });
+      if (!res.ok) {
+        setActionError(true);
+        return;
+      }
+      setSelected(null);
+      router.refresh();
+    } catch {
+      setActionError(true);
+    } finally {
+      setConfirming(false);
+    }
   }
 
   // Annule une séance confirmée. Si un paiement est sous séquestre, le
@@ -55,14 +72,22 @@ export default function AgendaView({
   // annule) est exécuté côté serveur.
   async function cancelBooking(id: string, by: "coach" | "client") {
     setCancelling(true);
+    setActionError(false);
     try {
-      await fetch("/api/bookings/cancel", {
+      const res = await fetch("/api/bookings/cancel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ booking_id: id, by }),
       });
+      if (!res.ok) {
+        setActionError(true);
+        return;
+      }
       setCancelId(null);
+      setSelected(null);
       router.refresh();
+    } catch {
+      setActionError(true);
     } finally {
       setCancelling(false);
     }
@@ -116,28 +141,28 @@ export default function AgendaView({
       .join(" ");
   }
 
-  // Pas de client → on invite à en créer un d'abord.
-  if (clients.length === 0) {
-    return (
-      <div className="rounded-2xl border border-border bg-bg-card p-10 text-center">
-        <h3 className="text-base font-semibold text-text-base">
-          {t("agenda.needClientTitle")}
-        </h3>
-        <p className="mx-auto mt-1 max-w-sm text-sm text-text-muted">
-          {t("agenda.needClientDesc")}
-        </p>
-        <Link
-          href="/dashboard/clients"
-          className="cta-shine mt-5 inline-flex rounded-full bg-accent px-5 py-3 text-sm font-semibold text-black transition-all hover:scale-[1.02] active:scale-95"
-        >
-          {t("agenda.goToClients")}
-        </Link>
-      </div>
-    );
-  }
-
   return (
     <>
+      {/* Pas encore de client : bannière (le calendrier reste visible pour
+          poser ses disponibilités et voir la semaine). */}
+      {clients.length === 0 && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-accent/20 bg-accent/[0.04] px-4 py-3">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-text-base">
+              {t("agenda.needClientTitle")}
+            </p>
+            <p className="text-xs text-text-muted">
+              {t("agenda.needClientDesc")}
+            </p>
+          </div>
+          <Link
+            href="/dashboard/clients"
+            className="shrink-0 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-black transition-opacity hover:opacity-90"
+          >
+            {t("agenda.goToClients")}
+          </Link>
+        </div>
+      )}
       <div className="mb-5 flex items-center justify-between gap-3">
         {/* Sélecteur de vue Semaine / Liste */}
         <div className="inline-flex rounded-full border border-border-strong p-0.5">
@@ -165,6 +190,7 @@ export default function AgendaView({
           </Link>
           <Button
             onClick={() => setAdding(true)}
+            disabled={clients.length === 0}
             className="whitespace-nowrap px-4 py-2.5"
           >
             + {t("agenda.add")}
@@ -173,7 +199,14 @@ export default function AgendaView({
       </div>
 
       {view === "week" ? (
-        <WeekView bookings={initialBookings} availabilities={availabilities} />
+        <WeekView
+          bookings={initialBookings}
+          availabilities={availabilities}
+          onBookingClick={(b) => {
+            setActionError(false);
+            setSelected(b);
+          }}
+        />
       ) : groups.length === 0 ? (
         <div className="rounded-2xl border border-border bg-bg-card p-10 text-center">
           <h3 className="text-base font-semibold text-text-base">
@@ -242,22 +275,30 @@ export default function AgendaView({
                        l'API d'annulation : si la demande était payée (séquestre),
                        le client est remboursé à 100 %. */}
                    {b.status === "pending" && (
-                     <div className="mt-2 flex gap-2 border-t border-border pt-2">
-                       <button
-                         type="button"
-                         disabled={cancelling}
-                         onClick={() => cancelBooking(b.id, "coach")}
-                         className="flex-1 rounded-full border border-border-strong py-1.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
-                       >
-                         {t("agenda.decline")}
-                       </button>
-                       <button
-                         type="button"
-                         onClick={() => confirmBooking(b.id)}
-                         className="flex-1 rounded-full bg-accent py-1.5 text-xs font-semibold text-black transition-opacity hover:opacity-90"
-                       >
-                         {t("agenda.confirm")}
-                       </button>
+                     <div className="mt-2 border-t border-border pt-2">
+                       <div className="flex gap-2">
+                         <button
+                           type="button"
+                           disabled={cancelling || confirming}
+                           onClick={() => cancelBooking(b.id, "coach")}
+                           className="flex-1 rounded-full border border-border-strong py-1.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
+                         >
+                           {t("agenda.decline")}
+                         </button>
+                         <button
+                           type="button"
+                           disabled={cancelling || confirming}
+                           onClick={() => confirmBooking(b.id)}
+                           className="flex-1 rounded-full bg-accent py-1.5 text-xs font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-50"
+                         >
+                           {confirming ? "…" : t("agenda.confirm")}
+                         </button>
+                       </div>
+                       {actionError && (
+                         <p className="mt-2 text-xs text-red-400">
+                           {t("agenda.actionError")}
+                         </p>
+                       )}
                      </div>
                    )}
 
@@ -331,6 +372,133 @@ export default function AgendaView({
               </ul>
             </section>
           ))}
+        </div>
+      )}
+
+      {/* Fiche d'une séance cliquée dans la grille semaine */}
+      {selected && (
+        <div
+          className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center sm:p-4"
+          onClick={() => setSelected(null)}
+        >
+          <div
+            className="w-full max-w-sm rounded-t-2xl border border-border bg-bg-card p-5 sm:rounded-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h2 className="truncate text-lg font-extrabold tracking-tight text-text-base">
+                  {clientName(selected)}
+                </h2>
+                <p className="mt-0.5 text-sm capitalize text-text-muted">
+                  {new Date(selected.starts_at).toLocaleString(loc, {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+              </div>
+              <span
+                className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                  selected.status === "pending"
+                    ? "bg-yellow-400/10 text-yellow-400"
+                    : "bg-accent/10 text-accent"
+                }`}
+              >
+                {selected.status === "pending"
+                  ? t("agenda.pending")
+                  : t(`agenda.badge.${selected.location}`)}
+              </span>
+            </div>
+
+            {actionError && (
+              <p className="mt-3 text-sm text-red-400">
+                {t("agenda.actionError")}
+              </p>
+            )}
+
+            {selected.status === "pending" ? (
+              <div className="mt-4 flex flex-col gap-2">
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    disabled={cancelling || confirming}
+                    onClick={() => cancelBooking(selected.id, "coach")}
+                    className="flex-1 rounded-full border border-border-strong py-2.5 text-sm font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
+                  >
+                    {cancelling ? "…" : t("agenda.decline")}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={cancelling || confirming}
+                    onClick={() => confirmBooking(selected.id)}
+                    className="flex-1 rounded-full bg-accent py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-50"
+                  >
+                    {confirming ? "…" : t("agenda.confirm")}
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditing(selected);
+                    setSelected(null);
+                  }}
+                  className="self-center text-xs font-medium text-text-dim transition-colors hover:text-accent"
+                >
+                  ✏️ {t("agenda.edit")}
+                </button>
+              </div>
+            ) : selected.status === "confirmed" ? (
+              <div className="mt-4 flex flex-col gap-2">
+                <p className="text-xs text-text-muted">{t("agenda.cancelWho")}</p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    disabled={cancelling}
+                    onClick={() => cancelBooking(selected.id, "client")}
+                    className="flex-1 rounded-full border border-border-strong py-2.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
+                  >
+                    {t("agenda.cancelByClient")}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={cancelling}
+                    onClick={() => cancelBooking(selected.id, "coach")}
+                    className="flex-1 rounded-full border border-border-strong py-2.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
+                  >
+                    {t("agenda.cancelByCoach")}
+                  </button>
+                </div>
+                <div className="flex items-center justify-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditing(selected);
+                      setSelected(null);
+                    }}
+                    className="text-xs font-medium text-text-dim transition-colors hover:text-accent"
+                  >
+                    ✏️ {t("agenda.edit")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelected(null)}
+                    className="text-xs text-text-dim hover:text-text-muted"
+                  >
+                    {t("agenda.cancelKeep")}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-4 text-center">
+                <Button variant="secondary" onClick={() => setSelected(null)}>
+                  {t("agenda.cancelKeep")}
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

@@ -9,7 +9,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
 import CityAutocomplete from "@/components/ui/CityAutocomplete";
 import Stars from "@/components/reviews/Stars";
-import { geocodeCity, distanceKm, type City } from "@/lib/geo/cities";
+import { geocodeCity, type City } from "@/lib/geo/cities";
 import { SPORT_KEYS, SPECIALTY_KEYS } from "@/lib/coaches/taxonomy";
 import { interactiveCardClass } from "@/lib/ui/styles";
 import {
@@ -77,6 +77,8 @@ export default function MarketplaceView({
       }
 
       // Rayon choisi par l'utilisateur → coachs de la ville + du périmètre.
+      // La recherche par distance se fait CÔTÉ BASE (RPC indexée) : elle
+      // reste juste et rapide quel que soit le nombre de coachs.
       if (radiusArg > 0) {
         const target = coordsArg ?? (await geocodeCity(city));
         const { data: exact } = await base()
@@ -84,17 +86,16 @@ export default function MarketplaceView({
           .limit(50);
         const list = ((exact ?? []) as PublicCoach[]).slice();
         if (target) {
-          const { data: all } = await base().not("lat", "is", null).limit(500);
-          const within = ((all ?? []) as PublicCoach[])
-            .map((c) => ({
-              c,
-              d: distanceKm(target, { lat: c.lat!, lng: c.lng! }),
-            }))
-            .filter((x) => x.d <= radiusArg)
-            .sort((a, b) => a.d - b.d)
-            .map((x) => x.c);
+          const { data: near } = await supabase.rpc("search_coaches_nearby", {
+            p_lat: target.lat,
+            p_lng: target.lng,
+            p_radius_km: radiusArg,
+            p_online_only: filter === "online",
+          });
           const seen = new Set(list.map((c) => c.id));
-          for (const c of within) if (!seen.has(c.id)) list.push(c);
+          for (const c of (near ?? []) as PublicCoach[]) {
+            if (!seen.has(c.id)) list.push(c);
+          }
         }
         setCoaches(list);
         setRadius({ city, km: radiusArg, chosen: true });
@@ -114,16 +115,13 @@ export default function MarketplaceView({
       // 2) Élargissement automatique : il faut les coordonnées de la ville.
       const target = coordsArg ?? (await geocodeCity(city));
       if (target) {
-        const { data: all } = await base().not("lat", "is", null).limit(500);
-        const within = ((all ?? []) as PublicCoach[])
-          .map((c) => ({
-            c,
-            d: distanceKm(target, { lat: c.lat!, lng: c.lng! }),
-          }))
-          .filter((x) => x.d <= RADIUS_KM)
-          .sort((a, b) => a.d - b.d)
-          .map((x) => x.c);
-        setCoaches(within);
+        const { data: near } = await supabase.rpc("search_coaches_nearby", {
+          p_lat: target.lat,
+          p_lng: target.lng,
+          p_radius_km: RADIUS_KM,
+          p_online_only: filter === "online",
+        });
+        setCoaches(((near ?? []) as PublicCoach[]));
         setRadius({ city, km: RADIUS_KM, chosen: false });
         return;
       }

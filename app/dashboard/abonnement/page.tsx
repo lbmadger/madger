@@ -7,7 +7,11 @@ import { getServerDictionary } from "@/lib/i18n/server";
 import { isPro, proDaysLeft } from "@/lib/subscription/plan";
 
 // Page Abonnement : statut du coach + offres Free/Pro + code promo.
-export default async function SubscriptionPage() {
+export default async function SubscriptionPage({
+  searchParams,
+}: {
+  searchParams: { pro?: string };
+}) {
   const { dict, locale } = getServerDictionary();
   const p = dict.plans;
   const { coach } = await getCoach();
@@ -25,6 +29,12 @@ export default async function SubscriptionPage() {
     <>
       <Topbar title={p.title} />
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+        {/* Retour de Stripe après souscription : on célèbre. */}
+        {searchParams.pro === "1" && pro && (
+          <p className="mb-4 rounded-2xl border border-accent/30 bg-accent/[0.08] px-4 py-3 text-center text-sm font-semibold text-text-base">
+            🎉 {p.welcomePro}
+          </p>
+        )}
         {/* Statut */}
         <div
           className={`mb-6 flex items-center justify-between gap-3 rounded-2xl border p-5 ${

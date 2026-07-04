@@ -5,26 +5,36 @@ import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
 import { inputClass, labelClass } from "@/lib/ui/styles";
-import type { ServiceType, ServiceLocation } from "@/lib/services/types";
+import type { Service, ServiceType, ServiceLocation } from "@/lib/services/types";
 
 const DURATIONS = [30, 45, 60, 90];
 const TYPES: ServiceType[] = ["single", "pack", "subscription"];
 
+// Création ET édition : passer `service` pré-remplit le formulaire et
+// enregistre en UPDATE au lieu d'un INSERT.
 export default function AddServiceModal({
   onClose,
   onCreated,
+  service,
 }: {
   onClose: () => void;
   onCreated: () => void;
+  service?: Service;
 }) {
   const { t } = useI18n();
-  const [name, setName] = useState("");
-  const [type, setType] = useState<ServiceType>("single");
-  const [price, setPrice] = useState("");
-  const [duration, setDuration] = useState(60);
-  const [packSize, setPackSize] = useState("10");
-  const [location, setLocation] = useState<ServiceLocation>("in_person");
-  const [description, setDescription] = useState("");
+  const [name, setName] = useState(service?.name ?? "");
+  const [type, setType] = useState<ServiceType>(service?.type ?? "single");
+  const [price, setPrice] = useState(
+    service ? String(service.price_cents / 100).replace(".", ",") : ""
+  );
+  const [duration, setDuration] = useState(service?.duration_min ?? 60);
+  const [packSize, setPackSize] = useState(
+    service?.pack_size ? String(service.pack_size) : "10"
+  );
+  const [location, setLocation] = useState<ServiceLocation>(
+    service?.location ?? "in_person"
+  );
+  const [description, setDescription] = useState(service?.description ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,8 +56,7 @@ export default function AddServiceModal({
         return;
       }
 
-      const { error } = await supabase.from("services").insert({
-        coach_id: user.id,
+      const values = {
         name: name.trim(),
         description: description.trim() || null,
         type,
@@ -57,7 +66,13 @@ export default function AddServiceModal({
         currency: "eur",
         pack_size: type === "pack" ? Number(packSize) || null : null,
         active: true,
-      });
+      };
+
+      const { error } = service
+        ? await supabase.from("services").update(values).eq("id", service.id)
+        : await supabase
+            .from("services")
+            .insert({ coach_id: user.id, ...values });
 
       if (error) {
         setError(t("services.errors.generic"));
@@ -81,7 +96,7 @@ export default function AddServiceModal({
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-lg font-semibold text-text-base">
-          {t("services.form.title")}
+          {service ? t("services.form.editTitle") : t("services.form.title")}
         </h2>
 
         <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-3">
@@ -204,7 +219,11 @@ export default function AddServiceModal({
               {t("services.form.cancel")}
             </Button>
             <Button type="submit" disabled={loading} className="flex-1">
-              {loading ? t("services.form.creating") : t("services.form.create")}
+              {loading
+                ? t("services.form.creating")
+                : service
+                ? t("services.form.save")
+                : t("services.form.create")}
             </Button>
           </div>
         </form>

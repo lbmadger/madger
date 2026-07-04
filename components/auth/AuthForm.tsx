@@ -121,13 +121,22 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   }
 
   const titleKey = isSignup ? "auth.signup" : "auth.login";
+  // Parcours client (?role=client) : titres dédiés, pas « compte coach ».
+  const title =
+    isSignup && role === "client"
+      ? t("auth.signup.clientTitle")
+      : t(`${titleKey}.title`);
+  const subtitle =
+    isSignup && role === "client"
+      ? t("auth.signup.clientSubtitle")
+      : t(`${titleKey}.subtitle`);
 
   return (
     <div className="rounded-2xl border border-border bg-bg-card p-6">
       <h1 className="text-2xl font-extrabold tracking-tight text-text-base">
-        {t(`${titleKey}.title`)}
+        {title}
       </h1>
-      <p className="mt-1 text-sm text-text-muted">{t(`${titleKey}.subtitle`)}</p>
+      <p className="mt-1 text-sm text-text-muted">{subtitle}</p>
 
       {/* Google */}
       <button
@@ -212,7 +221,11 @@ export default function AuthForm({ mode }: { mode: Mode }) {
         {error && <p className="text-sm text-red-400">{error}</p>}
 
         <Button type="submit" disabled={loading} className="mt-2 w-full">
-          {loading ? t("auth.signingIn") : t(`${titleKey}.submit`)}
+          {loading
+            ? isSignup
+              ? t("auth.signingUp")
+              : t("auth.signingIn")
+            : t(`${titleKey}.submit`)}
         </Button>
       </form>
 

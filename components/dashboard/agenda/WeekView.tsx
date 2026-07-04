@@ -35,9 +35,12 @@ function mondayOf(d: Date): Date {
 export default function WeekView({
   bookings,
   availabilities,
+  onBookingClick,
 }: {
   bookings: Booking[];
   availabilities: Availability[];
+  // Clic sur une séance de la grille (confirmer une demande, modifier…).
+  onBookingClick?: (b: Booking) => void;
 }) {
   const { t, locale } = useI18n();
   const loc = locale === "fr" ? "fr-FR" : "en-US";
@@ -229,24 +232,16 @@ export default function WeekView({
                     />
                   ))}
 
-                  {/* Séances (dessus) */}
+                  {/* Séances (dessus). Cliquables si un gestionnaire est
+                      fourni (confirmer/refuser une demande, modifier). */}
                   {dayBookings.map((b) => {
                     const s = new Date(b.starts_at);
                     const e = new Date(b.ends_at);
                     const sMin = s.getHours() * 60 + s.getMinutes();
                     const eMin = e.getHours() * 60 + e.getMinutes();
                     const h = Math.max(top(eMin) - top(sMin), 22);
-                    return (
-                      <span
-                        key={b.id}
-                        className={`absolute inset-x-1 overflow-hidden rounded-md border-l-2 px-1.5 py-0.5 ${
-                          b.status === "pending"
-                            ? "border-yellow-400 bg-yellow-400/10"
-                            : "border-accent bg-bg-elevated"
-                        }`}
-                        style={{ top: top(sMin), height: h }}
-                        title={`${clientName(b)} · ${s.toLocaleTimeString(loc, { hour: "2-digit", minute: "2-digit" })}`}
-                      >
+                    const inner = (
+                      <>
                         <span className="block truncate text-[10px] font-semibold leading-tight text-text-base">
                           {s.toLocaleTimeString(loc, {
                             hour: "2-digit",
@@ -258,6 +253,33 @@ export default function WeekView({
                             {clientName(b)}
                           </span>
                         )}
+                      </>
+                    );
+                    const cls = `absolute inset-x-1 overflow-hidden rounded-md border-l-2 px-1.5 py-0.5 text-left ${
+                      b.status === "pending"
+                        ? "border-yellow-400 bg-yellow-400/10"
+                        : "border-accent bg-bg-elevated"
+                    }`;
+                    const title = `${clientName(b)} · ${s.toLocaleTimeString(loc, { hour: "2-digit", minute: "2-digit" })}`;
+                    return onBookingClick ? (
+                      <button
+                        key={b.id}
+                        type="button"
+                        onClick={() => onBookingClick(b)}
+                        className={`${cls} cursor-pointer transition-opacity hover:opacity-80`}
+                        style={{ top: top(sMin), height: h }}
+                        title={title}
+                      >
+                        {inner}
+                      </button>
+                    ) : (
+                      <span
+                        key={b.id}
+                        className={cls}
+                        style={{ top: top(sMin), height: h }}
+                        title={title}
+                      >
+                        {inner}
                       </span>
                     );
                   })}
