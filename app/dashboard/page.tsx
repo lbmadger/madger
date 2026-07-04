@@ -6,6 +6,7 @@ import AnimatedStat, {
 } from "@/components/dashboard/AnimatedStat";
 import SetupChecklist from "@/components/dashboard/SetupChecklist";
 import LeiaTips from "@/components/dashboard/LeiaTips";
+import ProStats, { type ProStatItem } from "@/components/dashboard/ProStats";
 import { computeLeiaTips, dailyTipIndex } from "@/lib/leia/tips";
 import ChartCard from "@/components/dashboard/charts/ChartCard";
 import MiniBars, { type BarDatum } from "@/components/dashboard/charts/MiniBars";
@@ -70,12 +71,13 @@ export default async function OverviewPage() {
       .eq("escrow_status", "held"),
     supabase
       .from("bookings")
-      .select("starts_at, ends_at, status")
+      .select("starts_at, ends_at, status, client_id")
       .lt("starts_at", weekEnd.toISOString()),
   ]);
 
-  // Dernières factures, avis, demandes à confirmer, derniers messages reçus.
-  const [{ data: latestInvoices }, reviewsRes, pendingRes, msgsRes] =
+  // Dernières factures, avis, demandes à confirmer, derniers messages reçus,
+  // séances à venir sur 30 jours (revenus prévisionnels, stats Pro).
+  const [{ data: latestInvoices }, reviewsRes, pendingRes, msgsRes, next30Res] =
     await Promise.all([
       supabase
         .from("payments")
@@ -98,6 +100,15 @@ export default async function OverviewPage() {
         )
         .order("created_at", { ascending: false })
         .limit(12),
+      supabase
+        .from("bookings")
+        .select("*", { count: "exact", head: true })
+        .gte("starts_at", now.toISOString())
+        .lt(
+          "starts_at",
+          new Date(now.getTime() + 30 * 86400000).toISOString()
+        )
+        .neq("status", "cancelled"),
     ]);
 
   const clientsCount = clientsRes.count ?? 0;
@@ -334,22 +345,132 @@ export default async function OverviewPage() {
     { label: o.pendingPayments, value: heldSum, kind: "currency" },
     { label: o.toConfirm, value: pendingCount, kind: "int" },
   ];
-  if (fillRate !== null) {
-    stats.push({
-      label: o.fillRate,
-      value: fillRate,
-      kind: "percent",
-      hint: o.fillRateHint,
+  // ── Statistiques avancées (plan Pro) ──────────────────────────────────────
+  // En Gratuit on n'envoie que des valeurs factices (les tuiles sont floutées
+  // avec un cadenas) : les vraies données ne quittent pas le serveur.
+  const ps = o.proStats;
+  let proItems: ProStatItem[];
+  if (pro) {
+    const allRows = weeksRes.data ?? [];
+    const totalPaidCents = payments.reduce(
+      (s, p) => s + ((p.amount_cents as number) || 0),
+      0
+    );
+    const avgBasketCents =
+      payments.length > 0 ? Math.round(totalPaidCents / payments.length) : 0;
+
+    // Taux d'annulation sur les 30 derniers jours (toutes séances confondues).
+    const last30 = allRows.filter((b) => {
+      const t = new Date(b.starts_at as string).getTime();
+      return t >= now.getTime() - 30 * 86400000 && t <= now.getTime();
     });
-  }
-  if (ratingCount > 0) {
-    stats.push({
-      label: o.rating,
-      value: ratingAvg,
-      kind: "decimal1",
-      prefix: "⭐ ",
-      hint: `${ratingCount} ${dict.reviews.countLabel}`,
+    const cancelRate =
+      last30.length > 0
+        ? Math.round(
+            (last30.filter((b) => b.status === "cancelled").length /
+              last30.length) *
+              100
+          )
+        : 0;
+
+    // Jour le plus réservé (lundi = 0) et heure la plus demandée, dans le
+    // fuseau du coach.
+    const dayCounts = Array.from({ length: 7 }, () => 0);
+    const hourCounts = new Map<number, number>();
+    const hourFmt = new Intl.DateTimeFormat("en-GB", {
+      hour: "numeric",
+      hour12: false,
+      timeZone: coach?.timezone || "Europe/Paris",
     });
+    for (const b of weekBookings) {
+      const d = new Date(b.starts_at as string);
+      dayCounts[(d.getDay() + 6) % 7] += 1;
+      const h = parseInt(hourFmt.format(d), 10);
+      if (!Number.isNaN(h)) hourCounts.set(h, (hourCounts.get(h) ?? 0) + 1);
+    }
+    const bestDayIdx = dayCounts.some((c) => c > 0)
+      ? dayCounts.indexOf(Math.max(...dayCounts))
+      : -1;
+    // Le 1er janvier 2024 était un lundi : sert de référence pour le libellé.
+    const bestDay =
+      bestDayIdx >= 0
+        ? new Date(Date.UTC(2024, 0, 1 + bestDayIdx)).toLocaleDateString(loc, {
+            weekday: "long",
+          })
+        : "-";
+    let bestHour = "-";
+    let bestHourCount = 0;
+    hourCounts.forEach((c, h) => {
+      if (c > bestHourCount) {
+        bestHourCount = c;
+        bestHour = `${String(h).padStart(2, "0")}:00`;
+      }
+    });
+
+    // Fidélité : part des clients revenus au moins une deuxième fois.
+    const byClient = new Map<string, number>();
+    for (const b of weekBookings) {
+      const id = b.client_id as string | null;
+      if (id) byClient.set(id, (byClient.get(id) ?? 0) + 1);
+    }
+    let loyalCount = 0;
+    byClient.forEach((n) => {
+      if (n >= 2) loyalCount += 1;
+    });
+    const loyalPct =
+      byClient.size > 0 ? Math.round((loyalCount / byClient.size) * 100) : 0;
+
+    const forecastCents = (next30Res.count ?? 0) * avgBasketCents;
+
+    proItems = [
+      {
+        label: o.fillRate,
+        value: fillRate !== null ? `${fillRate}%` : "-",
+        hint: o.fillRateHint,
+      },
+      {
+        label: o.rating,
+        value: ratingCount > 0 ? `⭐ ${ratingAvg.toFixed(1)}` : "-",
+        hint:
+          ratingCount > 0
+            ? `${ratingCount} ${dict.reviews.countLabel}`
+            : undefined,
+      },
+      {
+        label: ps.avgBasket,
+        value: avgBasketCents > 0 ? euros(avgBasketCents) : "-",
+        hint: ps.avgBasketHint,
+      },
+      {
+        label: ps.cancelRate,
+        value: last30.length > 0 ? `${cancelRate}%` : "-",
+        hint: ps.cancelRateHint,
+      },
+      { label: ps.bestDay, value: bestDay, hint: ps.bestDayHint },
+      { label: ps.bestHour, value: bestHour, hint: ps.bestHourHint },
+      {
+        label: ps.loyalClients,
+        value: byClient.size > 0 ? `${loyalPct}%` : "-",
+        hint: ps.loyalHint,
+      },
+      {
+        label: ps.forecast,
+        value: forecastCents > 0 ? euros(forecastCents) : "-",
+        hint: ps.forecastHint,
+      },
+    ];
+  } else {
+    const fr = loc === "fr-FR";
+    proItems = [
+      { label: o.fillRate, value: "82%", hint: o.fillRateHint },
+      { label: o.rating, value: "⭐ 4.9" },
+      { label: ps.avgBasket, value: fr ? "45 €" : "€45" },
+      { label: ps.cancelRate, value: "6%", hint: ps.cancelRateHint },
+      { label: ps.bestDay, value: fr ? "Jeudi" : "Thursday" },
+      { label: ps.bestHour, value: "18:00" },
+      { label: ps.loyalClients, value: "68%" },
+      { label: ps.forecast, value: fr ? "1 240 €" : "€1,240" },
+    ];
   }
 
   return (
@@ -412,6 +533,10 @@ export default async function OverviewPage() {
             />
           ))}
         </div>
+
+        {/* Statistiques avancées : floutées + cadenas en Gratuit, réelles en
+            Pro. */}
+        <ProStats items={proItems} locked={!pro} />
 
         {/* Graphiques : revenus par mois + séances par semaine, avec sélecteur
             de période (la plage s'adapte à l'historique réel du coach). */}
