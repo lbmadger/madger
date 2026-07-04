@@ -401,6 +401,9 @@ const fr = {
   overview: {
     title: "Dashboard",
     greeting: "Bonjour",
+    greetingMorning: "Bonjour",
+    greetingAfternoon: "Bon après-midi",
+    greetingEvening: "Bonsoir",
     subtitle: "Voici l'état de ton activité aujourd'hui.",
     revenueMonth: "Revenus du mois",
     sessionsWeek: "Séances cette semaine",
@@ -452,6 +455,11 @@ const fr = {
   marketplace: {
     title: "Trouve ton coach",
     subtitle: "Des coachs près de chez toi, ou en ligne.",
+    heroBadge: "La nouvelle génération du coaching",
+    titleA: "Trouve le coach qui va",
+    titleB: "te transformer",
+    heroSubtitle:
+      "Des coachs vérifiés, des créneaux en temps réel, un paiement sécurisé. Réserve ta séance en 30 secondes.",
     cityPlaceholder: "Dans quelle ville ?",
     search: "Rechercher",
     filterAll: "Tout",
@@ -1256,6 +1264,9 @@ const en: Dictionary = {
   overview: {
     title: "Dashboard",
     greeting: "Hi",
+    greetingMorning: "Good morning",
+    greetingAfternoon: "Good afternoon",
+    greetingEvening: "Good evening",
     subtitle: "Here's how your business looks today.",
     revenueMonth: "Revenue this month",
     sessionsWeek: "Sessions this week",
@@ -1307,6 +1318,11 @@ const en: Dictionary = {
   marketplace: {
     title: "Find your coach",
     subtitle: "Coaches near you, or online.",
+    heroBadge: "The new generation of coaching",
+    titleA: "Find the coach who will",
+    titleB: "transform you",
+    heroSubtitle:
+      "Verified coaches, real time slots, secure payment. Book your session in 30 seconds.",
     cityPlaceholder: "Which city?",
     search: "Search",
     filterAll: "All",

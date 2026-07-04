@@ -3,6 +3,7 @@
 import { useState, useEffect, type FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
@@ -172,15 +173,33 @@ export default function MarketplaceView({
   );
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
-      <div className="text-center">
-        <h1 className="text-3xl font-extrabold tracking-tight text-text-base sm:text-4xl">
-          {t("marketplace.title")}
-        </h1>
-        <p className="mt-2 text-sm text-text-muted sm:text-base">
-          {t("marketplace.subtitle")}
-        </p>
+    <main className="relative mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 sm:py-16">
+      {/* Halo lumineux d'ambiance derrière le hero */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[420px] overflow-hidden"
+      >
+        <div className="absolute left-1/2 top-[-220px] h-[460px] w-[760px] -translate-x-1/2 rounded-full bg-accent/[0.07] blur-[120px]" />
       </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="text-center"
+      >
+        <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.06] px-3.5 py-1.5 text-xs font-medium text-accent">
+          <span className="glow-dot h-1.5 w-1.5 rounded-full bg-accent" />
+          {t("marketplace.heroBadge")}
+        </span>
+        <h1 className="mx-auto mt-4 max-w-2xl text-3xl font-extrabold tracking-tight text-text-base sm:text-5xl">
+          {t("marketplace.titleA")}{" "}
+          <span className="text-shimmer">{t("marketplace.titleB")}</span>
+        </h1>
+        <p className="mx-auto mt-3 max-w-xl text-sm text-text-muted sm:text-base">
+          {t("marketplace.heroSubtitle")}
+        </p>
+      </motion.div>
 
       {/* Barre : ouvrir les filtres + tout effacer */}
       <div className="mx-auto mt-6 flex max-w-2xl items-center justify-center gap-2">
@@ -358,8 +377,17 @@ export default function MarketplaceView({
                 : t("marketplace.resultsMany")}
             </p>
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {shown.map((c) => (
-                <li key={c.id}>
+              {shown.map((c, i) => (
+                <motion.li
+                  key={c.id}
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    delay: Math.min(i * 0.05, 0.45),
+                    duration: 0.4,
+                    ease: "easeOut",
+                  }}
+                >
                   <Link
                     href={`/${c.slug}`}
                     className={`flex h-full flex-col gap-3 p-4 ${interactiveCardClass}`}
@@ -415,7 +443,7 @@ export default function MarketplaceView({
                       )}
                     </div>
                   </Link>
-                </li>
+                </motion.li>
               ))}
             </ul>
           </>

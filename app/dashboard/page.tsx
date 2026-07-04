@@ -480,7 +480,20 @@ export default async function OverviewPage() {
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
         <div className="mb-6 sm:mb-8">
           <h2 className="text-2xl font-extrabold tracking-tight text-text-base sm:text-3xl">
-            {o.greeting}
+            {(() => {
+              // Salutation selon l'heure locale du coach.
+              const h = parseInt(
+                new Intl.DateTimeFormat("en-GB", {
+                  hour: "numeric",
+                  hour12: false,
+                  timeZone: coach?.timezone || "Europe/Paris",
+                }).format(now),
+                10
+              );
+              if (h >= 18 || h < 5) return o.greetingEvening;
+              if (h >= 12) return o.greetingAfternoon;
+              return o.greetingMorning;
+            })()}
             {coach?.first_name ? ` ${coach.first_name}` : ""} 👋
           </h2>
           {/* Comme le mockup : date du jour + séances du jour */}
