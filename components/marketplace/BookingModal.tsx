@@ -34,11 +34,10 @@ export default function BookingModal({
   const instant = coach.booking_mode === "instant";
 
   // Prestations payantes (paiement possible seulement si le coach encaisse).
-  // Les abonnements récurrents ne sont pas encore facturables en ligne : ils
-  // passent en demande simple pour ne pas facturer une seule fois un prix
-  // affiché "/mois".
+  // Les abonnements mensuels sont souscrits en récurrent (Stripe) : pas de
+  // créneau à choisir, le coach planifie ensuite avec son client.
   const paidServices = coach.stripe_charges_enabled
-    ? services.filter((s) => s.price_cents > 0 && s.type !== "subscription")
+    ? services.filter((s) => s.price_cents > 0)
     : [];
 
   // Coach sans ville mais dispo en ligne → réservation en visio par défaut.
@@ -70,6 +69,8 @@ export default function BookingModal({
 
   const selectedService = paidServices.find((s) => s.id === serviceId) ?? null;
   const payMode = !!selectedService;
+  // Abonnement mensuel : souscription récurrente, aucun créneau à choisir.
+  const isSubscription = selectedService?.type === "subscription";
   // Prestation choisie = durée imposée par la prestation (60 min par défaut) :
   // le client ne choisit jamais la durée d'une prestation payante.
   const effectiveDuration = selectedService
@@ -113,15 +114,18 @@ export default function BookingModal({
     if (!email.trim()) return setError(t("booking.errors.emailRequired"));
 
     // Départ de séance : créneau choisi (mode slots) ou saisie libre.
-    let starts: Date;
-    if (slotState.mode === "slots") {
-      if (!selectedIso) return setError(t("booking.errors.slotRequired"));
-      starts = new Date(selectedIso);
-    } else {
-      if (!date || !time) return setError(t("booking.errors.dateRequired"));
-      starts = new Date(`${date}T${time}`);
-      if (starts.getTime() < Date.now())
-        return setError(t("booking.errors.datePast"));
+    // Abonnement : aucun créneau requis (le coach planifie ensuite).
+    let starts: Date | null = null;
+    if (!isSubscription) {
+      if (slotState.mode === "slots") {
+        if (!selectedIso) return setError(t("booking.errors.slotRequired"));
+        starts = new Date(selectedIso);
+      } else {
+        if (!date || !time) return setError(t("booking.errors.dateRequired"));
+        starts = new Date(`${date}T${time}`);
+        if (starts.getTime() < Date.now())
+          return setError(t("booking.errors.datePast"));
+      }
     }
 
     setLoading(true);
@@ -138,7 +142,7 @@ export default function BookingModal({
             last_name: lastName.trim() || null,
             email: email.trim(),
             phone: phone.trim() || null,
-            starts_at: starts.toISOString(),
+            starts_at: starts ? starts.toISOString() : null,
             duration_min: effectiveDuration,
             online,
             message: message.trim() || null,
@@ -163,7 +167,7 @@ export default function BookingModal({
           last_name: lastName.trim() || null,
           email: email.trim(),
           phone: phone.trim() || null,
-          starts_at: starts.toISOString(),
+          starts_at: starts ? starts.toISOString() : null,
           duration_min: effectiveDuration,
           message: message.trim() || null,
           online,
@@ -283,8 +287,20 @@ export default function BookingModal({
                 </label>
               )}
 
+              {/* Abonnement mensuel : pas de créneau, le coach planifie */}
+              {isSubscription && (
+                <div className="rounded-xl border border-accent/25 bg-accent/[0.05] p-3">
+                  <p className="text-xs font-medium text-text-base">
+                    🔁 {t("booking.subscriptionTitle")}
+                  </p>
+                  <p className="mt-1 text-xs text-text-muted">
+                    {t("booking.subscriptionDesc")}
+                  </p>
+                </div>
+              )}
+
               {/* Présentiel / visio si le coach propose les deux */}
-              {coach.accepts_online && coach.city && (
+              {!isSubscription && coach.accepts_online && coach.city && (
                 <div className="flex gap-2">
                   {[false, true].map((opt) => (
                     <button
@@ -303,14 +319,14 @@ export default function BookingModal({
                 </div>
               )}
 
-              {/* ── Créneaux réels ──────────────────────────────────────── */}
-              {slotState.mode === "loading" && (
+              {/* ── Créneaux réels (pas pour un abonnement) ─────────────── */}
+              {!isSubscription && slotState.mode === "loading" && (
                 <div className="rounded-xl border border-border bg-bg-elevated p-4 text-center text-sm text-text-dim">
                   {t("booking.slotsLoading")}
                 </div>
               )}
 
-              {slotState.mode === "slots" && (
+              {!isSubscription && slotState.mode === "slots" && (
                 <div className="flex flex-col gap-2">
                   <span className={labelClass}>{t("booking.chooseSlot")}</span>
                   {!anySlots ? (
@@ -375,7 +391,7 @@ export default function BookingModal({
               )}
 
               {/* ── Saisie libre (coach sans disponibilités définies) ───── */}
-              {slotState.mode === "free" && (
+              {!isSubscription && slotState.mode === "free" && (
                 <>
                   <div className="grid grid-cols-2 gap-3">
                     <label className="flex flex-col gap-1.5">
@@ -402,8 +418,9 @@ export default function BookingModal({
                 </label>
               )}
 
-              {/* Séquestre : rassure le client au moment de payer */}
-              {payMode && (
+              {/* Séquestre : rassure le client au moment de payer (pas
+                  d'escrow sur un abonnement récurrent) */}
+              {payMode && !isSubscription && (
                 <div className="rounded-xl border border-border bg-bg-elevated p-3">
                   <p className="flex items-center gap-1.5 text-xs font-medium text-text-base">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
@@ -459,6 +476,8 @@ export default function BookingModal({
                     ? payMode
                       ? t("booking.redirecting")
                       : t("booking.sending")
+                    : isSubscription && selectedService
+                    ? `${t("booking.subscribe")} ${formatPrice(selectedService.price_cents, selectedService.currency, locale)}${t("services.perMonth")}`
                     : payMode && selectedService
                     ? `${t("booking.pay")} ${formatPrice(selectedService.price_cents, selectedService.currency, locale)}`
                     : t("booking.submit")}

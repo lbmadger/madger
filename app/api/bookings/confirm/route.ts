@@ -4,6 +4,7 @@ import { createClient as createAdmin } from "@supabase/supabase-js";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
 import { requestReceivedClient } from "@/lib/email/templates";
+import { googleCalendarUrl, meetingUrlFor } from "@/lib/calendar/links";
 
 export const dynamic = "force-dynamic";
 
@@ -31,10 +32,20 @@ export async function POST(req: NextRequest) {
     .update({ status: "confirmed" })
     .eq("id", bookingId)
     .eq("status", "pending")
-    .select("id, starts_at, client_id")
+    .select("id, starts_at, ends_at, client_id, location, meeting_url")
     .maybeSingle();
   if (error || !booking) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+
+  // Visio : garantit une salle dédiée dès la confirmation.
+  let meetUrl = (booking.meeting_url as string | null) ?? undefined;
+  if (booking.location === "online" && !meetUrl) {
+    meetUrl = meetingUrlFor(booking.id as string);
+    await supabase
+      .from("bookings")
+      .update({ meeting_url: meetUrl })
+      .eq("id", booking.id);
   }
 
   // Email au client (best-effort).
@@ -72,6 +83,16 @@ export async function POST(req: NextRequest) {
           ),
           instant: true, // variante « confirmée »
           reservationUrl: `${APP_URL}/reservation/${booking.id}`,
+          meetUrl,
+          calendarUrl: googleCalendarUrl({
+            title: `Séance avec ${[coach?.first_name, coach?.last_name].filter(Boolean).join(" ") || "ton coach"}`,
+            start: new Date(booking.starts_at as string),
+            end: new Date(
+              (booking.ends_at as string) ?? (booking.starts_at as string)
+            ),
+            details: `${APP_URL}/reservation/${booking.id}`,
+            location: meetUrl,
+          }),
         });
         await sendEmail({ to: client.email, subject: tpl.subject, html: tpl.html });
       }

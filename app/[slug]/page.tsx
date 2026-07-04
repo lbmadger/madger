@@ -60,7 +60,7 @@ export default async function CoachPublicPage({
   searchParams,
 }: {
   params: { slug: string };
-  searchParams: { paid?: string; conflict?: string };
+  searchParams: { paid?: string; conflict?: string; sub?: string };
 }) {
   const { locale, dict } = getServerDictionary();
   const coach = await getCoachBySlug(params.slug);
@@ -121,6 +121,11 @@ export default async function CoachPublicPage({
         {searchParams.conflict === "1" && (
           <p className="mx-auto mt-4 w-full max-w-2xl rounded-xl border border-yellow-400/25 bg-yellow-400/[0.06] px-4 py-3 text-center text-sm text-text-base">
             {dict.booking.conflictBanner}
+          </p>
+        )}
+        {searchParams.sub === "1" && (
+          <p className="mx-auto mt-4 w-full max-w-2xl rounded-xl border border-accent/25 bg-accent/[0.06] px-4 py-3 text-center text-sm text-text-base">
+            {dict.booking.subBanner}
           </p>
         )}
         <CoachProfile

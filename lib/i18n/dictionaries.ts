@@ -566,6 +566,12 @@ const fr = {
       "Paiement reçu ! Ta confirmation arrive par email d'ici quelques minutes.",
     conflictBanner:
       "Ce créneau venait d'être pris par quelqu'un d'autre : tu as été intégralement remboursé. Choisis un autre créneau.",
+    subBanner:
+      "Abonnement activé ! Ton coach va te contacter pour planifier vos séances. Confirmation envoyée par email.",
+    subscriptionTitle: "Abonnement mensuel",
+    subscriptionDesc:
+      "Prélevé chaque mois, sans engagement. Pas de créneau à choisir maintenant : ton coach planifie tes séances avec toi.",
+    subscribe: "S'abonner ·",
   },
   settings: {
     title: "Réglages",
@@ -624,6 +630,8 @@ const fr = {
     statusReleased: "Séance réglée au coach",
     statusRefunded: "Séance remboursée",
     statusDisputed: "Problème signalé, en cours d'examen",
+    joinMeeting: "Rejoindre la visio",
+    addToCalendar: "Ajouter à Google Calendar",
     notFound: "Réservation introuvable.",
     backHome: "Retour à l'accueil",
   },
@@ -1458,6 +1466,12 @@ const en: Dictionary = {
       "Payment received! Your confirmation is on its way by email within a few minutes.",
     conflictBanner:
       "This slot had just been taken by someone else: you have been fully refunded. Please pick another slot.",
+    subBanner:
+      "Subscription active! Your coach will contact you to plan your sessions. Confirmation sent by email.",
+    subscriptionTitle: "Monthly subscription",
+    subscriptionDesc:
+      "Charged monthly, cancel anytime. No slot to pick now: your coach plans your sessions with you.",
+    subscribe: "Subscribe ·",
   },
   settings: {
     title: "Settings",
@@ -1513,6 +1527,8 @@ const en: Dictionary = {
     statusReleased: "Session paid to the coach",
     statusRefunded: "Session refunded",
     statusDisputed: "Problem reported, under review",
+    joinMeeting: "Join the video call",
+    addToCalendar: "Add to Google Calendar",
     notFound: "Booking not found.",
     backHome: "Back to home",
   },

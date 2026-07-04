@@ -29,8 +29,22 @@ export async function POST(req: NextRequest) {
 
   const supabase = createClient(SUPABASE_URL, serviceKey);
 
-  // Prolonge/maj pro_until à partir d'un abonnement Stripe.
+  // Prolonge/maj pro_until à partir d'un abonnement Stripe. Deux familles
+  // d'abonnements passent par ce webhook : l'abonnement PRO des coachs et les
+  // abonnements MENSUELS des clients chez un coach (metadata.kind =
+  // "client_sub") : ces derniers mettent à jour le registre local, jamais
+  // pro_until.
   async function applyFromSubscription(sub: Stripe.Subscription) {
+    if (sub.metadata?.kind === "client_sub") {
+      await supabase
+        .from("client_subscriptions")
+        .update({
+          status: sub.status,
+          current_period_end: subPeriodEnd(sub),
+        })
+        .eq("stripe_subscription_id", sub.id);
+      return;
+    }
     const coachId = sub.metadata?.coach_id;
     if (!coachId) return;
     const periodEnd = subPeriodEnd(sub);
@@ -57,6 +71,14 @@ export async function POST(req: NextRequest) {
             "@/lib/stripe/fulfillCheckout"
           );
           await fulfillCheckoutSession(s.id);
+        } else if (
+          s.mode === "subscription" &&
+          s.metadata?.kind === "client_sub"
+        ) {
+          const { fulfillSubscriptionSession } = await import(
+            "@/lib/stripe/fulfillSubscription"
+          );
+          await fulfillSubscriptionSession(s.id);
         }
         break;
       }

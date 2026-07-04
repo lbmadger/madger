@@ -7,6 +7,7 @@ import {
   bookingConfirmationClient,
   bookingNotificationCoach,
 } from "@/lib/email/templates";
+import { googleCalendarUrl, meetingUrlFor } from "@/lib/calendar/links";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
@@ -217,6 +218,16 @@ export async function fulfillCheckoutSession(
     }
   }
 
+  // Séance en visio : salle dédiée générée automatiquement.
+  const meetUrl =
+    m.online === "1" && booking ? meetingUrlFor(booking.id) : undefined;
+  if (meetUrl && booking) {
+    await supabase
+      .from("bookings")
+      .update({ meeting_url: meetUrl })
+      .eq("id", booking.id);
+  }
+
   // Confirmation (mode instantané) : après le paiement, pour que le trigger
   // pack ignore cette séance déjà payée.
   if (bookingStatus === "confirmed" && booking) {
@@ -257,6 +268,13 @@ export async function fulfillCheckoutSession(
     );
     const online = m.online === "1";
     const reservationUrl = `${APP_URL}/reservation/${result.bookingId}`;
+    const calendarUrl = googleCalendarUrl({
+      title: `Séance avec ${coachName}`,
+      start: starts,
+      end: ends,
+      details: reservationUrl,
+      location: meetUrl,
+    });
 
     if (m.email) {
       const t = bookingConfirmationClient({
@@ -265,6 +283,8 @@ export async function fulfillCheckoutSession(
         priceStr,
         online,
         reservationUrl,
+        meetUrl,
+        calendarUrl,
       });
       await sendEmail({ to: m.email, subject: t.subject, html: t.html });
     }

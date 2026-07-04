@@ -6,6 +6,7 @@ import {
   requestReceivedClient,
   newRequestCoach,
 } from "@/lib/email/templates";
+import { googleCalendarUrl, meetingUrlFor } from "@/lib/calendar/links";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
@@ -119,6 +120,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Visio : salle dédiée générée automatiquement pour la séance.
+    let meetUrl: string | undefined;
+    const svcKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (online && svcKey && bookingId) {
+      meetUrl = meetingUrlFor(String(bookingId));
+      try {
+        const adminC = createClient(SUPABASE_URL, svcKey);
+        await adminC
+          .from("bookings")
+          .update({ meeting_url: meetUrl })
+          .eq("id", bookingId);
+      } catch {
+        /* best-effort */
+      }
+    }
+
     // ── Emails (best-effort) : confirmation au client + alerte au coach ────
     try {
       const { data: coach } = await supabase
@@ -140,11 +157,25 @@ export async function POST(req: NextRequest) {
           timeZone: "Europe/Paris",
         });
 
+        const starts = new Date(String(starts_at));
         const tplClient = requestReceivedClient({
           coachName,
           dateStr,
           instant,
           reservationUrl: `${APP_URL}/reservation/${bookingId}`,
+          // Liens utiles seulement si la séance est déjà confirmée.
+          meetUrl: instant ? meetUrl : undefined,
+          calendarUrl: instant
+            ? googleCalendarUrl({
+                title: `Séance avec ${coachName}`,
+                start: starts,
+                end: new Date(
+                  starts.getTime() + (Number(duration_min) || 60) * 60000
+                ),
+                details: `${APP_URL}/reservation/${bookingId}`,
+                location: meetUrl,
+              })
+            : undefined,
         });
         await sendEmail({
           to: String(email),

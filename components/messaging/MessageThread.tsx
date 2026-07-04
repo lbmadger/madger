@@ -60,9 +60,39 @@ export default function MessageThread({
     }
   }, [conversationId]);
 
-  // Rafraîchissement périodique tant que le fil est ouvert et visible.
+  // Temps réel : les nouveaux messages arrivent instantanément via Supabase
+  // Realtime (publication activée par la migration 0026). Le polling reste en
+  // filet de sécurité, ralenti à 15 s.
   useEffect(() => {
-    const id = setInterval(fetchMessages, 4000);
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`messages-${conversationId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${conversationId}`,
+        },
+        (payload) => {
+          const msg = payload.new as Message;
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === msg.id)) return prev;
+            lastSeenRef.current = msg.created_at;
+            return [...prev, msg];
+          });
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [conversationId]);
+
+  // Filet de sécurité si le temps réel n'est pas disponible.
+  useEffect(() => {
+    const id = setInterval(fetchMessages, 15000);
     const onVisible = () => {
       if (!document.hidden) fetchMessages();
     };

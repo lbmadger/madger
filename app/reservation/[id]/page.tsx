@@ -17,6 +17,8 @@ type BookingInfo = {
   starts_at: string;
   ends_at: string;
   status: string;
+  location: string;
+  meeting_url: string | null;
   coach_name: string;
   escrow_status: string | null;
 };
@@ -27,7 +29,9 @@ async function getBooking(id: string): Promise<BookingInfo | null> {
   const admin = createClient(SUPABASE_URL, key);
   const { data: booking } = await admin
     .from("bookings")
-    .select("starts_at, ends_at, status, coaches(first_name, last_name)")
+    .select(
+      "starts_at, ends_at, status, location, meeting_url, coaches(first_name, last_name)"
+    )
     .eq("id", id)
     .maybeSingle();
   if (!booking) return null;
@@ -45,6 +49,8 @@ async function getBooking(id: string): Promise<BookingInfo | null> {
     starts_at: booking.starts_at as string,
     ends_at: booking.ends_at as string,
     status: booking.status as string,
+    location: (booking.location as string) ?? "in_person",
+    meeting_url: (booking.meeting_url as string | null) ?? null,
     coach_name: [c?.first_name, c?.last_name].filter(Boolean).join(" "),
     escrow_status: payment?.escrow_status ?? null,
   };
@@ -117,6 +123,31 @@ export default async function ReservationPage({
                   {statusLabel[booking.escrow_status] ?? booking.escrow_status}
                 </p>
               )}
+
+              {/* Visio + ajout au calendrier (séance à venir non annulée) */}
+              {booking.status !== "cancelled" &&
+                new Date(booking.ends_at).getTime() > Date.now() && (
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    {booking.location === "online" && booking.meeting_url && (
+                      <a
+                        href={booking.meeting_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-full bg-accent px-4 py-2 text-xs font-bold text-black transition-opacity hover:opacity-90"
+                      >
+                        🎥 {r.joinMeeting}
+                      </a>
+                    )}
+                    <a
+                      href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`Séance avec ${booking.coach_name}`)}&dates=${new Date(booking.starts_at).toISOString().replace(/[-:]|\.\d{3}/g, "")}/${new Date(booking.ends_at).toISOString().replace(/[-:]|\.\d{3}/g, "")}${booking.meeting_url ? `&location=${encodeURIComponent(booking.meeting_url)}` : ""}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-full border border-border-strong px-4 py-2 text-xs font-medium text-text-muted transition-colors hover:border-accent hover:text-text-base"
+                    >
+                      📅 {r.addToCalendar}
+                    </a>
+                  </div>
+                )}
 
               {booking.escrow_status === "held" && (
                 <div className="mt-6 border-t border-border pt-6">

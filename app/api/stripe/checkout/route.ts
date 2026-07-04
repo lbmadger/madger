@@ -2,14 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
+import { isPro } from "@/lib/subscription/plan";
 
 export const dynamic = "force-dynamic";
 
 // Crée une session de paiement Stripe pour réserver une prestation payante.
-// SÉQUESTRE : la charge est faite sur le compte PLATEFORME (pas de stripeAccount)
-// → l'argent est retenu par Madger, puis transféré au coach après la séance
-// (24 h) si rien n'est signalé. Le coach doit avoir un compte Connect actif
-// (stripe_charges_enabled) pour pouvoir recevoir son versement plus tard.
+// - Séance/pack : SÉQUESTRE. La charge est faite sur le compte PLATEFORME →
+//   l'argent est retenu par Madger, puis transféré au coach après la séance
+//   (24 h) si rien n'est signalé.
+// - Abonnement mensuel : souscription récurrente versée directement au coach
+//   (transfer_data), commission Madger en application_fee (5 % en Gratuit,
+//   0 % en Pro). Pas de séquestre sur du récurrent.
 export async function POST(req: NextRequest) {
   const stripe = getStripe();
   if (!stripe) {
@@ -35,7 +38,7 @@ export async function POST(req: NextRequest) {
     message,
   } = body;
 
-  if (!coach_slug || !service_id || !first_name || !email || !starts_at) {
+  if (!coach_slug || !service_id || !first_name || !email) {
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
   }
 
@@ -43,7 +46,7 @@ export async function POST(req: NextRequest) {
 
   const { data: coach } = await supabase
     .from("coaches")
-    .select("id, stripe_account_id, stripe_charges_enabled")
+    .select("id, stripe_account_id, stripe_charges_enabled, pro_until")
     .eq("slug", coach_slug)
     .eq("listed", true)
     .maybeSingle();
@@ -53,13 +56,64 @@ export async function POST(req: NextRequest) {
 
   const { data: service } = await supabase
     .from("services")
-    .select("name, price_cents, currency")
+    .select("name, price_cents, currency, type")
     .eq("id", service_id)
     .eq("coach_id", coach.id)
     .eq("active", true)
     .maybeSingle();
   if (!service || service.price_cents <= 0) {
     return NextResponse.json({ error: "invalid_service" }, { status: 400 });
+  }
+
+  // ── Abonnement mensuel : souscription récurrente, pas de créneau requis ───
+  if (service.type === "subscription") {
+    const session = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      line_items: [
+        {
+          price_data: {
+            currency: service.currency || "eur",
+            product_data: { name: service.name },
+            unit_amount: service.price_cents,
+            recurring: { interval: "month" },
+          },
+          quantity: 1,
+        },
+      ],
+      customer_email: String(email),
+      subscription_data: {
+        transfer_data: { destination: coach.stripe_account_id },
+        // Commission Madger prélevée sur chaque échéance.
+        ...(isPro(coach.pro_until) ? {} : { application_fee_percent: 5 }),
+        metadata: {
+          // `kind` distingue ces abonnements de l'abonnement Pro des coachs
+          // dans le webhook (même endpoint).
+          kind: "client_sub",
+          coach_id: coach.id,
+          service_id: String(service_id),
+          client_email: String(email).slice(0, 254),
+        },
+      },
+      success_url: `${origin}/api/stripe/subscribe/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/${coach_slug}`,
+      metadata: {
+        kind: "client_sub",
+        coach_id: coach.id,
+        coach_slug: String(coach_slug),
+        service_id: String(service_id),
+        first_name: String(first_name).slice(0, 80),
+        last_name: last_name ? String(last_name).slice(0, 80) : "",
+        email: String(email).slice(0, 254),
+        phone: phone ? String(phone).slice(0, 30) : "",
+        message: message ? String(message).slice(0, 500) : "",
+      },
+    });
+    return NextResponse.json({ url: session.url });
+  }
+
+  // ── Séance ou pack : un créneau est obligatoire ────────────────────────────
+  if (!starts_at) {
+    return NextResponse.json({ error: "missing_fields" }, { status: 400 });
   }
 
   // Charge sur le compte plateforme (pas d'option stripeAccount) → séquestre.

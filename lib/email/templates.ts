@@ -116,6 +116,27 @@ function layout(opts: {
 </html>`;
 }
 
+// Rangée de liens secondaires (visio, calendrier) sous le récap.
+function linksBlock(links: { label: string; url: string }[]): string {
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="${FONT}padding:14px 0 0;">${links
+    .map(
+      (l) =>
+        `<a href="${l.url}" style="display:inline-block;margin:0 8px 8px 0;padding:9px 16px;border:1px solid #2a2a2a;border-radius:999px;color:${C.text};font-size:13px;text-decoration:none;">${l.label}</a>`
+    )
+    .join("")}</td></tr></table>`;
+}
+
+// Liens visio + Google Calendar, seulement ceux qui existent.
+function meetCalLinks(meetUrl?: string, calendarUrl?: string): string[] {
+  const links = [
+    ...(meetUrl ? [{ label: "🎥 Rejoindre la visio", url: meetUrl }] : []),
+    ...(calendarUrl
+      ? [{ label: "📅 Ajouter à Google Calendar", url: calendarUrl }]
+      : []),
+  ];
+  return links.length ? [linksBlock(links)] : [];
+}
+
 // ── Client : confirmation de réservation payée ──────────────────────────────
 export function bookingConfirmationClient(p: {
   coachName: string;
@@ -123,6 +144,8 @@ export function bookingConfirmationClient(p: {
   priceStr: string;
   online: boolean;
   reservationUrl: string;
+  meetUrl?: string;
+  calendarUrl?: string;
 }): Email {
   return {
     subject: `Ta séance avec ${p.coachName} est confirmée ✅`,
@@ -142,6 +165,7 @@ export function bookingConfirmationClient(p: {
           "Paiement sécurisé",
           `Ton argent est conservé par Madger et n'est versé au coach que <b style="color:${C.text};">24 h après la séance</b>. Un imprévu ? Tu peux signaler un problème depuis ta réservation, les fonds restent bloqués le temps qu'on tranche.`
         ),
+        ...meetCalLinks(p.meetUrl, p.calendarUrl),
       ],
       cta: { label: "Voir ma réservation", url: p.reservationUrl },
       outro:
@@ -190,6 +214,8 @@ export function requestReceivedClient(p: {
   dateStr: string;
   instant: boolean;
   reservationUrl: string;
+  meetUrl?: string;
+  calendarUrl?: string;
 }): Email {
   if (p.instant) {
     return {
@@ -199,6 +225,7 @@ export function requestReceivedClient(p: {
         eyebrow: "Réservation confirmée",
         title: "C'est réservé 💪",
         intro: `Ton créneau du <b style="color:${C.text};">${p.dateStr}</b> avec <b style="color:${C.text};">${p.coachName}</b> est confirmé.`,
+        blocks: meetCalLinks(p.meetUrl, p.calendarUrl),
         cta: { label: "Voir ma réservation", url: p.reservationUrl },
       }),
     };
@@ -254,6 +281,7 @@ export function sessionReminderClient(p: {
   dateStr: string;
   online: boolean;
   reservationUrl: string;
+  meetUrl?: string;
 }): Email {
   return {
     subject: `C'est demain : séance avec ${p.coachName} ⏰`,
@@ -268,6 +296,7 @@ export function sessionReminderClient(p: {
           { label: "Date & heure", value: p.dateStr },
           { label: "Format", value: p.online ? "En visio" : "En présentiel" },
         ]),
+        ...meetCalLinks(p.meetUrl),
       ],
       cta: { label: "Voir ma réservation", url: p.reservationUrl },
       outro: p.online
@@ -277,7 +306,59 @@ export function sessionReminderClient(p: {
   };
 }
 
-// ── Client : remboursement suite à annulation ou litige ─────────────────────
+// ── Client : abonnement mensuel démarré ─────────────────────────────────────
+export function subscriptionStartedClient(p: {
+  coachName: string;
+  serviceName: string;
+  priceStr: string;
+}): Email {
+  return {
+    subject: `Ton abonnement chez ${p.coachName} est actif 🎉`,
+    html: layout({
+      preheader: `Abonnement ${p.serviceName} actif, ${p.priceStr} par mois.`,
+      eyebrow: "Abonnement",
+      title: "Abonnement actif",
+      intro: `Ton abonnement <b style="color:${C.text};">${p.serviceName}</b> chez <b style="color:${C.text};">${p.coachName}</b> est en place. Ton coach va te contacter pour planifier vos séances.`,
+      blocks: [
+        detailsTable([
+          { label: "Coach", value: p.coachName },
+          { label: "Formule", value: p.serviceName },
+          { label: "Montant", value: `${p.priceStr} / mois`, accent: true },
+        ]),
+      ],
+      cta: { label: "Mes séances", url: `${APP_URL}/espace` },
+      outro:
+        "Le prélèvement a lieu chaque mois à la même date. Pour toute question ou pour arrêter l'abonnement, écris à ton coach ou réponds à cet email.",
+    }),
+  };
+}
+
+// ── Coach : nouvel abonné ────────────────────────────────────────────────────
+export function subscriptionStartedCoach(p: {
+  clientName: string;
+  serviceName: string;
+  priceStr: string;
+}): Email {
+  return {
+    subject: `Nouvel abonné : ${p.clientName} 🎉`,
+    html: layout({
+      preheader: `${p.clientName} vient de souscrire ${p.serviceName}.`,
+      eyebrow: "Abonnement",
+      title: "Nouvel abonné !",
+      intro: `<b style="color:${C.text};">${p.clientName}</b> vient de souscrire ta formule <b style="color:${C.text};">${p.serviceName}</b>. Le montant t'est versé automatiquement chaque mois. Contacte ton nouveau client pour planifier vos séances.`,
+      blocks: [
+        detailsTable([
+          { label: "Client", value: p.clientName },
+          { label: "Formule", value: p.serviceName },
+          { label: "Montant", value: `${p.priceStr} / mois`, accent: true },
+        ]),
+      ],
+      cta: { label: "Ouvrir mes clients", url: `${APP_URL}/dashboard/clients` },
+      outro: "Pense à lui envoyer un message de bienvenue dès aujourd'hui.",
+    }),
+  };
+}
+
 // ── Client : demande déclinée / séance annulée SANS paiement en jeu ─────────
 export function bookingCancelledClient(p: {
   coachName: string;
@@ -311,6 +392,7 @@ export function bookingCancelledClient(p: {
   };
 }
 
+// ── Client : remboursement suite à annulation ou litige ─────────────────────
 export function refundClient(p: {
   coachName: string;
   refundStr: string;

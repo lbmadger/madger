@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
   const { data: bookings } = await supabase
     .from("bookings")
     .select(
-      "id, starts_at, location, reminder_sent_at, status, clients(first_name, email), coaches(first_name, last_name)"
+      "id, starts_at, location, meeting_url, reminder_sent_at, status, clients(first_name, email), coaches(first_name, last_name)"
     )
     .eq("status", "confirmed")
     .is("reminder_sent_at", null)
@@ -60,6 +60,10 @@ export async function GET(req: NextRequest) {
         dateStr,
         online: b.location === "online",
         reservationUrl: `${APP_URL}/reservation/${b.id}`,
+        meetUrl:
+          b.location === "online"
+            ? (b.meeting_url as string | null) ?? undefined
+            : undefined,
       });
       delivered = await sendEmail({ to: email, subject: t.subject, html: t.html });
       if (delivered) sent++;
