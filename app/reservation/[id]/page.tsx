@@ -6,6 +6,9 @@ import { SUPABASE_URL } from "@/lib/supabase/config";
 import PublicHeader from "@/components/marketplace/PublicHeader";
 import ReportProblem from "@/components/booking/ReportProblem";
 import ReviewForm from "@/components/reviews/ReviewForm";
+import { googleCalendarUrl } from "@/lib/calendar/links";
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
 export const dynamic = "force-dynamic";
 
@@ -139,7 +142,20 @@ export default async function ReservationPage({
                       </a>
                     )}
                     <a
-                      href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`Séance avec ${booking.coach_name}`)}&dates=${new Date(booking.starts_at).toISOString().replace(/[-:]|\.\d{3}/g, "")}/${new Date(booking.ends_at).toISOString().replace(/[-:]|\.\d{3}/g, "")}${booking.meeting_url ? `&location=${encodeURIComponent(booking.meeting_url)}` : ""}`}
+                      href={googleCalendarUrl({
+                        title: `Séance avec ${booking.coach_name}`,
+                        start: new Date(booking.starts_at),
+                        end: new Date(booking.ends_at),
+                        details: [
+                          booking.meeting_url
+                            ? `Visio : ${booking.meeting_url}`
+                            : null,
+                          `Ma réservation : ${APP_URL}/reservation/${params.id}`,
+                        ]
+                          .filter(Boolean)
+                          .join("\n"),
+                        location: booking.meeting_url ?? undefined,
+                      })}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="rounded-full border border-border-strong px-4 py-2 text-xs font-medium text-text-muted transition-colors hover:border-accent hover:text-text-base"

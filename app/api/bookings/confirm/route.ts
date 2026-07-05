@@ -98,7 +98,12 @@ export async function POST(req: NextRequest) {
             end: new Date(
               (booking.ends_at as string) ?? (booking.starts_at as string)
             ),
-            details: `${APP_URL}/reservation/${booking.id}`,
+            details: [
+              meetUrl ? `Visio : ${meetUrl}` : null,
+              `Ma réservation : ${APP_URL}/reservation/${booking.id}`,
+            ]
+              .filter(Boolean)
+              .join("\n"),
             location: meetUrl,
           }),
         });

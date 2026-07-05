@@ -280,7 +280,12 @@ export async function fulfillCheckoutSession(
       title: `Séance avec ${coachName}`,
       start: starts,
       end: ends,
-      details: reservationUrl,
+      details: [
+        meetUrl ? `Visio : ${meetUrl}` : null,
+        `Ma réservation : ${reservationUrl}`,
+      ]
+        .filter(Boolean)
+        .join("\n"),
       location: meetUrl,
     });
 

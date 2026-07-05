@@ -178,7 +178,12 @@ export async function POST(req: NextRequest) {
                 end: new Date(
                   starts.getTime() + (Number(duration_min) || 60) * 60000
                 ),
-                details: `${APP_URL}/reservation/${bookingId}`,
+                details: [
+                  meetUrl ? `Visio : ${meetUrl}` : null,
+                  `Ma réservation : ${APP_URL}/reservation/${bookingId}`,
+                ]
+                  .filter(Boolean)
+                  .join("\n"),
                 location: meetUrl,
               })
             : undefined,
