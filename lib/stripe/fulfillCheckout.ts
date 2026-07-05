@@ -228,11 +228,11 @@ export async function fulfillCheckoutSession(
       .eq("id", booking.id);
   }
 
-  // Séance en visio confirmée : Google Meet + agenda du coach (si son compte
-  // Google est connecté). En mode approbation, le Meet est créé à la
-  // confirmation par le coach.
+  // Séance confirmée : événement dans l'agenda Google du coach (si son
+  // compte est connecté) ; en visio, un lien Meet est intégré. En mode
+  // approbation, l'événement est créé à la confirmation par le coach.
   let meetUrl: string | undefined;
-  if (m.online === "1" && booking && bookingStatus === "confirmed") {
+  if (booking && bookingStatus === "confirmed") {
     meetUrl =
       (await attachMeetToBooking(supabase, {
         bookingId: booking.id,

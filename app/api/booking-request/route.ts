@@ -134,12 +134,12 @@ export async function POST(req: NextRequest) {
           [coach.first_name, coach.last_name].filter(Boolean).join(" ") ||
           "Ton coach";
 
-        // Visio confirmée d'office (mode instantané) : Google Meet + agenda
-        // du coach, si son compte Google est connecté. En mode approbation,
-        // le Meet est créé quand le coach confirme.
+        // Séance confirmée d'office (mode instantané) : événement dans
+        // l'agenda Google du coach (Meet intégré si visio). En mode
+        // approbation, l'événement est créé quand le coach confirme.
         let meetUrl: string | undefined;
         const svcKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-        if (instant && online && svcKey && bookingId) {
+        if (instant && svcKey && bookingId) {
           const adminC = createClient(SUPABASE_URL, svcKey);
           const s0 = new Date(String(starts_at));
           meetUrl =

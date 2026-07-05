@@ -31,7 +31,8 @@ async function accessToken(refreshToken: string): Promise<string | null> {
   return data.access_token ?? null;
 }
 
-// Crée l'événement (agenda du coach) avec visio Google Meet intégrée.
+// Crée l'événement (agenda du coach). withMeet → visio Google Meet
+// intégrée ; sinon événement simple avec un lieu.
 export async function createMeetEvent(p: {
   refreshToken: string;
   summary: string;
@@ -39,11 +40,14 @@ export async function createMeetEvent(p: {
   start: Date;
   end: Date;
   attendeeEmail?: string | null;
+  withMeet?: boolean;
+  location?: string;
 }): Promise<{ eventId: string; meetUrl: string | null } | null> {
   if (!googleConfigured()) return null;
   const token = await accessToken(p.refreshToken);
   if (!token) return null;
 
+  const withMeet = p.withMeet !== false;
   const res = await fetch(`${EVENTS_URL}?conferenceDataVersion=1`, {
     method: "POST",
     headers: {
@@ -55,15 +59,20 @@ export async function createMeetEvent(p: {
       description: p.description ?? "",
       start: { dateTime: p.start.toISOString() },
       end: { dateTime: p.end.toISOString() },
+      ...(p.location ? { location: p.location } : {}),
       ...(p.attendeeEmail
         ? { attendees: [{ email: p.attendeeEmail }] }
         : {}),
-      conferenceData: {
-        createRequest: {
-          requestId: `madger-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
-          conferenceSolutionKey: { type: "hangoutsMeet" },
-        },
-      },
+      ...(withMeet
+        ? {
+            conferenceData: {
+              createRequest: {
+                requestId: `madger-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`,
+                conferenceSolutionKey: { type: "hangoutsMeet" },
+              },
+            },
+          }
+        : {}),
     }),
   });
   if (!res.ok) return null;
@@ -122,23 +131,48 @@ export async function attachMeetToBooking(
     if (!googleConfigured()) return null;
     const { data: coach } = await supabase
       .from("coaches")
-      .select("google_refresh_token, first_name, last_name")
+      .select("google_refresh_token, first_name, last_name, gym_name, city")
       .eq("id", p.coachId)
       .maybeSingle();
     const refreshToken = coach?.google_refresh_token as string | null;
     if (!refreshToken) return null;
 
-    // Titre vu par le client dans son invitation : « Séance avec {coach} ».
-    // Le nom du client reste dans la description (pour l'agenda du coach).
+    // Mode et lieu de la séance : visio ou présentiel (adresse de la séance,
+    // sinon salle du coach, sinon sa ville).
+    const { data: bk } = await supabase
+      .from("bookings")
+      .select("location, location_text")
+      .eq("id", p.bookingId)
+      .maybeSingle();
+    const online = bk?.location === "online";
+    const place = online
+      ? ""
+      : ((bk?.location_text as string | null) ||
+          (coach?.gym_name as string | null) ||
+          (coach?.city as string | null) ||
+          "");
+
+    // Titre vu par le client dans son invitation : « Séance avec {coach} en
+    // ligne » ou « Séance avec {coach} à {lieu} ». Le nom du client reste
+    // dans la description (pour l'agenda du coach).
     const coachName =
       [coach?.first_name, coach?.last_name].filter(Boolean).join(" ") ||
       p.coachName ||
       "";
+    const base = coachName ? `Séance avec ${coachName}` : "Séance";
+    const summary = online
+      ? `${base} en ligne`
+      : place
+      ? `${base} à ${place}`
+      : base;
+
     const created = await createMeetEvent({
       refreshToken,
-      summary: coachName ? `Séance avec ${coachName}` : "Séance",
+      summary,
       description: [
         p.clientName ? `Client : ${p.clientName}` : null,
+        online ? "Séance en ligne (lien visio dans l'événement)." : null,
+        !online && place ? `Lieu : ${place}` : null,
         "Réservé via Madger.",
       ]
         .filter(Boolean)
@@ -146,6 +180,8 @@ export async function attachMeetToBooking(
       start: p.starts,
       end: p.ends,
       attendeeEmail: p.clientEmail ?? null,
+      withMeet: online,
+      location: !online && place ? place : undefined,
     });
     if (!created) return null;
 

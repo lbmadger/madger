@@ -33,7 +33,9 @@ export async function POST(req: NextRequest) {
     .update({ status: "confirmed" })
     .eq("id", bookingId)
     .eq("status", "pending")
-    .select("id, starts_at, ends_at, client_id, location, meeting_url")
+    .select(
+      "id, starts_at, ends_at, client_id, location, meeting_url, google_event_id"
+    )
     .maybeSingle();
   if (error || !booking) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
@@ -60,7 +62,7 @@ export async function POST(req: NextRequest) {
           .eq("id", user.id)
           .maybeSingle(),
       ]);
-      if (booking.location === "online" && !meetUrl) {
+      if (!booking.google_event_id) {
         meetUrl =
           (await attachMeetToBooking(admin, {
             bookingId: booking.id as string,
