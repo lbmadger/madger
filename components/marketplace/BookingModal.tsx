@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
 import PolicyTiers from "@/components/booking/PolicyTiers";
@@ -60,8 +61,23 @@ export default function BookingModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
-  // Id renvoyé par l'API : lien de suivi de la demande sans compte.
+  // Id renvoyé par l'API : lien de suivi de la demande.
   const [bookingId, setBookingId] = useState<string | null>(null);
+  // Compte obligatoire pour réserver (modèle Airbnb/Doctolib).
+  // undefined = vérification en cours, null = non connecté.
+  const [sessionEmail, setSessionEmail] = useState<string | null | undefined>(
+    undefined
+  );
+  useEffect(() => {
+    createClient()
+      .auth.getUser()
+      .then(({ data }) => {
+        const mail = data.user?.email ?? null;
+        setSessionEmail(mail);
+        if (mail) setEmail(mail);
+      })
+      .catch(() => setSessionEmail(null));
+  }, []);
 
   // Créneaux réels (dispos du coach − séances déjà prises).
   const [slotState, setSlotState] = useState<SlotState>({ mode: "loading" });
@@ -248,12 +264,44 @@ export default function BookingModal({
                   <Button className="w-full">{t("booking.viewBooking")}</Button>
                 </Link>
               )}
-              <Link href="/signup?role=client" className="w-full">
+              <Link href="/espace" className="w-full">
                 <Button
                   variant={bookingId ? "secondary" : "primary"}
                   className="w-full"
                 >
-                  {t("booking.createAccount")}
+                  {t("clientSpace.title")}
+                </Button>
+              </Link>
+              <Button variant="ghost" onClick={onClose}>
+                {t("booking.cancel")}
+              </Button>
+            </div>
+          </div>
+        ) : sessionEmail === null ? (
+          /* Compte obligatoire avant de réserver (modèle Airbnb/Doctolib) */
+          <div className="py-6 text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent/10 text-xl">
+              🔐
+            </div>
+            <h2 className="text-lg font-extrabold tracking-tight text-text-base">
+              {t("booking.authRequiredTitle")}
+            </h2>
+            <p className="mx-auto mt-1 max-w-xs text-sm text-text-muted">
+              {t("booking.authRequiredDesc")}
+            </p>
+            <div className="mt-6 flex flex-col gap-2">
+              <Link
+                href={`/signup?role=client&redirect=${encodeURIComponent(`/${coach.slug}`)}`}
+                className="w-full"
+              >
+                <Button className="w-full">{t("booking.createAccount")}</Button>
+              </Link>
+              <Link
+                href={`/login?redirect=${encodeURIComponent(`/${coach.slug}`)}`}
+                className="w-full"
+              >
+                <Button variant="secondary" className="w-full">
+                  {t("booking.loginCta")}
                 </Button>
               </Link>
               <Button variant="ghost" onClick={onClose}>
@@ -506,7 +554,14 @@ export default function BookingModal({
 
               <label className="flex flex-col gap-1.5">
                 <span className={labelClass}>{t("booking.email")}</span>
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className={inputClass} />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  readOnly={Boolean(sessionEmail)}
+                  className={`${inputClass} ${sessionEmail ? "opacity-60" : ""}`}
+                />
               </label>
 
               <label className="flex flex-col gap-1.5">

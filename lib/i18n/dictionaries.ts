@@ -579,6 +579,10 @@ const fr = {
       tooSoon:
         "Ce créneau est trop proche : le coach n'accepte plus de réservation à si court délai. Choisis un créneau plus tard.",
     },
+    authRequiredTitle: "Connecte-toi pour réserver",
+    authRequiredDesc:
+      "Un compte te permet de suivre tes séances, d'annuler en un clic et d'échanger avec ton coach. C'est fait en 30 secondes.",
+    loginCta: "J'ai déjà un compte",
     reserve: "Réserver ·",
     authNote:
       "Tu ne seras débité que si le coach accepte ta demande. Refus ou absence de réponse : rien n'est prélevé.",
@@ -1536,6 +1540,10 @@ const en: Dictionary = {
       tooSoon:
         "This slot is too close: the coach no longer accepts bookings on such short notice. Pick a later slot.",
     },
+    authRequiredTitle: "Sign in to book",
+    authRequiredDesc:
+      "An account lets you track your sessions, cancel in one click and chat with your coach. It takes 30 seconds.",
+    loginCta: "I already have an account",
     reserve: "Book ·",
     authNote:
       "You will only be charged if the coach accepts your request. Declined or no answer: nothing is taken.",
