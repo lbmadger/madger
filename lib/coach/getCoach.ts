@@ -42,6 +42,8 @@ export type Coach = {
   // Google Calendar + Meet (migration 0027)
   google_refresh_token: string | null;
   google_connected_at: string | null;
+  // Délai minimum de réservation en heures (migration 0029)
+  min_notice_hours: number;
 };
 
 // Récupère le profil coach de l'utilisateur connecté. Renvoie:

@@ -74,6 +74,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   const [venues, setVenues] = useState<string[]>(coach.venues ?? []);
   const [gymName, setGymName] = useState(coach.gym_name ?? "");
   const [timezone, setTimezone] = useState(coach.timezone || "Europe/Paris");
+  const [minNotice, setMinNotice] = useState(coach.min_notice_hours ?? 2);
   // Retour de la connexion Google (?google=...) : affiche la cause au lieu
   // d'échouer en silence.
   const [googleMsg, setGoogleMsg] = useState<
@@ -155,6 +156,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           venues,
           gym_name: gymName.trim() || null,
           timezone,
+          min_notice_hours: minNotice,
         })
         .eq("id", coach.id);
 
@@ -470,6 +472,28 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             );
           })}
         </div>
+
+        {/* Délai minimum de réservation (et limite d'acceptation) */}
+        <div className="mt-4 border-t border-border pt-4">
+          <label className="flex flex-col gap-1.5">
+            <span className={labelClass}>{t("settings.minNotice")}</span>
+            <select
+              value={minNotice}
+              onChange={(e) => setMinNotice(Number(e.target.value))}
+              className={inputClass}
+            >
+              {[1, 2, 6, 12, 24, 48].map((h) => (
+                <option key={h} value={h}>
+                  {h} h {t("settings.minNoticeBefore")}
+                </option>
+              ))}
+            </select>
+            <span className="text-xs text-text-dim">
+              {t("settings.minNoticeHint")}
+            </span>
+          </label>
+        </div>
+
         <div className="mt-4 flex items-center gap-3">
           <Button onClick={handleSave} disabled={loading} className="self-start">
             {loading ? t("settings.saving") : t("settings.save")}

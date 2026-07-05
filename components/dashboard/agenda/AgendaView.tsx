@@ -37,7 +37,8 @@ export default function AgendaView({
   const [cancelId, setCancelId] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const [confirming, setConfirming] = useState(false);
-  const [actionError, setActionError] = useState(false);
+  // Clé i18n du message d'erreur d'action (null = pas d'erreur).
+  const [actionError, setActionError] = useState<string | null>(null);
   const [view, setView] = useState<"week" | "list">("week");
   // Séance sélectionnée depuis la grille semaine (confirmer/refuser/modifier).
   const [selected, setSelected] = useState<Booking | null>(null);
@@ -47,7 +48,7 @@ export default function AgendaView({
   // Confirme une demande : passe par l'API pour envoyer l'email au client.
   async function confirmBooking(id: string) {
     setConfirming(true);
-    setActionError(false);
+    setActionError(null);
     try {
       const res = await fetch("/api/bookings/confirm", {
         method: "POST",
@@ -55,13 +56,20 @@ export default function AgendaView({
         body: JSON.stringify({ booking_id: id }),
       });
       if (!res.ok) {
-        setActionError(true);
+        const data = await res.json().catch(() => ({}));
+        setActionError(
+          data.error === "capture_failed"
+            ? "agenda.errors.captureFailed"
+            : data.error === "too_late"
+            ? "agenda.errors.tooLate"
+            : "agenda.actionError"
+        );
         return;
       }
       setSelected(null);
       router.refresh();
     } catch {
-      setActionError(true);
+      setActionError("agenda.actionError");
     } finally {
       setConfirming(false);
     }
@@ -72,7 +80,7 @@ export default function AgendaView({
   // annule) est exécuté côté serveur.
   async function cancelBooking(id: string, by: "coach" | "client") {
     setCancelling(true);
-    setActionError(false);
+    setActionError(null);
     try {
       const res = await fetch("/api/bookings/cancel", {
         method: "POST",
@@ -80,14 +88,14 @@ export default function AgendaView({
         body: JSON.stringify({ booking_id: id, by }),
       });
       if (!res.ok) {
-        setActionError(true);
+        setActionError("agenda.actionError");
         return;
       }
       setCancelId(null);
       setSelected(null);
       router.refresh();
     } catch {
-      setActionError(true);
+      setActionError("agenda.actionError");
     } finally {
       setCancelling(false);
     }
@@ -203,7 +211,7 @@ export default function AgendaView({
           bookings={initialBookings}
           availabilities={availabilities}
           onBookingClick={(b) => {
-            setActionError(false);
+            setActionError(null);
             setSelected(b);
           }}
         />
@@ -296,7 +304,7 @@ export default function AgendaView({
                        </div>
                        {actionError && (
                          <p className="mt-2 text-xs text-red-400">
-                           {t("agenda.actionError")}
+                           {t(actionError)}
                          </p>
                        )}
                      </div>
@@ -414,9 +422,7 @@ export default function AgendaView({
             </div>
 
             {actionError && (
-              <p className="mt-3 text-sm text-red-400">
-                {t("agenda.actionError")}
-              </p>
+              <p className="mt-3 text-sm text-red-400">{t(actionError)}</p>
             )}
 
             {selected.status === "pending" ? (

@@ -6,6 +6,8 @@ import { sendEmail } from "@/lib/email/resend";
 import {
   bookingConfirmationClient,
   bookingNotificationCoach,
+  requestReceivedClient,
+  newRequestCoach,
 } from "@/lib/email/templates";
 import { googleCalendarUrl } from "@/lib/calendar/links";
 import { attachMeetToBooking } from "@/lib/google/calendar";
@@ -40,8 +42,7 @@ export async function fulfillCheckoutSession(
   });
   const m = session.metadata ?? {};
   result.slug = m.coach_slug || "";
-
-  if (session.payment_status !== "paid" || !m.coach_id) return result;
+  if (!m.coach_id) return result;
 
   const supabase = createClient(SUPABASE_URL, serviceKey);
 
@@ -63,6 +64,11 @@ export async function fulfillCheckoutSession(
       : pi?.id ?? sessionId;
   const chargeId = charge?.id ?? null;
   const feeCents = bt?.fee ?? 0;
+
+  // Modèle Airbnb : en mode approbation la carte est AUTORISÉE (empreinte),
+  // pas débitée. Le débit (capture) part quand le coach accepte.
+  const authorized = pi?.status === "requires_capture";
+  if (session.payment_status !== "paid" && !authorized) return result;
 
   // Anti-doublon : paiement déjà enregistré (webhook ou retour navigateur) ?
   const { data: existing } = await supabase
@@ -163,13 +169,14 @@ export async function fulfillCheckoutSession(
       service_id: m.service_id || null,
       amount_cents: session.amount_total ?? 0,
       currency: session.currency ?? "eur",
-      status: "paid",
+      // Autorisé (empreinte) : débité seulement à l'acceptation du coach.
+      status: authorized ? "pending" : "paid",
       stripe_payment_intent_id: piId,
       stripe_charge_id: chargeId,
       stripe_fee_cents: feeCents,
-      escrow_status: "held",
+      escrow_status: authorized ? "authorized" : "held",
       release_after: releaseAfter.toISOString(),
-      paid_at: new Date().toISOString(),
+      paid_at: authorized ? null : new Date().toISOString(),
     })
     .select("id")
     .single();
@@ -289,30 +296,56 @@ export async function fulfillCheckoutSession(
       location: meetUrl,
     });
 
-    if (m.email) {
-      const t = bookingConfirmationClient({
-        coachName,
-        dateStr,
-        priceStr,
-        online,
-        reservationUrl,
-        meetUrl,
-        calendarUrl,
-      });
-      await sendEmail({ to: m.email, subject: t.subject, html: t.html });
-    }
+    const clientName =
+      [m.first_name, m.last_name].filter(Boolean).join(" ") || "Client";
     const coachEmail = coachAuth?.user?.email;
-    if (coachEmail) {
-      const t = bookingNotificationCoach({
-        clientName:
-          [m.first_name, m.last_name].filter(Boolean).join(" ") || "Client",
-        dateStr,
-        serviceName: "Séance",
-        priceStr,
-        online,
-        dashboardUrl: `${APP_URL}/dashboard/agenda`,
-      });
-      await sendEmail({ to: coachEmail, subject: t.subject, html: t.html });
+
+    if (authorized) {
+      // Demande en attente d'acceptation : empreinte bancaire, pas de débit.
+      if (m.email) {
+        const t = requestReceivedClient({
+          coachName,
+          dateStr,
+          instant: false,
+          reservationUrl,
+          authorizedPriceStr: priceStr,
+        });
+        await sendEmail({ to: m.email, subject: t.subject, html: t.html });
+      }
+      if (coachEmail) {
+        const t = newRequestCoach({
+          clientName,
+          dateStr,
+          online,
+          instant: false,
+          dashboardUrl: `${APP_URL}/dashboard/agenda`,
+        });
+        await sendEmail({ to: coachEmail, subject: t.subject, html: t.html });
+      }
+    } else {
+      if (m.email) {
+        const t = bookingConfirmationClient({
+          coachName,
+          dateStr,
+          priceStr,
+          online,
+          reservationUrl,
+          meetUrl,
+          calendarUrl,
+        });
+        await sendEmail({ to: m.email, subject: t.subject, html: t.html });
+      }
+      if (coachEmail) {
+        const t = bookingNotificationCoach({
+          clientName,
+          dateStr,
+          serviceName: "Séance",
+          priceStr,
+          online,
+          dashboardUrl: `${APP_URL}/dashboard/agenda`,
+        });
+        await sendEmail({ to: coachEmail, subject: t.subject, html: t.html });
+      }
     }
   } catch {
     /* emails best-effort */

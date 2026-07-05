@@ -227,6 +227,10 @@ const fr = {
       dateRequired: "Indique une date et une heure.",
       overlap:
         "Ce créneau chevauche une autre séance. Choisis un autre horaire.",
+      captureFailed:
+        "Le débit du client a échoué (carte expirée ou autorisation périmée). Décline la demande : rien ne lui sera prélevé.",
+      tooLate:
+        "Trop tard pour accepter : ton délai minimum avant séance est dépassé. La demande sera annulée automatiquement, sans débit du client.",
     },
   },
   plans: {
@@ -363,6 +367,10 @@ const fr = {
     sessionsLabel: "séances",
     free: "Gratuit",
     edit: "Modifier",
+    needStripeTitle: "Connecte Stripe pour créer tes prestations",
+    needStripeDesc:
+      "Tes prestations sont payées en ligne par tes clients : active d'abord les paiements, la création se débloque ensuite.",
+    needStripeCta: "Activer les paiements",
     delete: "Supprimer",
     deleteConfirm: "Supprimer cette prestation ?",
     form: {
@@ -566,7 +574,12 @@ const fr = {
         "Ce créneau vient d'être pris par quelqu'un d'autre. Choisis-en un autre.",
       slotsUnavailable:
         "Les créneaux n'ont pas pu être chargés. Réessaie d'abord de les recharger.",
+      tooSoon:
+        "Ce créneau est trop proche : le coach n'accepte plus de réservation à si court délai. Choisis un créneau plus tard.",
     },
+    reserve: "Réserver ·",
+    authNote:
+      "Tu ne seras débité que si le coach accepte ta demande. Refus ou absence de réponse : rien n'est prélevé.",
     slotsError: "Impossible de charger les créneaux du coach.",
     retry: "Réessayer",
     unpayableService:
@@ -621,6 +634,10 @@ const fr = {
     },
     prefsSection: "Préférences",
     language: "Langue de l'application",
+    minNotice: "Délai minimum de réservation",
+    minNoticeBefore: "avant la séance",
+    minNoticeHint:
+      "En deçà de ce délai, plus aucune réservation possible et tu ne peux plus accepter une demande en attente (elle est annulée sans débit du client).",
     timezone: "Fuseau horaire",
     timezoneHint:
       "Les créneaux proposés à tes clients et tes horaires s'affichent dans ce fuseau.",
@@ -653,6 +670,8 @@ const fr = {
     statusReleased: "Séance réglée au coach",
     statusRefunded: "Séance remboursée",
     statusDisputed: "Problème signalé, en cours d'examen",
+    statusAuthorized:
+      "En attente d'acceptation du coach, aucun débit pour l'instant",
     joinMeeting: "Rejoindre la visio",
     addToCalendar: "Ajouter à Google Calendar",
     notFound: "Réservation introuvable.",
@@ -1162,6 +1181,10 @@ const en: Dictionary = {
       clientRequired: "Choose a client.",
       dateRequired: "Pick a date and time.",
       overlap: "This slot overlaps another session. Pick another time.",
+      captureFailed:
+        "Charging the client failed (expired card or authorization). Decline the request: nothing will be taken from them.",
+      tooLate:
+        "Too late to accept: your minimum notice before the session has passed. The request will be cancelled automatically, without charging the client.",
     },
   },
   plans: {
@@ -1298,6 +1321,10 @@ const en: Dictionary = {
     sessionsLabel: "sessions",
     free: "Free",
     edit: "Edit",
+    needStripeTitle: "Connect Stripe to create your services",
+    needStripeDesc:
+      "Your services are paid online by your clients: enable payments first, then creation unlocks.",
+    needStripeCta: "Enable payments",
     delete: "Delete",
     deleteConfirm: "Delete this service?",
     form: {
@@ -1500,7 +1527,12 @@ const en: Dictionary = {
         "This slot was just taken by someone else. Please pick another one.",
       slotsUnavailable:
         "Slots could not be loaded. Try reloading them first.",
+      tooSoon:
+        "This slot is too close: the coach no longer accepts bookings on such short notice. Pick a later slot.",
     },
+    reserve: "Book ·",
+    authNote:
+      "You will only be charged if the coach accepts your request. Declined or no answer: nothing is taken.",
     slotsError: "Could not load this coach's slots.",
     retry: "Try again",
     unpayableService:
@@ -1552,6 +1584,10 @@ const en: Dictionary = {
     },
     prefsSection: "Preferences",
     language: "App language",
+    minNotice: "Minimum booking notice",
+    minNoticeBefore: "before the session",
+    minNoticeHint:
+      "Below this notice, no more bookings can be made and pending requests can no longer be accepted (they are cancelled without charging the client).",
     timezone: "Time zone",
     timezoneHint:
       "Slots offered to your clients and your schedule are shown in this time zone.",
@@ -1584,6 +1620,7 @@ const en: Dictionary = {
     statusReleased: "Session paid to the coach",
     statusRefunded: "Session refunded",
     statusDisputed: "Problem reported, under review",
+    statusAuthorized: "Waiting for the coach to accept, no charge yet",
     joinMeeting: "Join the video call",
     addToCalendar: "Add to Google Calendar",
     notFound: "Booking not found.",

@@ -46,7 +46,9 @@ export async function POST(req: NextRequest) {
 
   const { data: coach } = await supabase
     .from("coaches")
-    .select("id, stripe_account_id, stripe_charges_enabled, pro_until")
+    .select(
+      "id, stripe_account_id, stripe_charges_enabled, pro_until, booking_mode, min_notice_hours"
+    )
     .eq("slug", coach_slug)
     .eq("listed", true)
     .maybeSingle();
@@ -116,6 +118,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
   }
 
+  // Préavis minimum du coach : en deçà, plus réservable.
+  const noticeMs = ((coach.min_notice_hours as number) || 2) * 3600000;
+  if (new Date(String(starts_at)).getTime() < Date.now() + noticeMs) {
+    return NextResponse.json({ error: "too_soon" }, { status: 400 });
+  }
+
+  // Modèle Airbnb : en mode approbation, la carte est seulement AUTORISÉE
+  // (empreinte bancaire). Le débit ne part que si le coach accepte ; refus ou
+  // non-réponse → l'autorisation est simplement libérée, rien n'est prélevé.
+  const approval = coach.booking_mode === "approval";
+
   // Charge sur le compte plateforme (pas d'option stripeAccount) → séquestre.
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -133,6 +146,7 @@ export async function POST(req: NextRequest) {
     payment_intent_data: {
       // Regroupe charge et futur transfert vers le coach (charges séparées).
       transfer_group: `coach_${coach.id}`,
+      ...(approval ? { capture_method: "manual" as const } : {}),
     },
     success_url: `${origin}/api/stripe/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/${coach_slug}`,

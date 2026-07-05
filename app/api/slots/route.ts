@@ -15,7 +15,6 @@ export const dynamic = "force-dynamic";
 
 const DAYS_AHEAD = 14;
 const STEP_MIN = 30; // un créneau proposé toutes les 30 min
-const MIN_NOTICE_MS = 60 * 60 * 1000; // préavis mini : 1 h
 
 type Slot = { iso: string; label: string };
 
@@ -37,7 +36,7 @@ export async function GET(req: NextRequest) {
   const supabase = createClient(SUPABASE_URL, serviceKey);
   const { data: coach } = await supabase
     .from("coaches")
-    .select("id, timezone")
+    .select("id, timezone, min_notice_hours")
     .eq("slug", slug)
     .eq("listed", true)
     .maybeSingle();
@@ -45,6 +44,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "coach_not_found" }, { status: 404 });
   }
   const tz = coach.timezone || "Europe/Paris";
+  // Préavis minimum choisi par le coach (réglages) : en deçà, le créneau
+  // n'est plus proposé.
+  const noticeMs = ((coach.min_notice_hours as number) || 2) * 3600000;
 
   const { data: avail } = await supabase
     .from("availabilities")
@@ -71,7 +73,7 @@ export async function GET(req: NextRequest) {
     end: new Date(b.ends_at).getTime(),
   }));
 
-  const minStart = now.getTime() + MIN_NOTICE_MS;
+  const minStart = now.getTime() + noticeMs;
   const days: { date: string; slots: Slot[] }[] = [];
 
   for (let d = 0; d < DAYS_AHEAD; d++) {

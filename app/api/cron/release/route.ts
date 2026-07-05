@@ -5,7 +5,10 @@ import { SUPABASE_URL } from "@/lib/supabase/config";
 import { computePayout } from "@/lib/stripe/escrow";
 import { isPro } from "@/lib/subscription/plan";
 import { sendEmail } from "@/lib/email/resend";
-import { reviewRequestClient } from "@/lib/email/templates";
+import {
+  reviewRequestClient,
+  bookingCancelledClient,
+} from "@/lib/email/templates";
 import { cronAuthorized } from "@/lib/cron/auth";
 import { detachMeetFromBooking } from "@/lib/google/calendar";
 
@@ -32,6 +35,101 @@ export async function GET(req: NextRequest) {
 
   const supabase = createClient(SUPABASE_URL, serviceKey);
   const nowIso = new Date().toISOString();
+
+  // ── Empreintes bancaires périmées (modèle Airbnb) ──────────────────────────
+  // Demande jamais traitée par le coach (séance passée), réservation annulée
+  // sans nettoyage, ou autorisation en fin de vie (les banques les libèrent
+  // vers 7 jours) : on annule proprement, RIEN n'a été prélevé au client.
+  let expired = 0;
+  const { data: auths } = await supabase
+    .from("payments")
+    .select(
+      "id, coach_id, booking_id, stripe_payment_intent_id, created_at, bookings(status, starts_at)"
+    )
+    .eq("escrow_status", "authorized")
+    .limit(100);
+  for (const p of auths ?? []) {
+    try {
+      const br = Array.isArray(p.bookings) ? p.bookings[0] : p.bookings;
+      const startPassed = br?.starts_at
+        ? new Date(br.starts_at as string).getTime() < Date.now()
+        : false;
+      const tooOld = p.created_at
+        ? Date.now() - new Date(p.created_at as string).getTime() >
+          6 * 86400000
+        : false;
+      const bookingGone = !br || br.status === "cancelled";
+      if (!(startPassed || tooOld || bookingGone)) continue;
+
+      const { data: claimed } = await supabase
+        .from("payments")
+        .update({
+          escrow_status: "canceled",
+          status: "canceled",
+          resolved_at: nowIso,
+        })
+        .eq("id", p.id)
+        .eq("escrow_status", "authorized")
+        .select("id");
+      if (!claimed?.length) continue;
+
+      try {
+        if (p.stripe_payment_intent_id) {
+          await stripe.paymentIntents.cancel(
+            p.stripe_payment_intent_id as string,
+            {},
+            { idempotencyKey: `cancelauth_${p.id}` }
+          );
+        }
+      } catch {
+        /* déjà annulée / expirée côté Stripe */
+      }
+      await supabase.from("pack_credits").delete().eq("payment_id", p.id);
+
+      if (p.booking_id && br?.status === "pending") {
+        await supabase
+          .from("bookings")
+          .update({ status: "cancelled" })
+          .eq("id", p.booking_id)
+          .eq("status", "pending");
+        // Prévient le client (best-effort) : rien n'a été débité.
+        try {
+          const { data: bk } = await supabase
+            .from("bookings")
+            .select("starts_at, clients(email), coaches(first_name, last_name)")
+            .eq("id", p.booking_id)
+            .maybeSingle();
+          const cl = Array.isArray(bk?.clients) ? bk?.clients[0] : bk?.clients;
+          const co = Array.isArray(bk?.coaches) ? bk?.coaches[0] : bk?.coaches;
+          if (cl?.email) {
+            const tpl = bookingCancelledClient({
+              coachName:
+                [co?.first_name, co?.last_name].filter(Boolean).join(" ") ||
+                "Le coach",
+              dateStr: new Date(bk?.starts_at as string).toLocaleString(
+                "fr-FR",
+                {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  timeZone: "Europe/Paris",
+                }
+              ),
+              declined: true,
+            });
+            await sendEmail({ to: cl.email, subject: tpl.subject, html: tpl.html });
+          }
+        } catch {
+          /* best-effort */
+        }
+      }
+      expired++;
+    } catch {
+      /* ligne suivante */
+    }
+  }
 
   // Paiements mûrs, retenus, avec une charge à transférer. Les lignes sans
   // charge Stripe sont exclues (intraitables : elles ne doivent pas occuper
@@ -200,5 +298,5 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ released, refunded, errors });
+  return NextResponse.json({ released, refunded, expired, errors });
 }

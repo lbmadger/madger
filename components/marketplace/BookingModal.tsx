@@ -165,7 +165,8 @@ export default function BookingModal({
           window.location.href = data.url; // page de paiement Stripe
           return;
         }
-        setError(t("booking.errors.generic"));
+        if (data.error === "too_soon") setError(t("booking.errors.tooSoon"));
+        else setError(t("booking.errors.generic"));
         return;
       }
 
@@ -194,6 +195,8 @@ export default function BookingModal({
           setError(t("booking.errors.datePast"));
         else if (data.error === "slot_taken")
           setError(t("booking.errors.slotTaken"));
+        else if (data.error === "too_soon")
+          setError(t("booking.errors.tooSoon"));
         else
           setError(
             data.detail
@@ -478,6 +481,11 @@ export default function BookingModal({
                   <p className="mt-1 text-xs text-text-muted">
                     {t("booking.escrowDesc")}
                   </p>
+                  {!instant && (
+                    <p className="mt-2 text-xs font-semibold text-accent">
+                      {t("booking.authNote")}
+                    </p>
+                  )}
                   <p className="mt-2 text-[11px] font-medium uppercase tracking-wide text-text-dim">
                     {t("cancellation.publicLabel")}
                   </p>
@@ -524,6 +532,8 @@ export default function BookingModal({
                       : t("booking.sending")
                     : isSubscription && selectedService
                     ? `${t("booking.subscribe")} ${formatPrice(selectedService.price_cents, selectedService.currency, locale)}${t("services.perMonth")}`
+                    : payMode && selectedService && !instant
+                    ? `${t("booking.reserve")} ${formatPrice(selectedService.price_cents, selectedService.currency, locale)}`
                     : payMode && selectedService
                     ? `${t("booking.pay")} ${formatPrice(selectedService.price_cents, selectedService.currency, locale)}`
                     : t("booking.submit")}

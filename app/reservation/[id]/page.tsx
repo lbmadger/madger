@@ -87,6 +87,7 @@ export default async function ReservationPage({
     : "";
 
   const statusLabel: Record<string, string> = {
+    authorized: r.statusAuthorized,
     held: r.statusHeld,
     released: r.statusReleased,
     refunded: r.statusRefunded,

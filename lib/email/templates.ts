@@ -216,6 +216,9 @@ export function requestReceivedClient(p: {
   reservationUrl: string;
   meetUrl?: string;
   calendarUrl?: string;
+  // Empreinte bancaire (modèle Airbnb) : montant autorisé, débité seulement
+  // si le coach accepte.
+  authorizedPriceStr?: string;
 }): Email {
   if (p.instant) {
     return {
@@ -237,6 +240,14 @@ export function requestReceivedClient(p: {
       eyebrow: "Demande envoyée",
       title: "Ta demande est partie",
       intro: `<b style="color:${C.text};">${p.coachName}</b> doit confirmer le créneau du <b style="color:${C.text};">${p.dateStr}</b>. Tu recevras un email dès sa réponse.`,
+      blocks: p.authorizedPriceStr
+        ? [
+            infoBox(
+              "Aucun débit pour l'instant",
+              `Ta carte a été autorisée pour <b style="color:${C.text};">${p.authorizedPriceStr}</b>. Tu ne seras débité que si ${p.coachName} accepte la demande. Refus ou absence de réponse : rien n'est prélevé, l'empreinte disparaît d'elle-même.`
+            ),
+          ]
+        : [],
       cta: { label: "Voir ma réservation", url: p.reservationUrl },
     }),
   };

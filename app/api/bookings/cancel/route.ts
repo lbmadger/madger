@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
   const { data: payment } = await admin
     .from("payments")
     .select(
-      "id, client_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status"
+      "id, client_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status, stripe_payment_intent_id"
     )
     .eq("booking_id", bookingId)
     .maybeSingle();
@@ -74,6 +74,72 @@ export async function POST(req: NextRequest) {
   // tranché (ni annulation, ni remboursement).
   if (payment?.escrow_status === "disputed") {
     return NextResponse.json({ error: "disputed" }, { status: 409 });
+  }
+
+  // Empreinte bancaire non débitée (demande pas encore acceptée) : on libère
+  // simplement l'autorisation, rien n'a été prélevé au client.
+  if (payment?.escrow_status === "authorized") {
+    const { data: claimed } = await admin
+      .from("payments")
+      .update({
+        escrow_status: "canceled",
+        status: "canceled",
+        resolved_at: new Date().toISOString(),
+      })
+      .eq("id", payment.id)
+      .eq("escrow_status", "authorized")
+      .select("id");
+    if (!claimed?.length) {
+      return NextResponse.json({ error: "already_processed" }, { status: 409 });
+    }
+    try {
+      if (payment.stripe_payment_intent_id) {
+        await stripe.paymentIntents.cancel(
+          payment.stripe_payment_intent_id as string,
+          {},
+          { idempotencyKey: `cancelauth_${payment.id}` }
+        );
+      }
+    } catch {
+      /* déjà annulée / expirée : sans effet */
+    }
+    // Pack acheté avec cette empreinte : crédits jamais activés.
+    await admin
+      .from("pack_credits")
+      .delete()
+      .eq("payment_id", payment.id);
+    await detachMeetFromBooking(admin, bookingId);
+    await supabase
+      .from("bookings")
+      .update({ status: "cancelled" })
+      .eq("id", bookingId);
+    try {
+      const { data: client } = await admin
+        .from("clients")
+        .select("email")
+        .eq("id", payment.client_id)
+        .maybeSingle();
+      if (client?.email) {
+        const tpl = bookingCancelledClient({
+          coachName:
+            [coach?.first_name, coach?.last_name].filter(Boolean).join(" ") ||
+            "Ton coach",
+          dateStr: new Date(booking.starts_at).toLocaleString("fr-FR", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            hour: "2-digit",
+            minute: "2-digit",
+            timeZone: "Europe/Paris",
+          }),
+          declined: true,
+        });
+        await sendEmail({ to: client.email, subject: tpl.subject, html: tpl.html });
+      }
+    } catch {
+      /* best-effort */
+    }
+    return NextResponse.json({ ok: true, refunded_cents: 0 });
   }
 
   // Pas de paiement retenu : simple annulation de la séance, mais on prévient

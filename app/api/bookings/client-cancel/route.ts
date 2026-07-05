@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
   const { data: payment } = await admin
     .from("payments")
     .select(
-      "id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status"
+      "id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status, stripe_payment_intent_id"
     )
     .eq("booking_id", bookingId)
     .maybeSingle();
@@ -84,6 +84,42 @@ export async function POST(req: NextRequest) {
   // tranché.
   if (payment?.escrow_status === "disputed") {
     return NextResponse.json({ error: "disputed" }, { status: 409 });
+  }
+
+  // Empreinte bancaire non débitée (demande pas encore acceptée par le
+  // coach) : on libère l'autorisation, rien n'a été prélevé.
+  if (payment?.escrow_status === "authorized") {
+    const { data: claimed } = await admin
+      .from("payments")
+      .update({
+        escrow_status: "canceled",
+        status: "canceled",
+        resolved_at: new Date().toISOString(),
+      })
+      .eq("id", payment.id)
+      .eq("escrow_status", "authorized")
+      .select("id");
+    if (!claimed?.length) {
+      return NextResponse.json({ error: "already_processed" }, { status: 409 });
+    }
+    try {
+      if (payment.stripe_payment_intent_id) {
+        await stripe.paymentIntents.cancel(
+          payment.stripe_payment_intent_id as string,
+          {},
+          { idempotencyKey: `cancelauth_${payment.id}` }
+        );
+      }
+    } catch {
+      /* déjà annulée / expirée : sans effet */
+    }
+    await admin.from("pack_credits").delete().eq("payment_id", payment.id);
+    await detachMeetFromBooking(admin, bookingId);
+    await admin
+      .from("bookings")
+      .update({ status: "cancelled" })
+      .eq("id", bookingId);
+    return NextResponse.json({ ok: true, refunded_cents: 0 });
   }
 
   // Pas de paiement retenu : simple annulation.
