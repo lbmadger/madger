@@ -341,6 +341,14 @@ export default async function OverviewPage() {
   });
   const leiaDailyIndex = dailyTipIndex(now);
 
+  // Séances du mois en cours (grille de 8 tuiles bien remplie).
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const sessionsMonthCount = weekBookings.filter((b) => {
+    const t = new Date(b.starts_at as string).getTime();
+    return t >= monthStart.getTime() && t < monthEnd.getTime();
+  }).length;
+
   // ── Tuiles KPI (compteurs animés) ─────────────────────────────────────────
   const stats: {
     label: string;
@@ -357,9 +365,16 @@ export default async function OverviewPage() {
       kind: "currency",
       trend: revenueTrend,
     },
+    { label: o.sessionsMonth, value: sessionsMonthCount, kind: "int" },
     { label: o.sessionsWeek, value: weekCount, kind: "int" },
     { label: o.today, value: todayCount, kind: "int", hint: o.sessionsToday },
     { label: o.activeClients, value: clientsCount, kind: "int" },
+    {
+      label: o.msgs24h,
+      value: msgs24h,
+      kind: "int",
+      href: "/dashboard/messages",
+    },
     {
       label: o.pendingPayments,
       value: heldSum,
@@ -577,12 +592,14 @@ export default async function OverviewPage() {
               <Link
                 key={s.label}
                 href={s.href}
-                className="block transition-transform hover:-translate-y-0.5"
+                className="block h-full transition-transform hover:-translate-y-0.5"
               >
                 {tile}
               </Link>
             ) : (
-              <div key={s.label}>{tile}</div>
+              <div key={s.label} className="h-full">
+                {tile}
+              </div>
             );
           })}
         </div>

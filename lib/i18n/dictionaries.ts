@@ -457,6 +457,8 @@ const fr = {
     fillRate: "Taux de remplissage",
     fillRateHint: "heures réservées / heures ouvertes cette semaine",
     rating: "Note moyenne",
+    sessionsMonth: "Séances ce mois",
+    msgs24h: "Messages (24 h)",
     proStats: {
       title: "Statistiques avancées",
       lockedTitle: "Réservé au plan Pro",
@@ -634,6 +636,8 @@ const fr = {
     },
     prefsSection: "Préférences",
     language: "Langue de l'application",
+    profileDesc: "Photo, nom, bio, ville et lien public",
+    prefsDesc: "Langue, fuseau horaire, Google Calendar",
     minNotice: "Délai minimum de réservation",
     minNoticeBefore: "avant la séance",
     minNoticeHint:
@@ -1411,6 +1415,8 @@ const en: Dictionary = {
     fillRate: "Fill rate",
     fillRateHint: "booked hours / open hours this week",
     rating: "Average rating",
+    sessionsMonth: "Sessions this month",
+    msgs24h: "Messages (24 h)",
     proStats: {
       title: "Advanced stats",
       lockedTitle: "Pro plan only",
@@ -1584,6 +1590,8 @@ const en: Dictionary = {
     },
     prefsSection: "Preferences",
     language: "App language",
+    profileDesc: "Photo, name, bio, city and public link",
+    prefsDesc: "Language, time zone, Google Calendar",
     minNotice: "Minimum booking notice",
     minNoticeBefore: "before the session",
     minNoticeHint:

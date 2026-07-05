@@ -10,6 +10,7 @@ import { slugify, isValidSlug } from "@/lib/utils/slug";
 import Button from "@/components/ui/Button";
 import CityAutocomplete from "@/components/ui/CityAutocomplete";
 import LanguagePicker from "@/components/settings/LanguagePicker";
+import SettingsSection from "./SettingsSection";
 import PolicyTiers from "@/components/booking/PolicyTiers";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import {
@@ -214,11 +215,12 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         </div>
       )}
 
-      <section className="rounded-2xl border border-border bg-bg-card p-5 sm:p-6">
-        <h2 className="text-base font-semibold text-text-base">
-          {t("settings.profileSection")}
-        </h2>
-
+      <SettingsSection
+        icon="👤"
+        title={t("settings.profileSection")}
+        desc={t("settings.profileDesc")}
+        defaultOpen
+      >
         {/* Photo de profil */}
         <div className="mt-4 flex items-center gap-4">
           {avatarUrl ? (
@@ -326,18 +328,15 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             {loading ? t("settings.saving") : t("settings.save")}
           </Button>
         </div>
-      </section>
+      </SettingsSection>
 
       {/* Mon activité : sport, accompagnements, lieux d'exercice */}
-      <section className="rounded-2xl border border-border bg-bg-card p-5 sm:p-6">
-        <h2 className="text-base font-semibold text-text-base">
-          {t("settings.activitySection")}
-        </h2>
-        <p className="mt-1 text-sm text-text-muted">
-          {t("settings.activityDesc")}
-        </p>
-
-        <div className="mt-4 flex flex-col gap-4">
+      <SettingsSection
+        icon="🏋️"
+        title={t("settings.activitySection")}
+        desc={t("settings.activityDesc")}
+      >
+        <div className="flex flex-col gap-4">
           <label className="flex flex-col gap-1.5">
             <span className={labelClass}>{t("settings.sport")}</span>
             <select
@@ -430,17 +429,15 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             {saved && <p className="text-sm text-accent">{t("settings.saved")}</p>}
           </div>
         </div>
-      </section>
+      </SettingsSection>
 
       {/* Mode de réservation */}
-      <section className="rounded-2xl border border-border bg-bg-card p-5 sm:p-6">
-        <h2 className="text-base font-semibold text-text-base">
-          {t("settings.bookingSection")}
-        </h2>
-        <p className="mt-1 text-sm text-text-muted">
-          {t("settings.bookingSectionDesc")}
-        </p>
-        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <SettingsSection
+        icon="⚡"
+        title={t("settings.bookingSection")}
+        desc={t("settings.bookingSectionDesc")}
+      >
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {(["instant", "approval"] as const).map((mode) => {
             const active = bookingMode === mode;
             return (
@@ -501,16 +498,15 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           {error && <p className="text-sm text-red-400">{error}</p>}
           {saved && <p className="text-sm text-accent">{t("settings.saved")}</p>}
         </div>
-      </section>
+      </SettingsSection>
 
       {/* Politique d'annulation */}
-      <section className="rounded-2xl border border-border bg-bg-card p-5 sm:p-6">
-        <h2 className="text-base font-semibold text-text-base">
-          {t("cancellation.title")}
-        </h2>
-        <p className="mt-1 text-sm text-text-muted">{t("cancellation.subtitle")}</p>
-
-        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <SettingsSection
+        icon="🛡️"
+        title={t("cancellation.title")}
+        desc={t("cancellation.subtitle")}
+      >
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {POLICY_OPTIONS.map((opt) => {
             const active = policy === opt;
             return (
@@ -557,14 +553,15 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         <Button onClick={handleSave} disabled={loading} className="mt-4 self-start">
           {loading ? t("cancellation.saving") : t("cancellation.save")}
         </Button>
-      </section>
+      </SettingsSection>
 
-      {/* Préférences (langue de l'app + fuseau horaire) */}
-      <section className="rounded-2xl border border-border bg-bg-card p-5 sm:p-6">
-        <h2 className="text-base font-semibold text-text-base">
-          {t("settings.prefsSection")}
-        </h2>
-        <p className="mt-1 text-sm text-text-muted">{t("settings.language")}</p>
+      {/* Préférences (langue, fuseau horaire, Google) */}
+      <SettingsSection
+        icon="⚙️"
+        title={t("settings.prefsSection")}
+        desc={t("settings.prefsDesc")}
+      >
+        <p className="text-sm text-text-muted">{t("settings.language")}</p>
         <div className="mt-3">
           <LanguagePicker />
         </div>
@@ -641,7 +638,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             {saved && <p className="text-sm text-accent">{t("settings.saved")}</p>}
           </div>
         </div>
-      </section>
+      </SettingsSection>
     </div>
   );
 }

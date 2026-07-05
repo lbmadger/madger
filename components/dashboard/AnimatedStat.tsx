@@ -69,7 +69,7 @@ export default function AnimatedStat({
       initial={{ opacity: 0, y: 14 }}
       animate={inView ? { opacity: 1, y: 0 } : undefined}
       transition={{ duration: 0.5, delay: index * 0.06, ease: [0.16, 1, 0.3, 1] }}
-      className="rounded-2xl border border-border bg-bg-card p-4 sm:p-5"
+      className="h-full rounded-2xl border border-border bg-bg-card p-4 sm:p-5"
     >
       <p className="text-xs font-medium uppercase tracking-wide text-text-dim">
         {label}
