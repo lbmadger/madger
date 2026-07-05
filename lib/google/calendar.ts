@@ -122,16 +122,27 @@ export async function attachMeetToBooking(
     if (!googleConfigured()) return null;
     const { data: coach } = await supabase
       .from("coaches")
-      .select("google_refresh_token")
+      .select("google_refresh_token, first_name, last_name")
       .eq("id", p.coachId)
       .maybeSingle();
     const refreshToken = coach?.google_refresh_token as string | null;
     if (!refreshToken) return null;
 
+    // Titre vu par le client dans son invitation : « Séance avec {coach} ».
+    // Le nom du client reste dans la description (pour l'agenda du coach).
+    const coachName =
+      [coach?.first_name, coach?.last_name].filter(Boolean).join(" ") ||
+      p.coachName ||
+      "";
     const created = await createMeetEvent({
       refreshToken,
-      summary: `Séance Madger${p.clientName ? ` · ${p.clientName}` : ""}`,
-      description: "Séance réservée via Madger.",
+      summary: coachName ? `Séance avec ${coachName}` : "Séance",
+      description: [
+        p.clientName ? `Client : ${p.clientName}` : null,
+        "Réservé via Madger.",
+      ]
+        .filter(Boolean)
+        .join("\n"),
       start: p.starts,
       end: p.ends,
       attendeeEmail: p.clientEmail ?? null,
