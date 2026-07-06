@@ -26,19 +26,32 @@ export async function GET(req: NextRequest) {
   const soon = new Date(now + 24 * 60 * 60 * 1000).toISOString();
   const nowIso = new Date(now).toISOString();
 
-  const { data: bookings } = await supabase
-    .from("bookings")
-    .select(
-      "id, starts_at, location, meeting_url, reminder_sent_at, status, clients(first_name, email), coaches(first_name, last_name)"
-    )
-    .eq("status", "confirmed")
-    .is("reminder_sent_at", null)
-    .gt("starts_at", nowIso)
-    .lte("starts_at", soon)
-    .limit(200);
-
+  // Traité PAR LOTS jusqu'à épuisement (ou fin du budget temps) : tous les
+  // rappels du jour partent, quel que soit le nombre de coachs. Les envois
+  // en échec (quota email…) ne sont pas marqués et repasseront.
+  const startedAt = Date.now();
+  const TIME_BUDGET_MS = 45_000;
   let sent = 0;
-  for (const b of bookings ?? []) {
+  let scanned = 0;
+  const skipIds = new Set<string>();
+
+  while (Date.now() - startedAt < TIME_BUDGET_MS) {
+    const { data: bookings } = await supabase
+      .from("bookings")
+      .select(
+        "id, starts_at, location, meeting_url, reminder_sent_at, status, clients(first_name, email), coaches(first_name, last_name)"
+      )
+      .eq("status", "confirmed")
+      .is("reminder_sent_at", null)
+      .gt("starts_at", nowIso)
+      .lte("starts_at", soon)
+      .limit(100);
+    const batch = (bookings ?? []).filter((b) => !skipIds.has(b.id as string));
+    if (batch.length === 0) break;
+    scanned += batch.length;
+
+  for (const b of batch) {
+    if (Date.now() - startedAt > TIME_BUDGET_MS) break;
     const client = Array.isArray(b.clients) ? b.clients[0] : b.clients;
     const coach = Array.isArray(b.coaches) ? b.coaches[0] : b.coaches;
     const email = client?.email as string | undefined;
@@ -75,8 +88,12 @@ export async function GET(req: NextRequest) {
         .from("bookings")
         .update({ reminder_sent_at: nowIso })
         .eq("id", b.id);
+    } else {
+      // Échec d'envoi : écarté du run courant, retenté au prochain.
+      skipIds.add(b.id as string);
     }
   }
+  }
 
-  return NextResponse.json({ sent, scanned: (bookings ?? []).length });
+  return NextResponse.json({ sent, scanned });
 }

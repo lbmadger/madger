@@ -47,7 +47,11 @@ const MAX = {
 export async function POST(req: NextRequest) {
   try {
     const ip =
-      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+      // x-real-ip est posé par Vercel (non falsifiable), contrairement à
+      // x-forwarded-for qui peut être fourni par le client.
+      req.headers.get("x-real-ip") ??
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      "unknown";
     if (isRateLimited(ip)) {
       return NextResponse.json({ error: "rate_limited" }, { status: 429 });
     }

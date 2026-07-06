@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { fulfillSubscriptionSession } from "@/lib/stripe/fulfillSubscription";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 // Retour après souscription d'un abonnement mensuel client. La logique vit
 // dans fulfillSubscriptionSession, partagée avec le webhook

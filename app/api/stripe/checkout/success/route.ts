@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { fulfillCheckoutSession } from "@/lib/stripe/fulfillCheckout";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 // Retour après paiement Stripe. L'enregistrement (client, séance, paiement
 // retenu, pack) vit dans fulfillCheckoutSession, partagé avec le webhook

@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 
 // Profil coach tel que stocké en base. Hand-écrit pour l'instant (on génèrera
@@ -51,7 +52,8 @@ export type Coach = {
 // - { coach: null } si pas de session,
 // - { coach: null, missingTable: true } si la table n'existe pas encore
 //   (SQL pas encore exécuté) — permet au layout de ne pas planter.
-export async function getCoach(): Promise<{
+// Mémoïsé par requête (React cache) : layout + page partagent le même appel.
+export const getCoach = cache(async function getCoachInner(): Promise<{
   coach: Coach | null;
   missingTable?: boolean;
 }> {
@@ -74,4 +76,4 @@ export async function getCoach(): Promise<{
   }
 
   return { coach: data as Coach | null };
-}
+});

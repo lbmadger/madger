@@ -131,25 +131,43 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  // Paiements mûrs, retenus, avec une charge à transférer. Les lignes sans
-  // charge Stripe sont exclues (intraitables : elles ne doivent pas occuper
-  // le lot).
-  const { data: due } = await supabase
-    .from("payments")
-    .select(
-      "id, coach_id, booking_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, refunded_cents, bookings(status)"
-    )
-    .eq("escrow_status", "held")
-    .lte("release_after", nowIso)
-    .not("stripe_charge_id", "is", null)
-    .order("release_after", { ascending: true })
-    .limit(100);
-
+  // Paiements mûrs, retenus, avec une charge à transférer, traités PAR LOTS
+  // jusqu'à épuisement (ou fin du budget temps) : le volume quotidien passe
+  // entièrement, quel que soit le nombre de coachs. Les lignes en échec sont
+  // écartées du run courant (retentées au prochain).
+  const startedAt = Date.now();
+  const TIME_BUDGET_MS = 45_000;
   let released = 0;
   let refunded = 0;
   const errors: string[] = [];
+  const skipIds = new Set<string>();
 
-  for (const p of due ?? []) {
+  while (Date.now() - startedAt < TIME_BUDGET_MS) {
+    const { data: due } = await supabase
+      .from("payments")
+      .select(
+        "id, coach_id, booking_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, refunded_cents, bookings(status)"
+      )
+      .eq("escrow_status", "held")
+      .lte("release_after", nowIso)
+      .not("stripe_charge_id", "is", null)
+      .order("release_after", { ascending: true })
+      .limit(50);
+    const batch = (due ?? []).filter((p) => !skipIds.has(p.id as string));
+    if (batch.length === 0) break;
+
+    // Comptes Stripe et plans des coachs du lot, en une seule requête.
+    const coachIds = Array.from(new Set(batch.map((p) => p.coach_id as string)));
+    const { data: coachRows } = await supabase
+      .from("coaches")
+      .select("id, stripe_account_id, pro_until")
+      .in("id", coachIds);
+    const coachById = new Map(
+      (coachRows ?? []).map((c) => [c.id as string, c])
+    );
+
+  for (const p of batch) {
+    if (Date.now() - startedAt > TIME_BUDGET_MS) break;
     try {
       const alreadyRefunded = (p.refunded_cents as number | null) ?? 0;
       const remaining = Math.max(0, p.amount_cents - alreadyRefunded);
@@ -175,7 +193,11 @@ export async function GET(req: NextRequest) {
           .eq("id", p.booking_id)
           .eq("status", "pending")
           .select("id");
-        if (!claimedBooking?.length) continue; // confirmée entre-temps
+        if (!claimedBooking?.length) {
+          // Confirmée entre-temps : on écarte du run courant.
+          skipIds.add(p.id as string);
+          continue;
+        }
         await detachMeetFromBooking(supabase, p.booking_id as string);
 
         const { data: claimedPay } = await supabase
@@ -209,17 +231,17 @@ export async function GET(req: NextRequest) {
         continue;
       }
 
-      const { data: coach } = await supabase
-        .from("coaches")
-        .select("stripe_account_id, pro_until")
-        .eq("id", p.coach_id)
-        .maybeSingle();
-      if (!coach?.stripe_account_id) continue;
+      const coach = coachById.get(p.coach_id as string);
+      if (!coach?.stripe_account_id) {
+        // Compte Connect absent : intraitable ce run, on écarte.
+        skipIds.add(p.id as string);
+        continue;
+      }
 
       const breakdown = computePayout(
         p.amount_cents,
         p.stripe_fee_cents ?? 0,
-        isPro(coach.pro_until),
+        isPro(coach.pro_until as string | null),
         alreadyRefunded
       );
 
@@ -294,8 +316,10 @@ export async function GET(req: NextRequest) {
       }
       released++;
     } catch (e) {
+      skipIds.add(p.id as string);
       errors.push(`${p.id}: ${e instanceof Error ? e.message : "error"}`);
     }
+  }
   }
 
   return NextResponse.json({ released, refunded, expired, errors });

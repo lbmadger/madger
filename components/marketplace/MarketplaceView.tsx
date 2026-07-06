@@ -39,6 +39,9 @@ export default function MarketplaceView({
   const [showFilters, setShowFilters] = useState(false);
   const [coaches, setCoaches] = useState<PublicCoach[]>(initialCoaches);
   const [loading, setLoading] = useState(false);
+  // Pagination du parcours par défaut (sans recherche) : page de 24.
+  const [hasMore, setHasMore] = useState(initialCoaches.length >= 24);
+  const [loadingMore, setLoadingMore] = useState(false);
   // Bandeau rayon : soit choisi par l'utilisateur, soit élargi automatiquement.
   const [radius, setRadius] = useState<{
     city: string;
@@ -58,6 +61,7 @@ export default function MarketplaceView({
   ) {
     setLoading(true);
     setRadius(null);
+    setHasMore(false); // la pagination ne concerne que le parcours par défaut
     try {
       const supabase = createClient();
       const base = () => {
@@ -161,6 +165,27 @@ export default function MarketplaceView({
   function onSubmit(e: FormEvent) {
     e.preventDefault();
     runSearch();
+  }
+
+  // Page suivante du parcours par défaut (24 coachs de plus).
+  async function loadMore() {
+    setLoadingMore(true);
+    try {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("public_coaches")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .range(coaches.length, coaches.length + 23);
+      const rows = (data ?? []) as PublicCoach[];
+      setCoaches((prev) => {
+        const seen = new Set(prev.map((c) => c.id));
+        return [...prev, ...rows.filter((c) => !seen.has(c.id))];
+      });
+      setHasMore(rows.length === 24);
+    } finally {
+      setLoadingMore(false);
+    }
   }
 
   // Filtres sport / accompagnement appliqués côté client sur les résultats.
@@ -444,6 +469,22 @@ export default function MarketplaceView({
                 </motion.li>
               ))}
             </ul>
+
+            {/* Page suivante (parcours par défaut uniquement) */}
+            {hasMore && activeCount === 0 && (
+              <div className="mt-6 text-center">
+                <button
+                  type="button"
+                  disabled={loadingMore}
+                  onClick={loadMore}
+                  className="rounded-full border border-border-strong px-6 py-2.5 text-sm font-medium text-text-muted transition-colors hover:border-accent hover:text-text-base disabled:opacity-50"
+                >
+                  {loadingMore
+                    ? t("marketplace.loadingMore")
+                    : t("marketplace.loadMore")}
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>

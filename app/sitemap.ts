@@ -1,6 +1,10 @@
 import { MetadataRoute } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+// Regénéré au plus une fois par heure : les crawlers ne déclenchent pas une
+// requête base à chaque passage.
+export const revalidate = 3600;
+
 // Sitemap dynamique : pages fixes + pages publiques des coachs (SEO local
 // « coach sportif <ville> »). Les slugs viennent de la base à la demande.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

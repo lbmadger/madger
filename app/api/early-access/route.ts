@@ -116,7 +116,10 @@ async function sendEmail({
 
 export async function POST(req: NextRequest) {
   try {
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+    const ip =
+      req.headers.get("x-real-ip") ??
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      "unknown";
     if (isRateLimited(ip)) {
       return NextResponse.json({ error: "Trop de tentatives. Réessayez plus tard." }, { status: 429 });
     }

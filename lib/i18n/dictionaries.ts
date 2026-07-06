@@ -530,6 +530,8 @@ const fr = {
     title: "Trouve ton coach",
     subtitle: "Des coachs près de chez toi, ou en ligne.",
     heroBadge: "La nouvelle génération du coaching",
+    loadMore: "Voir plus de coachs",
+    loadingMore: "Chargement…",
     titleA: "Trouve le coach qui va",
     titleB: "te transformer",
     heroSubtitle:
@@ -1531,6 +1533,8 @@ const en: Dictionary = {
     title: "Find your coach",
     subtitle: "Coaches near you, or online.",
     heroBadge: "The new generation of coaching",
+    loadMore: "Show more coaches",
+    loadingMore: "Loading…",
     titleA: "Find the coach who will",
     titleB: "transform you",
     heroSubtitle:

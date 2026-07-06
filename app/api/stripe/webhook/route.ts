@@ -6,6 +6,8 @@ import { subPeriodEnd, invoiceSubscriptionId } from "@/lib/stripe/subscription";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 
 export const dynamic = "force-dynamic";
+// L'enregistrement d'un paiement (webhook) peut dépasser 10 s : marge large.
+export const maxDuration = 60;
 
 // Webhook Stripe pour l'abonnement Pro (compte plateforme). Maintient pro_until
 // à jour au fil des renouvellements et des annulations. Configurer l'endpoint
