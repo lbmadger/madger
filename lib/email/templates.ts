@@ -317,6 +317,32 @@ export function sessionReminderClient(p: {
   };
 }
 
+// ── Nouveau message reçu (coach ou client) ──────────────────────────────────
+export function newMessageNotif(p: {
+  senderName: string;
+  preview: string;
+  threadUrl: string;
+}): Email {
+  const safe = p.preview
+    .slice(0, 300)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  return {
+    subject: `Nouveau message de ${p.senderName}`,
+    html: layout({
+      preheader: p.preview.slice(0, 90),
+      eyebrow: "Messagerie",
+      title: "Nouveau message",
+      intro: `<b style="color:${C.text};">${p.senderName}</b> t'a écrit :`,
+      blocks: [infoBox("Message", `« ${safe} »`)],
+      cta: { label: "Répondre", url: p.threadUrl },
+      outro:
+        "Répondre vite fait toute la différence : la plupart des clients choisissent le coach qui répond en premier.",
+    }),
+  };
+}
+
 // ── Client : abonnement mensuel démarré ─────────────────────────────────────
 export function subscriptionStartedClient(p: {
   coachName: string;

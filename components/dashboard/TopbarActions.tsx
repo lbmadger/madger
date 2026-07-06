@@ -86,10 +86,33 @@ export function NotificationBell() {
       if (!document.hidden) load();
     };
     document.addEventListener("visibilitychange", onVisible);
+
+    // Temps réel : une nouvelle demande fait sonner la cloche immédiatement
+    // (publication bookings activée par la migration 0031).
+    const supabase = createClient();
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    supabase.auth.getUser().then(({ data }) => {
+      if (!alive || !data.user) return;
+      channel = supabase
+        .channel("bell-bookings")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "bookings",
+            filter: `coach_id=eq.${data.user.id}`,
+          },
+          () => load()
+        )
+        .subscribe();
+    });
+
     return () => {
       alive = false;
       clearInterval(id);
       document.removeEventListener("visibilitychange", onVisible);
+      if (channel) supabase.removeChannel(channel);
     };
   }, []);
 

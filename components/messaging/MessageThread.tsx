@@ -124,6 +124,12 @@ export default function MessageThread({
       if (error) {
         setBody(text); // restaure en cas d'échec
       } else {
+        // Notifie l'autre participant par email (throttlé côté serveur).
+        fetch("/api/messages/notify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ conversation_id: conversationId }),
+        }).catch(() => {});
         await fetchMessages();
       }
     } finally {
