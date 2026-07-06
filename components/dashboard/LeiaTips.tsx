@@ -2,16 +2,18 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { SparklesIcon, LightbulbIcon } from "@/components/ui/icons";
+import {
+  SparklesIcon,
+  LightbulbIcon,
+  ChevronDownIcon,
+} from "@/components/ui/icons";
 import type { LeiaTip } from "@/lib/leia/tips";
 
-const VISIBLE = 3;
-
-// Carte « Les conseils de Leia » : conseils personnalisés calculés côté
-// serveur (lib/leia/tips.ts), affichés 3 par 3, plus un conseil du jour qui
-// tourne. Les textes viennent des dictionnaires (leia.*).
+// Bande fine « Les conseils de Leia » en haut du dashboard : fermée, elle
+// montre le nombre de conseils et un aperçu ; un clic déplie tous les
+// conseils personnalisés (lib/leia/tips.ts) + le conseil du jour.
 export default function LeiaTips({
   tips,
   dailyIndex,
@@ -20,78 +22,102 @@ export default function LeiaTips({
   dailyIndex: number;
 }) {
   const { t } = useI18n();
-  const [showAll, setShowAll] = useState(false);
-  const visible = showAll ? tips : tips.slice(0, VISIBLE);
+  const [open, setOpen] = useState(false);
+
+  const preview =
+    tips.length > 0
+      ? t(`leia.tips.${tips[0].id}.title`)
+      : t(`leia.daily.d${dailyIndex + 1}`);
 
   return (
-    <section className="rounded-2xl border border-accent/25 bg-bg-card p-5">
-      <div className="flex items-center gap-3">
-        <div
+    <section className="mb-5 overflow-hidden rounded-2xl border border-accent/25 bg-bg-card">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-accent/[0.04]"
+      >
+        <span
           aria-hidden
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/15 text-lg"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent/15 text-accent"
         >
-          <SparklesIcon size={18} className="text-accent" />
-        </div>
-        <div className="min-w-0">
-          <h3 className="text-base font-semibold text-text-base">
-            {t("leia.title")}
-          </h3>
-          <p className="truncate text-xs text-text-dim">{t("leia.role")}</p>
-        </div>
-      </div>
+          <SparklesIcon size={14} />
+        </span>
+        <span className="shrink-0 text-sm font-semibold text-text-base">
+          {t("leia.title")}
+        </span>
+        {tips.length > 0 && (
+          <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-accent px-1.5 text-[10px] font-bold text-black">
+            {tips.length}
+          </span>
+        )}
+        <span className="hidden min-w-0 flex-1 truncate text-xs text-text-muted sm:block">
+          {preview}
+        </span>
+        <ChevronDownIcon
+          size={15}
+          className={`ml-auto shrink-0 text-text-dim transition-transform duration-200 sm:ml-0 ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
 
-      {tips.length === 0 ? (
-        <p className="mt-4 rounded-lg border border-border bg-bg-elevated p-3 text-xs leading-relaxed text-text-muted">
-          {t("leia.allGood")}
-        </p>
-      ) : (
-        <ul className="mt-4 flex flex-col gap-2">
-          {visible.map((tip, i) => (
-            <motion.li
-              key={tip.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.07, duration: 0.3 }}
-              className="rounded-lg border border-border bg-bg-elevated p-3"
-            >
-              <p className="text-xs font-semibold text-text-base">
-                {t(`leia.tips.${tip.id}.title`)}
-              </p>
-              <p className="mt-1 text-xs leading-relaxed text-text-muted">
-                {t(`leia.tips.${tip.id}.body`)}
-              </p>
-              {tip.href && (
-                <Link
-                  href={tip.href}
-                  className="mt-1.5 inline-block text-xs font-semibold text-accent hover:underline"
-                >
-                  {t(`leia.tips.${tip.id}.cta`)} ›
-                </Link>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+          >
+            <div className="border-t border-border px-4 pb-4 pt-3">
+              {tips.length === 0 ? (
+                <p className="text-xs leading-relaxed text-text-muted">
+                  {t("leia.allGood")}
+                </p>
+              ) : (
+                <ul className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
+                  {tips.map((tip) => (
+                    <li
+                      key={tip.id}
+                      className="rounded-lg border border-border bg-bg-elevated p-3"
+                    >
+                      <p className="text-xs font-semibold text-text-base">
+                        {t(`leia.tips.${tip.id}.title`)}
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed text-text-muted">
+                        {t(`leia.tips.${tip.id}.body`)}
+                      </p>
+                      {tip.href && (
+                        <Link
+                          href={tip.href}
+                          className="mt-1.5 inline-block text-xs font-semibold text-accent hover:underline"
+                        >
+                          {t(`leia.tips.${tip.id}.cta`)} ›
+                        </Link>
+                      )}
+                    </li>
+                  ))}
+                </ul>
               )}
-            </motion.li>
-          ))}
-        </ul>
-      )}
 
-      {tips.length > VISIBLE && (
-        <button
-          type="button"
-          onClick={() => setShowAll((v) => !v)}
-          className="mt-2 text-xs font-medium text-text-dim transition-colors hover:text-text-base"
-        >
-          {showAll ? t("leia.showLess") : `${t("leia.showAll")} (${tips.length})`}
-        </button>
-      )}
-
-      {/* Conseil du jour (tourne chaque jour) */}
-      <div className="mt-4 border-t border-border pt-3">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-text-dim">
-          <LightbulbIcon size={12} className="mr-1.5 inline-block align-[-2px]" />{t("leia.dailyTitle")}
-        </p>
-        <p className="mt-1.5 text-xs leading-relaxed text-text-muted">
-          {t(`leia.daily.d${dailyIndex + 1}`)}
-        </p>
-      </div>
+              {/* Conseil du jour */}
+              <div className="mt-3 border-t border-border pt-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-text-dim">
+                  <LightbulbIcon
+                    size={12}
+                    className="mr-1.5 inline-block align-[-2px]"
+                  />
+                  {t("leia.dailyTitle")}
+                </p>
+                <p className="mt-1.5 text-xs leading-relaxed text-text-muted">
+                  {t(`leia.daily.d${dailyIndex + 1}`)}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }

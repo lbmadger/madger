@@ -6,6 +6,7 @@ import AnimatedStat, {
 } from "@/components/dashboard/AnimatedStat";
 import SetupChecklist from "@/components/dashboard/SetupChecklist";
 import LeiaTips from "@/components/dashboard/LeiaTips";
+import { SunIcon, MoonIcon } from "@/components/ui/icons";
 import ProStats, { type ProStatItem } from "@/components/dashboard/ProStats";
 import { computeLeiaTips, dailyTipIndex } from "@/lib/leia/tips";
 import ChartCard from "@/components/dashboard/charts/ChartCard";
@@ -522,23 +523,32 @@ export default async function OverviewPage() {
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
         <div className="mb-6 sm:mb-8">
-          <h2 className="text-2xl font-extrabold tracking-tight text-text-base sm:text-3xl">
-            {(() => {
-              // Salutation selon l'heure locale du coach.
-              const h = parseInt(
-                new Intl.DateTimeFormat("en-GB", {
-                  hour: "numeric",
-                  hour12: false,
-                  timeZone: coach?.timezone || "Europe/Paris",
-                }).format(now),
-                10
-              );
-              if (h >= 18 || h < 5) return o.greetingEvening;
-              if (h >= 12) return o.greetingAfternoon;
-              return o.greetingMorning;
-            })()}
-            {coach?.first_name ? ` ${coach.first_name}` : ""}
-          </h2>
+          {(() => {
+            // Salutation selon l'heure locale du coach : Bonjour la journée,
+            // Bonsoir le soir (icône soleil / lune assortie).
+            const h = parseInt(
+              new Intl.DateTimeFormat("en-GB", {
+                hour: "numeric",
+                hour12: false,
+                timeZone: coach?.timezone || "Europe/Paris",
+              }).format(now),
+              10
+            );
+            const evening = h >= 18 || h < 5;
+            return (
+              <h2 className="flex items-center gap-2.5 text-2xl font-extrabold tracking-tight text-text-base sm:text-3xl">
+                {evening ? (
+                  <MoonIcon size={24} className="shrink-0 text-accent" />
+                ) : (
+                  <SunIcon size={24} className="shrink-0 text-accent" />
+                )}
+                <span>
+                  {evening ? o.greetingEvening : o.greetingMorning}
+                  {coach?.first_name ? ` ${coach.first_name}` : ""}
+                </span>
+              </h2>
+            );
+          })()}
           {/* Comme le mockup : date du jour + séances du jour */}
           <p className="mt-1 text-sm capitalize text-text-muted">
             {now.toLocaleDateString(loc, {
@@ -552,6 +562,9 @@ export default async function OverviewPage() {
             </span>
           </p>
         </div>
+
+        {/* Conseils de Leia : bande fine dépliable, tout en haut */}
+        <LeiaTips tips={leiaTips} dailyIndex={leiaDailyIndex} />
 
         {/* Relance vers l'offre Pro (coachs en Free uniquement) */}
         {!pro && (
@@ -706,8 +719,6 @@ export default async function OverviewPage() {
           </div>
 
           <div className="flex flex-col gap-4 lg:col-span-1">
-            <LeiaTips tips={leiaTips} dailyIndex={leiaDailyIndex} />
-
             {showChecklist && (
               <SetupChecklist
                 profileDone={profileDone}
