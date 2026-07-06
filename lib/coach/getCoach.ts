@@ -45,6 +45,11 @@ export type Coach = {
   google_connected_at: string | null;
   // Délai minimum de réservation en heures (migration 0029)
   min_notice_hours: number;
+  // Mentions légales de facturation (migration 0034)
+  business_name: string | null;
+  siret: string | null;
+  vat_number: string | null;
+  billing_address: string | null;
 };
 
 // Récupère le profil coach de l'utilisateur connecté. Renvoie:

@@ -13,6 +13,7 @@ const Problem = dynamic(() => import("@/components/Problem"));
 const Athletes = dynamic(() => import("@/components/Athletes"));
 const CoachDashboard = dynamic(() => import("@/components/CoachDashboard"));
 const Comparison = dynamic(() => import("@/components/Comparison"));
+const Compliance2026 = dynamic(() => import("@/components/Compliance2026"));
 const Testimonials = dynamic(() => import("@/components/Testimonials"));
 const Pricing = dynamic(() => import("@/components/Pricing"));
 const FAQ = dynamic(() => import("@/components/FAQ"));
@@ -47,6 +48,7 @@ export default function Home() {
         <Athletes />
         <CoachDashboard />
         <Comparison />
+        <Compliance2026 />
         <Testimonials />
         <Pricing />
         <FAQ />

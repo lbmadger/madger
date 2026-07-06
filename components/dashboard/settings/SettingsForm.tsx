@@ -17,6 +17,7 @@ import {
   ZapIcon,
   ShieldIcon,
   SlidersIcon,
+  FileTextIcon,
 } from "@/components/ui/icons";
 import PolicyTiers from "@/components/booking/PolicyTiers";
 import { inputClass, labelClass } from "@/lib/ui/styles";
@@ -83,6 +84,13 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   const [gymName, setGymName] = useState(coach.gym_name ?? "");
   const [timezone, setTimezone] = useState(coach.timezone || "Europe/Paris");
   const [minNotice, setMinNotice] = useState(coach.min_notice_hours ?? 2);
+  // Mentions légales de facturation (SIRET, TVA, adresse).
+  const [businessName, setBusinessName] = useState(coach.business_name ?? "");
+  const [siret, setSiret] = useState(coach.siret ?? "");
+  const [vatNumber, setVatNumber] = useState(coach.vat_number ?? "");
+  const [billingAddress, setBillingAddress] = useState(
+    coach.billing_address ?? ""
+  );
   // Retour de la connexion Google (?google=...) : affiche la cause au lieu
   // d'échouer en silence.
   const [googleMsg, setGoogleMsg] = useState<
@@ -165,6 +173,10 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           gym_name: gymName.trim() || null,
           timezone,
           min_notice_hours: minNotice,
+          business_name: businessName.trim() || null,
+          siret: siret.trim() || null,
+          vat_number: vatNumber.trim() || null,
+          billing_address: billingAddress.trim() || null,
         })
         .eq("id", coach.id);
 
@@ -460,7 +472,6 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
               >
                 <span className="flex items-center justify-between">
                   <span className="text-sm font-semibold text-text-base">
-                    {mode === "instant" ? "⚡ " : "✋ "}
                     {t(`settings.bookingMode.${mode}`)}
                   </span>
                   <span
@@ -560,6 +571,64 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         <Button onClick={handleSave} disabled={loading} className="mt-4 self-start">
           {loading ? t("cancellation.saving") : t("cancellation.save")}
         </Button>
+      </SettingsSection>
+
+      {/* Facturation : mentions légales affichées sur chaque facture */}
+      <SettingsSection
+        icon={<FileTextIcon size={18} />}
+        title={t("settings.billingSection")}
+        desc={t("settings.billingDesc")}
+      >
+        <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Field
+              label={t("settings.businessName")}
+              value={businessName}
+              onChange={setBusinessName}
+            />
+            <label className="flex flex-col gap-1.5">
+              <span className={labelClass}>{t("settings.siretLabel")}</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={siret}
+                onChange={(e) => setSiret(e.target.value)}
+                placeholder="123 456 789 00012"
+                className={inputClass}
+              />
+            </label>
+          </div>
+          <Field
+            label={t("settings.billingAddress")}
+            value={billingAddress}
+            onChange={setBillingAddress}
+          />
+          <label className="flex flex-col gap-1.5">
+            <span className={labelClass}>{t("settings.vatNumber")}</span>
+            <input
+              type="text"
+              value={vatNumber}
+              onChange={(e) => setVatNumber(e.target.value)}
+              placeholder="FR12345678901"
+              className={inputClass}
+            />
+            <span className="text-xs text-text-dim">
+              {t("settings.vatHint")}
+            </span>
+          </label>
+
+          <p className="rounded-xl border border-accent/20 bg-accent/[0.04] px-4 py-3 text-xs leading-relaxed text-text-muted">
+            {t("settings.billingCompliance")}
+          </p>
+
+          <div className="flex items-center gap-3">
+            <Button onClick={handleSave} disabled={loading} className="self-start">
+              {loading ? t("settings.saving") : t("settings.save")}
+            </Button>
+            {error && <p className="text-sm text-red-400">{error}</p>}
+            {saved && <p className="text-sm text-accent">{t("settings.saved")}</p>}
+          </div>
+        </div>
       </SettingsSection>
 
       {/* Préférences (langue, fuseau horaire, Google) */}

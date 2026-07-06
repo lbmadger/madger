@@ -8,7 +8,7 @@ import CoachAside from "@/components/ui/CoachAside";
 const freeFeatures = [
   "Lien public personnalisé",
   "Réservations et paiements illimités",
-  "Factures automatiques",
+  "Factures conformes automatiques",
   "Synchronisation Google Calendar",
   "Rappels automatiques",
 ];

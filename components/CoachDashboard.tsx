@@ -588,7 +588,7 @@ export default function CoachDashboard() {
           {[
             "Réservations en temps réel",
             "Paiements automatiques",
-            "Factures générées",
+            "Factures conformes 2026",
             "Rappels clients",
             "Synchro Google Calendar",
             "0 % de commission en Pro",

@@ -26,6 +26,10 @@ export const faqs = [
     a: "Toutes les données sont hébergées en Europe. Les paiements transitent via Stripe, certifié PCI-DSS niveau 1 - le standard de sécurité le plus élevé. Nous ne revendons aucune donnée. Vous gardez le contrôle total.",
   },
   {
+    q: "Suis-je prêt pour la facturation électronique obligatoire ?",
+    a: "Oui. Chaque séance encaissée génère une facture numérotée avec vos mentions légales (SIRET, TVA), Madger vous adresse une facture mensuelle pour sa commission, et votre comptabilité s'exporte en un clic pour votre expert-comptable. Le passage au format Factur-X prévu par la réforme française de la facturation électronique se fera automatiquement, sans rien changer de votre côté.",
+  },
+  {
     q: "Puis-je gérer plusieurs types de séances ?",
     a: "Oui. Vous créez autant d'offres que vous voulez : séance découverte, coaching individuel, suivi mensuel, pack séances… Chaque offre a son tarif, sa durée et ses disponibilités. Vos clients voient toutes vos offres et choisissent celle qui leur convient.",
   },

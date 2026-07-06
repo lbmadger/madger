@@ -3,55 +3,74 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCoach } from "@/lib/coach/getCoach";
 import { getServerDictionary } from "@/lib/i18n/server";
-import { invoiceNumber } from "@/lib/invoices/utils";
+import {
+  madgerInvoiceNumber,
+  commissionPeriod,
+} from "@/lib/invoices/utils";
+import { MADGER_LEGAL } from "@/lib/invoices/madger";
 import PrintButton from "@/components/invoices/PrintButton";
 
 export const dynamic = "force-dynamic";
 
-// Facture imprimable (→ « Enregistrer en PDF » du navigateur). Seule la zone
-// .invoice-print s'imprime, en noir sur blanc (cf. globals.css @media print).
-export default async function InvoicePage({
+// Facture de commission Madger → coach pour un mois donné (AAAA-MM) : le
+// récapitulatif des 5 % prélevés sur chaque séance encaissée du mois.
+// Imprimable (→ « Enregistrer en PDF »), même gabarit que la facture client.
+export default async function MadgerInvoicePage({
   params,
 }: {
-  params: { id: string };
+  params: { period: string };
 }) {
   const { dict, locale } = getServerDictionary();
   const inv = dict.invoices;
   const loc = locale === "fr" ? "fr-FR" : "en-US";
+
+  // Période attendue : AAAA-MM strict.
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(params.period)) notFound();
+
   const supabase = createClient();
   const { coach } = await getCoach();
+  if (!coach) notFound();
 
-  const { data: p } = await supabase
+  const { data: commissions } = await supabase
     .from("payments")
     .select(
-      "id, amount_cents, currency, paid_at, refunded_cents, stripe_payment_intent_id, clients(first_name, last_name, email), services(name), bookings(starts_at)"
+      "id, amount_cents, refunded_cents, commission_cents, released_at, resolved_at, paid_at, clients(first_name, last_name)"
     )
-    .eq("id", params.id)
-    .not("paid_at", "is", null)
-    .maybeSingle();
+    .gt("commission_cents", 0);
 
-  if (!p || !coach) notFound();
+  // Même règle de rattachement que la liste : mois du versement au coach.
+  const lines = (commissions ?? [])
+    .filter((c) => commissionPeriod(c as never) === params.period)
+    .sort((a, b) =>
+      ((a.released_at ?? a.paid_at) as string) <
+      ((b.released_at ?? b.paid_at) as string)
+        ? -1
+        : 1
+    );
+  if (lines.length === 0) notFound();
 
-  const client = Array.isArray(p.clients) ? p.clients[0] : p.clients;
-  const service = Array.isArray(p.services) ? p.services[0] : p.services;
-  const booking = Array.isArray(p.bookings) ? p.bookings[0] : p.bookings;
-  const number = invoiceNumber(p.id as string, p.paid_at as string);
-  const refunded = ((p.refunded_cents as number) || 0) > 0;
+  const total = lines.reduce(
+    (s, c) => s + ((c.commission_cents as number) || 0),
+    0
+  );
+  const number = madgerInvoiceNumber(coach.id, params.period);
   const money = (cents: number) =>
-    (cents / 100).toLocaleString(loc, {
-      style: "currency",
-      currency: ((p.currency as string) || "eur").toUpperCase(),
-    });
+    (cents / 100).toLocaleString(loc, { style: "currency", currency: "EUR" });
   const dateStr = (iso: string) =>
     new Date(iso).toLocaleDateString(loc, {
       day: "2-digit",
       month: "long",
       year: "numeric",
     });
+  const periodLabel = new Date(
+    `${params.period}-01T12:00:00Z`
+  ).toLocaleDateString(loc, { month: "long", year: "numeric" });
+  // Date d'émission : dernier jour du mois facturé.
+  const [py, pm] = params.period.split("-").map(Number);
+  const issuedAt = new Date(Date.UTC(py, pm, 0, 12)).toISOString();
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
-      {/* Actions (masquées à l'impression) */}
       <div className="no-print mb-5 flex items-center justify-between gap-3">
         <Link
           href="/dashboard/factures"
@@ -65,7 +84,6 @@ export default async function InvoicePage({
         <PrintButton label={inv.pdf} />
       </div>
 
-      {/* Facture */}
       <div className="invoice-print rounded-2xl border border-border bg-bg-card p-6 sm:p-10">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -74,14 +92,14 @@ export default async function InvoicePage({
             </p>
             <p className="mt-1 text-sm font-semibold text-text-muted">{number}</p>
             <p className="mt-0.5 text-xs text-text-dim">
-              {inv.issuedOn} {dateStr(p.paid_at as string)}
+              {inv.issuedOn} {dateStr(issuedAt)}
             </p>
           </div>
           <div className="text-right">
             <p className="text-lg font-extrabold tracking-tight text-accent">
-              MADGER
+              {MADGER_LEGAL.brand}
             </p>
-            <p className="text-xs text-text-dim">madger.app</p>
+            <p className="text-xs text-text-dim">{MADGER_LEGAL.site}</p>
           </div>
         </div>
 
@@ -89,6 +107,19 @@ export default async function InvoicePage({
           <div>
             <p className="text-xs font-medium uppercase tracking-wide text-text-dim">
               {inv.issuer}
+            </p>
+            <p className="mt-1 font-semibold text-text-base">
+              {MADGER_LEGAL.name}, {MADGER_LEGAL.brand}
+            </p>
+            <p className="text-text-muted">{MADGER_LEGAL.address}</p>
+            <p className="text-text-muted">
+              {inv.siretLabel} {MADGER_LEGAL.siret}
+            </p>
+            <p className="text-text-muted">{MADGER_LEGAL.email}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs font-medium uppercase tracking-wide text-text-dim">
+              {inv.billedTo}
             </p>
             <p className="mt-1 font-semibold text-text-base">
               {coach.business_name ||
@@ -108,45 +139,41 @@ export default async function InvoicePage({
                 {inv.siretLabel} {coach.siret}
               </p>
             )}
-            {coach.vat_number && (
-              <p className="text-text-muted">
-                {inv.vatLabel} {coach.vat_number}
-              </p>
-            )}
-          </div>
-          <div className="text-right">
-            <p className="text-xs font-medium uppercase tracking-wide text-text-dim">
-              {inv.billedTo}
-            </p>
-            <p className="mt-1 font-semibold text-text-base">
-              {[client?.first_name, client?.last_name].filter(Boolean).join(" ") || "-"}
-            </p>
-            {client?.email && <p className="text-text-muted">{client.email}</p>}
           </div>
         </div>
 
-        <table className="mt-8 w-full text-sm">
+        <p className="mt-6 text-sm text-text-muted">
+          {inv.commissionService} · {inv.period}{" "}
+          <span className="capitalize">{periodLabel}</span>
+        </p>
+
+        <table className="mt-4 w-full text-sm">
           <thead>
             <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-text-dim">
-              <th className="py-2">{inv.service}</th>
               <th className="py-2">{inv.date}</th>
-              <th className="py-2 text-right">{inv.amount}</th>
+              <th className="py-2 text-right">{inv.sessionAmount}</th>
+              <th className="py-2 text-right">{inv.commissionCol}</th>
             </tr>
           </thead>
           <tbody>
-            <tr className="border-b border-border">
-              <td className="py-3 font-medium text-text-base">
-                {(service?.name as string) ?? "Séance de coaching"}
-              </td>
-              <td className="py-3 text-text-muted">
-                {booking?.starts_at
-                  ? dateStr(booking.starts_at as string)
-                  : dateStr(p.paid_at as string)}
-              </td>
-              <td className="py-3 text-right font-semibold text-text-base">
-                {money(p.amount_cents as number)}
-              </td>
-            </tr>
+            {lines.map((c) => {
+              const kept =
+                ((c.amount_cents as number) || 0) -
+                ((c.refunded_cents as number) || 0);
+              return (
+                <tr key={c.id as string} className="border-b border-border">
+                  <td className="py-2.5 text-text-muted">
+                    {dateStr((c.released_at ?? c.paid_at) as string)}
+                  </td>
+                  <td className="py-2.5 text-right text-text-muted">
+                    {money(kept)}
+                  </td>
+                  <td className="py-2.5 text-right font-semibold text-text-base">
+                    {money((c.commission_cents as number) || 0)}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
 
@@ -155,24 +182,21 @@ export default async function InvoicePage({
             <div className="flex items-center justify-between border-b border-border py-2 text-sm">
               <span className="text-text-muted">Total</span>
               <span className="text-lg font-extrabold text-text-base">
-                {money(p.amount_cents as number)}
+                {money(total)}
               </span>
             </div>
             <p className="mt-2 text-right text-xs font-semibold text-accent">
-              {refunded
-                ? `${inv.statusRefunded} · ${money(p.refunded_cents as number)}`
-                : `✓ ${inv.statusPaid} le ${dateStr(p.paid_at as string)}`}
+              {inv.statusSettled}
             </p>
           </div>
         </div>
 
-        {!coach.vat_number && (
+        {MADGER_LEGAL.vatExempt && (
           <p className="mt-6 text-xs text-text-muted">{inv.vatExempt}</p>
         )}
 
         <p className="mt-10 border-t border-border pt-4 text-[11px] leading-relaxed text-text-dim">
-          {inv.paymentRef}{" "}
-          {(p.stripe_payment_intent_id as string | null) ?? p.id}. {inv.legal}
+          {inv.madgerFooter}
         </p>
       </div>
     </main>

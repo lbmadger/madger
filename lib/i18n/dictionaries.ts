@@ -691,6 +691,16 @@ const fr = {
     language: "Langue de l'application",
     profileDesc: "Photo, nom, bio, ville et lien public",
     prefsDesc: "Langue, fuseau horaire, Google Calendar",
+    billingSection: "Facturation",
+    billingDesc: "SIRET, TVA et mentions légales de tes factures",
+    businessName: "Nom commercial ou raison sociale",
+    siretLabel: "SIRET",
+    billingAddress: "Adresse de facturation",
+    vatNumber: "Numéro de TVA intracommunautaire",
+    vatHint:
+      "Laisse vide si tu es en franchise de TVA (micro-entreprise) : la mention « TVA non applicable, art. 293 B du CGI » est ajoutée automatiquement sur tes factures.",
+    billingCompliance:
+      "Avec ces informations, chaque facture émise via Madger porte tes mentions légales obligatoires. Tu es prêt pour la facturation électronique : le passage au format Factur-X se fera automatiquement, sans rien changer de ton côté.",
     minNotice: "Délai minimum de réservation",
     minNoticeBefore: "avant la séance",
     minNoticeHint:
@@ -862,7 +872,7 @@ const fr = {
   invoices: {
     title: "Factures",
     subtitle:
-      "Une facture par paiement encaissé, générée automatiquement. Télécharge-la en PDF.",
+      "Chaque paiement encaissé génère une facture numérotée avec tes mentions légales. Prêt pour la facturation électronique.",
     empty:
       "Aucune facture pour l'instant : elles apparaissent après chaque paiement encaissé.",
     download: "Télécharger",
@@ -880,6 +890,29 @@ const fr = {
     paymentRef: "Paiement sécurisé Stripe · réf.",
     legal:
       "Document généré automatiquement par Madger pour le compte du coach.",
+    issuedOn: "Émise le",
+    siretLabel: "SIRET :",
+    vatLabel: "TVA :",
+    vatExempt: "TVA non applicable, art. 293 B du CGI.",
+    missingSiretTitle: "Complète tes mentions légales",
+    missingSiretDesc:
+      "Ajoute ton SIRET dans les réglages : il est obligatoire sur tes factures.",
+    missingSiretCta: "Compléter",
+    exportCsv: "Export comptable (CSV)",
+    clientSection: "Factures clients",
+    madgerSection: "Factures Madger",
+    madgerSubtitle:
+      "La commission de service du mois, en une facture. L'abonnement Pro est facturé séparément par Stripe.",
+    madgerEmpty:
+      "Aucune commission prélevée pour l'instant. En plan Pro, la commission est de 0 %.",
+    sessionsCount: "séances",
+    period: "Période :",
+    commissionService: "Commission de service Madger",
+    sessionAmount: "Séance encaissée",
+    commissionCol: "Commission",
+    statusSettled: "Prélevée sur tes encaissements",
+    madgerFooter:
+      "Commission de service prélevée sur les paiements encaissés via la plateforme, conformément aux CGV. Document généré automatiquement par Madger.",
   },
   clientSpace: {
     title: "Mes séances",
@@ -1698,6 +1731,16 @@ const en: Dictionary = {
     language: "App language",
     profileDesc: "Photo, name, bio, city and public link",
     prefsDesc: "Language, time zone, Google Calendar",
+    billingSection: "Invoicing",
+    billingDesc: "SIRET, VAT and legal mentions on your invoices",
+    businessName: "Trade name or company name",
+    siretLabel: "SIRET",
+    billingAddress: "Billing address",
+    vatNumber: "EU VAT number",
+    vatHint:
+      "Leave empty if you are VAT-exempt (French micro-enterprise): the mention \"TVA non applicable, art. 293 B du CGI\" is added automatically to your invoices.",
+    billingCompliance:
+      "With these details, every invoice issued via Madger carries your mandatory legal mentions. You are ready for e-invoicing: the switch to the Factur-X format will happen automatically, with nothing to change on your side.",
     minNotice: "Minimum booking notice",
     minNoticeBefore: "before the session",
     minNoticeHint:
@@ -1867,7 +1910,7 @@ const en: Dictionary = {
   invoices: {
     title: "Invoices",
     subtitle:
-      "One invoice per collected payment, generated automatically. Download as PDF.",
+      "Every collected payment generates a numbered invoice with your legal mentions. Ready for e-invoicing.",
     empty: "No invoice yet: they appear after each collected payment.",
     download: "Download",
     pdf: "Download as PDF",
@@ -1883,6 +1926,29 @@ const en: Dictionary = {
     billedTo: "Billed to",
     paymentRef: "Secure Stripe payment · ref.",
     legal: "Document generated automatically by Madger on behalf of the coach.",
+    issuedOn: "Issued on",
+    siretLabel: "SIRET:",
+    vatLabel: "VAT:",
+    vatExempt: "VAT not applicable, art. 293 B of the French tax code (CGI).",
+    missingSiretTitle: "Complete your legal details",
+    missingSiretDesc:
+      "Add your SIRET in the settings: it is mandatory on your invoices.",
+    missingSiretCta: "Complete",
+    exportCsv: "Accounting export (CSV)",
+    clientSection: "Client invoices",
+    madgerSection: "Madger invoices",
+    madgerSubtitle:
+      "The month's service commission, in one invoice. The Pro subscription is billed separately by Stripe.",
+    madgerEmpty:
+      "No commission charged yet. On the Pro plan, the commission is 0%.",
+    sessionsCount: "sessions",
+    period: "Period:",
+    commissionService: "Madger service commission",
+    sessionAmount: "Collected session",
+    commissionCol: "Commission",
+    statusSettled: "Deducted from your payouts",
+    madgerFooter:
+      "Service commission deducted from payments collected through the platform, as per the Terms. Document generated automatically by Madger.",
   },
   clientSpace: {
     title: "My sessions",
