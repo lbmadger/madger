@@ -42,6 +42,7 @@ export async function GET(req: NextRequest) {
         "id, starts_at, location, meeting_url, reminder_sent_at, status, clients(first_name, email), coaches(first_name, last_name)"
       )
       .eq("status", "confirmed")
+      .eq("is_block", false)
       .is("reminder_sent_at", null)
       .gt("starts_at", nowIso)
       .lte("starts_at", soon)

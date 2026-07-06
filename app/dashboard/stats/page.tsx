@@ -25,6 +25,7 @@ export default async function StatsPage() {
     supabase
       .from("bookings")
       .select("starts_at, ends_at, status")
+      .eq("is_block", false)
       .gte("starts_at", yearAgo),
     supabase
       .from("payments")

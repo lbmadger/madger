@@ -16,6 +16,8 @@ export type Booking = {
   starts_at: string;
   ends_at: string;
   status: BookingStatus;
+  // Créneau bloqué par le coach (aucune réservation possible dessus).
+  is_block?: boolean | null;
   location: LocationKind;
   location_text: string | null;
   meeting_url: string | null;

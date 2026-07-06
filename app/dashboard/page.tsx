@@ -51,12 +51,14 @@ export default async function OverviewPage() {
       .select("*", { count: "exact", head: true })
       .gte("starts_at", weekStart.toISOString())
       .lt("starts_at", weekEnd.toISOString())
-      .neq("status", "cancelled"),
+      .neq("status", "cancelled")
+      .eq("is_block", false),
     supabase
       .from("bookings")
       .select("*, clients(first_name, last_name)")
       .gte("ends_at", now.toISOString())
       .neq("status", "cancelled")
+      .eq("is_block", false)
       .order("starts_at", { ascending: true })
       .limit(5),
     supabase.from("availabilities").select("weekday, start_time, end_time"),
@@ -80,6 +82,7 @@ export default async function OverviewPage() {
     supabase
       .from("bookings")
       .select("starts_at, ends_at, status, client_id")
+      .eq("is_block", false)
       .lt("starts_at", weekEnd.toISOString())
       .gte(
         "starts_at",
@@ -120,7 +123,8 @@ export default async function OverviewPage() {
           "starts_at",
           new Date(now.getTime() + 30 * 86400000).toISOString()
         )
-        .neq("status", "cancelled"),
+        .neq("status", "cancelled")
+        .eq("is_block", false),
     ]);
 
   const clientsCount = clientsRes.count ?? 0;

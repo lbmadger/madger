@@ -43,8 +43,76 @@ export default function AgendaView({
   const [view, setView] = useState<"week" | "list">("week");
   // Séance sélectionnée depuis la grille semaine (confirmer/refuser/modifier).
   const [selected, setSelected] = useState<Booking | null>(null);
+  // Blocage d'un créneau (façon Airbnb) : aucune réservation possible dessus.
+  const [blocking, setBlocking] = useState(false);
+  const [blockDate, setBlockDate] = useState("");
+  const [blockFrom, setBlockFrom] = useState("09:00");
+  const [blockTo, setBlockTo] = useState("12:00");
+  const [blockSaving, setBlockSaving] = useState(false);
+  const [blockError, setBlockError] = useState<string | null>(null);
 
   const loc = locale === "fr" ? "fr-FR" : "en-US";
+
+  // Crée le blocage : une séance sans client marquée is_block, que les
+  // créneaux publics et les contrôles de chevauchement excluent déjà.
+  async function submitBlock() {
+    setBlockError(null);
+    if (!blockDate || !blockFrom || !blockTo || blockTo <= blockFrom) {
+      setBlockError("agenda.errors.dateRequired");
+      return;
+    }
+    setBlockSaving(true);
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        setBlockError("agenda.errors.generic");
+        return;
+      }
+      const starts = new Date(`${blockDate}T${blockFrom}`);
+      const ends = new Date(`${blockDate}T${blockTo}`);
+      const { data: overlapping } = await supabase
+        .from("bookings")
+        .select("id")
+        .in("status", ["pending", "confirmed"])
+        .lt("starts_at", ends.toISOString())
+        .gt("ends_at", starts.toISOString())
+        .limit(1);
+      if ((overlapping ?? []).length > 0) {
+        setBlockError("agenda.errors.overlap");
+        return;
+      }
+      const { error } = await supabase.from("bookings").insert({
+        coach_id: user.id,
+        client_id: null,
+        is_block: true,
+        status: "confirmed",
+        starts_at: starts.toISOString(),
+        ends_at: ends.toISOString(),
+        location: "in_person",
+      });
+      if (error) {
+        setBlockError("agenda.errors.generic");
+        return;
+      }
+      setBlocking(false);
+      router.refresh();
+    } catch {
+      setBlockError("agenda.errors.generic");
+    } finally {
+      setBlockSaving(false);
+    }
+  }
+
+  // Supprime un blocage (le créneau redevient réservable).
+  async function unblock(id: string) {
+    const supabase = createClient();
+    await supabase.from("bookings").delete().eq("id", id);
+    setSelected(null);
+    router.refresh();
+  }
 
   // Confirme une demande : passe par l'API pour envoyer l'email au client.
   async function confirmBooking(id: string) {
@@ -144,6 +212,7 @@ export default function AgendaView({
   }
 
   function clientName(b: Booking): string {
+    if (b.is_block) return t("agenda.blocked");
     if (!b.clients) return "-";
     return [b.clients.first_name, b.clients.last_name]
       .filter(Boolean)
@@ -197,6 +266,16 @@ export default function AgendaView({
           >
             {t("availability.title")}
           </Link>
+          <button
+            type="button"
+            onClick={() => {
+              setBlockError(null);
+              setBlocking(true);
+            }}
+            className="whitespace-nowrap rounded-full border border-border-strong px-4 py-2.5 text-sm font-medium text-text-muted transition-colors hover:border-accent hover:text-text-base"
+          >
+            {t("agenda.blockBtn")}
+          </button>
           <Button
             onClick={() => setAdding(true)}
             disabled={clients.length === 0}
@@ -270,15 +349,30 @@ export default function AgendaView({
                       )}
                       <span
                         className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                          b.location === "online"
+                          b.is_block
+                            ? "border border-border-strong text-text-muted"
+                            : b.location === "online"
                             ? "bg-accent/10 text-accent"
                             : "border border-border-strong text-text-muted"
                         }`}
                       >
-                        {t(`agenda.badge.${b.location}`)}
+                        {b.is_block
+                          ? t("agenda.blocked")
+                          : t(`agenda.badge.${b.location}`)}
                       </span>
                     </div>
                    </div>
+
+                   {/* Créneau bloqué : une seule action, le libérer */}
+                   {b.is_block && (
+                     <button
+                       type="button"
+                       onClick={() => unblock(b.id)}
+                       className="mt-2 self-start border-t border-border pt-2 text-xs font-medium text-text-dim transition-colors hover:text-accent"
+                     >
+                       {t("agenda.unblock")}
+                     </button>
+                   )}
 
                    {/* Actions sur une demande en attente. Le refus passe par
                        l'API d'annulation : si la demande était payée (séquestre),
@@ -323,7 +417,7 @@ export default function AgendaView({
                    )}
 
                    {/* Modifier / annuler une séance confirmée */}
-                   {b.status === "confirmed" && (
+                   {b.status === "confirmed" && !b.is_block && (
                      <div className="mt-2 border-t border-border pt-2">
                        {cancelId === b.id ? (
                          <div className="flex flex-col gap-2">
@@ -411,12 +505,16 @@ export default function AgendaView({
               </div>
               <span
                 className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                  selected.status === "pending"
+                  selected.is_block
+                    ? "border border-border-strong text-text-muted"
+                    : selected.status === "pending"
                     ? "bg-yellow-400/10 text-yellow-400"
                     : "bg-accent/10 text-accent"
                 }`}
               >
-                {selected.status === "pending"
+                {selected.is_block
+                  ? t("agenda.blocked")
+                  : selected.status === "pending"
                   ? t("agenda.pending")
                   : t(`agenda.badge.${selected.location}`)}
               </span>
@@ -426,7 +524,29 @@ export default function AgendaView({
               <p className="mt-3 text-sm text-red-400">{t(actionError)}</p>
             )}
 
-            {selected.status === "pending" ? (
+            {selected.is_block ? (
+              <div className="mt-4 flex flex-col gap-2">
+                <p className="text-xs text-text-muted">
+                  {t("agenda.blockDesc")}
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="secondary"
+                    className="flex-1"
+                    onClick={() => setSelected(null)}
+                  >
+                    {t("agenda.cancelKeep")}
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => unblock(selected.id)}
+                    className="flex-1 rounded-full bg-accent py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+                  >
+                    {t("agenda.unblock")}
+                  </button>
+                </div>
+              </div>
+            ) : selected.status === "pending" ? (
               <div className="mt-4 flex flex-col gap-2">
                 <div className="flex gap-2">
                   <button
@@ -505,6 +625,86 @@ export default function AgendaView({
                 </Button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Blocage d'un créneau */}
+      {blocking && (
+        <div
+          className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center sm:p-4"
+          onClick={() => setBlocking(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-t-2xl border border-border bg-bg-card p-5 sm:rounded-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-lg font-extrabold tracking-tight text-text-base">
+              {t("agenda.blockBtn")}
+            </h2>
+            <p className="mt-1 text-sm text-text-muted">
+              {t("agenda.blockDesc")}
+            </p>
+
+            <div className="mt-4 flex flex-col gap-3">
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs font-medium text-text-muted">
+                  {t("booking.date")}
+                </span>
+                <input
+                  type="date"
+                  value={blockDate}
+                  min={new Date().toISOString().slice(0, 10)}
+                  onChange={(e) => setBlockDate(e.target.value)}
+                  className="w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3 text-base text-text-base outline-none transition-colors focus:border-accent"
+                />
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-xs font-medium text-text-muted">
+                    {t("onboarding.fromLabel")}
+                  </span>
+                  <input
+                    type="time"
+                    value={blockFrom}
+                    onChange={(e) => setBlockFrom(e.target.value)}
+                    className="w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3 text-base text-text-base outline-none transition-colors focus:border-accent"
+                  />
+                </label>
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-xs font-medium text-text-muted">
+                    {t("onboarding.toLabel")}
+                  </span>
+                  <input
+                    type="time"
+                    value={blockTo}
+                    onChange={(e) => setBlockTo(e.target.value)}
+                    className="w-full rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3 text-base text-text-base outline-none transition-colors focus:border-accent"
+                  />
+                </label>
+              </div>
+
+              {blockError && (
+                <p className="text-sm text-red-400">{t(blockError)}</p>
+              )}
+
+              <div className="mt-1 flex gap-2">
+                <Button
+                  variant="secondary"
+                  className="flex-1"
+                  onClick={() => setBlocking(false)}
+                >
+                  {t("booking.cancel")}
+                </Button>
+                <Button
+                  className="flex-1"
+                  disabled={blockSaving}
+                  onClick={submitBlock}
+                >
+                  {blockSaving ? "…" : t("agenda.blockCta")}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       )}

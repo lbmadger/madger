@@ -114,6 +114,7 @@ export default function WeekView({
   }
 
   function clientName(b: Booking): string {
+    if (b.is_block) return t("agenda.blocked");
     if (!b.clients) return "-";
     return [b.clients.first_name, b.clients.last_name]
       .filter(Boolean)
@@ -256,7 +257,9 @@ export default function WeekView({
                       </>
                     );
                     const cls = `absolute inset-x-1 overflow-hidden rounded-md border-l-2 px-1.5 py-0.5 text-left ${
-                      b.status === "pending"
+                      b.is_block
+                        ? "border-border-strong bg-white/[0.06]"
+                        : b.status === "pending"
                         ? "border-yellow-400 bg-yellow-400/10"
                         : "border-accent bg-bg-elevated"
                     }`;

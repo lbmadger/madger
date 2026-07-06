@@ -3,9 +3,10 @@
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { policyTiers, type CancellationPolicy } from "@/lib/booking/cancellation";
 
-// Affiche les paliers de remboursement d'une politique d'annulation, calculés
-// à partir de la source de vérité (lib/booking/cancellation). Réutilisé côté
-// coach (réglages), profil public et modale de réservation.
+// Paliers de remboursement d'une politique d'annulation, calculés depuis la
+// source de vérité (lib/booking/cancellation). Deux lignes nettes : avant /
+// après la frontière des 24 h, avec le pourcentage bien visible à droite.
+// Réutilisé côté coach (réglages), profil public et modale de réservation.
 export default function PolicyTiers({
   policy,
   className = "",
@@ -17,40 +18,37 @@ export default function PolicyTiers({
   const tiers = policyTiers(policy);
 
   return (
-    <div className={`flex flex-col gap-1.5 ${className}`}>
-      <p className="text-xs text-text-dim">{t("cancellation.direction")}</p>
-      <ul className="flex flex-col gap-1">
+    <div className={className}>
+      <p className="text-[11px] font-medium uppercase tracking-wide text-text-dim">
+        {t("cancellation.tiersTitle")}
+      </p>
+      <ul className="mt-2 flex flex-col gap-1.5">
         {tiers.map((tier, i) => {
           const pct = Math.round(tier.refund * 100);
-          // Deux paliers, séparés par la frontière des 24 h : "plus de 24 h
-          // avant" puis "moins de 24 h avant".
-          const cond =
-            i === 0
-              ? `${t("cancellation.moreThan")} ${tier.minHoursBefore} h`
-              : `${t("cancellation.lessThan")} ${tiers[i - 1].minHoursBefore} h`;
           return (
-            // flex-wrap : sur carte étroite, la valeur passe à la ligne au
-            // lieu de déborder sur la carte voisine.
             <li
               key={i}
-              className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 text-sm"
+              className="flex items-center justify-between gap-3 rounded-lg bg-white/[0.04] px-2.5 py-2 text-xs"
             >
               <span className="text-text-muted">
-                {t("cancellation.cancelWord")} {cond}{" "}
-                {t("cancellation.beforeSession")}
+                {i === 0
+                  ? t("cancellation.tierEarly")
+                  : t("cancellation.tierLate")}
               </span>
               <span
-                className={`text-right font-semibold ${
+                className={`shrink-0 font-bold tabular-nums ${
                   pct > 0 ? "text-accent" : "text-text-dim"
                 }`}
               >
-                {pct}% {t("cancellation.refunded")}
+                {pct} %
               </span>
             </li>
           );
         })}
-        <li className="mt-0.5 text-xs text-text-dim">{t("cancellation.noShow")}</li>
       </ul>
+      <p className="mt-1.5 text-[11px] text-text-dim">
+        {t("cancellation.noShow")}
+      </p>
     </div>
   );
 }
