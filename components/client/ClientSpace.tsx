@@ -154,7 +154,7 @@ export default function ClientSpace({
   };
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6 sm:py-12">
+    <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
       <h1 className="text-2xl font-extrabold tracking-tight text-text-base sm:text-3xl">
         {t("clientSpace.title")}
       </h1>
@@ -181,6 +181,10 @@ export default function ClientSpace({
         </Link>
       </div>
 
+      {/* Deux colonnes sur grand écran : séances à gauche, abonnements et
+          packs à droite. Une seule colonne sur mobile (ordre inchangé). */}
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8">
+      <aside className="min-w-0 lg:order-2">
       {/* Abonnements mensuels */}
       {subs.length > 0 && (
         <>
@@ -310,6 +314,9 @@ export default function ClientSpace({
         </>
       )}
 
+      </aside>
+
+      <div className="min-w-0 lg:order-1">
       {/* À venir */}
       <h2 className="mt-8 text-xs font-semibold uppercase tracking-wide text-text-dim">
         {t("clientSpace.upcoming")}
@@ -430,6 +437,8 @@ export default function ClientSpace({
           </ul>
         </>
       )}
+      </div>
+      </div>
     </main>
   );
 }

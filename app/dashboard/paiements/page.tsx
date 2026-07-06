@@ -85,7 +85,7 @@ export default async function PaymentsPage() {
   return (
     <>
       <Topbar title={pay.title} />
-      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
         {state === "connected" ? (
           <section className="rounded-2xl border border-accent/25 bg-accent/[0.05] p-6">
             <div className="mb-2 flex items-center gap-2">
@@ -138,7 +138,7 @@ export default async function PaymentsPage() {
               {pay.historyEmpty}
             </p>
           ) : (
-            <ul className="mt-3 flex flex-col gap-2">
+            <ul className="mt-3 grid grid-cols-1 gap-2 lg:grid-cols-2">
               {(history ?? []).map((p) => {
                 const cl = Array.isArray(p.clients) ? p.clients[0] : p.clients;
                 const chip = escrowChip[p.escrow_status as string];
