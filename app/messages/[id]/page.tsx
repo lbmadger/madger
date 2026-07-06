@@ -25,11 +25,13 @@ export default async function ClientThreadPage({
   }
   const conversation = conv as Conversation;
 
+  // Les 100 derniers messages suffisent à l'affichage initial.
   const { data: msgs } = await supabase
     .from("messages")
     .select("*")
     .eq("conversation_id", params.id)
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: false })
+    .limit(100);
 
   return (
     <MessageThread
@@ -37,7 +39,7 @@ export default async function ClientThreadPage({
       currentUserId={user.id}
       otherName={conversation.coach_name || "-"}
       backPath="/messages"
-      initialMessages={(msgs ?? []) as Message[]}
+      initialMessages={((msgs ?? []) as Message[]).slice().reverse()}
     />
   );
 }
