@@ -10,6 +10,7 @@ import Button from "@/components/ui/Button";
 import PolicyTiers from "@/components/booking/PolicyTiers";
 import Stars from "@/components/reviews/Stars";
 import BookingModal from "./BookingModal";
+import { TrophyIcon, MapPinIcon, BuildingIcon, StarIcon } from "@/components/ui/icons";
 import {
   type PublicCoach,
   type PublicReview,
@@ -165,7 +166,7 @@ export default function CoachProfile({
               {coachFullName(coach)}
               {isSuperCoach(coach) && (
                 <span className="rounded-full bg-accent px-2.5 py-1 text-[11px] font-bold text-black">
-                  🏆 {t("marketplace.superCoach")}
+                  <TrophyIcon size={12} className="mr-1 inline-block align-[-2px]" />{t("marketplace.superCoach")}
                 </span>
               )}
             </h1>
@@ -192,13 +193,13 @@ export default function CoachProfile({
               )}
               {coach.city && (
                 <span className="rounded-full border border-border-strong px-2.5 py-1 text-xs text-text-muted">
-                  📍 {coach.city}
+                  <MapPinIcon size={12} className="mr-1 inline-block align-[-2px]" />{coach.city}
                 </span>
               )}
               {/* Où se passent les séances (salle nommée, domicile, extérieur) */}
               {coach.gym_name && (coach.venues ?? []).includes("coach_gym") && (
                 <span className="rounded-full border border-border-strong px-2.5 py-1 text-xs text-text-muted">
-                  🏋️ {coach.gym_name}
+                  <BuildingIcon size={12} className="mr-1 inline-block align-[-2px]" />{coach.gym_name}
                 </span>
               )}
               {(coach.venues ?? [])
@@ -378,7 +379,7 @@ export default function CoachProfile({
 
           <p className="mt-4 border-t border-border pt-3 text-xs leading-relaxed text-text-muted">
             {instant
-              ? `⚡ ${t("coachProfile.instantNote")}`
+              ? t("coachProfile.instantNote")
               : t("coachProfile.approvalNote")}
           </p>
           {contactError && (
@@ -409,7 +410,7 @@ export default function CoachProfile({
             )}
             {coach.rating_avg != null && coach.rating_count > 0 && (
               <p className="flex items-center gap-1 text-[11px] text-text-muted">
-                ⭐ {Number(coach.rating_avg)} ({coach.rating_count})
+                <StarIcon size={11} className="mr-1 inline-block align-[-1px] text-accent" />{Number(coach.rating_avg)} ({coach.rating_count})
               </p>
             )}
           </div>

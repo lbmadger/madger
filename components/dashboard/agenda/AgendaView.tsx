@@ -10,6 +10,7 @@ import type { Availability } from "@/lib/availability/types";
 import AddSessionModal from "./AddSessionModal";
 import WeekView from "./WeekView";
 import Button from "@/components/ui/Button";
+import { PencilIcon } from "@/components/ui/icons";
 
 function dayKey(iso: string): string {
   // Regroupe par jour LOCAL (et non UTC), sinon une séance pile à minuit
@@ -317,7 +318,7 @@ export default function AgendaView({
                        onClick={() => setEditing(b)}
                        className="mt-1.5 self-start text-xs font-medium text-text-dim transition-colors hover:text-accent"
                      >
-                       ✏️ {t("agenda.edit")}
+                       <PencilIcon size={11} className="mr-1 inline-block align-[-1px]" />{t("agenda.edit")}
                      </button>
                    )}
 
@@ -362,7 +363,7 @@ export default function AgendaView({
                              onClick={() => setEditing(b)}
                              className="text-xs font-medium text-text-dim transition-colors hover:text-accent"
                            >
-                             ✏️ {t("agenda.edit")}
+                             <PencilIcon size={11} className="mr-1 inline-block align-[-1px]" />{t("agenda.edit")}
                            </button>
                            <button
                              type="button"
@@ -453,7 +454,7 @@ export default function AgendaView({
                   }}
                   className="self-center text-xs font-medium text-text-dim transition-colors hover:text-accent"
                 >
-                  ✏️ {t("agenda.edit")}
+                  <PencilIcon size={11} className="mr-1 inline-block align-[-1px]" />{t("agenda.edit")}
                 </button>
               </div>
             ) : selected.status === "confirmed" ? (
@@ -486,7 +487,7 @@ export default function AgendaView({
                     }}
                     className="text-xs font-medium text-text-dim transition-colors hover:text-accent"
                   >
-                    ✏️ {t("agenda.edit")}
+                    <PencilIcon size={11} className="mr-1 inline-block align-[-1px]" />{t("agenda.edit")}
                   </button>
                   <button
                     type="button"

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { LockIcon } from "@/components/ui/icons";
 
 export type ProStatItem = {
   label: string;
@@ -31,11 +32,7 @@ export default function ProStats({
         <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-black">
           PRO
         </span>
-        {locked && (
-          <span aria-hidden className="text-xs">
-            🔒
-          </span>
-        )}
+        {locked && <LockIcon size={13} className="text-text-dim" />}
       </div>
 
       <div className="relative mt-4">
@@ -70,9 +67,9 @@ export default function ProStats({
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-4 text-center">
             <div
               aria-hidden
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-border-strong bg-bg-card text-lg shadow-lg"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-border-strong bg-bg-card text-accent shadow-lg"
             >
-              🔒
+              <LockIcon size={18} />
             </div>
             <p className="text-sm font-semibold text-text-base">
               {t("overview.proStats.lockedTitle")}

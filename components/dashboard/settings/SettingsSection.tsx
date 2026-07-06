@@ -11,7 +11,7 @@ export default function SettingsSection({
   defaultOpen = false,
   children,
 }: {
-  icon: string;
+  icon: ReactNode;
   title: string;
   desc?: string;
   defaultOpen?: boolean;
@@ -29,7 +29,7 @@ export default function SettingsSection({
       >
         <span
           aria-hidden
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-bg-elevated text-lg"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border bg-bg-elevated text-accent"
         >
           {icon}
         </span>

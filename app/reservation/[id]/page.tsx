@@ -6,6 +6,7 @@ import { SUPABASE_URL } from "@/lib/supabase/config";
 import PublicHeader from "@/components/marketplace/PublicHeader";
 import ReportProblem from "@/components/booking/ReportProblem";
 import ReviewForm from "@/components/reviews/ReviewForm";
+import { VideoIcon, CalendarIcon } from "@/components/ui/icons";
 import { googleCalendarUrl } from "@/lib/calendar/links";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
@@ -139,7 +140,7 @@ export default async function ReservationPage({
                         rel="noopener noreferrer"
                         className="rounded-full bg-accent px-4 py-2 text-xs font-bold text-black transition-opacity hover:opacity-90"
                       >
-                        🎥 {r.joinMeeting}
+                        <VideoIcon size={13} className="mr-1.5 inline-block align-[-2px]" />{r.joinMeeting}
                       </a>
                     )}
                     <a
@@ -161,7 +162,7 @@ export default async function ReservationPage({
                       rel="noopener noreferrer"
                       className="rounded-full border border-border-strong px-4 py-2 text-xs font-medium text-text-muted transition-colors hover:border-accent hover:text-text-base"
                     >
-                      📅 {r.addToCalendar}
+                      <CalendarIcon size={13} className="mr-1.5 inline-block align-[-2px]" />{r.addToCalendar}
                     </a>
                   </div>
                 )}

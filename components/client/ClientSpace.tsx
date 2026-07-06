@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
+import { TicketIcon, RepeatIcon, StarIcon } from "@/components/ui/icons";
 import {
   refundFraction,
   type CancellationPolicy,
@@ -203,7 +204,7 @@ export default function ClientSpace({
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-text-base">
-                        🔁 {s.service_name}
+                        <RepeatIcon size={15} className="mr-1.5 inline-block align-[-2px] text-accent" />{s.service_name}
                       </p>
                       <p className="mt-0.5 text-xs text-text-muted">
                         {t("packs.at")} {s.coach_name} ·{" "}
@@ -280,7 +281,7 @@ export default function ClientSpace({
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <p className="truncate text-sm font-semibold text-text-base">
-                        🎟️ {p.service_name}
+                        <TicketIcon size={15} className="mr-1.5 inline-block align-[-2px] text-accent" />{p.service_name}
                       </p>
                       <p className="mt-0.5 text-xs text-text-muted">
                         {t("packs.at")} {p.coach_name} · {p.used}{" "}
@@ -428,7 +429,7 @@ export default function ClientSpace({
                       href={`/reservation/${b.id}`}
                       className="rounded-full border border-accent/40 px-2.5 py-1 text-[11px] font-semibold text-accent transition-colors hover:bg-accent/10"
                     >
-                      ⭐ {t("clientSpace.rate")}
+                      <StarIcon size={11} className="mr-1 inline-block align-[-1px]" />{t("clientSpace.rate")}
                     </Link>
                   )}
                 </div>

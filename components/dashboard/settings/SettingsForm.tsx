@@ -11,6 +11,13 @@ import Button from "@/components/ui/Button";
 import CityAutocomplete from "@/components/ui/CityAutocomplete";
 import LanguagePicker from "@/components/settings/LanguagePicker";
 import SettingsSection from "./SettingsSection";
+import {
+  UserIcon,
+  ActivityIcon,
+  ZapIcon,
+  ShieldIcon,
+  SlidersIcon,
+} from "@/components/ui/icons";
 import PolicyTiers from "@/components/booking/PolicyTiers";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import {
@@ -216,7 +223,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
       )}
 
       <SettingsSection
-        icon="👤"
+        icon={<UserIcon size={18} />}
         title={t("settings.profileSection")}
         desc={t("settings.profileDesc")}
         defaultOpen
@@ -332,7 +339,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
 
       {/* Mon activité : sport, accompagnements, lieux d'exercice */}
       <SettingsSection
-        icon="🏋️"
+        icon={<ActivityIcon size={18} />}
         title={t("settings.activitySection")}
         desc={t("settings.activityDesc")}
       >
@@ -433,7 +440,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
 
       {/* Mode de réservation */}
       <SettingsSection
-        icon="⚡"
+        icon={<ZapIcon size={18} />}
         title={t("settings.bookingSection")}
         desc={t("settings.bookingSectionDesc")}
       >
@@ -502,7 +509,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
 
       {/* Politique d'annulation */}
       <SettingsSection
-        icon="🛡️"
+        icon={<ShieldIcon size={18} />}
         title={t("cancellation.title")}
         desc={t("cancellation.subtitle")}
       >
@@ -557,7 +564,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
 
       {/* Préférences (langue, fuseau horaire, Google) */}
       <SettingsSection
-        icon="⚙️"
+        icon={<SlidersIcon size={18} />}
         title={t("settings.prefsSection")}
         desc={t("settings.prefsDesc")}
       >

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { SparklesIcon, LightbulbIcon } from "@/components/ui/icons";
 import type { LeiaTip } from "@/lib/leia/tips";
 
 const VISIBLE = 3;
@@ -29,7 +30,7 @@ export default function LeiaTips({
           aria-hidden
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/15 text-lg"
         >
-          ✨
+          <SparklesIcon size={18} className="text-accent" />
         </div>
         <div className="min-w-0">
           <h3 className="text-base font-semibold text-text-base">
@@ -54,9 +55,6 @@ export default function LeiaTips({
               className="rounded-lg border border-border bg-bg-elevated p-3"
             >
               <p className="text-xs font-semibold text-text-base">
-                <span aria-hidden className="mr-1.5">
-                  {tip.icon}
-                </span>
                 {t(`leia.tips.${tip.id}.title`)}
               </p>
               <p className="mt-1 text-xs leading-relaxed text-text-muted">
@@ -88,7 +86,7 @@ export default function LeiaTips({
       {/* Conseil du jour (tourne chaque jour) */}
       <div className="mt-4 border-t border-border pt-3">
         <p className="text-[11px] font-semibold uppercase tracking-wide text-text-dim">
-          💡 {t("leia.dailyTitle")}
+          <LightbulbIcon size={12} className="mr-1.5 inline-block align-[-2px]" />{t("leia.dailyTitle")}
         </p>
         <p className="mt-1.5 text-xs leading-relaxed text-text-muted">
           {t(`leia.daily.d${dailyIndex + 1}`)}

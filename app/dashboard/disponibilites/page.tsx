@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Topbar from "@/components/dashboard/Topbar";
+import { PencilIcon } from "@/components/ui/icons";
 import AvailabilityEditor from "@/components/dashboard/availability/AvailabilityEditor";
 import WeekView from "@/components/dashboard/agenda/WeekView";
 import { createClient } from "@/lib/supabase/server";
@@ -43,7 +44,7 @@ export default async function AvailabilityPage() {
                 href="/dashboard/reglages#disponibilites"
                 className="shrink-0 rounded-full border border-border-strong px-4 py-2 text-sm font-medium text-text-base transition-colors hover:border-accent"
               >
-                ✏️ {dict.availability.editInSettings}
+                <PencilIcon size={12} className="mr-1.5 inline-block align-[-2px]" />{dict.availability.editInSettings}
               </Link>
             </div>
             <WeekView

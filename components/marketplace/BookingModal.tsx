@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
 import PolicyTiers from "@/components/booking/PolicyTiers";
+import { LockIcon, RepeatIcon } from "@/components/ui/icons";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import type { PublicCoach } from "@/lib/coaches/public-types";
 import { type PublicService, formatPrice } from "@/lib/services/types";
@@ -280,8 +281,8 @@ export default function BookingModal({
         ) : sessionEmail === null ? (
           /* Compte obligatoire avant de réserver (modèle Airbnb/Doctolib) */
           <div className="py-6 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent/10 text-xl">
-              🔐
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent/10 text-accent">
+              <LockIcon size={20} />
             </div>
             <h2 className="text-lg font-extrabold tracking-tight text-text-base">
               {t("booking.authRequiredTitle")}
@@ -356,7 +357,7 @@ export default function BookingModal({
                 !paidServices.some((s) => s.id === initialServiceId) && (
                   <div className="rounded-xl border border-border bg-bg-elevated p-3">
                     <p className="text-xs text-text-muted">
-                      💳 {t("booking.unpayableService")}
+                      {t("booking.unpayableService")}
                     </p>
                   </div>
                 )}
@@ -365,7 +366,7 @@ export default function BookingModal({
               {isSubscription && (
                 <div className="rounded-xl border border-accent/25 bg-accent/[0.05] p-3">
                   <p className="text-xs font-medium text-text-base">
-                    🔁 {t("booking.subscriptionTitle")}
+                    <RepeatIcon size={13} className="mr-1.5 inline-block align-[-2px] text-accent" />{t("booking.subscriptionTitle")}
                   </p>
                   <p className="mt-1 text-xs text-text-muted">
                     {t("booking.subscriptionDesc")}

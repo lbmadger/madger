@@ -399,7 +399,7 @@ export default function MarketplaceView({
                 ? t("marketplace.resultsOne")
                 : t("marketplace.resultsMany")}
             </p>
-            <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {shown.map((c, i) => (
                 <motion.li
                   key={c.id}
@@ -411,59 +411,67 @@ export default function MarketplaceView({
                     ease: "easeOut",
                   }}
                 >
+                  {/* Carte photo d'abord, façon Airbnb */}
                   <Link
                     href={`/${c.slug}`}
-                    className={`flex h-full flex-col gap-3 p-4 ${interactiveCardClass}`}
+                    className={`flex h-full flex-col overflow-hidden ${interactiveCardClass}`}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="relative aspect-[4/3] w-full bg-bg-elevated">
                       {c.avatar_url ? (
                         <Image
                           src={c.avatar_url}
-                          alt=""
-                          width={48}
-                          height={48}
-                          className="h-12 w-12 shrink-0 rounded-full border border-border-strong object-cover"
+                          alt={coachFullName(c)}
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          className="object-cover"
                         />
                       ) : (
-                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-accent/10 text-base font-semibold text-accent">
+                        <span className="flex h-full w-full items-center justify-center text-4xl font-bold text-accent/60">
                           {coachInitials(c)}
                         </span>
                       )}
-                      <div className="min-w-0">
-                        <span className="block truncate font-semibold text-text-base">
+                      {isSuperCoach(c) && (
+                        <span className="absolute left-3 top-3 rounded-full bg-accent px-2.5 py-1 text-[11px] font-bold text-black shadow-lg">
+                          {t("marketplace.superCoach")}
+                        </span>
+                      )}
+                      {c.accepts_online && (
+                        <span className="absolute right-3 top-3 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur">
+                          {t("marketplace.onlineBadge")}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-1 flex-col p-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="min-w-0 truncate font-semibold text-text-base">
                           {coachFullName(c)}
                         </span>
-                        {c.specialty && (
-                          <span className="block truncate text-xs text-text-muted">
-                            {c.specialty}
-                          </span>
-                        )}
                         {c.rating_avg != null && c.rating_count > 0 && (
-                          <span className="mt-0.5 flex items-center gap-1">
+                          <span className="flex shrink-0 items-center gap-1">
                             <Stars value={Number(c.rating_avg)} size={11} />
                             <span className="text-[11px] text-text-dim">
-                              {Number(c.rating_avg)} ({c.rating_count})
+                              {Number(c.rating_avg)}
                             </span>
                           </span>
                         )}
                       </div>
-                    </div>
-                    <div className="mt-auto flex flex-wrap items-center gap-1.5">
-                      {isSuperCoach(c) && (
-                        <span className="rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-black">
-                          🏆 {t("marketplace.superCoach")}
+                      {c.specialty && (
+                        <span className="mt-0.5 block truncate text-xs text-text-muted">
+                          {c.specialty}
                         </span>
                       )}
-                      {c.city && (
-                        <span className="rounded-full border border-border-strong px-2 py-0.5 text-[11px] text-text-muted">
-                          {c.city}
-                        </span>
-                      )}
-                      {c.accepts_online && (
-                        <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[11px] font-medium text-accent">
-                          {t("marketplace.onlineBadge")}
-                        </span>
-                      )}
+                      <div className="mt-3 flex flex-wrap items-center gap-1.5">
+                        {c.sport && (
+                          <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[11px] font-medium text-accent">
+                            {t(`taxonomy.sports.${c.sport}`)}
+                          </span>
+                        )}
+                        {c.city && (
+                          <span className="rounded-full border border-border-strong px-2 py-0.5 text-[11px] text-text-muted">
+                            {c.city}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </Link>
                 </motion.li>

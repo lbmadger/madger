@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Topbar from "@/components/dashboard/Topbar";
 import ClientDetail from "@/components/dashboard/clients/ClientDetail";
+import { TicketIcon, RepeatIcon } from "@/components/ui/icons";
 import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
 import type { Client } from "@/lib/clients/types";
@@ -74,7 +75,7 @@ export default async function ClientDetailPage({
                 className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-bg-card px-4 py-3"
               >
                 <p className="min-w-0 truncate text-sm font-medium text-text-base">
-                  🔁 {s.name}
+                  <RepeatIcon size={15} className="mr-1.5 inline-block align-[-2px] text-accent" />{s.name}
                   <span className="text-text-muted">
                     {" "}
                     ·{" "}
@@ -115,7 +116,7 @@ export default async function ClientDetailPage({
                   className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-bg-card px-4 py-3"
                 >
                   <p className="min-w-0 truncate text-sm font-medium text-text-base">
-                    🎟️ {p.name}
+                    <TicketIcon size={15} className="mr-1.5 inline-block align-[-2px] text-accent" />{p.name}
                     <span className="text-text-muted">
                       {" "}
                       · {p.used}/{p.total}
