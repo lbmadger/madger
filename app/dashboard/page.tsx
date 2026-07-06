@@ -537,7 +537,7 @@ export default async function OverviewPage() {
               if (h >= 12) return o.greetingAfternoon;
               return o.greetingMorning;
             })()}
-            {coach?.first_name ? ` ${coach.first_name}` : ""} 👋
+            {coach?.first_name ? ` ${coach.first_name}` : ""}
           </h2>
           {/* Comme le mockup : date du jour + séances du jour */}
           <p className="mt-1 text-sm capitalize text-text-muted">

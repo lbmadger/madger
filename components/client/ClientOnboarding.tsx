@@ -126,8 +126,10 @@ export default function ClientOnboarding() {
   if (done) {
     return (
       <div className="mx-auto w-full max-w-md px-4 py-12 text-center">
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent/10 text-2xl">
-          💪
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-accent/10 text-accent">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
         </div>
         <h1 className="text-2xl font-extrabold tracking-tight text-text-base">
           {t("clientOnboarding.doneTitle")}

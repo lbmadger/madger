@@ -32,7 +32,7 @@ export default async function SubscriptionPage({
         {/* Retour de Stripe après souscription : on célèbre. */}
         {searchParams.pro === "1" && pro && (
           <p className="mb-4 rounded-2xl border border-accent/30 bg-accent/[0.08] px-4 py-3 text-center text-sm font-semibold text-text-base">
-            🎉 {p.welcomePro}
+            {p.welcomePro}
           </p>
         )}
         {/* Statut */}
