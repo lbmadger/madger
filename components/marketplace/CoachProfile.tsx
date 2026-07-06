@@ -102,6 +102,19 @@ export default function CoachProfile({
     return s.type === "subscription" ? `${base}${t("services.perMonth")}` : base;
   }
 
+  // Prix d'appel de la carte de réservation : la séance payante la moins
+  // chère (hors packs/abonnements pour rester lisible).
+  const paid = services.filter((s) => s.price_cents > 0);
+  const singles = paid.filter((s) => s.type === "single");
+  const fromService = (singles.length ? singles : paid).reduce<
+    PublicService | null
+  >((min, s) => (!min || s.price_cents < min.price_cents ? s : min), null);
+  const openBooking = (serviceId?: string) => {
+    setBookingServiceId(serviceId);
+    setBooking(true);
+  };
+  const instant = coach.booking_mode === "instant";
+
   function metaLine(s: PublicService): string {
     const parts: string[] = [t(`services.types.${s.type}`)];
     if (s.type === "pack" && s.pack_size)
@@ -111,7 +124,15 @@ export default function CoachProfile({
   }
 
   return (
-    <main className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6 sm:py-12">
+    <main className="relative mx-auto w-full max-w-5xl px-4 py-8 pb-28 sm:px-6 sm:py-12 lg:pb-12">
+      {/* Halo d'ambiance */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[360px] overflow-hidden"
+      >
+        <div className="absolute left-1/2 top-[-220px] h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-accent/[0.06] blur-[120px]" />
+      </div>
+
       <Link
         href="/coachs"
         className="mb-6 inline-flex items-center gap-1.5 text-sm text-text-muted transition-colors hover:text-text-base"
@@ -122,6 +143,7 @@ export default function CoachProfile({
         {t("coachProfile.backToSearch")}
       </Link>
 
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px] lg:items-start">
       <div className="rounded-2xl border border-border bg-bg-card p-6 sm:p-8">
         {/* En-tête */}
         <div className="flex flex-col items-center text-center sm:flex-row sm:items-start sm:text-left">
@@ -129,16 +151,16 @@ export default function CoachProfile({
             <Image
               src={coach.avatar_url}
               alt={coachFullName(coach)}
-              width={80}
-              height={80}
-              className="h-20 w-20 shrink-0 rounded-full border border-border-strong object-cover"
+              width={112}
+              height={112}
+              className="h-24 w-24 shrink-0 rounded-2xl border border-border-strong object-cover sm:h-28 sm:w-28"
             />
           ) : (
-            <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-accent/10 text-2xl font-bold text-accent">
+            <span className="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-accent/10 text-3xl font-bold text-accent sm:h-28 sm:w-28">
               {coachInitials(coach)}
             </span>
           )}
-          <div className="mt-4 sm:ml-5 sm:mt-1">
+          <div className="mt-4 sm:ml-6 sm:mt-1">
             <h1 className="flex flex-wrap items-center justify-center gap-2 text-2xl font-extrabold tracking-tight text-text-base sm:justify-start">
               {coachFullName(coach)}
               {isSuperCoach(coach) && (
@@ -314,29 +336,97 @@ export default function CoachProfile({
           </div>
         )}
 
-        {/* CTA */}
-        <div className="mt-7 flex flex-col gap-2 sm:flex-row">
-          <Button
-            className="flex-1"
-            onClick={() => {
-              setBookingServiceId(undefined);
-              setBooking(true);
-            }}
-          >
+      </div>
+
+      {/* Carte de réservation (desktop) : collante, façon Airbnb */}
+      <aside className="hidden lg:sticky lg:top-24 lg:block">
+        <div className="rounded-2xl border border-border bg-bg-card p-5 shadow-[0_24px_70px_rgba(0,0,0,0.35)]">
+          {fromService && (
+            <p className="text-text-base">
+              <span className="text-xs text-text-muted">
+                {t("coachProfile.from")}{" "}
+              </span>
+              <span className="text-2xl font-extrabold tracking-tight">
+                {formatPrice(fromService.price_cents, fromService.currency, locale)}
+              </span>
+              <span className="text-xs text-text-muted">
+                {" "}
+                {t("coachProfile.perSession")}
+              </span>
+            </p>
+          )}
+          {coach.rating_avg != null && coach.rating_count > 0 && (
+            <p className="mt-1.5 flex items-center gap-1.5">
+              <Stars value={Number(coach.rating_avg)} size={12} />
+              <span className="text-xs text-text-muted">
+                {Number(coach.rating_avg)} ({coach.rating_count})
+              </span>
+            </p>
+          )}
+
+          <Button className="mt-4 w-full" onClick={() => openBooking()}>
             {t("coachProfile.book")}
           </Button>
           <Button
             variant="secondary"
-            className="flex-1"
+            className="mt-2 w-full"
             onClick={handleContact}
             disabled={contacting}
           >
             {t("coachProfile.contact")}
           </Button>
+
+          <p className="mt-4 border-t border-border pt-3 text-xs leading-relaxed text-text-muted">
+            {instant
+              ? `⚡ ${t("coachProfile.instantNote")}`
+              : t("coachProfile.approvalNote")}
+          </p>
+          {contactError && (
+            <p className="mt-2 text-sm text-red-400">{contactError}</p>
+          )}
         </div>
-        {contactError && (
-          <p className="mt-2 text-sm text-red-400">{contactError}</p>
-        )}
+      </aside>
+      </div>
+
+      {/* Barre de réservation mobile, fixe en bas */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-bg/90 px-4 py-3 backdrop-blur lg:hidden">
+        <div className="mx-auto flex max-w-2xl items-center justify-between gap-3">
+          <div className="min-w-0">
+            {fromService ? (
+              <p className="truncate text-sm text-text-base">
+                <span className="font-extrabold">
+                  {formatPrice(fromService.price_cents, fromService.currency, locale)}
+                </span>
+                <span className="text-xs text-text-muted">
+                  {" "}
+                  {t("coachProfile.perSession")}
+                </span>
+              </p>
+            ) : (
+              <p className="truncate text-sm font-semibold text-text-base">
+                {coachFullName(coach)}
+              </p>
+            )}
+            {coach.rating_avg != null && coach.rating_count > 0 && (
+              <p className="flex items-center gap-1 text-[11px] text-text-muted">
+                ⭐ {Number(coach.rating_avg)} ({coach.rating_count})
+              </p>
+            )}
+          </div>
+          <div className="flex shrink-0 gap-2">
+            <Button
+              variant="secondary"
+              onClick={handleContact}
+              disabled={contacting}
+              className="px-4 py-2.5 text-sm"
+            >
+              {t("coachProfile.contact")}
+            </Button>
+            <Button onClick={() => openBooking()} className="px-5 py-2.5 text-sm">
+              {t("coachProfile.book")}
+            </Button>
+          </div>
+        </div>
       </div>
 
       {booking && (

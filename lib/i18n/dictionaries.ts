@@ -558,6 +558,11 @@ const fr = {
   },
   coachProfile: {
     backToSearch: "Tous les coachs",
+    from: "À partir de",
+    perSession: "/ séance",
+    instantNote: "Réservation instantanée : ton créneau est confirmé immédiatement.",
+    approvalNote:
+      "Aucun débit tant que le coach n'a pas accepté ta demande. Refus : rien n'est prélevé.",
     about: "À propos",
     services: "Prestations",
     onlineAvailable: "Disponible en visio",
@@ -1554,6 +1559,11 @@ const en: Dictionary = {
   },
   coachProfile: {
     backToSearch: "All coaches",
+    from: "From",
+    perSession: "/ session",
+    instantNote: "Instant booking: your slot is confirmed immediately.",
+    approvalNote:
+      "No charge until the coach accepts your request. Declined: nothing is taken.",
     about: "About",
     services: "Services",
     onlineAvailable: "Available online",
