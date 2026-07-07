@@ -11,6 +11,8 @@ import AddSessionModal from "./AddSessionModal";
 import WeekView from "./WeekView";
 import Button from "@/components/ui/Button";
 import Dialog from "@/components/ui/Dialog";
+import ClientSheet from "@/components/messaging/ClientSheet";
+import type { ClientProfile } from "@/lib/health/bmi";
 import { PencilIcon } from "@/components/ui/icons";
 
 function dayKey(iso: string): string {
@@ -27,10 +29,13 @@ export default function AgendaView({
   initialBookings,
   clients,
   availabilities = [],
+  profiles = {},
 }: {
   initialBookings: Booking[];
   clients: ClientOption[];
   availabilities?: Availability[];
+  // Fiche sportive par client CRM (agenda : le coach voit à qui il a affaire).
+  profiles?: Record<string, ClientProfile>;
 }) {
   const { t, locale } = useI18n();
   const router = useRouter();
@@ -727,6 +732,16 @@ export default function AgendaView({
             {actionError && (
               <p role="alert" className="mt-3 text-sm text-danger">{t(actionError)}</p>
             )}
+
+            {/* Fiche sportive du client (objectifs, niveau, mensurations) :
+                le coach prépare sa séance sans quitter l'agenda. */}
+            {!selected.is_block &&
+              selected.client_id &&
+              profiles[selected.client_id] && (
+                <div className="mt-3 overflow-hidden rounded-xl border border-border">
+                  <ClientSheet profile={profiles[selected.client_id]} />
+                </div>
+              )}
 
             {selected.is_block ? (
               <div className="mt-4 flex flex-col gap-2">

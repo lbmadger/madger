@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
 import type { Booking, ClientOption } from "@/lib/bookings/types";
 import type { Availability } from "@/lib/availability/types";
+import type { ClientProfile } from "@/lib/health/bmi";
 
 // Page Agenda. On charge les séances (avec le client joint), la liste des
 // clients pour le sélecteur du formulaire et les disponibilités (affichées en
@@ -32,6 +33,37 @@ export default async function AgendaPage() {
       supabase.from("availabilities").select("*"),
     ]);
 
+  // Fiche sportive des clients (objectifs, niveau, mensurations), affichée
+  // dans le détail d'une séance. Chemin RLS existant : conversations du
+  // coach → client_profiles lisibles ; client_crm_id fait le pont avec les
+  // clients des réservations.
+  const profiles: Record<string, ClientProfile> = {};
+  {
+    const { data: convs } = await supabase
+      .from("conversations")
+      .select("client_id, client_crm_id")
+      .not("client_crm_id", "is", null)
+      .limit(500);
+    const authIds = Array.from(
+      new Set((convs ?? []).map((c) => c.client_id as string))
+    );
+    if (authIds.length) {
+      const { data: profs } = await supabase
+        .from("client_profiles")
+        .select("*")
+        .in("id", authIds);
+      const byAuthId = new Map(
+        (profs ?? []).map((p) => [p.id as string, p as ClientProfile])
+      );
+      for (const c of convs ?? []) {
+        const prof = byAuthId.get(c.client_id as string);
+        if (prof && c.client_crm_id) {
+          profiles[c.client_crm_id as string] = prof;
+        }
+      }
+    }
+  }
+
   return (
     <>
       <Topbar title={dict.agenda.title} />
@@ -40,6 +72,7 @@ export default async function AgendaPage() {
           initialBookings={(bookings ?? []) as Booking[]}
           clients={(clients ?? []) as ClientOption[]}
           availabilities={(availabilities ?? []) as Availability[]}
+          profiles={profiles}
         />
       </main>
     </>

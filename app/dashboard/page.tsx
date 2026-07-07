@@ -10,7 +10,7 @@ import { SunIcon, MoonIcon } from "@/components/ui/icons";
 import ProStats, { type ProStatItem } from "@/components/dashboard/ProStats";
 import { computeLeiaTips, dailyTipIndex } from "@/lib/leia/tips";
 import ChartCard from "@/components/dashboard/charts/ChartCard";
-import MiniBars, { type BarDatum } from "@/components/dashboard/charts/MiniBars";
+import { type BarDatum } from "@/components/dashboard/charts/MiniBars";
 import { invoiceNumber } from "@/lib/invoices/utils";
 import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
@@ -265,39 +265,6 @@ export default async function OverviewPage() {
     };
   });
 
-  // ── Cette semaine, jour par jour (lundi → dimanche) ───────────────────────
-  const weekDays = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(weekStart);
-    d.setDate(weekStart.getDate() + i);
-    return d;
-  });
-  const dayLabel = (d: Date) =>
-    d.toLocaleDateString(loc, { weekday: "short" }).replace(".", "");
-  const sessionsByDay: BarDatum[] = weekDays.map((d) => {
-    const end = new Date(d);
-    end.setDate(d.getDate() + 1);
-    return {
-      label: dayLabel(d),
-      value: weekBookings.filter((b) => {
-        const t = new Date(b.starts_at as string).getTime();
-        return t >= d.getTime() && t < end.getTime();
-      }).length,
-    };
-  });
-  const revenueByDay: BarDatum[] = weekDays.map((d) => {
-    const end = new Date(d);
-    end.setDate(d.getDate() + 1);
-    return {
-      label: dayLabel(d),
-      value: payments
-        .filter((p) => {
-          const t = p.paid_at ? new Date(p.paid_at as string).getTime() : 0;
-          return t >= d.getTime() && t < end.getTime();
-        })
-        .reduce((s, p) => s + ((p.amount_cents as number) || 0), 0),
-    };
-  });
-
   // ── Aujourd'hui + taux de remplissage (heures réservées / heures ouvertes) ─
   const todayStart = new Date(now);
   todayStart.setHours(0, 0, 0, 0);
@@ -363,15 +330,12 @@ export default async function OverviewPage() {
   );
   const leiaDailyIndex = dailyTipIndex(now);
 
-  // Séances du mois en cours (grille de 8 tuiles bien remplie).
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  const sessionsMonthCount = weekBookings.filter((b) => {
-    const t = new Date(b.starts_at as string).getTime();
-    return t >= monthStart.getTime() && t < monthEnd.getTime();
-  }).length;
 
   // ── Tuiles KPI (compteurs animés) ─────────────────────────────────────────
+  // 4 tuiles, une info chacune, zéro doublon : le mois (argent), la semaine
+  // (activité, avec le jour en sous-titre), les clients, le séquestre. Les
+  // demandes à confirmer ont déjà leur bannière en haut, les messages leur
+  // bloc dédié juste en dessous.
   const stats: {
     label: string;
     value: number;
@@ -387,27 +351,19 @@ export default async function OverviewPage() {
       kind: "currency",
       trend: revenueTrend,
     },
-    { label: o.sessionsMonth, value: sessionsMonthCount, kind: "int" },
-    { label: o.sessionsWeek, value: weekCount, kind: "int" },
-    { label: o.today, value: todayCount, kind: "int", hint: o.sessionsToday },
-    { label: o.activeClients, value: clientsCount, kind: "int" },
     {
-      label: o.msgs24h,
-      value: msgs24h,
+      label: o.sessionsWeek,
+      value: weekCount,
       kind: "int",
-      href: "/dashboard/messages",
+      hint: `${todayCount} ${o.sessionsToday}`,
+      href: "/dashboard/agenda",
     },
+    { label: o.activeClients, value: clientsCount, kind: "int", href: "/dashboard/clients" },
     {
       label: o.pendingPayments,
       value: heldSum,
       kind: "currency",
       href: "/dashboard/paiements",
-    },
-    {
-      label: o.toConfirm,
-      value: pendingCount,
-      kind: "int",
-      href: "/dashboard/agenda",
     },
   ];
   // ── Statistiques avancées (plan Pro) ──────────────────────────────────────
@@ -659,45 +615,7 @@ export default async function OverviewPage() {
           })}
         </div>
 
-        {/* Statistiques avancées : floutées + cadenas en Gratuit, réelles en
-            Pro. */}
-        <ProStats items={proItems} locked={!pro} />
-
-        {/* Graphiques : revenus par mois + séances par semaine, avec sélecteur
-            de période (la plage s'adapte à l'historique réel du coach). */}
-        <div className="mt-4 grid grid-cols-1 gap-3 sm:mt-5 sm:grid-cols-2 sm:gap-4">
-          <ChartCard
-            title={o.chartRevenue}
-            data={revenueByMonth}
-            unit="currency"
-            locale={loc}
-            mode="months"
-          />
-          <ChartCard
-            title={o.chartSessions}
-            data={sessionsByWeek}
-            locale={loc}
-            mode="weeks"
-          />
-        </div>
-
-        {/* Cette semaine, jour par jour */}
-        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
-          <section className="rounded-2xl border border-border bg-bg-card p-4 sm:p-5">
-            <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-text-dim">
-              {o.chartWeekSessions}
-            </h3>
-            <MiniBars data={sessionsByDay} locale={loc} />
-          </section>
-          <section className="rounded-2xl border border-border bg-bg-card p-4 sm:p-5">
-            <h3 className="mb-4 text-xs font-medium uppercase tracking-wide text-text-dim">
-              {o.chartWeekRevenue}
-            </h3>
-            <MiniBars data={revenueByDay} unit="currency" locale={loc} />
-          </section>
-        </div>
-
-        <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:mt-5 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <section className="rounded-2xl border border-border bg-bg-card p-5">
               <div className="flex items-center justify-between">
@@ -761,15 +679,6 @@ export default async function OverviewPage() {
           </div>
 
           <div className="flex flex-col gap-4 lg:col-span-1">
-            {showChecklist && (
-              <SetupChecklist
-                profileDone={profileDone}
-                availabilityDone={availabilityDone}
-                servicesDone={servicesDone}
-                stripeDone={stripeDone}
-              />
-            )}
-
             {/* Aperçu messagerie (comme le mockup landing) */}
             <section className="rounded-2xl border border-border bg-bg-card p-5">
               <div className="flex items-center justify-between">
@@ -818,6 +727,15 @@ export default async function OverviewPage() {
                 </ul>
               )}
             </section>
+
+            {showChecklist && (
+              <SetupChecklist
+                profileDone={profileDone}
+                availabilityDone={availabilityDone}
+                servicesDone={servicesDone}
+                stripeDone={stripeDone}
+              />
+            )}
 
             {/* Dernières factures + téléchargement */}
             <section className="rounded-2xl border border-border bg-bg-card p-5">
@@ -876,6 +794,28 @@ export default async function OverviewPage() {
               )}
             </section>
           </div>
+        </div>
+
+        {/* Statistiques avancées : floutées + cadenas en Gratuit, réelles en
+            Pro. */}
+        <ProStats items={proItems} locked={!pro} />
+
+        {/* Graphiques : revenus par mois + séances par semaine, avec sélecteur
+            de période (la plage s'adapte à l'historique réel du coach). */}
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:mt-5 sm:grid-cols-2 sm:gap-4">
+          <ChartCard
+            title={o.chartRevenue}
+            data={revenueByMonth}
+            unit="currency"
+            locale={loc}
+            mode="months"
+          />
+          <ChartCard
+            title={o.chartSessions}
+            data={sessionsByWeek}
+            locale={loc}
+            mode="weeks"
+          />
         </div>
       </main>
     </>
