@@ -9,6 +9,8 @@ import { googleCalendarUrl } from "@/lib/calendar/links";
 import { attachMeetToBooking } from "@/lib/google/calendar";
 
 export const dynamic = "force-dynamic";
+// Stripe + agenda Google + emails en série : marge au-delà des 10 s par défaut.
+export const maxDuration = 30;
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
@@ -93,7 +95,21 @@ export async function POST(req: NextRequest) {
           {},
           { idempotencyKey: `capture_${payment.id}` }
         );
-        // Frais Stripe réels après capture.
+      } catch (e) {
+        // Capture impossible (carte expirée, autorisation périmée…) : on
+        // rend la ligne, la demande reste en attente, le coach décline.
+        await admin
+          .from("payments")
+          .update({ escrow_status: "authorized" })
+          .eq("id", payment.id);
+        console.error("[confirm] capture failed", e);
+        return NextResponse.json({ error: "capture_failed" }, { status: 402 });
+      }
+      // Frais Stripe réels après capture : best-effort SÉPARÉ de la capture.
+      // Si ce retrieve échouait dans le même try, le revert remettrait la
+      // ligne en "authorized" alors que le client est réellement débité, et
+      // un decline ultérieur croirait annuler une simple empreinte.
+      try {
         const pi = await stripe.paymentIntents.retrieve(
           payment.stripe_payment_intent_id as string,
           { expand: ["latest_charge.balance_transaction"] }
@@ -116,14 +132,13 @@ export async function POST(req: NextRequest) {
           })
           .eq("id", payment.id);
       } catch (e) {
-        // Capture impossible (carte expirée, autorisation périmée…) : on
-        // rend la ligne, la demande reste en attente, le coach décline.
+        // Capture réussie mais détail des frais indisponible : la ligne est
+        // au moins marquée payée (frais 0, rattrapables), jamais rendue.
+        console.error("[confirm] post-capture retrieve failed", e);
         await admin
           .from("payments")
-          .update({ escrow_status: "authorized" })
+          .update({ status: "paid", paid_at: new Date().toISOString() })
           .eq("id", payment.id);
-        console.error("[confirm] capture failed", e);
-        return NextResponse.json({ error: "capture_failed" }, { status: 402 });
       }
     }
   }

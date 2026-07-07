@@ -11,6 +11,9 @@ import { refundClient, bookingCancelledClient } from "@/lib/email/templates";
 import { detachMeetFromBooking } from "@/lib/google/calendar";
 
 export const dynamic = "force-dynamic";
+// Refund + transfert Stripe + agenda Google + email en série : la limite de
+// 10 s par défaut peut couper la fonction après que l'argent a bougé.
+export const maxDuration = 30;
 
 // Annulation d'une séance par le coach (depuis l'agenda).
 //  - by = "coach"  → séance annulée par le coach : client remboursé à 100 %.
@@ -65,7 +68,7 @@ export async function POST(req: NextRequest) {
   const { data: payment } = await admin
     .from("payments")
     .select(
-      "id, client_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status, stripe_payment_intent_id, released_cents"
+      "id, client_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status, stripe_payment_intent_id, released_cents, refunded_cents, commission_cents, payout_cents"
     )
     .eq("booking_id", bookingId)
     .maybeSingle();
@@ -201,9 +204,12 @@ export async function POST(req: NextRequest) {
       )
     : amount;
 
-  // Part déjà transférée au coach (packs libérés séance par séance) : elle
-  // n'est plus remboursable ni re-transférable.
+  // Part déjà transférée au coach (packs libérés séance par séance) et part
+  // déjà remboursée (refund partiel externe synchronisé par le webhook) :
+  // plus remboursables ni re-transférables, sinon la somme sortante
+  // dépasserait le montant encaissé.
   const alreadyReleased = (payment.released_cents as number | null) ?? 0;
+  const alreadyRefunded = (payment.refunded_cents as number | null) ?? 0;
 
   const refundWanted =
     by === "coach"
@@ -213,13 +219,17 @@ export async function POST(req: NextRequest) {
           new Date(booking.starts_at),
           baseAmount
         );
-  const refund = Math.min(refundWanted, Math.max(0, amount - alreadyReleased));
+  const refund = Math.min(
+    refundWanted,
+    Math.max(0, amount - alreadyReleased - alreadyRefunded)
+  );
+  const totalRefunded = alreadyRefunded + refund;
 
   const breakdown = computePayout(
     amount,
     payment.stripe_fee_cents ?? 0,
     isPro(coach?.pro_until),
-    refund
+    totalRefunded
   );
 
   // Réclame le paiement AVANT les appels Stripe : si une autre annulation, le
@@ -227,9 +237,9 @@ export async function POST(req: NextRequest) {
   const { data: claimed } = await admin
     .from("payments")
     .update({
-      escrow_status: refund >= amount ? "refunded" : "canceled",
-      status: refund >= amount ? "refunded" : "paid",
-      refunded_cents: refund,
+      escrow_status: totalRefunded >= amount ? "refunded" : "canceled",
+      status: totalRefunded >= amount ? "refunded" : "paid",
+      refunded_cents: totalRefunded,
       commission_cents: breakdown.commissionCents,
       payout_cents: breakdown.payoutCents,
       resolved_at: new Date().toISOString(),
@@ -243,9 +253,12 @@ export async function POST(req: NextRequest) {
 
   try {
     if (refund > 0 && payment.stripe_charge_id) {
+      // Le montant fait partie de la clé : un retry avec un montant différent
+      // (fenêtre des 24 h franchie entre-temps) ne déclenche pas
+      // d'idempotency_error Stripe qui bloquerait la résolution 24 h.
       await stripe.refunds.create(
         { charge: payment.stripe_charge_id, amount: refund },
-        { idempotencyKey: `cancel_refund_${payment.id}` }
+        { idempotencyKey: `cancel_refund_${payment.id}_${refund}` }
       );
     }
     let transferId: string | null = null;
@@ -259,7 +272,7 @@ export async function POST(req: NextRequest) {
           source_transaction: payment.stripe_charge_id,
           transfer_group: `coach_${user.id}`,
         },
-        { idempotencyKey: `cancel_transfer_${payment.id}` }
+        { idempotencyKey: `cancel_transfer_${payment.id}_${cancelTransfer}` }
       );
       transferId = transfer.id;
     }
@@ -315,10 +328,20 @@ export async function POST(req: NextRequest) {
       payout_cents: breakdown.payoutCents,
     });
   } catch (e) {
-    // Échec Stripe après la réclamation : on rend la ligne (retraitable).
+    // Échec Stripe après la réclamation : on rend la ligne (retraitable),
+    // montants compris. Sans ce revert complet, la base affirmerait qu'un
+    // remboursement raté a eu lieu et le cron finaliserait sur des chiffres
+    // faux.
     await admin
       .from("payments")
-      .update({ escrow_status: "held", status: "paid", resolved_at: null })
+      .update({
+        escrow_status: "held",
+        status: "paid",
+        resolved_at: null,
+        refunded_cents: alreadyRefunded,
+        commission_cents: (payment.commission_cents as number | null) ?? 0,
+        payout_cents: (payment.payout_cents as number | null) ?? null,
+      })
       .eq("id", payment.id);
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "stripe_error" },

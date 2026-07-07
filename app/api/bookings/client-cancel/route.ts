@@ -14,6 +14,9 @@ import {
 import { detachMeetFromBooking } from "@/lib/google/calendar";
 
 export const dynamic = "force-dynamic";
+// Refund + transfert Stripe + agenda Google + emails en série : la limite
+// de 10 s par défaut peut couper la fonction après que l'argent a bougé.
+export const maxDuration = 30;
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
@@ -117,7 +120,7 @@ export async function POST(req: NextRequest) {
   const { data: payment } = await admin
     .from("payments")
     .select(
-      "id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status, stripe_payment_intent_id, released_cents"
+      "id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status, stripe_payment_intent_id, released_cents, refunded_cents, commission_cents, payout_cents"
     )
     .eq("booking_id", bookingId)
     .maybeSingle();
@@ -191,22 +194,25 @@ export async function POST(req: NextRequest) {
       )
     : amount;
 
-  // Part déjà transférée au coach (packs libérés séance par séance) : elle
-  // n'est plus remboursable.
+  // Part déjà transférée au coach (packs libérés séance par séance) et part
+  // déjà remboursée (refund partiel externe synchronisé par le webhook) :
+  // plus remboursables, sinon la somme sortante dépasserait l'encaissé.
   const alreadyReleased = (payment.released_cents as number | null) ?? 0;
+  const alreadyRefunded = (payment.refunded_cents as number | null) ?? 0;
   const refund = Math.min(
     refundCents(
       normalizePolicy(coach?.cancellation_policy),
       new Date(booking.starts_at),
       baseAmount
     ),
-    Math.max(0, amount - alreadyReleased)
+    Math.max(0, amount - alreadyReleased - alreadyRefunded)
   );
+  const totalRefunded = alreadyRefunded + refund;
   const breakdown = computePayout(
     amount,
     payment.stripe_fee_cents ?? 0,
     isPro(coach?.pro_until),
-    refund
+    totalRefunded
   );
 
   // Réclame le paiement AVANT les appels Stripe (anti-course avec le cron,
@@ -214,9 +220,9 @@ export async function POST(req: NextRequest) {
   const { data: claimed } = await admin
     .from("payments")
     .update({
-      escrow_status: refund >= amount ? "refunded" : "canceled",
-      status: refund >= amount ? "refunded" : "paid",
-      refunded_cents: refund,
+      escrow_status: totalRefunded >= amount ? "refunded" : "canceled",
+      status: totalRefunded >= amount ? "refunded" : "paid",
+      refunded_cents: totalRefunded,
       commission_cents: breakdown.commissionCents,
       payout_cents: breakdown.payoutCents,
       resolved_at: new Date().toISOString(),
@@ -232,7 +238,7 @@ export async function POST(req: NextRequest) {
     if (refund > 0 && payment.stripe_charge_id) {
       await stripe.refunds.create(
         { charge: payment.stripe_charge_id, amount: refund },
-        { idempotencyKey: `ccancel_refund_${payment.id}` }
+        { idempotencyKey: `ccancel_refund_${payment.id}_${refund}` }
       );
     }
     let transferId: string | null = null;
@@ -250,7 +256,7 @@ export async function POST(req: NextRequest) {
           source_transaction: payment.stripe_charge_id,
           transfer_group: `coach_${booking.coach_id}`,
         },
-        { idempotencyKey: `ccancel_transfer_${payment.id}` }
+        { idempotencyKey: `ccancel_transfer_${payment.id}_${cancelTransfer}` }
       );
       transferId = transfer.id;
     }
@@ -301,10 +307,19 @@ export async function POST(req: NextRequest) {
       payout_cents: breakdown.payoutCents,
     });
   } catch (e) {
-    // Échec Stripe après la réclamation : on rend la ligne (retraitable).
+    // Échec Stripe après la réclamation : on rend la ligne (retraitable),
+    // montants compris, sinon la base affirmerait qu'un remboursement raté
+    // a eu lieu.
     await admin
       .from("payments")
-      .update({ escrow_status: "held", status: "paid", resolved_at: null })
+      .update({
+        escrow_status: "held",
+        status: "paid",
+        resolved_at: null,
+        refunded_cents: alreadyRefunded,
+        commission_cents: (payment.commission_cents as number | null) ?? 0,
+        payout_cents: (payment.payout_cents as number | null) ?? null,
+      })
       .eq("id", payment.id);
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "stripe_error" },

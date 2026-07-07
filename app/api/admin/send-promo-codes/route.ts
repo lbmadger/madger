@@ -58,7 +58,11 @@ async function sendEmail(to: string, code: string): Promise<boolean> {
 }
 
 export async function POST(req: NextRequest) {
-  const secret = new URL(req.url).searchParams.get("secret");
+  // Secret lu dans l'en-tête Authorization (une query string finirait dans
+  // les logs et les referrers). La query reste acceptée en secours.
+  const auth = req.headers.get("authorization");
+  const bearer = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
+  const secret = bearer ?? new URL(req.url).searchParams.get("secret");
   if (!process.env.PROMO_SEND_SECRET || secret !== process.env.PROMO_SEND_SECRET) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }

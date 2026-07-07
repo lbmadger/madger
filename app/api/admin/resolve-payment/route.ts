@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
   const { data: payment } = await admin
     .from("payments")
     .select(
-      "id, coach_id, client_id, booking_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status, released_cents"
+      "id, coach_id, client_id, booking_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status, released_cents, refunded_cents, commission_cents, payout_cents"
     )
     .eq("id", paymentId)
     .maybeSingle();
@@ -57,10 +57,15 @@ export async function POST(req: NextRequest) {
 
   const amount = payment.amount_cents;
   const alreadyReleased = (payment.released_cents as number | null) ?? 0;
+  // Part déjà remboursée (refund partiel externe synchronisé par le
+  // webhook) : non re-remboursable, sinon la somme sortante dépasse
+  // l'encaissé.
+  const alreadyRefunded = (payment.refunded_cents as number | null) ?? 0;
   const refund = Math.min(
     Math.max(0, Number(body.refund_cents) || 0),
-    Math.max(0, amount - alreadyReleased)
+    Math.max(0, amount - alreadyReleased - alreadyRefunded)
   );
+  const totalRefunded = alreadyRefunded + refund;
 
   const { data: coach } = await admin
     .from("coaches")
@@ -72,20 +77,20 @@ export async function POST(req: NextRequest) {
     amount,
     payment.stripe_fee_cents ?? 0,
     isPro(coach?.pro_until),
-    refund
+    totalRefunded
   );
 
   // Réclame la ligne AVANT tout appel Stripe (même patron que cancel/release) :
   // un seul processus gagne. Empêche le double traitement resolve + cron sur
   // une ligne encore `held`.
-  const fullyRefunded = refund >= amount;
+  const fullyRefunded = totalRefunded >= amount;
   const previousStatus = payment.escrow_status as string;
   const { data: claimed } = await admin
     .from("payments")
     .update({
       escrow_status: fullyRefunded ? "refunded" : "released",
       status: fullyRefunded ? "refunded" : "paid",
-      refunded_cents: refund,
+      refunded_cents: totalRefunded,
       commission_cents: breakdown.commissionCents,
       payout_cents: breakdown.payoutCents,
       resolved_at: new Date().toISOString(),
@@ -101,7 +106,7 @@ export async function POST(req: NextRequest) {
     if (refund > 0 && payment.stripe_charge_id) {
       await stripe.refunds.create(
         { charge: payment.stripe_charge_id, amount: refund },
-        { idempotencyKey: `resolve_refund_${payment.id}` }
+        { idempotencyKey: `resolve_refund_${payment.id}_${refund}` }
       );
     }
     let transferId: string | null = null;
@@ -119,7 +124,7 @@ export async function POST(req: NextRequest) {
           source_transaction: payment.stripe_charge_id,
           transfer_group: `coach_${payment.coach_id}`,
         },
-        { idempotencyKey: `resolve_transfer_${payment.id}` }
+        { idempotencyKey: `resolve_transfer_${payment.id}_${resolveTransfer}` }
       );
       transferId = transfer.id;
     }
@@ -210,6 +215,9 @@ export async function POST(req: NextRequest) {
         escrow_status: previousStatus,
         status: "paid",
         resolved_at: null,
+        refunded_cents: alreadyRefunded,
+        commission_cents: (payment.commission_cents as number | null) ?? 0,
+        payout_cents: (payment.payout_cents as number | null) ?? null,
       })
       .eq("id", payment.id)
       .eq("escrow_status", fullyRefunded ? "refunded" : "released");

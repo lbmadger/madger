@@ -8,6 +8,24 @@ export const dynamic = "force-dynamic";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
+// Rate limit en mémoire par IP (best-effort, même patron que booking-request).
+// La route est non authentifiée et gèle les fonds d'un coach : sans limite,
+// quiconque connaît un booking_id + l'email du client peut spammer le gel.
+const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 h
+const RATE_MAX = 5; // 5 signalements / h / IP
+const rateMap = new Map<string, { count: number; start: number }>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateMap.get(ip);
+  if (!entry || now - entry.start > RATE_WINDOW_MS) {
+    rateMap.set(ip, { count: 1, start: now });
+    return false;
+  }
+  entry.count += 1;
+  return entry.count > RATE_MAX;
+}
+
 // Un client signale un problème sur une séance payée. Tant que les fonds ne sont
 // pas libérés, ils sont GELÉS (escrow_status = 'disputed') jusqu'à la décision
 // d'un admin (cf. charte). Vérification légère : l'e-mail doit correspondre à
@@ -17,6 +35,14 @@ export async function POST(req: NextRequest) {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!serviceKey) {
     return NextResponse.json({ error: "server_error" }, { status: 500 });
+  }
+
+  const ip =
+    req.headers.get("x-real-ip") ??
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    "unknown";
+  if (isRateLimited(ip)) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
 
   const body = await req.json().catch(() => ({}));

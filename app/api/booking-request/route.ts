@@ -18,6 +18,8 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 // appellerait la fonction directement.
 
 export const dynamic = "force-dynamic";
+// Stripe + agenda Google + emails en série : marge au-delà des 10 s par défaut.
+export const maxDuration = 30;
 
 // Rate limit en mémoire par IP (best-effort, comme la route early-access).
 const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 h
