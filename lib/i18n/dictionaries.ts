@@ -801,7 +801,7 @@ const fr = {
   cancellation: {
     title: "Politique d'annulation",
     subtitle:
-      "Ta protection si un client annule. L'argent est retenu par Madger jusqu'après la séance, puis versé.",
+      "Tu règles toi-même les deux pourcentages : ce que le client récupère s'il annule tôt, et ce qu'il récupère s'il annule au dernier moment. L'argent est sécurisé par Stripe jusqu'après la séance, puis versé.",
     beforeSession: "avant la séance",
     refunded: "remboursé au client",
     cancelWord: "Annulation",
@@ -811,8 +811,15 @@ const fr = {
       "Plus l'annulation est tardive, moins le client est remboursé (donc plus il paie).",
     noShow: "Absence (no-show) : 0 % remboursé",
     tiersTitle: "Remboursement au client",
-    tierEarly: "Plus de 24 h avant la séance",
-    tierLate: "Moins de 24 h avant",
+    tierEarly: "Le client annule plus de 24 h avant le début de la séance",
+    tierLate: "Le client annule moins de 24 h avant le début de la séance",
+    overLabel: "Annulation plus de 24 h avant la séance",
+    overDesc:
+      "Le client annule tôt (la veille ou avant). Quel pourcentage du prix lui rembourses-tu ?",
+    underLabel: "Annulation moins de 24 h avant la séance",
+    underDesc:
+      "Le client annule au dernier moment (le jour même). Quel pourcentage du prix lui rembourses-tu ?",
+    refundedSuffix: "remboursé au client",
     flexible: "Flexible",
     moderate: "Modérée",
     strict: "Stricte",
@@ -1899,7 +1906,7 @@ const en: Dictionary = {
   cancellation: {
     title: "Cancellation policy",
     subtitle:
-      "Your protection if a client cancels. Money is held by Madger until after the session, then paid out.",
+      "You set both percentages yourself: what the client gets back for an early cancellation, and what they get back for a last-minute one. Money is held securely by Stripe until after the session, then paid out.",
     beforeSession: "before the session",
     refunded: "refunded to client",
     cancelWord: "Cancellation",
@@ -1909,8 +1916,15 @@ const en: Dictionary = {
       "The later the cancellation, the smaller the refund (so the more the client pays).",
     noShow: "No-show: 0% refunded",
     tiersTitle: "Refund to the client",
-    tierEarly: "More than 24 h before the session",
-    tierLate: "Less than 24 h before",
+    tierEarly: "Client cancels more than 24h before the session starts",
+    tierLate: "Client cancels less than 24h before the session starts",
+    overLabel: "Cancellation more than 24h before the session",
+    overDesc:
+      "The client cancels early (the day before or sooner). What share of the price do you refund?",
+    underLabel: "Cancellation less than 24h before the session",
+    underDesc:
+      "The client cancels last minute (same day). What share of the price do you refund?",
+    refundedSuffix: "refunded to the client",
     flexible: "Flexible",
     moderate: "Moderate",
     strict: "Strict",

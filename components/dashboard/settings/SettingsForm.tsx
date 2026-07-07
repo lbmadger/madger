@@ -22,8 +22,8 @@ import {
 import PolicyTiers from "@/components/booking/PolicyTiers";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import {
-  normalizePolicy,
-  type CancellationPolicy,
+  resolveRefundPolicy,
+  REFUND_PCT_CHOICES,
 } from "@/lib/booking/cancellation";
 
 // Fuseaux proposés : France métropolitaine + DOM-TOM + grandes villes
@@ -51,7 +51,6 @@ import {
 } from "@/lib/coaches/taxonomy";
 import type { Coach } from "@/lib/coach/getCoach";
 
-const POLICY_OPTIONS: CancellationPolicy[] = ["flexible", "moderate", "strict"];
 
 export default function SettingsForm({ coach }: { coach: Coach }) {
   const { t } = useI18n();
@@ -70,8 +69,12 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   const [acceptsOnline, setAcceptsOnline] = useState(coach.accepts_online);
   const [slug, setSlug] = useState(coach.slug ?? "");
   const [listed, setListed] = useState(coach.listed);
-  const [policy, setPolicy] = useState<CancellationPolicy>(
-    normalizePolicy(coach.cancellation_policy)
+  // Politique d'annulation : deux pourcentages indépendants (plus de 24 h
+  // avant la séance / moins de 24 h avant).
+  const initialRefund = resolveRefundPolicy(coach);
+  const [refundOver, setRefundOver] = useState<number>(initialRefund.overPct);
+  const [refundUnder, setRefundUnder] = useState<number>(
+    initialRefund.underPct
   );
   const [bookingMode, setBookingMode] = useState<"instant" | "approval">(
     coach.booking_mode === "instant" ? "instant" : "approval"
@@ -168,7 +171,8 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           accepts_online: acceptsOnline,
           slug,
           listed,
-          cancellation_policy: policy,
+          refund_over_24h_pct: refundOver,
+          refund_under_24h_pct: refundUnder,
           booking_mode: bookingMode,
           sport: sport || null,
           specialties,
@@ -527,37 +531,52 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         title={t("cancellation.title")}
         desc={t("cancellation.subtitle")}
       >
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {POLICY_OPTIONS.map((opt) => {
-            const active = policy === opt;
-            return (
-              <button
-                key={opt}
-                type="button"
-                onClick={() => setPolicy(opt)}
-                className={`flex flex-col rounded-xl border p-4 text-left transition-colors ${
-                  active
-                    ? "border-accent bg-accent/[0.06]"
-                    : "border-border-strong hover:border-accent/40"
-                }`}
-              >
-                <span className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-text-base">
-                    {t(`cancellation.${opt}`)}
-                  </span>
-                  <span
-                    className={`h-4 w-4 rounded-full border ${
-                      active ? "border-accent bg-accent" : "border-border-strong"
-                    }`}
-                  />
-                </span>
-                <span className="mt-1 text-xs text-text-dim">
-                  {t(`cancellation.${opt}Desc`)}
-                </span>
-                <PolicyTiers policy={opt} className="mt-3" />
-              </button>
-            );
-          })}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label className="flex flex-col gap-1.5 rounded-xl border border-border-strong p-4">
+            <span className="text-sm font-semibold text-text-base">
+              {t("cancellation.overLabel")}
+            </span>
+            <span className="text-xs text-text-dim">
+              {t("cancellation.overDesc")}
+            </span>
+            <select
+              value={refundOver}
+              onChange={(e) => setRefundOver(Number(e.target.value))}
+              className={`${inputClass} mt-2`}
+              aria-label={t("cancellation.overLabel")}
+            >
+              {REFUND_PCT_CHOICES.map((p) => (
+                <option key={p} value={p}>
+                  {p} % {t("cancellation.refundedSuffix")}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="flex flex-col gap-1.5 rounded-xl border border-border-strong p-4">
+            <span className="text-sm font-semibold text-text-base">
+              {t("cancellation.underLabel")}
+            </span>
+            <span className="text-xs text-text-dim">
+              {t("cancellation.underDesc")}
+            </span>
+            <select
+              value={refundUnder}
+              onChange={(e) => setRefundUnder(Number(e.target.value))}
+              className={`${inputClass} mt-2`}
+              aria-label={t("cancellation.underLabel")}
+            >
+              {REFUND_PCT_CHOICES.map((p) => (
+                <option key={p} value={p}>
+                  {p} % {t("cancellation.refundedSuffix")}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        {/* Aperçu : exactement ce que verront les clients avant de payer. */}
+        <div className="mt-4 max-w-sm rounded-xl border border-border bg-bg-elevated p-4">
+          <PolicyTiers policy={{ overPct: refundOver, underPct: refundUnder }} />
         </div>
 
         <Link

@@ -71,31 +71,33 @@ export default function ChartePaiement() {
               2. Formules d'annulation
             </h2>
             <p>
-              Chaque coach choisit une formule, affichée sur sa page publique et
-              au moment de la réservation. Toutes les formules distinguent{" "}
-              <strong className="text-white">deux cas</strong> : annulation{" "}
-              <strong className="text-white">plus de 24 heures avant</strong> la
-              séance, ou <strong className="text-white">moins de 24 heures
-              avant</strong>. Le pourcentage indiqué est{" "}
-              <strong className="text-white">remboursé au client</strong> ; le
-              reste revient au coach (moins frais et commission). Ces règles
-              s'appliquent lorsqu'un <strong className="text-white">client</strong>{" "}
-              annule.
+              Chaque coach définit lui-même{" "}
+              <strong className="text-white">deux pourcentages de
+              remboursement</strong>, affichés sur sa page publique et au moment
+              de la réservation, avant tout paiement. Ces règles s'appliquent
+              lorsqu'un <strong className="text-white">client</strong> annule :
             </p>
             <ul className="mt-3 flex flex-col gap-2" style={{ paddingLeft: 20, listStyleType: "disc" }}>
               <li>
-                <strong className="text-white">Flexible</strong> : plus de 24 h
-                avant, 100 % remboursé ; moins de 24 h : 50 % ; absence : 0 %.
+                <strong className="text-white">Le client annule plus de 24 heures
+                avant le début de la séance</strong> (la veille ou avant) : il est
+                remboursé du pourcentage choisi par le coach pour ce cas.
               </li>
               <li>
-                <strong className="text-white">Modérée</strong> : plus de 24 h
-                avant, 75 % remboursé ; moins de 24 h : 0 % ; absence : 0 %.
+                <strong className="text-white">Le client annule moins de 24 heures
+                avant le début de la séance</strong> (le jour même) : il est
+                remboursé du pourcentage, généralement plus bas, choisi par le
+                coach pour ce cas.
               </li>
               <li>
-                <strong className="text-white">Stricte</strong> : plus de 24 h
-                avant, 50 % remboursé ; moins de 24 h : 0 % ; absence : 0 %.
+                <strong className="text-white">Absence à la séance (no-show)</strong> :
+                0 % remboursé.
               </li>
             </ul>
+            <p className="mt-3">
+              La part non remboursée revient au coach (moins frais et
+              commission).
+            </p>
             <p className="mt-3">
               Si c'est le <strong className="text-white">coach</strong> qui annule
               la séance, le client est remboursé à{" "}

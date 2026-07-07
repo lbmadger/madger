@@ -4,7 +4,7 @@ import { createClient as createAdmin } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { computePayout } from "@/lib/stripe/escrow";
-import { refundCents, normalizePolicy } from "@/lib/booking/cancellation";
+import { refundCents, resolveRefundPolicy } from "@/lib/booking/cancellation";
 import { isPro } from "@/lib/subscription/plan";
 import { sendEmail } from "@/lib/email/resend";
 import {
@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
   const { data: coach } = await admin
     .from("coaches")
     .select(
-      "stripe_account_id, pro_until, cancellation_policy, first_name, last_name, locale"
+      "stripe_account_id, pro_until, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, first_name, last_name, locale"
     )
     .eq("id", booking.coach_id)
     .maybeSingle();
@@ -201,7 +201,7 @@ export async function POST(req: NextRequest) {
   const alreadyRefunded = (payment.refunded_cents as number | null) ?? 0;
   const refund = Math.min(
     refundCents(
-      normalizePolicy(coach?.cancellation_policy),
+      resolveRefundPolicy(coach),
       new Date(booking.starts_at),
       baseAmount
     ),

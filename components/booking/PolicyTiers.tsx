@@ -1,17 +1,18 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { policyTiers, type CancellationPolicy } from "@/lib/booking/cancellation";
+import { policyTiers, type RefundPolicy } from "@/lib/booking/cancellation";
 
-// Paliers de remboursement d'une politique d'annulation, calculés depuis la
-// source de vérité (lib/booking/cancellation). Deux lignes nettes : avant /
-// après la frontière des 24 h, avec le pourcentage bien visible à droite.
+// Les deux règles de remboursement du coach, calculées depuis la source de
+// vérité (lib/booking/cancellation). Deux lignes nettes et explicites :
+// « Le client annule plus de 24 h avant le début de la séance » puis « moins
+// de 24 h avant », avec le pourcentage bien visible à droite.
 // Réutilisé côté coach (réglages), profil public et modale de réservation.
 export default function PolicyTiers({
   policy,
   className = "",
 }: {
-  policy: CancellationPolicy;
+  policy: RefundPolicy;
   className?: string;
 }) {
   const { t } = useI18n();

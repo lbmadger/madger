@@ -7,8 +7,8 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
 import { TicketIcon, RepeatIcon, StarIcon } from "@/components/ui/icons";
 import {
-  refundFraction,
-  type CancellationPolicy,
+  refundCents,
+  resolveRefundPolicy,
 } from "@/lib/booking/cancellation";
 
 export type ClientPack = {
@@ -36,9 +36,16 @@ export type ClientBooking = {
   location: string;
   coach_name: string;
   coach_slug: string | null;
-  cancellation_policy: CancellationPolicy;
+  cancellation_policy: string;
+  refund_over_24h_pct: number | null;
+  refund_under_24h_pct: number | null;
   escrow_status: string | null;
   amount_cents: number | null;
+  // Pour afficher un remboursement EXACT (même formule que le serveur) :
+  released_cents: number;
+  refunded_cents: number;
+  pack_total: number | null;
+  pack_used: number | null;
 };
 
 // Espace client : séances à venir (annulables selon la formule du coach,
@@ -106,10 +113,29 @@ export default function ClientSpace({
     });
   }
 
-  // % remboursé si annulation MAINTENANT (formule du coach).
-  function refundPct(b: ClientBooking): number {
-    return Math.round(
-      refundFraction(b.cancellation_policy, new Date(b.starts_at)) * 100
+  // Remboursement si annulation MAINTENANT : MÊME formule que le serveur
+  // (prorata pack sur les séances restantes + plafond sur ce qui n'a été ni
+  // versé au coach ni déjà remboursé), pour ne jamais promettre plus que ce
+  // qui sera réellement rendu.
+  function refundNow(b: ClientBooking): number {
+    const amount = b.amount_cents ?? 0;
+    if (amount <= 0) return 0;
+    const base =
+      b.pack_total && b.pack_total > 1
+        ? Math.round(
+            (amount *
+              Math.max(0, b.pack_total - (b.pack_used ?? 0) + 1)) /
+              b.pack_total
+          )
+        : amount;
+    const wanted = refundCents(
+      resolveRefundPolicy(b),
+      new Date(b.starts_at),
+      base
+    );
+    return Math.min(
+      wanted,
+      Math.max(0, amount - b.released_cents - b.refunded_cents)
     );
   }
 
@@ -370,7 +396,7 @@ export default function ClientSpace({
                   <div className="flex w-full flex-col gap-2">
                     <p className="text-xs text-text-muted">
                       {b.escrow_status === "held" && b.amount_cents
-                        ? `${t("clientSpace.cancelRefund")} ${refundPct(b)}% (${(((b.amount_cents ?? 0) * refundPct(b)) / 10000).toLocaleString(loc, { style: "currency", currency: "EUR" })}).`
+                        ? `${t("clientSpace.cancelRefund")} ${(refundNow(b) / 100).toLocaleString(loc, { style: "currency", currency: "EUR" })} (${Math.round((refundNow(b) / Math.max(1, b.amount_cents ?? 0)) * 100)}%).`
                         : t("clientSpace.cancelFree")}
                     </p>
                     <div className="flex gap-2">

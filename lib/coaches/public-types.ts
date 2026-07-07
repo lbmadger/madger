@@ -14,6 +14,10 @@ export type PublicCoach = {
   lng: number | null;
   stripe_charges_enabled: boolean;
   cancellation_policy: "flexible" | "moderate" | "strict";
+  // Politique d'annulation personnalisée (migration 0038) : % remboursé si
+  // le client annule plus / moins de 24 h avant la séance.
+  refund_over_24h_pct: number | null;
+  refund_under_24h_pct: number | null;
   booking_mode: "instant" | "approval";
   created_at: string;
   // Avis (vue public_coaches, migration 0020)

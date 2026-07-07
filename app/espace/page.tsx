@@ -88,7 +88,7 @@ export default async function ClientSpacePage() {
       const { data: rows } = await admin
         .from("bookings")
         .select(
-          "id, starts_at, ends_at, status, location, coaches(first_name, last_name, slug, cancellation_policy)"
+          "id, starts_at, ends_at, status, location, coaches(first_name, last_name, slug, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct)"
         )
         .in("client_id", clientIds)
         .order("starts_at", { ascending: false })
@@ -98,11 +98,22 @@ export default async function ClientSpacePage() {
       const { data: pays } = ids.length
         ? await admin
             .from("payments")
-            .select("booking_id, escrow_status, amount_cents, currency")
+            .select("id, booking_id, escrow_status, amount_cents, currency, released_cents, refunded_cents")
             .in("booking_id", ids)
         : { data: [] };
       const payByBooking = new Map(
         (pays ?? []).map((p) => [p.booking_id as string, p])
+      );
+      // Packs rattachés aux paiements (prorata du remboursement affiché).
+      const payIds = (pays ?? []).map((p) => p.id as string);
+      const { data: packRows } = payIds.length
+        ? await admin
+            .from("pack_credits")
+            .select("payment_id, total, used")
+            .in("payment_id", payIds)
+        : { data: [] };
+      const packByPayment = new Map(
+        (packRows ?? []).map((pc) => [pc.payment_id as string, pc])
       );
 
       for (const b of rows ?? []) {
@@ -120,8 +131,18 @@ export default async function ClientSpacePage() {
           cancellation_policy:
             (co?.cancellation_policy as ClientBooking["cancellation_policy"]) ??
             "moderate",
+          refund_over_24h_pct: (co?.refund_over_24h_pct as number) ?? null,
+          refund_under_24h_pct: (co?.refund_under_24h_pct as number) ?? null,
           escrow_status: (pay?.escrow_status as string) ?? null,
           amount_cents: (pay?.amount_cents as number) ?? null,
+          released_cents: (pay?.released_cents as number) ?? 0,
+          refunded_cents: (pay?.refunded_cents as number) ?? 0,
+          pack_total:
+            ((pay && packByPayment.get(pay.id as string)?.total) as number) ??
+            null,
+          pack_used:
+            ((pay && packByPayment.get(pay.id as string)?.used) as number) ??
+            null,
         });
       }
     }

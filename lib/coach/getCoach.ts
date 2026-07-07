@@ -31,8 +31,13 @@ export type Coach = {
   stripe_subscription_id: string | null;
   subscription_status: string | null;
   subscription_plan: string | null;
-  // Politique d'annulation (migration 0016) : flexible | moderate | strict
+  // Politique d'annulation (migration 0016) : flexible | moderate | strict.
+  // Remplacée par les deux pourcentages ci-dessous (migration 0038), gardée
+  // en lecture pour convertir les anciens comptes.
   cancellation_policy: "flexible" | "moderate" | "strict";
+  // % remboursé si le client annule plus / moins de 24 h avant la séance.
+  refund_over_24h_pct: number | null;
+  refund_under_24h_pct: number | null;
   // Mode de réservation (migration 0018) : instant | approval
   booking_mode: "instant" | "approval";
   // Filtres marketplace (migration 0021)

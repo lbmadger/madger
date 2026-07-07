@@ -7,6 +7,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
 import Dialog from "@/components/ui/Dialog";
 import PolicyTiers from "@/components/booking/PolicyTiers";
+import { resolveRefundPolicy } from "@/lib/booking/cancellation";
 import { LockIcon, RepeatIcon, MapPinIcon } from "@/components/ui/icons";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import type { PublicCoach } from "@/lib/coaches/public-types";
@@ -681,7 +682,7 @@ export default function BookingModal({
                   <p className="mt-2 text-[11px] font-medium uppercase tracking-wide text-text-dim">
                     {t("cancellation.publicLabel")}
                   </p>
-                  <PolicyTiers policy={coach.cancellation_policy} className="mt-1" />
+                  <PolicyTiers policy={resolveRefundPolicy(coach)} className="mt-1" />
                 </div>
               )}
 
