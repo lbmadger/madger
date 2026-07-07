@@ -218,7 +218,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           </ul>
         )}
 
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <p className="text-sm text-danger">{error}</p>}
 
         <Button type="submit" disabled={loading} className="mt-2 w-full">
           {loading

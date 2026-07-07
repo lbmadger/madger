@@ -250,7 +250,7 @@ export default function MarketplaceView({
           <button
             type="button"
             onClick={clearFilters}
-            className="rounded-full border border-border-strong px-4 py-2 text-sm font-medium text-text-muted transition-colors hover:border-red-400/50 hover:text-red-400"
+            className="rounded-full border border-border-strong px-4 py-2 text-sm font-medium text-text-muted transition-colors hover:border-danger/50 hover:text-danger"
           >
             ✕ {t("marketplace.clearFilters")}
           </button>

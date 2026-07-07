@@ -59,7 +59,7 @@ export default async function PaymentsPage() {
   const escrowChip: Record<string, { label: string; cls: string }> = {
     held: {
       label: pay.escrowHeld,
-      cls: "bg-yellow-400/10 text-yellow-400",
+      cls: "bg-warning/10 text-warning",
     },
     released: { label: pay.escrowReleased, cls: "bg-accent/10 text-accent" },
     refunded: {
@@ -70,7 +70,7 @@ export default async function PaymentsPage() {
       label: pay.escrowCanceled,
       cls: "border border-border-strong text-text-muted",
     },
-    disputed: { label: pay.escrowDisputed, cls: "bg-red-500/10 text-red-400" },
+    disputed: { label: pay.escrowDisputed, cls: "bg-danger/10 text-danger" },
   };
 
   // État : configuré ? connecté ? en attente ? pas encore branché ?
@@ -94,7 +94,7 @@ export default async function PaymentsPage() {
                   <path d="M20 6L9 17l-5-5" />
                 </svg>
               </span>
-              <h2 className="text-lg font-bold text-text-base">
+              <h2 className="text-base font-semibold text-text-base">
                 {pay.connectedTitle}
               </h2>
             </div>
@@ -103,7 +103,7 @@ export default async function PaymentsPage() {
           </section>
         ) : state === "pending" ? (
           <section className="rounded-2xl border border-border bg-bg-card p-6">
-            <h2 className="text-lg font-bold text-text-base">
+            <h2 className="text-base font-semibold text-text-base">
               {pay.pendingTitle}
             </h2>
             <p className="mt-1 text-sm text-text-muted">{pay.pendingDesc}</p>
@@ -113,7 +113,7 @@ export default async function PaymentsPage() {
           </section>
         ) : state === "connect" ? (
           <section className="rounded-2xl border border-border bg-bg-card p-6">
-            <h2 className="text-lg font-bold text-text-base">
+            <h2 className="text-base font-semibold text-text-base">
               {pay.connectTitle}
             </h2>
             <p className="mt-1 text-sm text-text-muted">{pay.connectDesc}</p>

@@ -47,7 +47,7 @@ export default function StripeSetup() {
   }
 
   const Ok = ({ ok, yes, no }: { ok: boolean; yes: string; no: string }) => (
-    <span className={ok ? "text-accent" : "text-red-400"}>
+    <span className={ok ? "text-accent" : "text-danger"}>
       {ok ? `✅ ${yes}` : `❌ ${no}`}
     </span>
   );
@@ -64,7 +64,7 @@ export default function StripeSetup() {
       </button>
 
       {error && (
-        <p className="rounded-xl border border-red-500/30 bg-red-500/[0.06] p-3 text-sm text-red-400">
+        <p className="rounded-xl border border-danger/30 bg-danger/[0.06] p-3 text-sm text-danger">
           {error}
         </p>
       )}

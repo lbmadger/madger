@@ -88,11 +88,11 @@ export default async function ClientDetailPage({
                   </span>
                 </p>
                 <span
-                  className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${
+                  className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-semibold ${
                     s.status === "active"
                       ? "bg-accent/10 text-accent"
                       : s.status === "canceling"
-                      ? "bg-yellow-400/10 text-yellow-400"
+                      ? "bg-warning/10 text-warning"
                       : "border border-border-strong text-text-dim"
                   }`}
                 >
@@ -123,7 +123,7 @@ export default async function ClientDetailPage({
                     </span>
                   </p>
                   <span
-                    className={`shrink-0 rounded-full px-3 py-1 text-xs font-bold ${
+                    className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-semibold ${
                       left > 0
                         ? "bg-accent/10 text-accent"
                         : "border border-border-strong text-text-dim"

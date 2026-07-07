@@ -65,7 +65,7 @@ export default function DisputeResolver({ dispute }: { dispute: Dispute }) {
             </p>
           )}
         </div>
-        <span className="rounded-full bg-red-500/10 px-2 py-0.5 text-[10px] font-semibold text-red-400">
+        <span className="rounded-full bg-danger/10 px-2 py-0.5 text-[10px] font-semibold text-danger">
           litige
         </span>
       </div>
@@ -113,7 +113,7 @@ export default function DisputeResolver({ dispute }: { dispute: Dispute }) {
           </button>
         </div>
       </div>
-      {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
+      {error && <p className="mt-2 text-xs text-danger">{error}</p>}
     </div>
   );
 }

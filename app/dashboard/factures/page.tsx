@@ -106,7 +106,7 @@ export default async function InvoicesPage() {
 
         {/* Mentions légales incomplètes : les factures ne sont pas conformes */}
         {coach && !coach.siret && (
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-yellow-400/25 bg-yellow-400/[0.05] px-4 py-3.5">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-warning/25 bg-warning/[0.05] px-4 py-3.5">
             <div className="min-w-0">
               <p className="text-sm font-semibold text-text-base">
                 {inv.missingSiretTitle}
@@ -147,7 +147,7 @@ export default async function InvoicesPage() {
                     <span
                       className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                         r.refunded
-                          ? "bg-red-500/10 text-red-400"
+                          ? "bg-danger/10 text-danger"
                           : "bg-accent/10 text-accent"
                       }`}
                     >

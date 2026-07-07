@@ -163,7 +163,7 @@ export function NotificationBell() {
                     onClick={() => setOpen(false)}
                     className="flex items-center gap-3 border-b border-border/60 px-4 py-2.5 transition-colors hover:bg-bg-card"
                   >
-                    <span className="h-2 w-2 shrink-0 rounded-full bg-yellow-400" />
+                    <span className="h-2 w-2 shrink-0 rounded-full bg-warning" />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm text-text-base">
                         {[b.clients?.first_name, b.clients?.last_name]
@@ -180,7 +180,7 @@ export function NotificationBell() {
                         })}
                       </span>
                     </span>
-                    <span className="shrink-0 rounded-full bg-yellow-400/10 px-2 py-0.5 text-[10px] font-semibold text-yellow-400">
+                    <span className="shrink-0 rounded-full bg-warning/10 px-2 py-0.5 text-[10px] font-semibold text-warning">
                       {t("topbar.toConfirm")}
                     </span>
                   </Link>

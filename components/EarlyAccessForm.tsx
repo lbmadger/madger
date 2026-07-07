@@ -329,7 +329,7 @@ export default function EarlyAccessForm() {
                   </select>
                 </label>
 
-                {error && <p role="alert" className="text-sm text-red-400 text-center">{error}</p>}
+                {error && <p role="alert" className="text-sm text-danger text-center">{error}</p>}
 
                 <motion.button
                   type="button"
@@ -432,7 +432,7 @@ export default function EarlyAccessForm() {
                   />
                 </label>
 
-                {error && <p role="alert" className="text-sm text-red-400 text-center">{error}</p>}
+                {error && <p role="alert" className="text-sm text-danger text-center">{error}</p>}
 
                 <div className="flex gap-3 mt-2">
                   <button

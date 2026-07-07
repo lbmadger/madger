@@ -320,7 +320,7 @@ export default function ClientOnboarding() {
           </>
         )}
 
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <p className="text-sm text-danger">{error}</p>}
 
         {/* Navigation */}
         <div className="mt-2 flex gap-2">

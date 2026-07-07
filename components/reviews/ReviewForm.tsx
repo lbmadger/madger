@@ -128,7 +128,7 @@ export default function ReviewForm({ bookingId }: { bookingId: string }) {
         </label>
       )}
 
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
 
       <Button type="submit" disabled={loading} className="self-start">
         {loading ? t("reviews.sending") : t("reviews.submit")}

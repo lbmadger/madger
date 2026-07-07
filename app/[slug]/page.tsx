@@ -119,7 +119,7 @@ export default async function CoachPublicPage({
           </p>
         )}
         {searchParams.conflict === "1" && (
-          <p className="mx-auto mt-4 w-full max-w-2xl rounded-xl border border-yellow-400/25 bg-yellow-400/[0.06] px-4 py-3 text-center text-sm text-text-base">
+          <p className="mx-auto mt-4 w-full max-w-2xl rounded-xl border border-warning/25 bg-warning/[0.06] px-4 py-3 text-center text-sm text-text-base">
             {dict.booking.conflictBanner}
           </p>
         )}

@@ -555,7 +555,7 @@ export default function AgendaView({
                            <button
                              type="button"
                              onClick={() => setCancelId(b.id)}
-                             className="text-xs font-medium text-text-dim transition-colors hover:text-red-400"
+                             className="text-xs font-medium text-text-dim transition-colors hover:text-danger"
                            >
                              {t("agenda.cancelBooking")}
                            </button>
@@ -601,7 +601,7 @@ export default function AgendaView({
                   selected.is_block
                     ? "border border-border-strong text-text-muted"
                     : selected.status === "pending"
-                    ? "bg-yellow-400/10 text-yellow-400"
+                    ? "bg-warning/10 text-warning"
                     : "bg-accent/10 text-accent"
                 }`}
               >
@@ -614,7 +614,7 @@ export default function AgendaView({
             </div>
 
             {actionError && (
-              <p className="mt-3 text-sm text-red-400">{t(actionError)}</p>
+              <p className="mt-3 text-sm text-danger">{t(actionError)}</p>
             )}
 
             {selected.is_block ? (
@@ -778,7 +778,7 @@ export default function AgendaView({
               </div>
 
               {blockError && (
-                <p className="text-sm text-red-400">{t(blockError)}</p>
+                <p className="text-sm text-danger">{t(blockError)}</p>
               )}
 
               <div className="mt-1 flex gap-2">

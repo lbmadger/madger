@@ -461,7 +461,7 @@ export default function OnboardingForm({
             </span>
           </label>
 
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
           <Button type="submit" disabled={loading} className="mt-2 w-full">
             {loading ? t("onboarding.saving") : t("onboarding.next")}
           </Button>
@@ -527,7 +527,7 @@ export default function OnboardingForm({
             />
           </label>
 
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
           <Button
             onClick={submitPhotoBio}
             disabled={loading}
@@ -602,7 +602,7 @@ export default function OnboardingForm({
             </label>
           )}
 
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
           <Button
             onClick={submitActivity}
             disabled={loading}
@@ -654,7 +654,7 @@ export default function OnboardingForm({
             </label>
           </div>
 
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
           <Button
             onClick={submitService}
             disabled={loading}
@@ -718,7 +718,7 @@ export default function OnboardingForm({
             </label>
           </div>
 
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
           <Button
             onClick={submitAvailability}
             disabled={loading}

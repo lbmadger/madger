@@ -132,7 +132,7 @@ export default function ServicesView({
                   <button
                     type="button"
                     onClick={() => handleDelete(s.id)}
-                    className="text-xs font-medium text-red-400 transition-opacity hover:opacity-80"
+                    className="text-xs font-medium text-danger transition-opacity hover:opacity-80"
                   >
                     {t("services.delete")}
                   </button>
@@ -144,7 +144,7 @@ export default function ServicesView({
       )}
 
       {deleteError && (
-        <p className="mt-3 text-sm text-red-400">{t("services.errors.generic")}</p>
+        <p className="mt-3 text-sm text-danger">{t("services.errors.generic")}</p>
       )}
 
       {adding && (

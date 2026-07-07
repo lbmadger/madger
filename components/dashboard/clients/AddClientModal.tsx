@@ -118,7 +118,7 @@ export default function AddClientModal({
             />
           </label>
 
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
 
           <div className="mt-1 flex gap-2">
             <Button

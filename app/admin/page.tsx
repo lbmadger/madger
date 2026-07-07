@@ -62,7 +62,7 @@ export default async function AdminOverview() {
             <div
               className={`rounded-2xl border p-4 ${
                 c.alert
-                  ? "border-red-500/30 bg-red-500/[0.04]"
+                  ? "border-danger/30 bg-danger/[0.04]"
                   : "border-border bg-bg-card"
               }`}
             >

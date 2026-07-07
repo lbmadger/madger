@@ -138,7 +138,7 @@ export default function ClientSpace({
   const statusChip: Record<string, { label: string; cls: string }> = {
     pending: {
       label: t("clientSpace.statusPending"),
-      cls: "bg-yellow-400/10 text-yellow-400",
+      cls: "bg-warning/10 text-warning",
     },
     confirmed: {
       label: t("clientSpace.statusConfirmed"),
@@ -150,7 +150,7 @@ export default function ClientSpace({
     },
     cancelled: {
       label: t("clientSpace.statusCancelled"),
-      cls: "bg-red-500/10 text-red-400",
+      cls: "bg-danger/10 text-danger",
     },
   };
 
@@ -222,7 +222,7 @@ export default function ClientSpace({
                         active
                           ? "bg-accent/10 text-accent"
                           : canceling
-                          ? "bg-yellow-400/10 text-yellow-400"
+                          ? "bg-warning/10 text-warning"
                           : "border border-border-strong text-text-dim"
                       }`}
                     >
@@ -244,7 +244,7 @@ export default function ClientSpace({
                         type="button"
                         disabled={subCancelling === s.id}
                         onClick={() => cancelSub(s.id)}
-                        className="text-xs font-medium text-text-dim transition-colors hover:text-red-400 disabled:opacity-50"
+                        className="text-xs font-medium text-text-dim transition-colors hover:text-danger disabled:opacity-50"
                       >
                         {subCancelling === s.id
                           ? t("clientSpace.cancelling")
@@ -253,7 +253,7 @@ export default function ClientSpace({
                     )}
                   </div>
                   {subError === s.id && (
-                    <p className="mt-2 text-xs text-red-400">
+                    <p className="mt-2 text-xs text-danger">
                       {t("clientSpace.cancelError")}
                     </p>
                   )}
@@ -385,20 +385,20 @@ export default function ClientSpace({
                         type="button"
                         disabled={cancelling}
                         onClick={() => cancel(b.id)}
-                        className="flex-1 rounded-full bg-red-500/15 px-3 py-2 text-xs font-semibold text-red-400 transition-colors hover:bg-red-500/25 disabled:opacity-50"
+                        className="flex-1 rounded-full bg-danger/15 px-3 py-2 text-xs font-semibold text-danger transition-colors hover:bg-danger/25 disabled:opacity-50"
                       >
                         {cancelling
                           ? t("clientSpace.cancelling")
                           : t("clientSpace.confirmCancel")}
                       </button>
                     </div>
-                    {error && <p className="text-xs text-red-400">{error}</p>}
+                    {error && <p className="text-xs text-danger">{error}</p>}
                   </div>
                 ) : (
                   <button
                     type="button"
                     onClick={() => setCancelId(b.id)}
-                    className="text-xs font-medium text-text-dim transition-colors hover:text-red-400"
+                    className="text-xs font-medium text-text-dim transition-colors hover:text-danger"
                   >
                     {t("clientSpace.cancelBtn")}
                   </button>

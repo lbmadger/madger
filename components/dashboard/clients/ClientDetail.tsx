@@ -152,7 +152,7 @@ export default function ClientDetail({ client }: { client: Client }) {
               type="button"
               onClick={handleDelete}
               disabled={loading}
-              className="mt-6 text-sm font-medium text-red-400 transition-opacity hover:opacity-80 disabled:opacity-50"
+              className="mt-6 text-sm font-medium text-danger transition-opacity hover:opacity-80 disabled:opacity-50"
             >
               {t("clients.detail.delete")}
             </button>
@@ -175,7 +175,7 @@ export default function ClientDetail({ client }: { client: Client }) {
               />
             </label>
 
-            {error && <p className="text-sm text-red-400">{error}</p>}
+            {error && <p className="text-sm text-danger">{error}</p>}
 
             <div className="mt-1 flex gap-2">
               <Button
@@ -193,7 +193,7 @@ export default function ClientDetail({ client }: { client: Client }) {
         )}
       </div>
 
-      {error && !editing && <p className="mt-3 text-sm text-red-400">{error}</p>}
+      {error && !editing && <p className="mt-3 text-sm text-danger">{error}</p>}
     </>
   );
 }

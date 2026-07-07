@@ -260,7 +260,7 @@ export default function WeekView({
                       b.is_block
                         ? "border-border-strong bg-white/[0.06]"
                         : b.status === "pending"
-                        ? "border-yellow-400 bg-yellow-400/10"
+                        ? "border-warning bg-warning/10"
                         : "border-accent bg-bg-elevated"
                     }`;
                     const title = `${clientName(b)} · ${s.toLocaleTimeString(loc, { hour: "2-digit", minute: "2-digit" })}`;
@@ -305,7 +305,7 @@ export default function WeekView({
             {t("agenda.legendBooked")}
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-sm border-l-2 border-yellow-400 bg-yellow-400/10" />
+            <span className="h-2.5 w-2.5 rounded-sm border-l-2 border-warning bg-warning/10" />
             {t("agenda.pending")}
           </span>
         </div>

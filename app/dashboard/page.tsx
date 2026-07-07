@@ -559,6 +559,25 @@ export default async function OverviewPage() {
           </p>
         </div>
 
+        {/* Demandes en attente : l'action n°1, affichée avant tout le reste
+            (sur mobile la page est longue, pas question de la faire défiler). */}
+        {pendingCount > 0 && (
+          <Link
+            href="/dashboard/agenda"
+            className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-warning/30 bg-warning/[0.06] px-4 py-3 transition-colors hover:border-warning/50"
+          >
+            <p className="text-sm font-semibold text-text-base">
+              {pendingCount}{" "}
+              {pendingCount > 1
+                ? dict.agenda.pendingBannerPlural
+                : dict.agenda.pendingBanner}
+            </p>
+            <span className="shrink-0 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-black">
+              {dict.agenda.confirm}
+            </span>
+          </Link>
+        )}
+
         {/* Conseils de Leia : bande fine dépliable, tout en haut */}
         <LeiaTips tips={leiaTips} dailyIndex={leiaDailyIndex} />
 

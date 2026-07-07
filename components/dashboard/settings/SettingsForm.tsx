@@ -108,6 +108,8 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  // Section du dernier enregistrement : le feedback ne s'affiche que là.
+  const [feedbackFor, setFeedbackFor] = useState<string | null>(null);
 
   // Upload de la photo de profil vers le Storage (avatars/<uid>/avatar).
   async function uploadAvatar(file: File) {
@@ -143,9 +145,10 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
     }
   }
 
-  async function handleSave() {
+  async function handleSave(section: string) {
     setError(null);
     setSaved(false);
+    setFeedbackFor(section);
     if (!firstName.trim()) return setError(t("settings.errors.nameRequired"));
     if (!isValidSlug(slug)) return setError(t("settings.errors.slugInvalid"));
 
@@ -265,7 +268,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
               {uploading ? t("settings.photoUploading") : t("settings.photoChange")}
             </button>
             {avatarError && (
-              <p className="mt-1 text-xs text-red-400">{avatarError}</p>
+              <p className="mt-1 text-xs text-danger">{avatarError}</p>
             )}
           </div>
           <input
@@ -340,10 +343,10 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             </span>
           </label>
 
-          {error && <p className="text-sm text-red-400">{error}</p>}
-          {saved && <p className="text-sm text-accent">{t("settings.saved")}</p>}
+          {error && feedbackFor === "profile" && <p className="text-sm text-danger">{error}</p>}
+          {saved && feedbackFor === "profile" && <p className="text-sm text-accent">{t("settings.saved")}</p>}
 
-          <Button onClick={handleSave} disabled={loading} className="mt-1 self-start">
+          <Button onClick={() => handleSave("profile")} disabled={loading} className="mt-1 self-start">
             {loading ? t("settings.saving") : t("settings.save")}
           </Button>
         </div>
@@ -441,11 +444,11 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           )}
 
           <div className="flex items-center gap-3">
-            <Button onClick={handleSave} disabled={loading} className="self-start">
+            <Button onClick={() => handleSave("activity")} disabled={loading} className="self-start">
               {loading ? t("settings.saving") : t("settings.save")}
             </Button>
-            {error && <p className="text-sm text-red-400">{error}</p>}
-            {saved && <p className="text-sm text-accent">{t("settings.saved")}</p>}
+            {error && feedbackFor === "activity" && <p className="text-sm text-danger">{error}</p>}
+            {saved && feedbackFor === "activity" && <p className="text-sm text-accent">{t("settings.saved")}</p>}
           </div>
         </div>
       </SettingsSection>
@@ -510,11 +513,11 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         </div>
 
         <div className="mt-4 flex items-center gap-3">
-          <Button onClick={handleSave} disabled={loading} className="self-start">
+          <Button onClick={() => handleSave("booking")} disabled={loading} className="self-start">
             {loading ? t("settings.saving") : t("settings.save")}
           </Button>
-          {error && <p className="text-sm text-red-400">{error}</p>}
-          {saved && <p className="text-sm text-accent">{t("settings.saved")}</p>}
+          {error && feedbackFor === "booking" && <p className="text-sm text-danger">{error}</p>}
+          {saved && feedbackFor === "booking" && <p className="text-sm text-accent">{t("settings.saved")}</p>}
         </div>
       </SettingsSection>
 
@@ -568,9 +571,17 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           </svg>
         </Link>
 
-        <Button onClick={handleSave} disabled={loading} className="mt-4 self-start">
-          {loading ? t("cancellation.saving") : t("cancellation.save")}
-        </Button>
+        <div className="mt-4 flex items-center gap-3">
+          <Button onClick={() => handleSave("cancellation")} disabled={loading} className="self-start">
+            {loading ? t("cancellation.saving") : t("cancellation.save")}
+          </Button>
+          {error && feedbackFor === "cancellation" && (
+            <p className="text-sm text-danger">{error}</p>
+          )}
+          {saved && feedbackFor === "cancellation" && (
+            <p className="text-sm text-accent">{t("settings.saved")}</p>
+          )}
+        </div>
       </SettingsSection>
 
       {/* Facturation : mentions légales affichées sur chaque facture */}
@@ -622,11 +633,11 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           </p>
 
           <div className="flex items-center gap-3">
-            <Button onClick={handleSave} disabled={loading} className="self-start">
+            <Button onClick={() => handleSave("billing")} disabled={loading} className="self-start">
               {loading ? t("settings.saving") : t("settings.save")}
             </Button>
-            {error && <p className="text-sm text-red-400">{error}</p>}
-            {saved && <p className="text-sm text-accent">{t("settings.saved")}</p>}
+            {error && feedbackFor === "billing" && <p className="text-sm text-danger">{error}</p>}
+            {saved && feedbackFor === "billing" && <p className="text-sm text-accent">{t("settings.saved")}</p>}
           </div>
         </div>
       </SettingsSection>
@@ -649,7 +660,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             {t("settings.googleHint")}
           </p>
           {googleMsg && (
-            <p className="mt-2 rounded-lg border border-yellow-400/25 bg-yellow-400/[0.06] px-3 py-2 text-xs text-yellow-400">
+            <p className="mt-2 rounded-lg border border-warning/25 bg-warning/[0.06] px-3 py-2 text-xs text-warning">
               {googleMsg === "notconfigured"
                 ? t("settings.googleNotConfigured")
                 : t("settings.googleError")}
@@ -667,7 +678,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
                   await fetch("/api/google/disconnect", { method: "POST" });
                   router.refresh();
                 }}
-                className="text-xs font-medium text-text-dim transition-colors hover:text-red-400"
+                className="text-xs font-medium text-text-dim transition-colors hover:text-danger"
               >
                 {t("settings.googleDisconnect")}
               </button>
@@ -707,11 +718,11 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             </span>
           </label>
           <div className="mt-3 flex items-center gap-3">
-            <Button onClick={handleSave} disabled={loading} className="self-start">
+            <Button onClick={() => handleSave("prefs")} disabled={loading} className="self-start">
               {loading ? t("settings.saving") : t("settings.save")}
             </Button>
-            {error && <p className="text-sm text-red-400">{error}</p>}
-            {saved && <p className="text-sm text-accent">{t("settings.saved")}</p>}
+            {error && feedbackFor === "prefs" && <p className="text-sm text-danger">{error}</p>}
+            {saved && feedbackFor === "prefs" && <p className="text-sm text-accent">{t("settings.saved")}</p>}
           </div>
         </div>
       </SettingsSection>

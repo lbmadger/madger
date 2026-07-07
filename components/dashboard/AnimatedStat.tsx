@@ -82,7 +82,7 @@ export default function AnimatedStat({
         {trend && (
           <span
             className={`flex items-center gap-0.5 text-xs font-semibold ${
-              trend.positive ? "text-accent" : "text-red-400"
+              trend.positive ? "text-accent" : "text-danger"
             }`}
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

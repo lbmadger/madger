@@ -102,7 +102,7 @@ function AccessForm() {
             className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-center text-base tracking-widest text-white outline-none transition-colors focus:border-[#CBFF03]"
           />
           {error && (
-            <p className="text-sm text-red-400">Code incorrect. Réessaie.</p>
+            <p className="text-sm text-danger">Code incorrect. Réessaie.</p>
           )}
           <button
             type="submit"
