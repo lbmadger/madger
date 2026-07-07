@@ -57,14 +57,14 @@ export default function ServicesView({
           </span>{" "}
           {t("services.title").toLowerCase()}
         </p>
-        {canCreate && (
-          <Button
-            onClick={() => setAdding(true)}
-            className="shrink-0 whitespace-nowrap px-4 py-2.5"
-          >
-            + {t("services.add")}
-          </Button>
-        )}
+        <Button
+          onClick={() => setAdding(true)}
+          disabled={!canCreate}
+          title={!canCreate ? t("services.needStripeTitle") : undefined}
+          className="shrink-0 whitespace-nowrap px-4 py-2.5"
+        >
+          + {t("services.add")}
+        </Button>
       </div>
 
       {initialServices.length === 0 ? (
@@ -75,11 +75,14 @@ export default function ServicesView({
           <p className="mx-auto mt-1 max-w-sm text-sm text-text-muted">
             {t("services.emptyDesc")}
           </p>
-          {canCreate && (
-            <Button onClick={() => setAdding(true)} className="mt-5">
-              + {t("services.add")}
-            </Button>
-          )}
+          <Button
+            onClick={() => setAdding(true)}
+            disabled={!canCreate}
+            title={!canCreate ? t("services.needStripeTitle") : undefined}
+            className="mt-5"
+          >
+            + {t("services.add")}
+          </Button>
         </div>
       ) : (
         <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">

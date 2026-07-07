@@ -187,6 +187,7 @@ const fr = {
     calendarNote:
       "Tes créneaux sont en place : les voici en vert, avec tes séances par-dessus.",
     editInSettings: "Modifier mes créneaux",
+    editTitle: "Modifier mes créneaux",
     addRange: "Ajouter un créneau",
     add: "Ajouter",
     none: "Aucun créneau",
@@ -225,6 +226,9 @@ const fr = {
     viewWeek: "Semaine",
     viewList: "Liste",
     todayBtn: "Aujourd'hui",
+    pendingBanner: "demande de réservation à confirmer",
+    pendingBannerPlural: "demandes de réservation à confirmer",
+    pendingSeeAll: "Voir toutes les demandes",
     blocked: "Bloqué",
     blockBtn: "Bloquer un créneau",
     blockDesc: "Les clients ne pourront pas réserver sur cette plage.",
@@ -285,7 +289,7 @@ const fr = {
     pro: "Pro",
     proActive: "Pro actif",
     welcomePro:
-      "Bienvenue en Pro. 0% de commission, statistiques avancées débloquées.",
+      "Bienvenue en Pro. 0 % de commission, statistiques avancées débloquées.",
     proUntil: "Pro jusqu'au",
     daysLeft: "j restants",
     freeDesc: "Pour démarrer.",
@@ -297,6 +301,9 @@ const fr = {
     billingMonthly: "Mensuel",
     billingAnnual: "Annuel",
     annualSave: "2 mois offerts",
+    annualMonthlyEq: "soit 40,83 € par mois",
+    savingsIntro: "Sur les 90 derniers jours, la commission Madger t'a coûté",
+    savingsOutro: "En Pro, elle serait tombée à 0 €.",
     upgrading: "Redirection…",
     featuresFree: [
       "Lien public personnalisé",
@@ -320,6 +327,9 @@ const fr = {
     currentBadge: "Ton offre actuelle",
     upsellTitle: "Passe à Pro",
     upsellDesc: "0 % de commission, page personnalisée, stats avancées.",
+    upsellComputedTitle: "Sur 30 jours, la commission t'a coûté",
+    upsellComputedDesc:
+      "En Pro : 0 % de commission. Il se rembourse souvent tout seul.",
     upsellCta: "Découvrir Pro",
   },
   promo: {
@@ -343,6 +353,8 @@ const fr = {
       "Branche ton compte Stripe pour recevoir les paiements de tes clients directement sur ton compte.",
     connect: "Connecter Stripe",
     connecting: "Redirection…",
+    connectError:
+      "La connexion à Stripe n'a pas pu démarrer. Réessaie dans un instant.",
     connectedTitle: "Compte Stripe connecté",
     connectedDesc:
       "Tu peux recevoir des paiements de tes clients directement sur ton compte.",
@@ -367,6 +379,7 @@ const fr = {
       "Fonds gelés le temps de l'arbitrage. Tu seras prévenu par email.",
     releasePlanned: "Versement prévu le",
     netPaid: "Net versé :",
+    commissionLabel: "Commission Madger :",
     refundedLabel: "Remboursé au client :",
   },
   stats: {
@@ -416,6 +429,10 @@ const fr = {
     needStripeDesc:
       "Tes prestations sont payées en ligne par tes clients : active d'abord les paiements, la création se débloque ensuite.",
     needStripeCta: "Activer les paiements",
+    needSiretTitle: "Ajoute ton SIRET pour créer tes prestations",
+    needSiretDesc:
+      "Chaque encaissement génère une facture : sans SIRET, elle n'est pas conforme. 30 secondes dans les réglages et c'est réglé.",
+    needSiretCta: "Ajouter mon SIRET",
     delete: "Supprimer",
     deleteConfirm: "Supprimer cette prestation ?",
     form: {
@@ -631,13 +648,20 @@ const fr = {
       tooSoon:
         "Ce créneau est trop proche : le coach n'accepte plus de réservation à si court délai. Choisis un créneau plus tard.",
     },
-    authRequiredTitle: "Connecte-toi pour réserver",
+    authRequiredTitle: "Dernière étape : ton compte",
     authRequiredDesc:
-      "Un compte te permet de suivre tes séances, d'annuler en un clic et d'échanger avec ton coach. C'est fait en 30 secondes.",
+      "Ton créneau est gardé de côté. Un compte en 30 secondes pour suivre tes séances, annuler en un clic et échanger avec ton coach.",
     loginCta: "J'ai déjà un compte",
+    slotKept: "Créneau conservé :",
+    backToBooking: "Revenir à ma réservation",
+    contactCoach: "Contacter le coach",
+    freeHint:
+      "Propose l'horaire qui t'arrange : le coach le confirme ou t'en propose un autre.",
     reserve: "Réserver ·",
+    authTitle: "Ta carte n'est pas débitée aujourd'hui",
     authNote:
-      "Tu ne seras débité que si le coach accepte ta demande. Refus ou absence de réponse : rien n'est prélevé.",
+      "Ta carte est simplement enregistrée. Tu ne seras débité que si le coach accepte ta demande. Refus ou absence de réponse : rien n'est prélevé.",
+    chargedOnAccept: "Débité uniquement si le coach accepte ta demande.",
     slotsError: "Impossible de charger les créneaux du coach.",
     retry: "Réessayer",
     unpayableService:
@@ -645,6 +669,8 @@ const fr = {
     viewBooking: "Suivre ma réservation",
     paidBanner:
       "Paiement reçu ! Ta confirmation arrive par email d'ici quelques minutes.",
+    paymentCanceledBanner:
+      "Le paiement n'a pas abouti : rien n'a été débité. Tu peux reprendre ta réservation quand tu veux.",
     conflictBanner:
       "Ce créneau venait d'être pris par quelqu'un d'autre : tu as été intégralement remboursé. Choisis un autre créneau.",
     subBanner:
@@ -746,6 +772,11 @@ const fr = {
     addToCalendar: "Ajouter à Google Calendar",
     notFound: "Réservation introuvable.",
     backHome: "Retour à l'accueil",
+    pendingTitle: "En attente de la réponse du coach",
+    pendingDescAuthorized:
+      "Ta carte n'a pas été débitée. Le débit n'aura lieu que si le coach accepte ; sinon, rien n'est prélevé. Tu seras prévenu par email dans les deux cas.",
+    pendingDesc:
+      "Le coach confirme ta demande au plus vite. Tu seras prévenu par email dès sa réponse.",
   },
   cancellation: {
     title: "Politique d'annulation",
@@ -916,6 +947,9 @@ const fr = {
     statusSettled: "Prélevée sur tes encaissements",
     madgerFooter:
       "Commission de service prélevée sur les paiements encaissés via la plateforme, conformément aux CGV. Document généré automatiquement par Madger.",
+    commissionYearTotal: "Commission Madger",
+    commissionYearPro: "En Pro, elle serait de 0 €.",
+    commissionYearCta: "Passer à Pro",
   },
   clientSpace: {
     title: "Mes séances",
@@ -927,6 +961,8 @@ const fr = {
     noUpcoming: "Aucune séance à venir. Trouve ton coach et réserve ta première séance.",
     with: "avec",
     online: "en visio",
+    viewBooking: "Détails de la séance",
+    viewBookingOnline: "Détails et lien visio",
     statusPending: "À confirmer",
     statusConfirmed: "Confirmée",
     statusCompleted: "Terminée",
@@ -1017,7 +1053,7 @@ const fr = {
         body: "Ta moyenne est sous les 4.8, le seuil du badge Super coach. Ponctualité, suivi personnalisé et petit message après la séance font toute la différence.",
       },
       pro: {
-        title: "Passe en Pro, garde 100% de tes gains",
+        title: "Passe en Pro : tu gardes 100 % de ce que tu encaisses",
         body: "Tu encaisses régulièrement : avec le plan Pro, la commission Madger passe de 5% à 0%. Il se rembourse souvent tout seul.",
         cta: "Découvrir Pro",
       },
@@ -1235,6 +1271,7 @@ const en: Dictionary = {
     calendarNote:
       "Your slots are set: here they are in green, with your sessions on top.",
     editInSettings: "Edit my slots",
+    editTitle: "Edit my slots",
     addRange: "Add a slot",
     add: "Add",
     none: "No slots",
@@ -1273,6 +1310,9 @@ const en: Dictionary = {
     viewWeek: "Week",
     viewList: "List",
     todayBtn: "Today",
+    pendingBanner: "booking request to confirm",
+    pendingBannerPlural: "booking requests to confirm",
+    pendingSeeAll: "See all requests",
     blocked: "Blocked",
     blockBtn: "Block a slot",
     blockDesc: "Clients will not be able to book during this window.",
@@ -1344,6 +1384,9 @@ const en: Dictionary = {
     billingMonthly: "Monthly",
     billingAnnual: "Annual",
     annualSave: "2 months free",
+    annualMonthlyEq: "that is €40.83 per month",
+    savingsIntro: "Over the last 90 days, the Madger commission cost you",
+    savingsOutro: "On Pro, it would have been €0.",
     upgrading: "Redirecting…",
     featuresFree: [
       "Personalized public link",
@@ -1367,6 +1410,9 @@ const en: Dictionary = {
     currentBadge: "Your current plan",
     upsellTitle: "Go Pro",
     upsellDesc: "0% commission, custom page, advanced stats.",
+    upsellComputedTitle: "Over 30 days, the commission cost you",
+    upsellComputedDesc:
+      "On Pro: 0% commission. It often pays for itself.",
     upsellCta: "Discover Pro",
   },
   promo: {
@@ -1390,6 +1436,7 @@ const en: Dictionary = {
       "Connect your Stripe account to receive client payments directly.",
     connect: "Connect Stripe",
     connecting: "Redirecting…",
+    connectError: "Stripe connection could not start. Try again in a moment.",
     connectedTitle: "Stripe account connected",
     connectedDesc:
       "You can receive payments from your clients directly to your account.",
@@ -1414,6 +1461,7 @@ const en: Dictionary = {
       "Funds frozen during arbitration. You will be notified by email.",
     releasePlanned: "Payout planned on",
     netPaid: "Net paid:",
+    commissionLabel: "Madger commission:",
     refundedLabel: "Refunded to client:",
   },
   stats: {
@@ -1463,6 +1511,10 @@ const en: Dictionary = {
     needStripeDesc:
       "Your services are paid online by your clients: enable payments first, then creation unlocks.",
     needStripeCta: "Enable payments",
+    needSiretTitle: "Add your SIRET to create your services",
+    needSiretDesc:
+      "Every payment generates an invoice: without a SIRET it is not compliant. 30 seconds in the settings and you are done.",
+    needSiretCta: "Add my SIRET",
     delete: "Delete",
     deleteConfirm: "Delete this service?",
     form: {
@@ -1677,13 +1729,20 @@ const en: Dictionary = {
       tooSoon:
         "This slot is too close: the coach no longer accepts bookings on such short notice. Pick a later slot.",
     },
-    authRequiredTitle: "Sign in to book",
+    authRequiredTitle: "Last step: your account",
     authRequiredDesc:
-      "An account lets you track your sessions, cancel in one click and chat with your coach. It takes 30 seconds.",
+      "Your slot is set aside. An account in 30 seconds to track your sessions, cancel in one click and chat with your coach.",
     loginCta: "I already have an account",
+    slotKept: "Slot kept:",
+    backToBooking: "Back to my booking",
+    contactCoach: "Contact the coach",
+    freeHint:
+      "Suggest the time that suits you: the coach confirms it or offers another one.",
     reserve: "Book ·",
+    authTitle: "Your card is not charged today",
     authNote:
-      "You will only be charged if the coach accepts your request. Declined or no answer: nothing is taken.",
+      "Your card is simply saved. You will only be charged if the coach accepts your request. Declined or no answer: nothing is taken.",
+    chargedOnAccept: "Charged only if the coach accepts your request.",
     slotsError: "Could not load this coach's slots.",
     retry: "Try again",
     unpayableService:
@@ -1691,6 +1750,8 @@ const en: Dictionary = {
     viewBooking: "Track my booking",
     paidBanner:
       "Payment received! Your confirmation is on its way by email within a few minutes.",
+    paymentCanceledBanner:
+      "The payment did not go through: nothing was charged. You can resume your booking anytime.",
     conflictBanner:
       "This slot had just been taken by someone else: you have been fully refunded. Please pick another slot.",
     subBanner:
@@ -1788,6 +1849,11 @@ const en: Dictionary = {
     addToCalendar: "Add to Google Calendar",
     notFound: "Booking not found.",
     backHome: "Back to home",
+    pendingTitle: "Waiting for the coach's answer",
+    pendingDescAuthorized:
+      "Your card has not been charged. It will only be charged if the coach accepts; otherwise nothing is taken. You will be notified by email either way.",
+    pendingDesc:
+      "The coach will confirm your request as soon as possible. You will be notified by email.",
   },
   cancellation: {
     title: "Cancellation policy",
@@ -1955,6 +2021,9 @@ const en: Dictionary = {
     statusSettled: "Deducted from your payouts",
     madgerFooter:
       "Service commission deducted from payments collected through the platform, as per the Terms. Document generated automatically by Madger.",
+    commissionYearTotal: "Madger commission",
+    commissionYearPro: "On Pro, it would be €0.",
+    commissionYearCta: "Go Pro",
   },
   clientSpace: {
     title: "My sessions",
@@ -1966,6 +2035,8 @@ const en: Dictionary = {
     noUpcoming: "No upcoming session. Find your coach and book your first session.",
     with: "with",
     online: "online",
+    viewBooking: "Session details",
+    viewBookingOnline: "Details and video link",
     statusPending: "To confirm",
     statusConfirmed: "Confirmed",
     statusCompleted: "Completed",

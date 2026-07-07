@@ -1,6 +1,4 @@
-import Link from "next/link";
 import Topbar from "@/components/dashboard/Topbar";
-import { PencilIcon } from "@/components/ui/icons";
 import AvailabilityEditor from "@/components/dashboard/availability/AvailabilityEditor";
 import WeekView from "@/components/dashboard/agenda/WeekView";
 import { createClient } from "@/lib/supabase/server";
@@ -8,9 +6,10 @@ import { getServerDictionary } from "@/lib/i18n/server";
 import type { Availability } from "@/lib/availability/types";
 import type { Booking } from "@/lib/bookings/types";
 
-// Page Disponibilités. Tant qu'aucun créneau n'existe : l'éditeur (première
-// configuration). Dès que les créneaux sont choisis : le calendrier de la
-// semaine (dispos en fond + séances) — la modification se fait dans Réglages.
+// Page Disponibilités. Tant qu'aucun créneau n'existe : l'éditeur seul
+// (première configuration). Ensuite : le calendrier de la semaine (dispos en
+// fond + séances) AVEC l'éditeur juste en dessous. On modifie ses horaires
+// ici, là où on les regarde, sans détour par les réglages.
 export default async function AvailabilityPage() {
   const { dict } = getServerDictionary();
   const supabase = createClient();
@@ -36,21 +35,19 @@ export default async function AvailabilityPage() {
       >
         {hasSlots ? (
           <>
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-text-muted">
-                {dict.availability.calendarNote}
-              </p>
-              <Link
-                href="/dashboard/reglages#disponibilites"
-                className="shrink-0 rounded-full border border-border-strong px-4 py-2 text-sm font-medium text-text-base transition-colors hover:border-accent"
-              >
-                <PencilIcon size={12} className="mr-1.5 inline-block align-[-2px]" />{dict.availability.editInSettings}
-              </Link>
-            </div>
+            <p className="mb-4 text-sm text-text-muted">
+              {dict.availability.calendarNote}
+            </p>
             <WeekView
               bookings={(bookings ?? []) as Booking[]}
               availabilities={availabilities}
             />
+            <section className="mt-6">
+              <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-text-dim">
+                {dict.availability.editTitle}
+              </h2>
+              <AvailabilityEditor initial={availabilities} />
+            </section>
           </>
         ) : (
           <>

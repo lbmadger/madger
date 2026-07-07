@@ -8,12 +8,18 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 // le paiement d'abonnement Stripe (mensuel ou annuel).
 export default function PricingPlans({
   currentPlan,
+  commission90dCents = 0,
 }: {
   currentPlan: "free" | "pro";
+  // Commission Madger réellement prélevée sur les 90 derniers jours : sert
+  // à l'argument chiffré personnalisé (« en Pro tu aurais économisé X € »).
+  commission90dCents?: number;
 }) {
-  const { t, dict } = useI18n();
+  const { t, dict, locale } = useI18n();
   const p = dict.plans;
-  const [period, setPeriod] = useState<"monthly" | "annual">("monthly");
+  // Annuel par défaut : c'est la meilleure offre (2 mois offerts), autant
+  // qu'elle soit visible sans clic.
+  const [period, setPeriod] = useState<"monthly" | "annual">("annual");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -121,7 +127,25 @@ export default function PricingPlans({
             </span>
           )}
         </div>
-        <p className="text-xs text-text-dim">{p.proNote}</p>
+        {period === "annual" && (
+          <p className="text-xs text-text-muted">{p.annualMonthlyEq}</p>
+        )}
+        <p className="mt-1 text-xs text-text-dim">{p.proNote}</p>
+
+        {/* Argument chiffré personnalisé : ce que le coach a réellement payé
+            en commission sur 90 jours, face au prix du Pro. */}
+        {currentPlan === "free" && commission90dCents > 0 && (
+          <p className="mt-3 rounded-xl border border-accent/25 bg-accent/[0.06] px-3.5 py-2.5 text-xs leading-relaxed text-text-base">
+            {p.savingsIntro}{" "}
+            <strong className="text-accent">
+              {(commission90dCents / 100).toLocaleString(
+                locale === "fr" ? "fr-FR" : "en-US",
+                { style: "currency", currency: "EUR", maximumFractionDigits: 0 }
+              )}
+            </strong>{" "}
+            {p.savingsOutro}
+          </p>
+        )}
 
         <ul className="mt-4 flex flex-col gap-2">
           {p.featuresPro.map((f) => (

@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
         },
       },
       success_url: `${origin}/api/stripe/subscribe/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/${coach_slug}`,
+      cancel_url: `${origin}/${coach_slug}?payment=canceled&book=${service_id}`,
       metadata: {
         kind: "client_sub",
         coach_id: coach.id,
@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
       ...(approval ? { capture_method: "manual" as const } : {}),
     },
     success_url: `${origin}/api/stripe/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/${coach_slug}`,
+    cancel_url: `${origin}/${coach_slug}?payment=canceled&book=${service_id}`,
     metadata: {
       coach_id: coach.id,
       coach_slug: String(coach_slug),

@@ -29,7 +29,11 @@ export default function ClientSheet({ profile }: { profile: ClientProfile }) {
     <details className="group border-b border-border bg-bg-card/60">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-2.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base [&::-webkit-details-marker]:hidden">
         <span className="flex items-center gap-2">
-          <span className="text-accent">📋</span>
+          <svg className="shrink-0 text-accent" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <path d="M14 2v6h6" />
+            <path d="M9 13h6M9 17h6" />
+          </svg>
           {t("clientSheet.title")}
           {value && (
             <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-semibold text-accent">

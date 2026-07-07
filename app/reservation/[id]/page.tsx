@@ -129,6 +129,21 @@ export default async function ReservationPage({
                 </p>
               )}
 
+              {/* Demande en attente d'acceptation : on rassure explicitement
+                  (empreinte seulement, rien n'est débité d'ici la réponse). */}
+              {booking.status === "pending" && (
+                <div className="mt-4 rounded-xl border border-warning/30 bg-warning/[0.06] px-4 py-3">
+                  <p className="text-sm font-semibold text-text-base">
+                    {r.pendingTitle}
+                  </p>
+                  <p className="mt-0.5 text-xs text-text-muted">
+                    {booking.escrow_status === "authorized"
+                      ? r.pendingDescAuthorized
+                      : r.pendingDesc}
+                  </p>
+                </div>
+              )}
+
               {/* Visio + ajout au calendrier (séance à venir non annulée) */}
               {booking.status !== "cancelled" &&
                 new Date(booking.ends_at).getTime() > Date.now() && (

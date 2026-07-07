@@ -38,9 +38,22 @@ export default function AgendaView({
   const [cancelId, setCancelId] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const [confirming, setConfirming] = useState(false);
-  // Clé i18n du message d'erreur d'action (null = pas d'erreur).
+  // Clé i18n du message d'erreur d'action + séance concernée (l'erreur ne
+  // s'affiche que sous la carte visée, pas sous toutes les demandes).
   const [actionError, setActionError] = useState<string | null>(null);
-  const [view, setView] = useState<"week" | "list">("week");
+  const [actionErrorId, setActionErrorId] = useState<string | null>(null);
+  // Vue Liste d'office quand des demandes attendent : c'est LE geste du
+  // modèle validation manuelle, il doit sauter aux yeux.
+  const [view, setView] = useState<"week" | "list">(() =>
+    initialBookings.some(
+      (b) =>
+        b.status === "pending" &&
+        !b.is_block &&
+        new Date(b.ends_at).getTime() >= Date.now()
+    )
+      ? "list"
+      : "week"
+  );
   // Séance sélectionnée depuis la grille semaine (confirmer/refuser/modifier).
   const [selected, setSelected] = useState<Booking | null>(null);
   // Blocage d'un créneau (façon Airbnb) : aucune réservation possible dessus.
@@ -118,6 +131,7 @@ export default function AgendaView({
   async function confirmBooking(id: string) {
     setConfirming(true);
     setActionError(null);
+    setActionErrorId(id);
     try {
       const res = await fetch("/api/bookings/confirm", {
         method: "POST",
@@ -150,6 +164,7 @@ export default function AgendaView({
   async function cancelBooking(id: string, by: "coach" | "client") {
     setCancelling(true);
     setActionError(null);
+    setActionErrorId(id);
     try {
       const res = await fetch("/api/bookings/cancel", {
         method: "POST",
@@ -219,8 +234,83 @@ export default function AgendaView({
       .join(" ");
   }
 
+  // Demandes en attente à venir : bandeau prioritaire en tête d'agenda.
+  const pendingRequests = initialBookings.filter(
+    (b) =>
+      b.status === "pending" &&
+      !b.is_block &&
+      new Date(b.ends_at).getTime() >= Date.now()
+  );
+
   return (
     <>
+      {/* Demandes à confirmer : LE geste critique, affiché avant tout le
+          reste avec confirmation/refus en un clic. */}
+      {pendingRequests.length > 0 && (
+        <div className="mb-4 rounded-2xl border border-warning/30 bg-warning/[0.05] p-4">
+          <p className="text-sm font-semibold text-text-base">
+            {pendingRequests.length}{" "}
+            {pendingRequests.length > 1
+              ? t("agenda.pendingBannerPlural")
+              : t("agenda.pendingBanner")}
+          </p>
+          <ul className="mt-3 flex flex-col gap-2">
+            {pendingRequests.slice(0, 3).map((b) => (
+              <li
+                key={b.id}
+                className="flex flex-wrap items-center gap-2 rounded-xl bg-bg-card px-3 py-2.5 sm:flex-nowrap"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-text-base">
+                    {clientName(b)}
+                  </p>
+                  <p className="text-xs text-text-muted">
+                    {new Date(b.starts_at).toLocaleDateString(loc, {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                    })}{" "}
+                    · {timeRange(b)}
+                  </p>
+                </div>
+                <div className="flex shrink-0 gap-2">
+                  <button
+                    type="button"
+                    disabled={cancelling || confirming}
+                    onClick={() => cancelBooking(b.id, "coach")}
+                    className="rounded-full border border-border-strong px-3.5 py-1.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
+                  >
+                    {t("agenda.decline")}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={cancelling || confirming}
+                    onClick={() => confirmBooking(b.id)}
+                    className="rounded-full bg-accent px-3.5 py-1.5 text-xs font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-50"
+                  >
+                    {confirming && actionErrorId === b.id
+                      ? "…"
+                      : t("agenda.confirm")}
+                  </button>
+                </div>
+                {actionError && actionErrorId === b.id && (
+                  <p className="w-full text-xs text-danger">{t(actionError)}</p>
+                )}
+              </li>
+            ))}
+          </ul>
+          {pendingRequests.length > 3 && (
+            <button
+              type="button"
+              onClick={() => setView("list")}
+              className="mt-2 text-xs font-medium text-accent hover:underline"
+            >
+              {t("agenda.pendingSeeAll")}
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Pas encore de client : bannière (le calendrier reste visible pour
           poser ses disponibilités et voir la semaine). */}
       {clients.length === 0 && (
@@ -279,6 +369,9 @@ export default function AgendaView({
           <Button
             onClick={() => setAdding(true)}
             disabled={clients.length === 0}
+            title={
+              clients.length === 0 ? t("agenda.needClientTitle") : undefined
+            }
             className="whitespace-nowrap px-4 py-2.5"
           >
             + {t("agenda.add")}
@@ -397,8 +490,8 @@ export default function AgendaView({
                            {confirming ? "…" : t("agenda.confirm")}
                          </button>
                        </div>
-                       {actionError && (
-                         <p className="mt-2 text-xs text-red-400">
+                       {actionError && actionErrorId === b.id && (
+                         <p className="mt-2 text-xs text-danger">
                            {t(actionError)}
                          </p>
                        )}

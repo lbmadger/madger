@@ -8,6 +8,7 @@ import {
   madgerInvoiceNumber,
   commissionPeriod,
 } from "@/lib/invoices/utils";
+import { isPro } from "@/lib/subscription/plan";
 import { DownloadIcon, FileTextIcon } from "@/components/ui/icons";
 
 export const dynamic = "force-dynamic";
@@ -177,6 +178,39 @@ export default async function InvoicesPage() {
           {inv.madgerSection}
         </h2>
         <p className="mt-1 text-xs text-text-dim">{inv.madgerSubtitle}</p>
+
+        {/* Le coût réel du plan Gratuit, en euros, avec la sortie juste à
+            côté : c'est ici que le coach voit ce que Pro lui économiserait. */}
+        {coach &&
+          !isPro(coach.pro_until) &&
+          (() => {
+            const yearTotal = Array.from(byPeriod.entries())
+              .filter(([p]) => p.startsWith(String(year)))
+              .reduce((s, [, v]) => s + v.total, 0);
+            if (yearTotal <= 0) return null;
+            return (
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-accent/25 bg-accent/[0.05] px-4 py-3.5">
+                <p className="text-sm text-text-base">
+                  {inv.commissionYearTotal} {year} :{" "}
+                  <strong>
+                    {(yearTotal / 100).toLocaleString(loc, {
+                      style: "currency",
+                      currency: "EUR",
+                    })}
+                  </strong>{" "}
+                  <span className="text-text-muted">
+                    · {inv.commissionYearPro}
+                  </span>
+                </p>
+                <Link
+                  href="/dashboard/abonnement"
+                  className="shrink-0 rounded-full bg-accent px-4 py-2 text-xs font-bold text-black transition-opacity hover:opacity-90"
+                >
+                  {inv.commissionYearCta}
+                </Link>
+              </div>
+            );
+          })()}
         {madgerRows.length === 0 ? (
           <div className="mt-3 rounded-2xl border border-border bg-bg-card p-8 text-center">
             <p className="text-sm text-text-muted">{inv.madgerEmpty}</p>

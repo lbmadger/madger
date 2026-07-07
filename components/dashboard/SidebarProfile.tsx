@@ -118,11 +118,11 @@ export default function SidebarProfile() {
             {displayName}
           </span>
           <span className="block text-[11px] text-text-dim">
-            {pro ? `${t("plans.pro")} ⚡` : t("plans.free")}
+            {pro ? t("plans.pro") : t("plans.free")}
           </span>
         </span>
         {/* Pastille "en ligne" comme le mockup */}
-        <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-400" />
+        <span className="h-2 w-2 shrink-0 rounded-full bg-accent" />
       </button>
     </div>
   );

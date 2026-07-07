@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
 import { inputClass, labelClass } from "@/lib/ui/styles";
@@ -13,9 +14,24 @@ export default function ReviewForm({ bookingId }: { bookingId: string }) {
   const [hover, setHover] = useState(0);
   const [comment, setComment] = useState("");
   const [email, setEmail] = useState("");
+  // Connecté → email prérempli et verrouillé : pas de re-saisie inutile.
+  const [sessionEmail, setSessionEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    createClient()
+      .auth.getUser()
+      .then(({ data }) => {
+        const mail = data.user?.email ?? null;
+        if (mail) {
+          setSessionEmail(mail);
+          setEmail(mail);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -99,16 +115,18 @@ export default function ReviewForm({ bookingId }: { bookingId: string }) {
         />
       </label>
 
-      <label className="flex flex-col gap-1.5">
-        <span className={labelClass}>{t("reviews.emailLabel")}</span>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className={inputClass}
-        />
-      </label>
+      {!sessionEmail && (
+        <label className="flex flex-col gap-1.5">
+          <span className={labelClass}>{t("reviews.emailLabel")}</span>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className={inputClass}
+          />
+        </label>
+      )}
 
       {error && <p className="text-sm text-red-400">{error}</p>}
 

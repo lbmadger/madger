@@ -21,7 +21,7 @@ const STEPS = [
   {
     num: "03",
     title: "Paiement et confirmation",
-    desc: "Stripe encaisse au moment de la réservation. Confirmation et facture envoyées automatiquement.",
+    desc: "Le client règle en réservant, paiement sécurisé par Stripe. Confirmation et facture partent seules, les fonds vous sont versés après la séance.",
   },
   {
     num: "04",

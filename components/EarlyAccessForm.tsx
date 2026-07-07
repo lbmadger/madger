@@ -243,7 +243,7 @@ export default function EarlyAccessForm() {
                   ) : (
                     <>
                       On vous contacte dès que Madger est disponible.<br />
-                      Gardez un oeil sur votre boite mail.
+                      Gardez un œil sur votre boîte mail.
                     </>
                   )}
                 </p>

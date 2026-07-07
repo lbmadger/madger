@@ -67,7 +67,7 @@ export default async function OverviewPage() {
     // graphiques) : inutile de rapatrier plus.
     supabase
       .from("payments")
-      .select("amount_cents, paid_at")
+      .select("amount_cents, paid_at, commission_cents")
       .eq("status", "paid")
       .not("paid_at", "is", null)
       .gte(
@@ -394,11 +394,12 @@ export default async function OverviewPage() {
     },
   ];
   // ── Statistiques avancées (plan Pro) ──────────────────────────────────────
-  // En Gratuit on n'envoie que des valeurs factices (les tuiles sont floutées
-  // avec un cadenas) : les vraies données ne quittent pas le serveur.
+  // Calculées pour tout le monde : en Gratuit elles sont floutées avec un
+  // cadenas, mais ce sont les VRAIES valeurs du coach qui se devinent sous le
+  // flou. « Débloque TES chiffres » vend mieux qu'un décor générique.
   const ps = o.proStats;
   let proItems: ProStatItem[];
-  if (pro) {
+  {
     const allRows = weeksRes.data ?? [];
     const totalPaidCents = payments.reduce(
       (s, p) => s + ((p.amount_cents as number) || 0),
@@ -478,7 +479,10 @@ export default async function OverviewPage() {
       },
       {
         label: o.rating,
-        value: ratingCount > 0 ? `⭐ ${ratingAvg.toFixed(1)}` : "-",
+        value:
+          ratingCount > 0
+            ? `${ratingAvg.toLocaleString(loc, { maximumFractionDigits: 1 })} / 5`
+            : "-",
         hint:
           ratingCount > 0
             ? `${ratingCount} ${dict.reviews.countLabel}`
@@ -506,18 +510,6 @@ export default async function OverviewPage() {
         value: forecastCents > 0 ? euros(forecastCents) : "-",
         hint: ps.forecastHint,
       },
-    ];
-  } else {
-    const fr = loc === "fr-FR";
-    proItems = [
-      { label: o.fillRate, value: "82%", hint: o.fillRateHint },
-      { label: o.rating, value: "⭐ 4.9" },
-      { label: ps.avgBasket, value: fr ? "45 €" : "€45" },
-      { label: ps.cancelRate, value: "6%", hint: ps.cancelRateHint },
-      { label: ps.bestDay, value: fr ? "Jeudi" : "Thursday" },
-      { label: ps.bestHour, value: "18:00" },
-      { label: ps.loyalClients, value: "68%" },
-      { label: ps.forecast, value: fr ? "1 240 €" : "€1,240" },
     ];
   }
 
@@ -570,25 +562,43 @@ export default async function OverviewPage() {
         {/* Conseils de Leia : bande fine dépliable, tout en haut */}
         <LeiaTips tips={leiaTips} dailyIndex={leiaDailyIndex} />
 
-        {/* Relance vers l'offre Pro (coachs en Free uniquement) */}
-        {!pro && (
-          <Link
-            href="/dashboard/abonnement"
-            className="mb-6 flex items-center justify-between gap-3 rounded-2xl border border-accent/25 bg-accent/[0.05] px-4 py-3 transition-colors hover:border-accent/40"
-          >
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-text-base">
-                {dict.plans.upsellTitle}
-              </p>
-              <p className="truncate text-xs text-text-muted">
-                {dict.plans.upsellDesc}
-              </p>
-            </div>
-            <span className="shrink-0 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-black">
-              {dict.plans.upsellCta}
-            </span>
-          </Link>
-        )}
+        {/* Relance vers l'offre Pro (coachs en Free uniquement). Chiffrée dès
+            que de la commission a été prélevée sur 30 jours : le coach voit
+            SON argent, pas un slogan. */}
+        {!pro &&
+          (() => {
+            const commission30d = payments.reduce((s, p) => {
+              const paidAt = p.paid_at as string | null;
+              if (
+                !paidAt ||
+                new Date(paidAt).getTime() < now.getTime() - 30 * 86400000
+              )
+                return s;
+              return s + (((p as { commission_cents?: number | null }).commission_cents as number) || 0);
+            }, 0);
+            return (
+              <Link
+                href="/dashboard/abonnement"
+                className="mb-6 flex items-center justify-between gap-3 rounded-2xl border border-accent/25 bg-accent/[0.05] px-4 py-3 transition-colors hover:border-accent/40"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-text-base">
+                    {commission30d > 0
+                      ? `${dict.plans.upsellComputedTitle} ${euros(commission30d)}`
+                      : dict.plans.upsellTitle}
+                  </p>
+                  <p className="truncate text-xs text-text-muted">
+                    {commission30d > 0
+                      ? dict.plans.upsellComputedDesc
+                      : dict.plans.upsellDesc}
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-black">
+                  {dict.plans.upsellCta}
+                </span>
+              </Link>
+            );
+          })()}
 
         {/* KPI animés (compteurs) : 2 colonnes mobile, 4 desktop */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">

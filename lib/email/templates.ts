@@ -311,8 +311,8 @@ export function sessionReminderClient(p: {
       ],
       cta: { label: "Voir ma réservation", url: p.reservationUrl },
       outro: p.online
-        ? "Pense à tester ta connexion et ton micro quelques minutes avant la séance. Bonne session ! 💪"
-        : "Prévois ta tenue, de quoi t'hydrater, et arrive quelques minutes en avance. Bonne session ! 💪",
+        ? "Pense à tester ta connexion et ton micro quelques minutes avant la séance. Bonne séance ! 💪"
+        : "Prévois ta tenue, de quoi t'hydrater, et arrive quelques minutes en avance. Bonne séance ! 💪",
     }),
   };
 }
@@ -465,6 +465,9 @@ export function payoutReleasedCoach(p: {
   clientName: string;
   payoutStr: string;
   dashboardUrl: string;
+  // Commission Madger prélevée sur ce versement (coachs Gratuit) : ligne
+  // dédiée + rappel « 0 % en Pro ». Absente = pas de ligne (coach Pro).
+  commissionStr?: string;
 }): Email {
   return {
     subject: `${p.payoutStr} versés sur ton compte 💸`,
@@ -477,8 +480,19 @@ export function payoutReleasedCoach(p: {
         detailsTable([
           { label: "Client", value: p.clientName },
           { label: "Montant versé", value: p.payoutStr, accent: true },
+          ...(p.commissionStr
+            ? [{ label: "Commission Madger", value: p.commissionStr }]
+            : []),
           { label: "Disponibilité", value: "Selon ton calendrier Stripe" },
         ]),
+        ...(p.commissionStr
+          ? [
+              infoBox(
+                "En Pro, cette commission serait de 0 €",
+                "Le plan Pro passe la commission Madger de 5 % à 0 % sur chaque séance encaissée. Si tu encaisses régulièrement, il se rembourse tout seul."
+              ),
+            ]
+          : []),
       ],
       cta: { label: "Voir mes paiements", url: p.dashboardUrl },
     }),

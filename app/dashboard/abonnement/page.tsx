@@ -3,6 +3,7 @@ import PricingPlans from "@/components/subscription/PricingPlans";
 import PromoCode from "@/components/subscription/PromoCode";
 import ManageSubscription from "@/components/subscription/ManageSubscription";
 import { getCoach } from "@/lib/coach/getCoach";
+import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { isPro, proDaysLeft } from "@/lib/subscription/plan";
 
@@ -18,6 +19,25 @@ export default async function SubscriptionPage({
 
   const pro = isPro(coach?.pro_until);
   const daysLeft = proDaysLeft(coach?.pro_until);
+
+  // Commission réellement prélevée sur 90 jours : l'argument chiffré de la
+  // carte Pro (« la commission t'a coûté X €, en Pro : 0 € »).
+  let commission90d = 0;
+  if (!pro) {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("payments")
+      .select("commission_cents")
+      .gt("commission_cents", 0)
+      .gte(
+        "paid_at",
+        new Date(Date.now() - 90 * 86400000).toISOString()
+      );
+    commission90d = (data ?? []).reduce(
+      (s, r) => s + ((r.commission_cents as number) || 0),
+      0
+    );
+  }
   const untilStr = coach?.pro_until
     ? new Date(coach.pro_until).toLocaleDateString(
         locale === "fr" ? "fr-FR" : "en-US",
@@ -72,7 +92,10 @@ export default async function SubscriptionPage({
         </div>
 
         {/* Offres */}
-        <PricingPlans currentPlan={pro ? "pro" : "free"} />
+        <PricingPlans
+          currentPlan={pro ? "pro" : "free"}
+          commission90dCents={commission90d}
+        />
       </main>
     </>
   );

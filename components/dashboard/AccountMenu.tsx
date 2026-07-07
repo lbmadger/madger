@@ -46,8 +46,43 @@ export default function AccountMenu() {
               {email}
             </p>
           </div>
-          {/* Raccourcis visibles surtout sur mobile (sidebar masquée) */}
+          {/* Raccourcis visibles surtout sur mobile (sidebar masquée) : tous
+              les écrans absents de la barre du bas doivent vivre ici. */}
           <div className="md:hidden">
+            {[
+              {
+                href: "/dashboard/disponibilites",
+                label: t("nav.availability"),
+                d: "M12 8v4l2.5 2.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+              },
+              {
+                href: "/dashboard/paiements",
+                label: t("nav.payments"),
+                d: "M2 8h20M2 12h20M5 5h14a3 3 0 013 3v8a3 3 0 01-3 3H5a3 3 0 01-3-3V8a3 3 0 013-3z",
+              },
+              {
+                href: "/dashboard/factures",
+                label: t("nav.invoices"),
+                d: "M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zM14 2v6h6M9 13h6M9 17h6",
+              },
+              {
+                href: "/dashboard/stats",
+                label: t("nav.stats"),
+                d: "M18 20V10M12 20V4M6 20v-6",
+              },
+            ].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setOpen(false)}
+                className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-text-muted transition-colors hover:bg-bg-card hover:text-text-base"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d={item.d} />
+                </svg>
+                {item.label}
+              </Link>
+            ))}
             <Link
               href="/dashboard/abonnement"
               onClick={() => setOpen(false)}

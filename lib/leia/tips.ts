@@ -22,7 +22,6 @@ export type LeiaInput = {
 
 export type LeiaTip = {
   id: string;
-  icon: string;
   // Page où agir ; absent → conseil sans bouton (ex : demander des avis).
   href?: string;
 };
@@ -32,19 +31,19 @@ export function computeLeiaTips(i: LeiaInput): LeiaTip[] {
 
   // ── Profil incomplet : le plus urgent, ça bloque les réservations ──────────
   if (i.servicesCount === 0) {
-    tips.push({ id: "services", icon: "🏷️", href: "/dashboard/prestations" });
+    tips.push({ id: "services", href: "/dashboard/prestations" });
   }
   if (i.availabilityCount === 0) {
-    tips.push({ id: "availability", icon: "🗓️", href: "/dashboard/disponibilites" });
+    tips.push({ id: "availability", href: "/dashboard/disponibilites" });
   }
   if (!i.hasPhoto) {
-    tips.push({ id: "photo", icon: "📸", href: "/dashboard/reglages" });
+    tips.push({ id: "photo", href: "/dashboard/reglages" });
   }
   if (i.bioLength < 80) {
-    tips.push({ id: "bio", icon: "✍️", href: "/dashboard/reglages" });
+    tips.push({ id: "bio", href: "/dashboard/reglages" });
   }
   if (!i.hasCity || !i.hasSport) {
-    tips.push({ id: "activity", icon: "📍", href: "/dashboard/reglages" });
+    tips.push({ id: "activity", href: "/dashboard/reglages" });
   }
 
   // ── Leviers de croissance ──────────────────────────────────────────────────
@@ -53,21 +52,21 @@ export function computeLeiaTips(i: LeiaInput): LeiaTip[] {
     i.servicesCount > 0 &&
     i.availabilityCount > 0
   ) {
-    tips.push({ id: "share", icon: "🔗" });
+    tips.push({ id: "share" });
   }
   if (i.bookingMode === "approval") {
-    tips.push({ id: "instant", icon: "⚡", href: "/dashboard/reglages" });
+    tips.push({ id: "instant", href: "/dashboard/reglages" });
   }
   if (i.servicesCount > 0 && !i.hasPack) {
-    tips.push({ id: "pack", icon: "🎟️", href: "/dashboard/prestations" });
+    tips.push({ id: "pack", href: "/dashboard/prestations" });
   }
   if (i.reviewsCount < 5) {
-    tips.push({ id: "reviews", icon: "⭐" });
+    tips.push({ id: "reviews" });
   } else if (i.ratingAvg > 0 && i.ratingAvg < 4.8) {
-    tips.push({ id: "quality", icon: "💎" });
+    tips.push({ id: "quality" });
   }
   if (!i.isPro && i.paidCount >= 3) {
-    tips.push({ id: "pro", icon: "🚀", href: "/dashboard/abonnement" });
+    tips.push({ id: "pro", href: "/dashboard/abonnement" });
   }
 
   return tips;

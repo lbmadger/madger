@@ -354,9 +354,20 @@ export default function ClientSpace({
                 </span>
               </div>
 
-              <div className="mt-3 border-t border-border pt-2.5">
+              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border pt-2.5">
+                {/* Accès direct au suivi : lien visio, ajout calendrier,
+                    détails. Sans dépendre de l'email de confirmation. */}
+                <Link
+                  href={`/reservation/${b.id}`}
+                  className="text-xs font-semibold text-accent hover:underline"
+                >
+                  {b.location === "online"
+                    ? t("clientSpace.viewBookingOnline")
+                    : t("clientSpace.viewBooking")}{" "}
+                  ›
+                </Link>
                 {cancelId === b.id ? (
-                  <div className="flex flex-col gap-2">
+                  <div className="flex w-full flex-col gap-2">
                     <p className="text-xs text-text-muted">
                       {b.escrow_status === "held" && b.amount_cents
                         ? `${t("clientSpace.cancelRefund")} ${refundPct(b)}% (${(((b.amount_cents ?? 0) * refundPct(b)) / 10000).toLocaleString(loc, { style: "currency", currency: "EUR" })}).`

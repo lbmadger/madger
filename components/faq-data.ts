@@ -7,23 +7,23 @@ export const faqs = [
   },
   {
     q: "Comment fonctionne le lien coach ?",
-    a: "Vous obtenez une page personnalisée à votre nom - par exemple madger.app/marie. Vous la partagez en bio Instagram, en signature d'email, partout. Vos clients y voient vos offres, choisissent leur créneau et paient directement. Aucune installation, aucune friction.",
+    a: "Vous obtenez une page personnalisée à votre nom, par exemple madger.app/marie. Vous la partagez en bio Instagram, en signature d'email, partout. Vos clients y voient vos offres, choisissent leur créneau et paient directement. Aucune installation, aucune friction.",
   },
   {
     q: "Mes clients doivent-ils créer un compte ?",
-    a: "Non. Vos clients réservent et paient en quelques clics, sans créer de compte. Ils reçoivent une confirmation et leur facture par email immédiatement. L'expérience est pensée pour être la plus simple possible de leur côté.",
+    a: "Oui, un compte créé en 30 secondes au moment de réserver. Il leur sert ensuite à tout retrouver au même endroit : leurs séances, le lien visio, leurs factures, l'annulation en un clic et la messagerie avec vous. Confirmation et facture arrivent aussi par email.",
   },
   {
     q: "Madger est-il adapté à mon type de coaching ?",
-    a: "Oui. Que vous soyez coach sportif, préparateur physique, coach bien-être, développement personnel ou business - Madger s'adapte à toutes les formes de coaching individuel. En présentiel, en visio ou les deux.",
+    a: "Oui. Que vous soyez coach sportif, préparateur physique, coach bien-être, développement personnel ou business : Madger s'adapte à toutes les formes de coaching individuel. En présentiel, en visio ou les deux.",
   },
   {
     q: "Comment fonctionne le paiement ?",
-    a: "Le paiement est encaissé au moment de la réservation via Stripe. Votre client paie par carte, Apple Pay ou Google Pay. Vous recevez l'argent directement sur votre compte bancaire. Plus jamais de relances.",
+    a: "Votre client règle en ligne au moment où il réserve, par carte, Apple Pay ou Google Pay via Stripe. Les fonds sont sécurisés par Madger, puis versés sur votre compte bancaire 24 heures après la séance. Si vous validez chaque demande à la main, la carte du client n'est débitée qu'au moment où vous acceptez. Fini les relances.",
   },
   {
     q: "Mes données et celles de mes clients sont-elles sécurisées ?",
-    a: "Toutes les données sont hébergées en Europe. Les paiements transitent via Stripe, certifié PCI-DSS niveau 1 - le standard de sécurité le plus élevé. Nous ne revendons aucune donnée. Vous gardez le contrôle total.",
+    a: "Toutes les données sont hébergées en Europe. Les paiements transitent via Stripe, certifié PCI-DSS niveau 1, le standard de sécurité le plus élevé. Nous ne revendons aucune donnée. Vous gardez le contrôle total.",
   },
   {
     q: "Suis-je prêt pour la facturation électronique obligatoire ?",

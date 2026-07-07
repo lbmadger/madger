@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
 import PolicyTiers from "@/components/booking/PolicyTiers";
-import { LockIcon, RepeatIcon } from "@/components/ui/icons";
+import { LockIcon, RepeatIcon, MapPinIcon } from "@/components/ui/icons";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import type { PublicCoach } from "@/lib/coaches/public-types";
 import { type PublicService, formatPrice } from "@/lib/services/types";
@@ -26,11 +26,14 @@ export default function BookingModal({
   services = [],
   initialServiceId,
   onClose,
+  onContact,
 }: {
   coach: PublicCoach;
   services?: PublicService[];
   initialServiceId?: string;
   onClose: () => void;
+  // Ouvre la conversation avec le coach (proposé quand aucun créneau libre).
+  onContact?: () => void;
 }) {
   const { t, locale } = useI18n();
   const loc = locale === "fr" ? "fr-FR" : "en-US";
@@ -64,11 +67,16 @@ export default function BookingModal({
   const [done, setDone] = useState(false);
   // Id renvoyé par l'API : lien de suivi de la demande.
   const [bookingId, setBookingId] = useState<string | null>(null);
-  // Compte obligatoire pour réserver (modèle Airbnb/Doctolib).
+  // Compte obligatoire pour réserver (modèle Airbnb/Doctolib), mais exigé au
+  // DERNIER clic seulement : le client choisit prestation et créneau
+  // librement, l'authentification n'arrive qu'au moment de payer.
   // undefined = vérification en cours, null = non connecté.
   const [sessionEmail, setSessionEmail] = useState<string | null | undefined>(
     undefined
   );
+  // true = le client a cliqué Réserver sans compte : écran d'authentification
+  // avec retour direct sur son créneau (brouillon conservé).
+  const [needAuth, setNeedAuth] = useState(false);
   useEffect(() => {
     createClient()
       .auth.getUser()
@@ -79,6 +87,57 @@ export default function BookingModal({
       })
       .catch(() => setSessionEmail(null));
   }, []);
+
+  // Brouillon de réservation : sauvegardé avant le détour connexion /
+  // inscription, restauré au retour (le client retrouve son créneau).
+  const draftKey = `madger_booking_draft_${coach.slug}`;
+  const draftSlotRef = useRef<string | null>(null);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(draftKey);
+      if (!raw) return;
+      localStorage.removeItem(draftKey);
+      const d = JSON.parse(raw) as Record<string, string | number | boolean>;
+      if (typeof d.firstName === "string") setFirstName(d.firstName);
+      if (typeof d.lastName === "string") setLastName(d.lastName);
+      if (typeof d.phone === "string") setPhone(d.phone);
+      if (typeof d.message === "string") setMessage(d.message);
+      if (typeof d.online === "boolean") setOnline(d.online);
+      if (typeof d.duration === "number") setDuration(d.duration);
+      if (typeof d.date === "string") setDate(d.date);
+      if (typeof d.time === "string") setTime(d.time);
+      if (typeof d.serviceId === "string" && d.serviceId) {
+        if (paidServices.some((s) => s.id === d.serviceId))
+          setServiceId(d.serviceId);
+      }
+      if (typeof d.slot === "string" && d.slot) draftSlotRef.current = d.slot;
+    } catch {
+      /* brouillon illisible : on repart de zéro */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function saveDraft() {
+    try {
+      localStorage.setItem(
+        draftKey,
+        JSON.stringify({
+          serviceId,
+          slot: selectedIso,
+          online,
+          duration,
+          date,
+          time,
+          firstName,
+          lastName,
+          phone,
+          message,
+        })
+      );
+    } catch {
+      /* stockage indisponible : tant pis pour le brouillon */
+    }
+  }
 
   // Créneaux réels (dispos du coach − séances déjà prises).
   const [slotState, setSlotState] = useState<SlotState>({ mode: "loading" });
@@ -114,6 +173,19 @@ export default function BookingModal({
           setSlotState({ mode: "slots", days });
           const first = days.findIndex((d) => d.slots.length > 0);
           setDayIdx(first === -1 ? 0 : first);
+          // Retour de connexion : re-sélectionne le créneau du brouillon
+          // s'il est toujours libre.
+          const ds = draftSlotRef.current;
+          if (ds) {
+            const idx = days.findIndex((d) =>
+              d.slots.some((s) => s.iso === ds)
+            );
+            if (idx !== -1) {
+              setDayIdx(idx);
+              setSelectedIso(ds);
+            }
+            draftSlotRef.current = null;
+          }
         } else {
           setSlotState({ mode: "free" });
         }
@@ -136,9 +208,6 @@ export default function BookingModal({
     e.preventDefault();
     setError(null);
 
-    if (!firstName.trim()) return setError(t("booking.errors.nameRequired"));
-    if (!email.trim()) return setError(t("booking.errors.emailRequired"));
-
     // Départ de séance : créneau choisi (mode slots) ou saisie libre.
     // Abonnement : aucun créneau requis (le coach planifie ensuite).
     let starts: Date | null = null;
@@ -156,6 +225,17 @@ export default function BookingModal({
           return setError(t("booking.errors.datePast"));
       }
     }
+
+    // Compte exigé au dernier clic seulement : le choix est fait, on
+    // sauvegarde le brouillon et on envoie vers connexion / inscription.
+    if (!sessionEmail) {
+      saveDraft();
+      setNeedAuth(true);
+      return;
+    }
+
+    if (!firstName.trim()) return setError(t("booking.errors.nameRequired"));
+    if (!email.trim()) return setError(t("booking.errors.emailRequired"));
 
     setLoading(true);
     try {
@@ -278,8 +358,9 @@ export default function BookingModal({
               </Button>
             </div>
           </div>
-        ) : sessionEmail === null ? (
-          /* Compte obligatoire avant de réserver (modèle Airbnb/Doctolib) */
+        ) : needAuth ? (
+          /* Compte exigé au moment de réserver : le créneau choisi est
+             conservé, on y revient directement après connexion. */
           <div className="py-6 text-center">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent/10 text-accent">
               <LockIcon size={20} />
@@ -290,23 +371,35 @@ export default function BookingModal({
             <p className="mx-auto mt-1 max-w-xs text-sm text-text-muted">
               {t("booking.authRequiredDesc")}
             </p>
+            {selectedIso && (
+              <p className="mx-auto mt-3 inline-block rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
+                {t("booking.slotKept")}{" "}
+                {new Date(selectedIso).toLocaleString(loc, {
+                  weekday: "short",
+                  day: "numeric",
+                  month: "short",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
+            )}
             <div className="mt-6 flex flex-col gap-2">
               <Link
-                href={`/signup?role=client&redirect=${encodeURIComponent(`/${coach.slug}`)}`}
+                href={`/signup?role=client&redirect=${encodeURIComponent(`/${coach.slug}?book=${serviceId || "1"}`)}`}
                 className="w-full"
               >
                 <Button className="w-full">{t("booking.createAccount")}</Button>
               </Link>
               <Link
-                href={`/login?redirect=${encodeURIComponent(`/${coach.slug}`)}`}
+                href={`/login?redirect=${encodeURIComponent(`/${coach.slug}?book=${serviceId || "1"}`)}`}
                 className="w-full"
               >
                 <Button variant="secondary" className="w-full">
                   {t("booking.loginCta")}
                 </Button>
               </Link>
-              <Button variant="ghost" onClick={onClose}>
-                {t("booking.cancel")}
+              <Button variant="ghost" onClick={() => setNeedAuth(false)}>
+                {t("booking.backToBooking")}
               </Button>
             </div>
           </div>
@@ -388,7 +481,17 @@ export default function BookingModal({
                           : "border-border-strong text-text-muted hover:text-text-base"
                       }`}
                     >
-                      {opt ? t("booking.online") : `📍 ${coach.city}`}
+                      {opt ? (
+                        t("booking.online")
+                      ) : (
+                        <>
+                          <MapPinIcon
+                            size={13}
+                            className="mr-1 inline-block align-[-2px]"
+                          />
+                          {coach.city}
+                        </>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -422,9 +525,20 @@ export default function BookingModal({
                 <div className="flex flex-col gap-2">
                   <span className={labelClass}>{t("booking.chooseSlot")}</span>
                   {!anySlots ? (
-                    <p className="rounded-xl border border-border bg-bg-elevated p-4 text-center text-sm text-text-muted">
-                      {t("booking.noSlotsRange")}
-                    </p>
+                    <div className="rounded-xl border border-border bg-bg-elevated p-4 text-center">
+                      <p className="text-sm text-text-muted">
+                        {t("booking.noSlotsRange")}
+                      </p>
+                      {onContact && (
+                        <button
+                          type="button"
+                          onClick={onContact}
+                          className="mt-3 rounded-full border border-accent/40 px-4 py-1.5 text-xs font-semibold text-accent transition-colors hover:bg-accent/10"
+                        >
+                          {t("booking.contactCoach")}
+                        </button>
+                      )}
+                    </div>
                   ) : (
                     <>
                       {/* Jours (14 prochains) */}
@@ -501,6 +615,9 @@ export default function BookingModal({
                       <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className={inputClass} />
                     </label>
                   </div>
+                  <p className="text-xs text-text-dim">
+                    {t("booking.freeHint")}
+                  </p>
                 </>
               )}
 
@@ -525,16 +642,16 @@ export default function BookingModal({
                       <rect x="3" y="11" width="18" height="11" rx="2" />
                       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                     </svg>
-                    {t("booking.escrowTitle")}
+                    {instant
+                      ? t("booking.escrowTitle")
+                      : t("booking.authTitle")}
                   </p>
+                  {/* Un seul message selon le mode : séquestre (instant) OU
+                      empreinte (validation). Les deux ensemble sèment le
+                      doute sur ce qui est réellement débité. */}
                   <p className="mt-1 text-xs text-text-muted">
-                    {t("booking.escrowDesc")}
+                    {instant ? t("booking.escrowDesc") : t("booking.authNote")}
                   </p>
-                  {!instant && (
-                    <p className="mt-2 text-xs font-semibold text-accent">
-                      {t("booking.authNote")}
-                    </p>
-                  )}
                   <p className="mt-2 text-[11px] font-medium uppercase tracking-wide text-text-dim">
                     {t("cancellation.publicLabel")}
                   </p>
@@ -553,17 +670,21 @@ export default function BookingModal({
                 </label>
               </div>
 
-              <label className="flex flex-col gap-1.5">
-                <span className={labelClass}>{t("booking.email")}</span>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  readOnly={Boolean(sessionEmail)}
-                  className={`${inputClass} ${sessionEmail ? "opacity-60" : ""}`}
-                />
-              </label>
+              {/* Email : celui du compte connecté. Non connecté, il viendra
+                  de l'inscription au moment de payer. */}
+              {Boolean(sessionEmail) && (
+                <label className="flex flex-col gap-1.5">
+                  <span className={labelClass}>{t("booking.email")}</span>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    readOnly
+                    className={`${inputClass} opacity-60`}
+                  />
+                </label>
+              )}
 
               <label className="flex flex-col gap-1.5">
                 <span className={labelClass}>{t("booking.phone")}</span>
@@ -595,6 +716,13 @@ export default function BookingModal({
                     : t("booking.submit")}
                 </Button>
               </div>
+              {/* Mode validation : rappel que rien n'est débité avant
+                  l'acceptation, juste sous le bouton qui affiche un prix. */}
+              {payMode && !isSubscription && !instant && (
+                <p className="text-center text-[11px] text-text-dim">
+                  {t("booking.chargedOnAccept")}
+                </p>
+              )}
             </form>
           </>
         )}

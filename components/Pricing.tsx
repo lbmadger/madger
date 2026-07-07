@@ -71,7 +71,7 @@ export default function Pricing() {
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8" style={{ background: "rgba(203,255,3,0.07)", border: "1px solid rgba(203,255,3,0.18)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-accent block" style={{ background: "#CBFF03" }} />
-            <span style={{ color: "#CBFF03", fontSize: 12, fontWeight: 600 }}>Accès anticipé - Plan Pro offert 3 mois pour les premiers membres</span>
+            <span style={{ color: "#CBFF03", fontSize: 12, fontWeight: 600 }}>Accès anticipé · Plan Pro offert 3 mois pour les premiers membres</span>
           </div>
         </motion.div>
 
@@ -132,7 +132,7 @@ export default function Pricing() {
               className="absolute -top-3 right-0 px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full text-black font-bold text-[10px] sm:text-xs uppercase tracking-wider whitespace-nowrap"
               style={{ background: "#CBFF03", letterSpacing: "0.07em", zIndex: 20 }}
             >
-              Recommandé ⭐
+              Recommandé
             </div>
 
           <motion.div

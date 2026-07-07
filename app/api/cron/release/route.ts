@@ -8,6 +8,7 @@ import { sendEmail } from "@/lib/email/resend";
 import {
   reviewRequestClient,
   bookingCancelledClient,
+  payoutReleasedCoach,
 } from "@/lib/email/templates";
 import { cronAuthorized } from "@/lib/cron/auth";
 import { detachMeetFromBooking } from "@/lib/google/calendar";
@@ -282,6 +283,54 @@ export async function GET(req: NextRequest) {
             .update({ escrow_status: "held", released_at: null })
             .eq("id", p.id);
           throw e;
+        }
+      }
+
+      // Prévient le coach du versement (avec la commission prélevée et le
+      // rappel « 0 % en Pro » pour les coachs Gratuit). Best-effort.
+      if (breakdown.payoutCents > 0) {
+        try {
+          const { data: coachAuth } = await supabase.auth.admin.getUserById(
+            p.coach_id as string
+          );
+          const coachEmail = coachAuth?.user?.email;
+          if (coachEmail) {
+            const eurosStr = (cents: number) =>
+              (cents / 100).toLocaleString("fr-FR", {
+                style: "currency",
+                currency: "EUR",
+              });
+            let clientLabel = "ton client";
+            if (p.booking_id) {
+              const { data: bk0 } = await supabase
+                .from("bookings")
+                .select("clients(first_name, last_name)")
+                .eq("id", p.booking_id)
+                .maybeSingle();
+              const cl0 = Array.isArray(bk0?.clients)
+                ? bk0?.clients[0]
+                : bk0?.clients;
+              clientLabel =
+                [cl0?.first_name, cl0?.last_name].filter(Boolean).join(" ") ||
+                clientLabel;
+            }
+            const tpl = payoutReleasedCoach({
+              clientName: clientLabel,
+              payoutStr: eurosStr(breakdown.payoutCents),
+              dashboardUrl: `${APP_URL}/dashboard/paiements`,
+              commissionStr:
+                breakdown.commissionCents > 0
+                  ? eurosStr(breakdown.commissionCents)
+                  : undefined,
+            });
+            await sendEmail({
+              to: coachEmail,
+              subject: tpl.subject,
+              html: tpl.html,
+            });
+          }
+        } catch {
+          /* best-effort */
         }
       }
 

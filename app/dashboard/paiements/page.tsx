@@ -44,7 +44,7 @@ export default async function PaymentsPage() {
   const { data: history } = await supabase
     .from("payments")
     .select(
-      "id, amount_cents, currency, paid_at, escrow_status, release_after, payout_cents, refunded_cents, clients(first_name, last_name)"
+      "id, amount_cents, currency, paid_at, escrow_status, release_after, payout_cents, refunded_cents, commission_cents, clients(first_name, last_name)"
     )
     .not("paid_at", "is", null)
     .order("paid_at", { ascending: false })
@@ -184,7 +184,7 @@ export default async function PaymentsPage() {
                       {p.escrow_status === "held" && p.release_after
                         ? `${pay.releasePlanned} ${new Date(p.release_after as string).toLocaleDateString("fr-FR", { day: "numeric", month: "long", timeZone: "Europe/Paris" })}`
                         : p.escrow_status === "released"
-                        ? `${pay.netPaid} ${euros((p.payout_cents as number) || 0)}`
+                        ? `${pay.netPaid} ${euros((p.payout_cents as number) || 0)}${((p.commission_cents as number) || 0) > 0 ? ` · ${pay.commissionLabel} ${euros((p.commission_cents as number) || 0)}` : ""}`
                         : refundedCents > 0
                         ? `${pay.refundedLabel} ${euros(refundedCents)}${(p.payout_cents as number) > 0 ? ` · ${pay.netPaid} ${euros((p.payout_cents as number) || 0)}` : ""}`
                         : pay.escrowDisputedNote && p.escrow_status === "disputed"

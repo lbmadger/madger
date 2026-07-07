@@ -7,13 +7,15 @@ import { getCoach } from "@/lib/coach/getCoach";
 import type { Service } from "@/lib/services/types";
 
 // Page Prestations : les offres du coach (séance, pack, abonnement).
-// Sans compte Stripe actif, impossible de créer des prestations : elles
-// seraient affichées aux clients sans pouvoir être réglées.
+// Deux prérequis pour créer des prestations : un compte Stripe actif (sinon
+// les offres seraient affichées sans pouvoir être réglées) et un SIRET
+// (sinon les factures émises au premier encaissement ne sont pas conformes).
 export default async function ServicesPage() {
   const { dict } = getServerDictionary();
   const supabase = createClient();
   const { coach } = await getCoach();
   const stripeReady = Boolean(coach?.stripe_charges_enabled);
+  const siretReady = Boolean(coach?.siret?.trim());
 
   const { data } = await supabase
     .from("services")
@@ -42,9 +44,27 @@ export default async function ServicesPage() {
             </Link>
           </div>
         )}
+        {stripeReady && !siretReady && (
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-warning/30 bg-warning/[0.05] px-4 py-3">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-text-base">
+                {dict.services.needSiretTitle}
+              </p>
+              <p className="text-xs text-text-muted">
+                {dict.services.needSiretDesc}
+              </p>
+            </div>
+            <Link
+              href="/dashboard/reglages"
+              className="shrink-0 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-black transition-opacity hover:opacity-90"
+            >
+              {dict.services.needSiretCta}
+            </Link>
+          </div>
+        )}
         <ServicesView
           initialServices={(data ?? []) as Service[]}
-          canCreate={stripeReady}
+          canCreate={stripeReady && siretReady}
         />
       </main>
     </>

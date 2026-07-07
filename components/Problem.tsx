@@ -184,7 +184,7 @@ export default function Problem() {
             className="text-center font-semibold mb-8"
             style={{ fontSize: 13, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)" }}
           >
-            Tu jongles entre tout ça en ce moment
+            Vous jonglez entre tout ça en ce moment
           </p>
 
           {/* Logos grid - grille 4 colonnes sur mobile (rangées équilibrées),

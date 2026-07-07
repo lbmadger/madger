@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -37,6 +37,30 @@ export default function CoachProfile({
   const [bookingServiceId, setBookingServiceId] = useState<string | undefined>();
   const [contacting, setContacting] = useState(false);
   const [contactError, setContactError] = useState<string | null>(null);
+  // Paiement Stripe interrompu (retour via cancel_url) : on l'explique.
+  const [paymentCanceled, setPaymentCanceled] = useState(false);
+
+  // Retour de connexion/inscription ou de Stripe avec ?book=<serviceId|1> :
+  // rouvre le modal de réservation là où le client s'était arrêté (le
+  // brouillon local restaure prestation, créneau et champs).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const book = params.get("book");
+    if (params.get("payment") === "canceled") setPaymentCanceled(true);
+    if (book) {
+      setBookingServiceId(book === "1" ? undefined : book);
+      setBooking(true);
+      // Nettoie l'URL pour ne pas rouvrir le modal à chaque refresh.
+      params.delete("book");
+      params.delete("payment");
+      const qs = params.toString();
+      window.history.replaceState(
+        null,
+        "",
+        `${window.location.pathname}${qs ? `?${qs}` : ""}`
+      );
+    }
+  }, []);
 
   // Ouvre (ou crée) la conversation avec ce coach, puis redirige vers le fil.
   // Non connecté → inscription client, avec retour sur le profil ensuite.
@@ -118,8 +142,14 @@ export default function CoachProfile({
 
   function metaLine(s: PublicService): string {
     const parts: string[] = [t(`services.types.${s.type}`)];
-    if (s.type === "pack" && s.pack_size)
+    if (s.type === "pack" && s.pack_size) {
       parts.push(`${s.pack_size} ${t("services.sessionsLabel")}`);
+      // Prix ramené à la séance : l'économie du pack devient visible.
+      if (s.pack_size > 1)
+        parts.push(
+          `${formatPrice(Math.round(s.price_cents / s.pack_size), s.currency, locale)} ${t("coachProfile.perSession")}`
+        );
+    }
     if (s.duration_min) parts.push(`${s.duration_min} min`);
     return parts.join(" · ");
   }
@@ -143,6 +173,13 @@ export default function CoachProfile({
         </svg>
         {t("coachProfile.backToSearch")}
       </Link>
+
+      {/* Paiement interrompu : rien n'a été débité, on invite à reprendre. */}
+      {paymentCanceled && (
+        <p className="mb-4 rounded-2xl border border-warning/30 bg-warning/[0.06] px-4 py-3 text-sm text-text-base">
+          {t("booking.paymentCanceledBanner")}
+        </p>
+      )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px] lg:items-start">
       <div className="rounded-2xl border border-border bg-bg-card p-6 sm:p-8">
@@ -436,6 +473,7 @@ export default function CoachProfile({
           services={services}
           initialServiceId={bookingServiceId}
           onClose={() => setBooking(false)}
+          onContact={handleContact}
         />
       )}
     </main>
