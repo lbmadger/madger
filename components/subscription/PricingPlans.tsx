@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import PromoCode from "@/components/subscription/PromoCode";
 
 // Cartes d'offres Free / Pro, réutilisées à l'onboarding et sur la page
 // Abonnement. `currentPlan` met en avant l'offre active. Le bouton Pro lance
@@ -175,6 +176,11 @@ export default function PricingPlans({
             {error && (
               <p role="alert" className="mt-2 text-center text-sm text-danger">{error}</p>
             )}
+            {/* Code d'accès anticipé : proposé UNIQUEMENT ici, dans la carte
+                Madger Pro (c'est un code qui offre 3 mois de Pro). */}
+            <div className="mt-3">
+              <PromoCode compact />
+            </div>
           </>
         )}
       </div>

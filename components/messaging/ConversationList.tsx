@@ -11,10 +11,13 @@ export default function ConversationList({
   conversations,
   perspective,
   basePath,
+  previews = {},
 }: {
   conversations: Conversation[];
   perspective: "coach" | "client";
   basePath: string; // "/dashboard/messages" ou "/messages"
+  // Dernier message par conversation : { corps, envoyé par moi ? }.
+  previews?: Record<string, { body: string; mine: boolean }>;
 }) {
   const { t, locale } = useI18n();
   const loc = locale === "fr" ? "fr-FR" : "en-US";
@@ -51,6 +54,12 @@ export default function ConversationList({
                 <span className="block truncate text-sm font-medium text-text-base">
                   {name}
                 </span>
+                {previews[c.id] && (
+                  <span className="mt-0.5 block truncate text-xs text-text-muted">
+                    {previews[c.id].mine ? `${t("messages.you")} ` : ""}
+                    {previews[c.id].body}
+                  </span>
+                )}
               </div>
               <span className="shrink-0 text-[11px] text-text-dim">
                 {new Date(c.last_message_at).toLocaleDateString(loc, {

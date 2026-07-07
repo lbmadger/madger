@@ -296,8 +296,8 @@ const fr = {
   plans: {
     title: "Abonnement",
     currentPlan: "Ton offre",
-    free: "Gratuit",
-    pro: "Pro",
+    free: "Madger Basic",
+    pro: "Madger Pro",
     proActive: "Pro actif",
     welcomePro:
       "Bienvenue en Pro. 0 % de commission, statistiques avancées débloquées.",
@@ -349,7 +349,7 @@ const fr = {
       lossCommission:
         "Retour à 5 % de commission sur chaque séance encaissée, dès le premier euro.",
       lossBadge:
-        "Tu perds la priorité d'affichage et les stats avancées du plan Pro.",
+        "Tu perds la priorité d'affichage et les stats avancées de Madger Pro.",
       stay: "Je reste en Pro",
       switchAnnual: "Passer à l'annuel : 490 €/an, 2 mois offerts",
       switching: "Bascule en cours…",
@@ -433,6 +433,8 @@ const fr = {
     cancelRate: "Taux d'annulation",
     perWeek: "Séances par semaine",
     vsLastMonth: "vs mois dernier",
+    vsLastWeek: "vs semaine dernière",
+    newThisMonth: "ce mois-ci",
     badgeNew: "Nouveau",
     byStatus: "Répartition des séances",
     none: "Pas encore de données à afficher.",
@@ -444,6 +446,7 @@ const fr = {
     },
   },
   messages: {
+    you: "Toi :",
     title: "Messages",
     emptyTitle: "Aucune conversation",
     emptyDesc: "Tes échanges apparaîtront ici.",
@@ -545,6 +548,8 @@ const fr = {
     activeClients: "Clients actifs",
     pendingPayments: "En attente de versement",
     vsLastMonth: "vs mois dernier",
+    vsLastWeek: "vs semaine dernière",
+    newThisMonth: "ce mois-ci",
     chartRevenue: "Revenus",
     chartSessions: "Séances par semaine",
     chartWeekSessions: "Cette semaine · séances par jour",
@@ -561,7 +566,7 @@ const fr = {
     msgs24h: "Messages (24 h)",
     proStats: {
       title: "Statistiques avancées",
-      lockedTitle: "Réservé au plan Pro",
+      lockedTitle: "Réservé à Madger Pro",
       lockedDesc:
         "Débloque tes statistiques avancées : taux de remplissage, panier moyen, meilleurs créneaux, clients fidèles et revenus prévisionnels.",
       unlock: "Débloquer avec Pro",
@@ -839,11 +844,12 @@ const fr = {
     tierLate: "Le client annule moins de 24 h avant le début de la séance",
     overLabel: "Annulation plus de 24 h avant la séance",
     overDesc:
-      "Le client annule tôt (la veille ou avant). Quel pourcentage du prix lui rembourses-tu ?",
+      "Le client annule tôt (la veille ou avant). Quelle part du prix gardes-tu ?",
     underLabel: "Annulation moins de 24 h avant la séance",
     underDesc:
-      "Le client annule au dernier moment (le jour même). Quel pourcentage du prix lui rembourses-tu ?",
+      "Le client annule au dernier moment (le jour même). Quelle part du prix gardes-tu ?",
     refundedSuffix: "remboursé au client",
+    youKeep: "Tu gardes",
     flexible: "Flexible",
     moderate: "Modérée",
     strict: "Stricte",
@@ -1106,7 +1112,7 @@ const fr = {
       },
       pro: {
         title: "Passe en Pro : tu gardes 100 % de ce que tu encaisses",
-        body: "Tu encaisses régulièrement : avec le plan Pro, la commission Madger passe de 5 % à 0 %. Il se rembourse souvent tout seul.",
+        body: "Tu encaisses régulièrement : avec Madger Pro, la commission passe de 5 % à 0 %. Il se rembourse souvent tout seul.",
         cta: "Découvrir Pro",
       },
     },
@@ -1431,8 +1437,8 @@ const en: Dictionary = {
   plans: {
     title: "Subscription",
     currentPlan: "Your plan",
-    free: "Free",
-    pro: "Pro",
+    free: "Madger Basic",
+    pro: "Madger Pro",
     proActive: "Pro active",
     welcomePro:
       "Welcome to Pro. 0% commission, advanced stats unlocked.",
@@ -1484,7 +1490,7 @@ const en: Dictionary = {
       lossCommission:
         "Back to a 5% commission on every session you collect, from the first euro.",
       lossBadge:
-        "You lose priority placement and the advanced stats of the Pro plan.",
+        "You lose priority placement and the advanced stats of Madger Pro.",
       stay: "I'm staying on Pro",
       switchAnnual: "Switch to annual: 490 EUR/year, 2 months free",
       switching: "Switching…",
@@ -1567,6 +1573,8 @@ const en: Dictionary = {
     cancelRate: "Cancellation rate",
     perWeek: "Sessions per week",
     vsLastMonth: "vs last month",
+    vsLastWeek: "vs last week",
+    newThisMonth: "this month",
     badgeNew: "New",
     byStatus: "Sessions breakdown",
     none: "No data to show yet.",
@@ -1578,6 +1586,7 @@ const en: Dictionary = {
     },
   },
   messages: {
+    you: "You:",
     title: "Messages",
     emptyTitle: "No conversations",
     emptyDesc: "Your conversations will show up here.",
@@ -1679,6 +1688,8 @@ const en: Dictionary = {
     activeClients: "Active clients",
     pendingPayments: "Pending payout",
     vsLastMonth: "vs last month",
+    vsLastWeek: "vs last week",
+    newThisMonth: "this month",
     chartRevenue: "Revenue",
     chartSessions: "Sessions per week",
     chartWeekSessions: "This week · sessions per day",
@@ -1695,7 +1706,7 @@ const en: Dictionary = {
     msgs24h: "Messages (24 h)",
     proStats: {
       title: "Advanced stats",
-      lockedTitle: "Pro plan only",
+      lockedTitle: "Madger Pro only",
       lockedDesc:
         "Unlock your advanced stats: fill rate, average basket, best slots, loyal clients and projected revenue.",
       unlock: "Unlock with Pro",
@@ -1968,11 +1979,12 @@ const en: Dictionary = {
     tierLate: "Client cancels less than 24h before the session starts",
     overLabel: "Cancellation more than 24h before the session",
     overDesc:
-      "The client cancels early (the day before or sooner). What share of the price do you refund?",
+      "The client cancels early (the day before or sooner). What share of the price do you keep?",
     underLabel: "Cancellation less than 24h before the session",
     underDesc:
-      "The client cancels last minute (same day). What share of the price do you refund?",
+      "The client cancels last minute (same day). What share of the price do you keep?",
     refundedSuffix: "refunded to the client",
+    youKeep: "You keep",
     flexible: "Flexible",
     moderate: "Moderate",
     strict: "Strict",
@@ -2232,7 +2244,7 @@ const en: Dictionary = {
       },
       pro: {
         title: "Go Pro, keep 100% of your earnings",
-        body: "You're earning regularly: with the Pro plan, the Madger commission drops from 5% to 0%. It often pays for itself.",
+        body: "You're earning regularly: with Madger Pro, the commission drops from 5% to 0%. It often pays for itself.",
         cta: "Discover Pro",
       },
     },

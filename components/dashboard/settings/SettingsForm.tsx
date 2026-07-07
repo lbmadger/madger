@@ -155,36 +155,50 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
     if (!firstName.trim()) return setError(t("settings.errors.nameRequired"));
     if (!isValidSlug(slug)) return setError(t("settings.errors.slugInvalid"));
 
+    // Chaque section n'envoie QUE ses colonnes : un souci sur une colonne
+    // (migration pas encore passée, droit manquant) ne casse plus
+    // l'enregistrement des autres sections.
+    const payloads: Record<string, Record<string, unknown>> = {
+      profile: {
+        first_name: firstName.trim(),
+        last_name: lastName.trim() || null,
+        specialty: specialty.trim() || null,
+        city: city.trim() || null,
+        lat: coords?.lat ?? null,
+        lng: coords?.lng ?? null,
+        bio: bio.trim() || null,
+        accepts_online: acceptsOnline,
+        slug,
+        listed,
+        sport: sport || null,
+        specialties,
+        venues,
+        gym_name: gymName.trim() || null,
+        timezone,
+      },
+      booking: {
+        booking_mode: bookingMode,
+        min_notice_hours: minNotice,
+      },
+      cancellation: {
+        refund_over_24h_pct: refundOver,
+        refund_under_24h_pct: refundUnder,
+      },
+      billing: {
+        business_name: businessName.trim() || null,
+        siret: siret.trim() || null,
+        vat_number: vatNumber.trim() || null,
+        billing_address: billingAddress.trim() || null,
+      },
+    };
+    const payload = payloads[section] ?? payloads.profile;
+
     setLoading(true);
     try {
       const supabase = createClient();
       const { error } = await supabase
         .from("coaches")
-        .update({
-          first_name: firstName.trim(),
-          last_name: lastName.trim() || null,
-          specialty: specialty.trim() || null,
-          city: city.trim() || null,
-          lat: coords?.lat ?? null,
-          lng: coords?.lng ?? null,
-          bio: bio.trim() || null,
-          accepts_online: acceptsOnline,
-          slug,
-          listed,
-          refund_over_24h_pct: refundOver,
-          refund_under_24h_pct: refundUnder,
-          booking_mode: bookingMode,
-          sport: sport || null,
-          specialties,
-          venues,
-          gym_name: gymName.trim() || null,
-          timezone,
-          min_notice_hours: minNotice,
-          business_name: businessName.trim() || null,
-          siret: siret.trim() || null,
-          vat_number: vatNumber.trim() || null,
-          billing_address: billingAddress.trim() || null,
-        })
+        .update(payload)
         .eq("id", coach.id);
 
       if (error) {
@@ -547,7 +561,8 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             >
               {REFUND_PCT_CHOICES.map((p) => (
                 <option key={p} value={p}>
-                  {p} % {t("cancellation.refundedSuffix")}
+                  {t("cancellation.youKeep")} {100 - p} % · {p} %{" "}
+                  {t("cancellation.refundedSuffix")}
                 </option>
               ))}
             </select>
@@ -567,7 +582,8 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             >
               {REFUND_PCT_CHOICES.map((p) => (
                 <option key={p} value={p}>
-                  {p} % {t("cancellation.refundedSuffix")}
+                  {t("cancellation.youKeep")} {100 - p} % · {p} %{" "}
+                  {t("cancellation.refundedSuffix")}
                 </option>
               ))}
             </select>

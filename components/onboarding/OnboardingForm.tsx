@@ -8,7 +8,6 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import { slugify, isValidSlug } from "@/lib/utils/slug";
 import Button from "@/components/ui/Button";
 import CityAutocomplete from "@/components/ui/CityAutocomplete";
-import PromoCode from "@/components/subscription/PromoCode";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import {
   SPORT_KEYS,
@@ -293,9 +292,6 @@ export default function OnboardingForm({
           </Button>
         </div>
 
-        <div className="mt-5">
-          <PromoCode compact />
-        </div>
 
         <button
           type="button"

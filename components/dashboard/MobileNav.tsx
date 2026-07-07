@@ -48,6 +48,10 @@ export default function MobileNav() {
   const pathname = usePathname();
   const { t } = useI18n();
 
+  // Dans un fil de discussion, la barre du bas disparaît : le champ de
+  // saisie prend sa place et la conversation occupe tout l'écran.
+  if (/^\/dashboard\/messages\/./.test(pathname)) return null;
+
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-20 flex border-t border-border bg-bg-elevated/95 backdrop-blur md:hidden"

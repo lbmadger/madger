@@ -35,8 +35,10 @@ export default async function OverviewPage() {
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekStart.getDate() + 7);
 
+  const monthStartForClients = new Date(now.getFullYear(), now.getMonth(), 1);
   const [
     clientsRes,
+    newClientsRes,
     upcomingRes,
     availRes,
     servicesRes,
@@ -45,6 +47,10 @@ export default async function OverviewPage() {
     weeksRes,
   ] = await Promise.all([
     supabase.from("clients").select("*", { count: "exact", head: true }),
+    supabase
+      .from("clients")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", monthStartForClients.toISOString()),
     supabase
       .from("bookings")
       .select("*, clients(first_name, last_name)")
@@ -127,6 +133,27 @@ export default async function OverviewPage() {
       b.status !== "cancelled" &&
       new Date(b.starts_at as string).getTime() >= weekStart.getTime()
   ).length;
+  // Tendances : mêmes flèches que la page Statistiques, directement sur les
+  // tuiles du Dashboard.
+  const prevWeekStart = new Date(weekStart);
+  prevWeekStart.setDate(weekStart.getDate() - 7);
+  const prevWeekCount = (weeksRes.data ?? []).filter((b) => {
+    if (b.status === "cancelled") return false;
+    const t = new Date(b.starts_at as string).getTime();
+    return t >= prevWeekStart.getTime() && t < weekStart.getTime();
+  }).length;
+  const sessionsTrend: StatTrend =
+    prevWeekCount > 0
+      ? {
+          text: `${weekCount >= prevWeekCount ? "+" : ""}${Math.round(((weekCount - prevWeekCount) / prevWeekCount) * 100)}% ${o.vsLastWeek}`,
+          positive: weekCount >= prevWeekCount,
+        }
+      : null;
+  const newClientsCount = newClientsRes.count ?? 0;
+  const clientsTrend: StatTrend =
+    newClientsCount > 0
+      ? { text: `+${newClientsCount} ${o.newThisMonth}`, positive: true }
+      : null;
   const upcoming = (upcomingRes.data ?? []) as Booking[];
   const availRows = availRes.data ?? [];
   const availabilityDone = availRows.length > 0;
@@ -355,10 +382,17 @@ export default async function OverviewPage() {
       label: o.sessionsWeek,
       value: weekCount,
       kind: "int",
+      trend: sessionsTrend,
       hint: `${todayCount} ${o.sessionsToday}`,
       href: "/dashboard/agenda",
     },
-    { label: o.activeClients, value: clientsCount, kind: "int", href: "/dashboard/clients" },
+    {
+      label: o.activeClients,
+      value: clientsCount,
+      kind: "int",
+      trend: clientsTrend,
+      href: "/dashboard/clients",
+    },
     {
       label: o.pendingPayments,
       value: heldSum,

@@ -8,6 +8,7 @@ import { getCoach } from "@/lib/coach/getCoach";
 import { isPro } from "@/lib/subscription/plan";
 import Sidebar from "@/components/dashboard/Sidebar";
 import MobileNav from "@/components/dashboard/MobileNav";
+import ContentPad from "@/components/dashboard/ContentPad";
 
 // Layout propre au dashboard. Il hérite du <html><body> racine (donc du dark
 // mode global) mais pose sa propre structure sidebar + contenu, sans aucun
@@ -66,10 +67,7 @@ export default async function DashboardLayout({
       >
         <div className="flex min-h-screen bg-bg text-text-base">
           <Sidebar />
-          {/* pb-20 réserve la hauteur de la barre d'onglets mobile (md:pb-0) */}
-          <div className="flex min-w-0 flex-1 flex-col pb-20 md:pb-0">
-            {children}
-          </div>
+          <ContentPad>{children}</ContentPad>
           <MobileNav />
         </div>
       </SessionProvider>

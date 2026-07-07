@@ -67,11 +67,11 @@ export default function Pricing() {
             }}>Aucune surprise au lancement.</span>
           </h2>
           <p className="text-text-muted text-lg max-w-lg mx-auto mb-6" style={{ lineHeight: 1.6 }}>
-            Les tarifs seront communiqués au lancement. Les membres en accès anticipé bénéficient du plan Pro offert pendant 3 mois.
+            Les tarifs seront communiqués au lancement. Les membres en accès anticipé bénéficient de Madger Pro offert pendant 3 mois.
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8" style={{ background: "rgba(203,255,3,0.07)", border: "1px solid rgba(203,255,3,0.18)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-accent block" style={{ background: "#CBFF03" }} />
-            <span style={{ color: "#CBFF03", fontSize: 12, fontWeight: 600 }}>Accès anticipé · Plan Pro offert 3 mois pour les premiers membres</span>
+            <span style={{ color: "#CBFF03", fontSize: 12, fontWeight: 600 }}>Accès anticipé · Madger Pro offert 3 mois pour les premiers membres</span>
           </div>
         </motion.div>
 
@@ -96,7 +96,7 @@ export default function Pricing() {
               </div>
               <div style={{ minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "center" }}>
                 <div className="font-extrabold text-white mb-1" style={{ fontSize: "clamp(24px, 6.5vw, 52px)", letterSpacing: "-0.04em", lineHeight: 1 }}>
-                  Gratuit
+                  Madger Basic
                 </div>
                 <div className="text-text-muted text-sm pt-1">
                   Pour démarrer · tarif communiqué au lancement
@@ -157,7 +157,7 @@ export default function Pricing() {
               <div className="flex items-center gap-2.5 mb-3">
                 <MadgerLogo size={28} />
                 <div className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#CBFF03", letterSpacing: "0.1em" }}>
-                  Pro
+                  Madger Pro
                 </div>
               </div>
 

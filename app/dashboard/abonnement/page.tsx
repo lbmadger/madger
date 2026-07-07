@@ -1,6 +1,5 @@
 import Topbar from "@/components/dashboard/Topbar";
 import PricingPlans from "@/components/subscription/PricingPlans";
-import PromoCode from "@/components/subscription/PromoCode";
 import ManageSubscription from "@/components/subscription/ManageSubscription";
 import { getCoach } from "@/lib/coach/getCoach";
 import { createClient } from "@/lib/supabase/server";
@@ -109,11 +108,6 @@ export default async function SubscriptionPage({
               />
             </div>
           )}
-        </div>
-
-        {/* Code promo */}
-        <div className="mb-6">
-          <PromoCode />
         </div>
 
         {/* Offres */}

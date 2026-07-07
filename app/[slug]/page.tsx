@@ -19,11 +19,17 @@ import type { PublicService } from "@/lib/services/types";
 
 async function getCoachBySlug(slug: string): Promise<PublicCoach | null> {
   const supabase = createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("public_coaches")
     .select("*")
     .eq("slug", slug)
     .maybeSingle();
+  // Une erreur de la VUE (migration en cours, vue recréée) n'est pas un
+  // slug inconnu : on la trace pour la voir dans les logs Vercel au lieu
+  // d'un 404 muet.
+  if (error) {
+    console.error("[slug] public_coaches query failed:", error.message);
+  }
   return (data as PublicCoach | null) ?? null;
 }
 
