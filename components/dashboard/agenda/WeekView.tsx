@@ -37,11 +37,15 @@ export default function WeekView({
   bookings,
   availabilities,
   onBookingClick,
+  onSlotClick,
 }: {
   bookings: Booking[];
   availabilities: Availability[];
   // Clic sur une séance de la grille (confirmer une demande, modifier…).
   onBookingClick?: (b: Booking) => void;
+  // Clic sur une case horaire LIBRE : blocage direct du créneau (1 h),
+  // façon Airbnb. Absent → cases inertes.
+  onSlotClick?: (start: Date) => void;
 }) {
   const { t, locale } = useI18n();
   const loc = locale === "fr" ? "fr-FR" : "en-US";
@@ -170,6 +174,27 @@ export default function WeekView({
             style={{ top: top(h * 60) }}
           />
         ))}
+
+        {/* Cases horaires : un tap sur une case libre bloque le créneau.
+            Rendues SOUS les séances (qui arrivent après dans le DOM) : une
+            case occupée reçoit le clic de la séance, pas celui du blocage. */}
+        {onSlotClick &&
+          hours.map((h) => {
+            const start = new Date(d);
+            start.setHours(h, 0, 0, 0);
+            if (start.getTime() < Date.now()) return null;
+            return (
+              <button
+                key={`slot-${h}`}
+                type="button"
+                onClick={() => onSlotClick(start)}
+                aria-label={`${t("agenda.blockCta")} ${start.toLocaleString(loc, { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}`}
+                title={t("agenda.tapToBlock")}
+                className="absolute inset-x-0 transition-colors hover:bg-white/[0.05] focus-visible:bg-white/[0.05]"
+                style={{ top: top(h * 60), height: HOUR_PX }}
+              />
+            );
+          })}
 
         {/* Disponibilités (fond) */}
         {dayAvail.map((a) => (
@@ -371,6 +396,12 @@ export default function WeekView({
             <span className="h-2.5 w-2.5 rounded-sm border-l-2 border-warning bg-warning/10" />
             {t("agenda.pending")}
           </span>
+          {onSlotClick && (
+            <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-sm border border-border-strong bg-white/[0.06]" />
+              {t("agenda.tapToBlock")}
+            </span>
+          )}
         </div>
         <Link
           href="/dashboard/disponibilites"

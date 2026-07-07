@@ -131,6 +131,47 @@ export default function AgendaView({
     }
   }
 
+  // Blocage DIRECT d'une case du calendrier (1 h) : tap sur une case libre,
+  // le créneau se grise immédiatement. Un tap sur le bloc propose Débloquer.
+  async function quickBlock(start: Date) {
+    if (start.getTime() < Date.now()) return;
+    const ends = new Date(start.getTime() + 60 * 60 * 1000);
+    // Case déjà occupée localement (séance ou blocage qui chevauche) : inerte.
+    const overlap = bookings.some(
+      (b) =>
+        b.status !== "cancelled" &&
+        new Date(b.starts_at).getTime() < ends.getTime() &&
+        new Date(b.ends_at).getTime() > start.getTime()
+    );
+    if (overlap) return;
+    try {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: created, error } = await supabase
+        .from("bookings")
+        .insert({
+          coach_id: user.id,
+          client_id: null,
+          is_block: true,
+          status: "confirmed",
+          starts_at: start.toISOString(),
+          ends_at: ends.toISOString(),
+          location: "in_person",
+        })
+        .select("*")
+        .single();
+      if (!error && created) {
+        setBookings((bs) => [...bs, { ...(created as Booking), clients: null }]);
+        router.refresh();
+      }
+    } catch {
+      /* la case reste libre, le coach peut retenter */
+    }
+  }
+
   // Supprime un blocage (le créneau redevient réservable).
   async function unblock(id: string) {
     // Optimiste : la plage disparaît tout de suite, le serveur suit.
@@ -412,6 +453,7 @@ export default function AgendaView({
             setActionError(null);
             setSelected(b);
           }}
+          onSlotClick={quickBlock}
         />
       ) : groups.length === 0 ? (
         <div className="rounded-2xl border border-border bg-bg-card p-10 text-center">
