@@ -50,10 +50,10 @@ const ExcelIcon = () => (
   <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
     <rect width="40" height="40" rx="9" fill="#185C37"/>
     <rect x="22" y="8" width="12" height="24" rx="1.5" fill="white"/>
-    <line x1="22" y1="15" x2="34" y2="15" stroke="#D0D0D0" strokeWidth="0.8"/>
-    <line x1="22" y1="21" x2="34" y2="21" stroke="#D0D0D0" strokeWidth="0.8"/>
-    <line x1="22" y1="27" x2="34" y2="27" stroke="#D0D0D0" strokeWidth="0.8"/>
-    <line x1="28" y1="8" x2="28" y2="32" stroke="#D0D0D0" strokeWidth="0.8"/>
+    <line x1="22" y1="15" x2="34" y2="15" stroke="var(--text-soft)" strokeWidth="0.8"/>
+    <line x1="22" y1="21" x2="34" y2="21" stroke="var(--text-soft)" strokeWidth="0.8"/>
+    <line x1="22" y1="27" x2="34" y2="27" stroke="var(--text-soft)" strokeWidth="0.8"/>
+    <line x1="28" y1="8" x2="28" y2="32" stroke="var(--text-soft)" strokeWidth="0.8"/>
     <rect x="7" y="8" width="17" height="24" rx="1.5" fill="#21A366"/>
     <line x1="10.5" y1="13" x2="20.5" y2="27" stroke="white" strokeWidth="4" strokeLinecap="round"/>
     <line x1="20.5" y1="13" x2="10.5" y2="27" stroke="white" strokeWidth="4" strokeLinecap="round"/>

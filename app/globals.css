@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Rampe de gris partagée landing ↔ app. Les trois dernières valeurs sont
+   celles des tokens Tailwind text-base / text-muted / text-dim
+   (tailwind.config.ts) : une seule source de vérité pour les styles inline
+   de la landing. */
+:root {
+  --text-strong: #ffffff;
+  --text-soft: #c0c0c0; /* texte de lecture landing (paragraphes) */
+  --text-muted: #9a9a9a; /* = token text-muted */
+  --text-dim: #757575; /* = token text-dim */
+}
+
 * {
   box-sizing: border-box;
   margin: 0;

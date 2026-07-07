@@ -25,12 +25,17 @@ export default function BookingModal({
   coach,
   services = [],
   initialServiceId,
+  initialSlot,
   onClose,
   onContact,
 }: {
   coach: PublicCoach;
   services?: PublicService[];
   initialServiceId?: string;
+  // Créneau porté par l'URL de retour (?slot=...) : permet de retrouver la
+  // sélection même sur un AUTRE appareil (confirmation email ouverte sur
+  // téléphone alors que la réservation a commencé sur ordinateur).
+  initialSlot?: string | null;
   onClose: () => void;
   // Ouvre la conversation avec le coach (proposé quand aucun créneau libre).
   onContact?: () => void;
@@ -116,6 +121,10 @@ export default function BookingModal({
     } catch {
       /* brouillon illisible : on repart de zéro */
     }
+    // Pas de brouillon local (autre appareil) : le créneau de l'URL prend
+    // le relais.
+    if (!draftSlotRef.current && initialSlot)
+      draftSlotRef.current = initialSlot;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -393,13 +402,13 @@ export default function BookingModal({
             )}
             <div className="mt-6 flex flex-col gap-2">
               <Link
-                href={`/signup?role=client&redirect=${encodeURIComponent(`/${coach.slug}?book=${serviceId || "1"}`)}`}
+                href={`/signup?role=client&redirect=${encodeURIComponent(`/${coach.slug}?book=${serviceId || "1"}${selectedIso ? `&slot=${encodeURIComponent(selectedIso)}` : ""}`)}`}
                 className="w-full"
               >
                 <Button className="w-full">{t("booking.createAccount")}</Button>
               </Link>
               <Link
-                href={`/login?redirect=${encodeURIComponent(`/${coach.slug}?book=${serviceId || "1"}`)}`}
+                href={`/login?redirect=${encodeURIComponent(`/${coach.slug}?book=${serviceId || "1"}${selectedIso ? `&slot=${encodeURIComponent(selectedIso)}` : ""}`)}`}
                 className="w-full"
               >
                 <Button variant="secondary" className="w-full">

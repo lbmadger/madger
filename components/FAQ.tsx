@@ -115,7 +115,7 @@ export default function FAQ() {
           viewport={{ once: true }}
           transition={{ delay: 0.3 }}
           className="text-center mt-8 text-sm"
-          style={{ color: "#757575" }}
+          style={{ color: "var(--text-dim)" }}
         >
           Une autre question ?{" "}
           <a href="mailto:contact@madger.app" style={{ color: "#CBFF03", textDecoration: "none" }}>

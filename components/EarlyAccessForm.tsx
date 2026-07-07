@@ -195,7 +195,7 @@ export default function EarlyAccessForm() {
                   <span style={{ fontSize: 10, fontWeight: 700, color: "#000" }}>1</span>
                 )}
               </div>
-              <span style={{ fontSize: 11, color: step === 1 ? "#fff" : "#757575", fontWeight: step === 1 ? 600 : 400 }}>
+              <span style={{ fontSize: 11, color: step === 1 ? "#fff" : "var(--text-dim)", fontWeight: step === 1 ? 600 : 400 }}>
                 Votre profil
               </span>
               {/* Connector */}
@@ -209,9 +209,9 @@ export default function EarlyAccessForm() {
                   display: "flex", alignItems: "center", justifyContent: "center",
                 }}
               >
-                <span style={{ fontSize: 10, fontWeight: 700, color: step >= 2 ? "#000" : "#757575" }}>2</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: step >= 2 ? "#000" : "var(--text-dim)" }}>2</span>
               </div>
-              <span style={{ fontSize: 11, color: step === 2 ? "#fff" : "#757575", fontWeight: step === 2 ? 600 : 400 }}>
+              <span style={{ fontSize: 11, color: step === 2 ? "#fff" : "var(--text-dim)", fontWeight: step === 2 ? 600 : 400 }}>
                 Votre activité
               </span>
             </div>
@@ -310,7 +310,7 @@ export default function EarlyAccessForm() {
                     className={`${cls} appearance-none`}
                     style={{
                       ...inputBase,
-                      color: fields.type_coaching ? "#fff" : "#757575",
+                      color: fields.type_coaching ? "#fff" : "var(--text-dim)",
                       backgroundImage: selectArrow,
                       backgroundRepeat: "no-repeat",
                       backgroundPosition: "right 18px center",
@@ -319,7 +319,7 @@ export default function EarlyAccessForm() {
                     onFocus={focusOn}
                     onBlur={focusOff}
                   >
-                    <option value="" disabled style={{ color: "#757575", background: "#141414" }}>Sélectionner</option>
+                    <option value="" disabled style={{ color: "var(--text-dim)", background: "#141414" }}>Sélectionner</option>
                     <option style={{ color: "#fff", background: "#141414" }}>Coach sportif / fitness</option>
                     <option style={{ color: "#fff", background: "#141414" }}>Préparateur physique</option>
                     <option style={{ color: "#fff", background: "#141414" }}>Coach bien-être</option>
@@ -373,7 +373,7 @@ export default function EarlyAccessForm() {
                     className={`${cls} appearance-none`}
                     style={{
                       ...inputBase,
-                      color: fields.nb_clients ? "#fff" : "#757575",
+                      color: fields.nb_clients ? "#fff" : "var(--text-dim)",
                       backgroundImage: selectArrow,
                       backgroundRepeat: "no-repeat",
                       backgroundPosition: "right 18px center",
@@ -382,7 +382,7 @@ export default function EarlyAccessForm() {
                     onFocus={focusOn}
                     onBlur={focusOff}
                   >
-                    <option value="" disabled style={{ color: "#757575", background: "#141414" }}>Sélectionner</option>
+                    <option value="" disabled style={{ color: "var(--text-dim)", background: "#141414" }}>Sélectionner</option>
                     <option style={{ color: "#fff", background: "#141414" }}>Moins de 5</option>
                     <option style={{ color: "#fff", background: "#141414" }}>5 à 15</option>
                     <option style={{ color: "#fff", background: "#141414" }}>15 à 30</option>
@@ -405,7 +405,7 @@ export default function EarlyAccessForm() {
                 </label>
 
                 <label className="flex flex-col gap-1.5">
-                  <Label>Instagram ou site <span style={{ color: "#757575" }}>(optionnel)</span></Label>
+                  <Label>Instagram ou site <span style={{ color: "var(--text-dim)" }}>(optionnel)</span></Label>
                   <input
                     type="text"
                     placeholder="@votre_compte ou https://..."

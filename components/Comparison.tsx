@@ -91,11 +91,11 @@ export default function Comparison() {
         >
           <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(203,255,3,0.1)", background: "rgba(203,255,3,0.04)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: "#CBFF03" }}>Madger fait tout ça</span>
-            <span style={{ fontSize: 11, color: "#757575" }}>vs Calendly, WhatsApp, Excel</span>
+            <span style={{ fontSize: 11, color: "var(--text-dim)" }}>vs Calendly, WhatsApp, Excel</span>
           </div>
           {features.map((f, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 18px", borderBottom: i < features.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none", background: i % 2 === 0 ? "rgba(255,255,255,0.01)" : "transparent" }}>
-              <span style={{ fontSize: 13, color: "#C0C0C0" }}>{f.label}</span>
+              <span style={{ fontSize: 13, color: "var(--text-soft)" }}>{f.label}</span>
               <div style={{ width: 22, height: 22, borderRadius: 7, background: "rgba(203,255,3,0.1)", border: "1px solid rgba(203,255,3,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginLeft: 12 }}>
                 <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
                   <path d="M13.5 4.5l-7 7-3-3" stroke="#CBFF03" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -177,7 +177,7 @@ export default function Comparison() {
                   alignItems: "center",
                 }}
               >
-                <div className="py-3.5" style={{ fontSize: 13, color: "#C0C0C0", lineHeight: 1.4, paddingRight: 12 }}>
+                <div className="py-3.5" style={{ fontSize: 13, color: "var(--text-soft)", lineHeight: 1.4, paddingRight: 12 }}>
                   {f.label}
                 </div>
                 {cols.map(({ key, highlight }) => (
@@ -207,7 +207,7 @@ export default function Comparison() {
                 alignItems: "center",
               }}
             >
-              <div style={{ fontSize: 11, color: "#757575" }}>
+              <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
                 ✓ Gratuit pour commencer · 0 % commission en Pro
               </div>
               {cols.map(({ key, label, highlight }) => (

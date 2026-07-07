@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -33,6 +33,11 @@ export default function AgendaView({
 }) {
   const { t, locale } = useI18n();
   const router = useRouter();
+  // Copie locale des séances : chaque action (confirmer, refuser, bloquer…)
+  // met l'écran à jour IMMÉDIATEMENT, le router.refresh() en arrière-plan ne
+  // sert plus qu'à réconcilier avec le serveur. Zéro latence perçue.
+  const [bookings, setBookings] = useState(initialBookings);
+  useEffect(() => setBookings(initialBookings), [initialBookings]);
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<Booking | null>(null);
   const [cancelId, setCancelId] = useState<string | null>(null);
@@ -97,19 +102,25 @@ export default function AgendaView({
         setBlockError("agenda.errors.overlap");
         return;
       }
-      const { error } = await supabase.from("bookings").insert({
-        coach_id: user.id,
-        client_id: null,
-        is_block: true,
-        status: "confirmed",
-        starts_at: starts.toISOString(),
-        ends_at: ends.toISOString(),
-        location: "in_person",
-      });
+      const { data: created, error } = await supabase
+        .from("bookings")
+        .insert({
+          coach_id: user.id,
+          client_id: null,
+          is_block: true,
+          status: "confirmed",
+          starts_at: starts.toISOString(),
+          ends_at: ends.toISOString(),
+          location: "in_person",
+        })
+        .select("*")
+        .single();
       if (error) {
         setBlockError("agenda.errors.generic");
         return;
       }
+      if (created)
+        setBookings((bs) => [...bs, { ...(created as Booking), clients: null }]);
       setBlocking(false);
       router.refresh();
     } catch {
@@ -121,9 +132,11 @@ export default function AgendaView({
 
   // Supprime un blocage (le créneau redevient réservable).
   async function unblock(id: string) {
+    // Optimiste : la plage disparaît tout de suite, le serveur suit.
+    setBookings((bs) => bs.filter((b) => b.id !== id));
+    setSelected(null);
     const supabase = createClient();
     await supabase.from("bookings").delete().eq("id", id);
-    setSelected(null);
     router.refresh();
   }
 
@@ -149,6 +162,9 @@ export default function AgendaView({
         );
         return;
       }
+      setBookings((bs) =>
+        bs.map((b) => (b.id === id ? { ...b, status: "confirmed" as const } : b))
+      );
       setSelected(null);
       router.refresh();
     } catch {
@@ -175,6 +191,9 @@ export default function AgendaView({
         setActionError("agenda.actionError");
         return;
       }
+      setBookings((bs) =>
+        bs.map((b) => (b.id === id ? { ...b, status: "cancelled" as const } : b))
+      );
       setCancelId(null);
       setSelected(null);
       router.refresh();
@@ -188,7 +207,7 @@ export default function AgendaView({
   // Séances à venir uniquement (>= maintenant), regroupées par jour.
   const groups = useMemo(() => {
     const now = Date.now();
-    const upcoming = initialBookings.filter(
+    const upcoming = bookings.filter(
       (b) => new Date(b.ends_at).getTime() >= now && b.status !== "cancelled"
     );
     const map = new Map<string, Booking[]>();
@@ -198,7 +217,7 @@ export default function AgendaView({
       map.get(k)!.push(b);
     }
     return Array.from(map.entries());
-  }, [initialBookings]);
+  }, [bookings]);
 
   function dayLabel(key: string): string {
     const d = new Date(key + "T12:00:00");
@@ -235,7 +254,7 @@ export default function AgendaView({
   }
 
   // Demandes en attente à venir : bandeau prioritaire en tête d'agenda.
-  const pendingRequests = initialBookings.filter(
+  const pendingRequests = bookings.filter(
     (b) =>
       b.status === "pending" &&
       !b.is_block &&
@@ -386,7 +405,7 @@ export default function AgendaView({
 
       {view === "week" ? (
         <WeekView
-          bookings={initialBookings}
+          bookings={bookings}
           availabilities={availabilities}
           onBookingClick={(b) => {
             setActionError(null);

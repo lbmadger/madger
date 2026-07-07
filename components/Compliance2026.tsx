@@ -100,7 +100,7 @@ export default function Compliance2026() {
               <p className="text-white font-bold mb-1.5" style={{ fontSize: 15, letterSpacing: "-0.01em" }}>
                 {item.title}
               </p>
-              <p style={{ fontSize: 13.5, color: "#9A9A9A", lineHeight: 1.6 }}>
+              <p style={{ fontSize: 13.5, color: "var(--text-muted)", lineHeight: 1.6 }}>
                 {item.desc}
               </p>
             </motion.div>
@@ -113,7 +113,7 @@ export default function Compliance2026() {
           viewport={{ once: true, margin: "-40px" }}
           transition={{ duration: 0.6, delay: 0.3 }}
           className="text-center mt-8"
-          style={{ fontSize: 12, color: "#757575" }}
+          style={{ fontSize: 12, color: "var(--text-dim)" }}
         >
           Réforme de la facturation électronique française : réception dès
           septembre 2026, émission généralisée en 2027.

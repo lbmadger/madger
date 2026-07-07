@@ -13,7 +13,7 @@ export default function PolitiqueCookies() {
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-sm mb-12 transition-colors duration-200"
-          style={{ color: "#757575" }}
+          style={{ color: "var(--text-dim)" }}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -28,7 +28,7 @@ export default function PolitiqueCookies() {
           Cookies
         </h1>
 
-        <div className="flex flex-col gap-10" style={{ color: "#9A9A9A", fontSize: 15, lineHeight: 1.8 }}>
+        <div className="flex flex-col gap-10" style={{ color: "var(--text-muted)", fontSize: 15, lineHeight: 1.8 }}>
 
           <section>
             <p>

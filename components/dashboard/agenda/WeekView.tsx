@@ -1,14 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Booking } from "@/lib/bookings/types";
 import type { Availability } from "@/lib/availability/types";
 
-// Vue calendrier hebdomadaire : les disponibilités du coach apparaissent en
-// fond (blocs accent translucides), les séances par-dessus. Navigation par
-// semaine, colonne du jour courant mise en avant. Scroll horizontal en mobile.
+// Vue calendrier : les disponibilités du coach apparaissent en fond (blocs
+// accent translucides), les séances par-dessus. Desktop : grille de 7 jours.
+// Mobile : vue JOUR (une seule colonne lisible, navigation par pastilles),
+// fini le scroll horizontal dans le scroll vertical.
 
 const HOUR_PX = 44; // hauteur d'une heure dans la grille
 
@@ -55,6 +56,15 @@ export default function WeekView({
       return d;
     });
   }, [offset]);
+
+  const today = ymd(new Date());
+
+  // Jour affiché en mobile : aujourd'hui si la semaine courante, sinon lundi.
+  const [mobileDayIdx, setMobileDayIdx] = useState(0);
+  useEffect(() => {
+    const idx = days.findIndex((d) => ymd(d) === today);
+    setMobileDayIdx(idx === -1 ? 0 : idx);
+  }, [days, today]);
 
   // Bornes horaires de la grille : englobe dispos + séances (défaut 8 h – 20 h).
   const [startHour, endHour] = useMemo(() => {
@@ -103,7 +113,6 @@ export default function WeekView({
     return map;
   }, [availabilities]);
 
-  const today = ymd(new Date());
   const monthLabel = days[0].toLocaleDateString(loc, {
     month: "long",
     year: "numeric",
@@ -119,6 +128,116 @@ export default function WeekView({
     return [b.clients.first_name, b.clients.last_name]
       .filter(Boolean)
       .join(" ");
+  }
+
+  // Gouttière des heures, partagée entre la grille semaine et la vue jour.
+  function hourGutter() {
+    return (
+      <div className="relative" style={{ height: gridHeight }}>
+        {hours.map((h) => (
+          <span
+            key={h}
+            className="absolute right-1.5 -translate-y-1/2 text-[10px] text-text-dim"
+            style={{ top: top(h * 60) || 8 }}
+          >
+            {String(h).padStart(2, "0")}h
+          </span>
+        ))}
+      </div>
+    );
+  }
+
+  // Colonne d'un jour (fond de dispos + séances positionnées), partagée
+  // entre la grille semaine (7 colonnes) et la vue jour mobile (1 colonne).
+  function dayColumn(d: Date) {
+    const key = ymd(d);
+    const isToday = key === today;
+    const dayAvail = availByWeekday.get(d.getDay()) ?? [];
+    const dayBookings = byDay.get(key) ?? [];
+    return (
+      <div
+        key={key}
+        className={`relative border-l border-border ${
+          isToday ? "bg-accent/[0.03]" : ""
+        }`}
+        style={{ height: gridHeight }}
+      >
+        {/* Lignes horaires */}
+        {hours.map((h) => (
+          <span
+            key={h}
+            className="absolute inset-x-0 border-t border-border/50"
+            style={{ top: top(h * 60) }}
+          />
+        ))}
+
+        {/* Disponibilités (fond) */}
+        {dayAvail.map((a) => (
+          <span
+            key={a.id}
+            className="absolute inset-x-0.5 rounded-md border border-accent/20 bg-accent/[0.07]"
+            style={{
+              top: top(toMinutes(a.start_time)),
+              height: top(toMinutes(a.end_time)) - top(toMinutes(a.start_time)),
+            }}
+          />
+        ))}
+
+        {/* Séances (dessus). Cliquables si un gestionnaire est fourni
+            (confirmer/refuser une demande, modifier). */}
+        {dayBookings.map((b) => {
+          const s = new Date(b.starts_at);
+          const e = new Date(b.ends_at);
+          const sMin = s.getHours() * 60 + s.getMinutes();
+          const eMin = e.getHours() * 60 + e.getMinutes();
+          const h = Math.max(top(eMin) - top(sMin), 22);
+          const inner = (
+            <>
+              <span className="block truncate text-[10px] font-semibold leading-tight text-text-base">
+                {s.toLocaleTimeString(loc, {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+              {h >= 34 && (
+                <span className="block truncate text-[10px] leading-tight text-text-muted">
+                  {clientName(b)}
+                </span>
+              )}
+            </>
+          );
+          const cls = `absolute inset-x-1 overflow-hidden rounded-md border-l-2 px-1.5 py-0.5 text-left ${
+            b.is_block
+              ? "border-border-strong bg-white/[0.06]"
+              : b.status === "pending"
+              ? "border-warning bg-warning/10"
+              : "border-accent bg-bg-elevated"
+          }`;
+          const title = `${clientName(b)} · ${s.toLocaleTimeString(loc, { hour: "2-digit", minute: "2-digit" })}`;
+          return onBookingClick ? (
+            <button
+              key={b.id}
+              type="button"
+              onClick={() => onBookingClick(b)}
+              className={`${cls} cursor-pointer transition-opacity hover:opacity-80`}
+              style={{ top: top(sMin), height: h }}
+              title={title}
+            >
+              {inner}
+            </button>
+          ) : (
+            <span
+              key={b.id}
+              className={cls}
+              style={{ top: top(sMin), height: h }}
+              title={title}
+            >
+              {inner}
+            </span>
+          );
+        })}
+      </div>
+    );
   }
 
   return (
@@ -157,8 +276,55 @@ export default function WeekView({
         </div>
       </div>
 
-      {/* Grille (scroll horizontal sur mobile) */}
-      <div className="overflow-x-auto">
+      {/* ── Mobile : vue JOUR ─────────────────────────────────────────────── */}
+      <div className="sm:hidden">
+        {/* Pastilles des 7 jours de la semaine */}
+        <div className="flex gap-1 overflow-x-auto border-b border-border px-2 py-2">
+          {days.map((d, i) => {
+            const isToday = ymd(d) === today;
+            const active = i === mobileDayIdx;
+            const count = (byDay.get(ymd(d)) ?? []).length;
+            return (
+              <button
+                key={ymd(d)}
+                type="button"
+                onClick={() => setMobileDayIdx(i)}
+                className={`flex min-w-11 flex-1 flex-col items-center rounded-xl px-1 py-1.5 transition-colors ${
+                  active ? "bg-accent/10" : "hover:bg-white/[0.04]"
+                }`}
+              >
+                <span className="text-[10px] font-medium uppercase tracking-wide text-text-dim">
+                  {d.toLocaleDateString(loc, { weekday: "short" })}
+                </span>
+                <span
+                  className={`mt-0.5 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
+                    isToday
+                      ? "bg-accent text-black"
+                      : active
+                      ? "text-accent"
+                      : "text-text-base"
+                  }`}
+                >
+                  {d.getDate()}
+                </span>
+                {/* Point : au moins une séance ce jour-là */}
+                <span
+                  className={`mt-0.5 h-1 w-1 rounded-full ${
+                    count > 0 ? "bg-accent" : "bg-transparent"
+                  }`}
+                />
+              </button>
+            );
+          })}
+        </div>
+        <div className="grid grid-cols-[44px_1fr] pr-2">
+          {hourGutter()}
+          {dayColumn(days[mobileDayIdx])}
+        </div>
+      </div>
+
+      {/* ── Desktop : grille SEMAINE (7 colonnes) ────────────────────────── */}
+      <div className="hidden overflow-x-auto sm:block">
         <div className="min-w-[720px]">
           {/* En-têtes de jours */}
           <div className="grid grid-cols-[44px_repeat(7,1fr)] border-b border-border">
@@ -184,111 +350,8 @@ export default function WeekView({
 
           {/* Corps : gouttière horaire + 7 colonnes */}
           <div className="grid grid-cols-[44px_repeat(7,1fr)]">
-            {/* Gouttière des heures */}
-            <div className="relative" style={{ height: gridHeight }}>
-              {hours.map((h) => (
-                <span
-                  key={h}
-                  className="absolute right-1.5 -translate-y-1/2 text-[10px] text-text-dim"
-                  style={{ top: top(h * 60) || 8 }}
-                >
-                  {String(h).padStart(2, "0")}h
-                </span>
-              ))}
-            </div>
-
-            {days.map((d) => {
-              const key = ymd(d);
-              const isToday = key === today;
-              const dayAvail = availByWeekday.get(d.getDay()) ?? [];
-              const dayBookings = byDay.get(key) ?? [];
-              return (
-                <div
-                  key={key}
-                  className={`relative border-l border-border ${
-                    isToday ? "bg-accent/[0.03]" : ""
-                  }`}
-                  style={{ height: gridHeight }}
-                >
-                  {/* Lignes horaires */}
-                  {hours.map((h) => (
-                    <span
-                      key={h}
-                      className="absolute inset-x-0 border-t border-border/50"
-                      style={{ top: top(h * 60) }}
-                    />
-                  ))}
-
-                  {/* Disponibilités (fond) */}
-                  {dayAvail.map((a) => (
-                    <span
-                      key={a.id}
-                      className="absolute inset-x-0.5 rounded-md border border-accent/20 bg-accent/[0.07]"
-                      style={{
-                        top: top(toMinutes(a.start_time)),
-                        height:
-                          top(toMinutes(a.end_time)) -
-                          top(toMinutes(a.start_time)),
-                      }}
-                    />
-                  ))}
-
-                  {/* Séances (dessus). Cliquables si un gestionnaire est
-                      fourni (confirmer/refuser une demande, modifier). */}
-                  {dayBookings.map((b) => {
-                    const s = new Date(b.starts_at);
-                    const e = new Date(b.ends_at);
-                    const sMin = s.getHours() * 60 + s.getMinutes();
-                    const eMin = e.getHours() * 60 + e.getMinutes();
-                    const h = Math.max(top(eMin) - top(sMin), 22);
-                    const inner = (
-                      <>
-                        <span className="block truncate text-[10px] font-semibold leading-tight text-text-base">
-                          {s.toLocaleTimeString(loc, {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                        {h >= 34 && (
-                          <span className="block truncate text-[10px] leading-tight text-text-muted">
-                            {clientName(b)}
-                          </span>
-                        )}
-                      </>
-                    );
-                    const cls = `absolute inset-x-1 overflow-hidden rounded-md border-l-2 px-1.5 py-0.5 text-left ${
-                      b.is_block
-                        ? "border-border-strong bg-white/[0.06]"
-                        : b.status === "pending"
-                        ? "border-warning bg-warning/10"
-                        : "border-accent bg-bg-elevated"
-                    }`;
-                    const title = `${clientName(b)} · ${s.toLocaleTimeString(loc, { hour: "2-digit", minute: "2-digit" })}`;
-                    return onBookingClick ? (
-                      <button
-                        key={b.id}
-                        type="button"
-                        onClick={() => onBookingClick(b)}
-                        className={`${cls} cursor-pointer transition-opacity hover:opacity-80`}
-                        style={{ top: top(sMin), height: h }}
-                        title={title}
-                      >
-                        {inner}
-                      </button>
-                    ) : (
-                      <span
-                        key={b.id}
-                        className={cls}
-                        style={{ top: top(sMin), height: h }}
-                        title={title}
-                      >
-                        {inner}
-                      </span>
-                    );
-                  })}
-                </div>
-              );
-            })}
+            {hourGutter()}
+            {days.map((d) => dayColumn(d))}
           </div>
         </div>
       </div>

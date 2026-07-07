@@ -43,15 +43,20 @@ export default function CoachProfile({
   // Retour de connexion/inscription ou de Stripe avec ?book=<serviceId|1> :
   // rouvre le modal de réservation là où le client s'était arrêté (le
   // brouillon local restaure prestation, créneau et champs).
+  const [bookingSlot, setBookingSlot] = useState<string | null>(null);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const book = params.get("book");
     if (params.get("payment") === "canceled") setPaymentCanceled(true);
     if (book) {
       setBookingServiceId(book === "1" ? undefined : book);
+      // Créneau porté par l'URL : restauration même sans brouillon local
+      // (confirmation email ouverte sur un autre appareil).
+      setBookingSlot(params.get("slot"));
       setBooking(true);
       // Nettoie l'URL pour ne pas rouvrir le modal à chaque refresh.
       params.delete("book");
+      params.delete("slot");
       params.delete("payment");
       const qs = params.toString();
       window.history.replaceState(
@@ -472,6 +477,7 @@ export default function CoachProfile({
           coach={coach}
           services={services}
           initialServiceId={bookingServiceId}
+          initialSlot={bookingSlot}
           onClose={() => setBooking(false)}
           onContact={handleContact}
         />

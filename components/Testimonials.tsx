@@ -48,7 +48,7 @@ export default function Testimonials() {
           className="p-7 sm:p-10 rounded-3xl"
           style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.07)" }}
         >
-          <div className="flex flex-col gap-5" style={{ fontSize: 15, lineHeight: 1.75, color: "#C0C0C0" }}>
+          <div className="flex flex-col gap-5" style={{ fontSize: 15, lineHeight: 1.75, color: "var(--text-soft)" }}>
             <p>
               Je n'ai pas créé Madger après une étude de marché. Je l'ai créé en voyant des
               coachs passionnés perdre leurs soirées sur WhatsApp, Excel et des relances de
