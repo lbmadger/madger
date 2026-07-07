@@ -153,7 +153,7 @@ export default async function ReservationPage({
                         href={booking.meeting_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="rounded-full bg-accent px-4 py-2 text-xs font-bold text-black transition-opacity hover:opacity-90"
+                        className="rounded-full bg-accent px-4 py-2 text-xs font-semibold text-black transition-opacity hover:opacity-90"
                       >
                         <VideoIcon size={13} className="mr-1.5 inline-block align-[-2px]" />{r.joinMeeting}
                       </a>

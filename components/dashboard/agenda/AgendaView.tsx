@@ -277,10 +277,15 @@ export default function AgendaView({
                   <button
                     type="button"
                     disabled={cancelling || confirming}
-                    onClick={() => cancelBooking(b.id, "coach")}
+                    onClick={() => {
+                      if (window.confirm(t("agenda.declineConfirm")))
+                        cancelBooking(b.id, "coach");
+                    }}
                     className="rounded-full border border-border-strong px-3.5 py-1.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
                   >
-                    {t("agenda.decline")}
+                    {cancelling && actionErrorId === b.id
+                      ? "…"
+                      : t("agenda.decline")}
                   </button>
                   <button
                     type="button"
@@ -476,10 +481,15 @@ export default function AgendaView({
                          <button
                            type="button"
                            disabled={cancelling || confirming}
-                           onClick={() => cancelBooking(b.id, "coach")}
+                           onClick={() => {
+                             if (window.confirm(t("agenda.declineConfirm")))
+                               cancelBooking(b.id, "coach");
+                           }}
                            className="flex-1 rounded-full border border-border-strong py-1.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
                          >
-                           {t("agenda.decline")}
+                           {cancelling && actionErrorId === b.id
+                             ? "…"
+                             : t("agenda.decline")}
                          </button>
                          <button
                            type="button"
@@ -487,7 +497,9 @@ export default function AgendaView({
                            onClick={() => confirmBooking(b.id)}
                            className="flex-1 rounded-full bg-accent py-1.5 text-xs font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-50"
                          >
-                           {confirming ? "…" : t("agenda.confirm")}
+                           {confirming && actionErrorId === b.id
+                             ? "…"
+                             : t("agenda.confirm")}
                          </button>
                        </div>
                        {actionError && actionErrorId === b.id && (
@@ -645,7 +657,10 @@ export default function AgendaView({
                   <button
                     type="button"
                     disabled={cancelling || confirming}
-                    onClick={() => cancelBooking(selected.id, "coach")}
+                    onClick={() => {
+                      if (window.confirm(t("agenda.declineConfirm")))
+                        cancelBooking(selected.id, "coach");
+                    }}
                     className="flex-1 rounded-full border border-border-strong py-2.5 text-sm font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
                   >
                     {cancelling ? "…" : t("agenda.decline")}

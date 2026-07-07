@@ -106,7 +106,7 @@ export default async function InvoicesPage() {
 
         {/* Mentions légales incomplètes : les factures ne sont pas conformes */}
         {coach && !coach.siret && (
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-warning/25 bg-warning/[0.05] px-4 py-3.5">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-warning/30 bg-warning/[0.06] px-4 py-3.5">
             <div className="min-w-0">
               <p className="text-sm font-semibold text-text-base">
                 {inv.missingSiretTitle}
@@ -117,7 +117,7 @@ export default async function InvoicesPage() {
             </div>
             <Link
               href="/dashboard/reglages"
-              className="shrink-0 rounded-full bg-accent px-4 py-2 text-xs font-bold text-black transition-opacity hover:opacity-90"
+              className="shrink-0 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-black transition-opacity hover:opacity-90"
             >
               {inv.missingSiretCta}
             </Link>
@@ -204,7 +204,7 @@ export default async function InvoicesPage() {
                 </p>
                 <Link
                   href="/dashboard/abonnement"
-                  className="shrink-0 rounded-full bg-accent px-4 py-2 text-xs font-bold text-black transition-opacity hover:opacity-90"
+                  className="shrink-0 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-black transition-opacity hover:opacity-90"
                 >
                   {inv.commissionYearCta}
                 </Link>

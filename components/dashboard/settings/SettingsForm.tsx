@@ -226,7 +226,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
               setLinkCopied(true);
               setTimeout(() => setLinkCopied(false), 1800);
             }}
-            className="flex shrink-0 items-center gap-1.5 rounded-full bg-accent px-3.5 py-2 text-xs font-bold text-black transition-opacity hover:opacity-90"
+            className="flex shrink-0 items-center gap-1.5 rounded-full bg-accent px-3.5 py-2 text-xs font-semibold text-black transition-opacity hover:opacity-90"
           >
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2">
               <rect x="9" y="9" width="13" height="13" rx="2" />

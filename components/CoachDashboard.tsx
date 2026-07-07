@@ -59,7 +59,7 @@ function RevenueChart() {
                 : "rgba(203,255,3,0.15)",
             }}
           />
-          <span style={{ fontSize: 7, color: "#5A5A5A" }}>{barDays[i]}</span>
+          <span style={{ fontSize: 7, color: "#757575" }}>{barDays[i]}</span>
         </div>
       ))}
     </div>
@@ -108,9 +108,9 @@ function StatCard({ label, value, delta, icon, inView }: { label: string; value:
   return (
     <div style={{ padding: "11px", borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-        <span style={{ fontSize: 9, color: "#5A5A5A", fontWeight: 500 }}>{label}</span>
+        <span style={{ fontSize: 9, color: "#757575", fontWeight: 500 }}>{label}</span>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-          <path d={icon} stroke="#5A5A5A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          <path d={icon} stroke="#757575" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
       <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1 }}>
@@ -180,7 +180,7 @@ export default function CoachDashboard() {
                 className="p-4 rounded-2xl"
                 style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.07)" }}
               >
-                <div className="text-xs mb-2" style={{ color: "#5A5A5A" }}>{label}</div>
+                <div className="text-xs mb-2" style={{ color: "#757575" }}>{label}</div>
                 <div className="font-extrabold text-white text-2xl" style={{ letterSpacing: "-0.03em", lineHeight: 1 }}>
                   <MobileStatValue value={value} inView={mobileStatsInView} />
                 </div>
@@ -213,8 +213,8 @@ export default function CoachDashboard() {
               ))}
             </div>
             <div style={{ flex: 1, background: "#111", borderRadius: 6, padding: "4px 10px", display: "flex", alignItems: "center", gap: 6, maxWidth: 280, margin: "0 auto" }}>
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="#5A5A5A" strokeWidth="2"/></svg>
-              <span style={{ fontSize: 10, color: "#5A5A5A" }}>app.madger.app/dashboard</span>
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="#757575" strokeWidth="2"/></svg>
+              <span style={{ fontSize: 10, color: "#757575" }}>app.madger.app/dashboard</span>
             </div>
           </div>
 
@@ -240,9 +240,9 @@ export default function CoachDashboard() {
               ].map(({ icon, label, active, badge }: { icon: string; label: string; active: boolean; badge?: number }) => (
                 <div key={label} style={{ display: "flex", alignItems: "center", gap: 9, padding: "7px 16px", margin: "1px 8px", borderRadius: 8, background: active ? "rgba(203,255,3,0.08)" : "transparent", cursor: "pointer" }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                    <path d={icon} stroke={active ? "#CBFF03" : "#5A5A5A"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d={icon} stroke={active ? "#CBFF03" : "#757575"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  <span style={{ fontSize: 11, color: active ? "#CBFF03" : "#5A5A5A", fontWeight: active ? 600 : 400, flex: 1 }}>{label}</span>
+                  <span style={{ fontSize: 11, color: active ? "#CBFF03" : "#757575", fontWeight: active ? 600 : 400, flex: 1 }}>{label}</span>
                   {badge && <div style={{ width: 14, height: 14, borderRadius: "50%", background: "#CBFF03", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: 7, fontWeight: 700, color: "#000" }}>{badge}</span></div>}
                 </div>
               ))}
@@ -252,7 +252,7 @@ export default function CoachDashboard() {
                 <Avatar src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=60&h=60&fit=crop&auto=format&q=80" size={28} />
                 <div>
                   <div style={{ fontSize: 10, fontWeight: 600, color: "#fff" }}>Marie Laurent</div>
-                  <div style={{ fontSize: 8, color: "#5A5A5A" }}>Plan Pro</div>
+                  <div style={{ fontSize: 8, color: "#757575" }}>Plan Pro</div>
                 </div>
                 <div style={{ marginLeft: "auto", width: 6, height: 6, borderRadius: "50%", background: "#4ADE80" }} />
               </div>
@@ -265,7 +265,7 @@ export default function CoachDashboard() {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
                 <div>
                   <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>Bonjour, Marie</div>
-                  <div style={{ fontSize: 10, color: "#5A5A5A", marginTop: 1 }}>Lundi 25 mai 2026 · 6 séances aujourd'hui</div>
+                  <div style={{ fontSize: 10, color: "#757575", marginTop: 1 }}>Lundi 25 mai 2026 · 6 séances aujourd'hui</div>
                 </div>
                 <div style={{ display: "flex", gap: 7, alignItems: "center" }}>
                   <div style={{ padding: "6px 12px", borderRadius: 8, background: "#CBFF03", fontSize: 10, fontWeight: 700, color: "#000", cursor: "pointer" }}>
@@ -300,7 +300,7 @@ export default function CoachDashboard() {
                 </div>
                 {/* URL */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 8, color: "#5A5A5A", marginBottom: 1 }}>Votre lien de réservation</div>
+                  <div style={{ fontSize: 8, color: "#757575", marginBottom: 1 }}>Votre lien de réservation</div>
                   <div style={{ fontSize: 10, fontWeight: 600, color: "#CBFF03", letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     madger.app/marie-laurent
                   </div>
@@ -352,7 +352,7 @@ export default function CoachDashboard() {
                       <div key={i} style={{ display: "flex", alignItems: "stretch", gap: 8, padding: "7px 9px", borderRadius: 8, background: i === 0 ? "rgba(203,255,3,0.04)" : "rgba(255,255,255,0.02)", border: `1px solid ${i === 0 ? "rgba(203,255,3,0.14)" : "rgba(255,255,255,0.05)"}` }}>
                         {/* Time */}
                         <div style={{ display: "flex", alignItems: "center", width: 32, flexShrink: 0 }}>
-                          <span style={{ fontSize: 9, fontWeight: 600, color: i === 0 ? "#CBFF03" : "#5A5A5A" }}>{b.time}</span>
+                          <span style={{ fontSize: 9, fontWeight: 600, color: i === 0 ? "#CBFF03" : "#757575" }}>{b.time}</span>
                         </div>
                         {/* Accent line */}
                         <div style={{ width: 2, borderRadius: 2, background: i === 0 ? "#CBFF03" : "rgba(255,255,255,0.08)", flexShrink: 0, alignSelf: "stretch" }} />
@@ -363,7 +363,7 @@ export default function CoachDashboard() {
                         {/* Info */}
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: 10, fontWeight: 600, color: "#fff" }}>{b.name}</div>
-                          <div style={{ fontSize: 8, color: "#5A5A5A" }}>{b.type} · {b.duration}</div>
+                          <div style={{ fontSize: 8, color: "#757575" }}>{b.type} · {b.duration}</div>
                           <div
                             style={{ fontSize: 8, color: "#CBFF03", marginTop: 2, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 3 }}
                           >
@@ -408,9 +408,9 @@ export default function CoachDashboard() {
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 1 }}>
                             <span style={{ fontSize: 9, fontWeight: m.unread ? 700 : 500, color: m.unread ? "#fff" : "#8A8A8A", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 90 }}>{m.name}</span>
-                            <span style={{ fontSize: 7, color: "#5A5A5A", flexShrink: 0 }}>{m.time}</span>
+                            <span style={{ fontSize: 7, color: "#757575", flexShrink: 0 }}>{m.time}</span>
                           </div>
-                          <div style={{ fontSize: 8, color: m.unread ? "#8A8A8A" : "#5A5A5A", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.msg}</div>
+                          <div style={{ fontSize: 8, color: m.unread ? "#8A8A8A" : "#757575", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{m.msg}</div>
                         </div>
                         {m.unread > 0 && (
                           <div style={{ width: 14, height: 14, borderRadius: "50%", background: "#CBFF03", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -443,7 +443,7 @@ export default function CoachDashboard() {
                     </div>
                     {/* Input */}
                     <div style={{ marginTop: "auto", display: "flex", alignItems: "center", gap: 5, padding: "5px 7px", borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                      <span style={{ fontSize: 8, color: "#5A5A5A", flex: 1 }}>Répondre à Sophie…</span>
+                      <span style={{ fontSize: 8, color: "#757575", flex: 1 }}>Répondre à Sophie…</span>
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke="#CBFF03" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                     </div>
                   </div>
@@ -465,7 +465,7 @@ export default function CoachDashboard() {
                   <div style={{ padding: "11px", borderRadius: 10, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                       <span style={{ fontSize: 9, fontWeight: 700, color: "#fff" }}>Objectif mai</span>
-                      <span style={{ fontSize: 8, color: "#5A5A5A" }}>1 240 / 1 500 €</span>
+                      <span style={{ fontSize: 8, color: "#757575" }}>1 240 / 1 500 €</span>
                     </div>
                     {/* Progress bar */}
                     <div style={{ height: 5, borderRadius: 10, background: "rgba(255,255,255,0.06)", marginBottom: 6, overflow: "hidden" }}>
@@ -473,12 +473,12 @@ export default function CoachDashboard() {
                     </div>
                     <div style={{ display: "flex", justifyContent: "space-between" }}>
                       <span style={{ fontSize: 7, color: "#4ADE80", fontWeight: 600 }}>83 % atteint</span>
-                      <span style={{ fontSize: 7, color: "#5A5A5A" }}>Reste 260 €</span>
+                      <span style={{ fontSize: 7, color: "#757575" }}>Reste 260 €</span>
                     </div>
                     {/* Mini séances progress */}
                     <div style={{ marginTop: 8, height: 1, background: "rgba(255,255,255,0.05)", marginBottom: 7 }} />
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 5 }}>
-                      <span style={{ fontSize: 8, color: "#5A5A5A" }}>Séances</span>
+                      <span style={{ fontSize: 8, color: "#757575" }}>Séances</span>
                       <span style={{ fontSize: 8, color: "#fff", fontWeight: 600 }}>24 / 30</span>
                     </div>
                     <div style={{ height: 4, borderRadius: 10, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
@@ -507,7 +507,7 @@ export default function CoachDashboard() {
 
                     {/* Clients actifs */}
                     <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-                      <div style={{ fontSize: 8, color: "#5A5A5A", marginBottom: 6 }}>Actifs ce mois</div>
+                      <div style={{ fontSize: 8, color: "#757575", marginBottom: 6 }}>Actifs ce mois</div>
                       <div style={{ display: "flex", gap: -4 }}>
                         {clients.map((c, i) => (
                           <div key={i} style={{ width: 22, height: 22, borderRadius: "50%", overflow: "hidden", border: "1.5px solid #0D0D0D", marginLeft: i > 0 ? -6 : 0 }}>
@@ -557,8 +557,8 @@ export default function CoachDashboard() {
                       </div>
                       <div>
                         <div style={{ fontSize: 9, fontWeight: 700, color: "#fff" }}>{f.ref}</div>
-                        <div style={{ fontSize: 8, color: "#5A5A5A", marginTop: 1 }}>{f.client}</div>
-                        <div style={{ fontSize: 8, color: "#5A5A5A" }}>{f.date}</div>
+                        <div style={{ fontSize: 8, color: "#757575", marginTop: 1 }}>{f.client}</div>
+                        <div style={{ fontSize: 8, color: "#757575" }}>{f.date}</div>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                         <span style={{ fontSize: 11, fontWeight: 800, color: "#CBFF03" }}>{f.montant}</span>

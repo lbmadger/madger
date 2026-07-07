@@ -92,6 +92,8 @@ export default function BookingModal({
   // inscription, restauré au retour (le client retrouve son créneau).
   const draftKey = `madger_booking_draft_${coach.slug}`;
   const draftSlotRef = useRef<string | null>(null);
+  // true = créneau du brouillon retrouvé : petit message de confiance.
+  const [draftRestored, setDraftRestored] = useState(false);
   useEffect(() => {
     try {
       const raw = localStorage.getItem(draftKey);
@@ -174,7 +176,9 @@ export default function BookingModal({
           const first = days.findIndex((d) => d.slots.length > 0);
           setDayIdx(first === -1 ? 0 : first);
           // Retour de connexion : re-sélectionne le créneau du brouillon
-          // s'il est toujours libre.
+          // s'il est toujours libre. La ref n'est consommée qu'une fois le
+          // créneau retrouvé : si la durée change juste après (prestation
+          // restaurée), le rechargement suivant retente proprement.
           const ds = draftSlotRef.current;
           if (ds) {
             const idx = days.findIndex((d) =>
@@ -183,8 +187,9 @@ export default function BookingModal({
             if (idx !== -1) {
               setDayIdx(idx);
               setSelectedIso(ds);
+              setDraftRestored(true);
+              draftSlotRef.current = null;
             }
-            draftSlotRef.current = null;
           }
         } else {
           setSlotState({ mode: "free" });
@@ -259,6 +264,9 @@ export default function BookingModal({
         });
         const data = await res.json().catch(() => ({}));
         if (data.url) {
+          // Brouillon sauvegardé aussi avant Stripe : si le client annule le
+          // paiement, il retrouve créneau et champs au retour.
+          saveDraft();
           window.location.href = data.url; // page de paiement Stripe
           return;
         }
@@ -519,6 +527,13 @@ export default function BookingModal({
                     {t("booking.retry")}
                   </button>
                 </div>
+              )}
+
+              {/* Retour de connexion : on confirme que la sélection a survécu */}
+              {draftRestored && (
+                <p className="rounded-xl border border-accent/25 bg-accent/[0.06] px-3.5 py-2.5 text-xs font-medium text-accent">
+                  {t("booking.draftRestored")}
+                </p>
               )}
 
               {!isSubscription && slotState.mode === "slots" && (

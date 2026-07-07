@@ -13,7 +13,7 @@ export default function CGV() {
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-sm mb-12 transition-colors duration-200"
-          style={{ color: "#5A5A5A" }}
+          style={{ color: "#757575" }}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

@@ -241,7 +241,7 @@ export default function MarketplaceView({
           </svg>
           {t("marketplace.filtersBtn")}
           {activeCount > 0 && (
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-black">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[10px] font-semibold text-black">
               {activeCount}
             </span>
           )}
@@ -431,7 +431,7 @@ export default function MarketplaceView({
                         </span>
                       )}
                       {isSuperCoach(c) && (
-                        <span className="absolute left-3 top-3 rounded-full bg-accent px-2.5 py-1 text-[11px] font-bold text-black shadow-lg">
+                        <span className="absolute left-3 top-3 rounded-full bg-accent px-2.5 py-1 text-[11px] font-semibold text-black shadow-lg">
                           {t("marketplace.superCoach")}
                         </span>
                       )}

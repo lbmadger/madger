@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useSession } from "@/lib/auth/SessionProvider";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 
@@ -11,6 +12,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 export default function AccountMenu() {
   const { email, slug } = useSession();
   const { t } = useI18n();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -75,7 +77,11 @@ export default function AccountMenu() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-text-muted transition-colors hover:bg-bg-card hover:text-text-base"
+                className={`flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm transition-colors hover:bg-bg-card hover:text-text-base ${
+                  pathname === item.href
+                    ? "font-semibold text-accent"
+                    : "text-text-muted"
+                }`}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                   <path d={item.d} />

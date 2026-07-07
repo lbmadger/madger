@@ -115,7 +115,7 @@ function AccessForm() {
 
         <a
           href="/"
-          className="mt-7 inline-block text-xs text-[#5A5A5A] transition-colors hover:text-[#9a9a9a]"
+          className="mt-7 inline-block text-xs text-[#757575] transition-colors hover:text-[#9a9a9a]"
         >
           ‹ Retour à l&apos;accueil
         </a>

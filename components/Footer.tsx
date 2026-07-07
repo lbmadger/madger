@@ -30,7 +30,7 @@ export default function Footer() {
         {/* Bottom row: legal links */}
         <div
           className="flex flex-wrap justify-center sm:justify-start gap-5 mt-8 pt-6 text-xs"
-          style={{ borderTop: "1px solid rgba(255,255,255,0.04)", color: "#5A5A5A" }}
+          style={{ borderTop: "1px solid rgba(255,255,255,0.04)", color: "#757575" }}
         >
           <Link href="/mentions-legales" className="hover:text-white transition-colors duration-200">Mentions légales</Link>
           <Link href="/politique-de-confidentialite" className="hover:text-white transition-colors duration-200">Politique de confidentialité</Link>

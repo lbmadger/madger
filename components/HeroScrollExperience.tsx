@@ -11,7 +11,7 @@ const STEPS = [
   {
     num: "01",
     title: "Votre page coach",
-    desc: "Un lien unique à partager partout. Votre profil, vos offres, votre image professionnelle.",
+    desc: "Un lien unique à partager partout. Votre profil, vos prestations, votre image professionnelle.",
   },
   {
     num: "02",
@@ -370,7 +370,7 @@ export default function HeroScrollExperience() {
           {/* Trust badges */}
           <motion.div
             className="flex flex-wrap justify-center items-center gap-4 sm:gap-6 text-sm"
-            style={{ color: "#5A5A5A" }}
+            style={{ color: "#757575" }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
@@ -696,7 +696,7 @@ function ScreenProfile() {
   return (
     <div style={{ paddingTop: 52, height: "100%", display: "flex", flexDirection: "column" }}>
       <div style={{ padding: "8px 14px 0", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
-        <div style={{ fontSize: 9, color: "#5A5A5A", marginBottom: 8, fontFamily: "monospace" }}>
+        <div style={{ fontSize: 9, color: "#757575", marginBottom: 8, fontFamily: "monospace" }}>
           madger.app/<span style={{ color: "#CBFF03" }}>marie</span>
         </div>
         <div style={{ width: 56, height: 56, borderRadius: "50%", overflow: "hidden", marginBottom: 7, border: "2px solid rgba(203,255,3,0.35)", boxShadow: "0 0 18px rgba(203,255,3,0.18)" }}>
@@ -718,7 +718,7 @@ function ScreenProfile() {
       </div>
       <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "0 14px 8px" }} />
       <div style={{ padding: "0 14px", flex: 1 }}>
-        <div style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "#5A5A5A", marginBottom: 6 }}>Séances disponibles</div>
+        <div style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "#757575", marginBottom: 6 }}>Séances disponibles</div>
         {[
           { n: "Découverte", d: "45 min", t: "Visio", p: "Gratuit" },
           { n: "Coaching individuel", d: "60 min", t: "Présentiel", p: "50 €", a: true },
@@ -764,7 +764,7 @@ function ScreenSeance() {
         </div>
         <div style={{ fontSize: 16, fontWeight: 800, color: "#CBFF03" }}>50 €</div>
       </div>
-      <div style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "#5A5A5A", marginBottom: 6 }}>Sélectionner une date</div>
+      <div style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "#757575", marginBottom: 6 }}>Sélectionner une date</div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 3, marginBottom: 8 }}>
         {[["L","7"],["M","8"],["M","9"],["J","10"],["V","11"]].map(([d, n], i) => (
           <div key={i} style={{ padding: "5px 0", borderRadius: 7, textAlign: "center", background: i === 2 ? "#CBFF03" : "transparent", color: i === 2 ? "#000" : "#8A8A8A", border: i === 2 ? "none" : "1px solid rgba(255,255,255,0.06)" }}>
@@ -773,17 +773,17 @@ function ScreenSeance() {
           </div>
         ))}
       </div>
-      <div style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "#5A5A5A", marginBottom: 6 }}>Créneaux disponibles</div>
+      <div style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "#757575", marginBottom: 6 }}>Créneaux disponibles</div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 4, marginBottom: 8 }}>
         {["9:00","10:00","11:00","14:00","15:00","17:00"].map((h) => (
           <div key={h} style={{ padding: "7px 0", borderRadius: 7, textAlign: "center", fontSize: 10, fontWeight: h === "10:00" ? 600 : 400, background: h === "10:00" ? "#CBFF03" : "transparent", color: h === "10:00" ? "#000" : "#8A8A8A", border: h === "10:00" ? "none" : "1px solid rgba(255,255,255,0.06)" }}>{h}</div>
         ))}
       </div>
       <div style={{ padding: "8px 10px", borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", marginBottom: 8, display: "flex", alignItems: "center", gap: 7 }}>
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="#5A5A5A"><path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" /></svg>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="#757575"><path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" /></svg>
         <div>
           <div style={{ fontSize: 9, color: "#fff", fontWeight: 500 }}>Salle BodyFit</div>
-          <div style={{ fontSize: 8, color: "#5A5A5A" }}>14 rue de la Roquette, Paris 11e</div>
+          <div style={{ fontSize: 8, color: "#757575" }}>14 rue de la Roquette, Paris 11e</div>
         </div>
       </div>
       <div style={{ flex: 1, display: "flex", alignItems: "center", padding: "0 0 14px" }}>
@@ -812,7 +812,7 @@ function ScreenPaiement() {
         <div style={{ fontSize: 9, color: "#8A8A8A" }}>Mer. 9 mai · 10:00 · Présentiel · Paris 11e</div>
         <div style={{ fontSize: 9, color: "#8A8A8A", marginTop: 1 }}>avec Marie Laurent</div>
       </div>
-      <div style={{ fontSize: 9, color: "#5A5A5A", textAlign: "center", marginBottom: 6 }}>Paiement rapide</div>
+      <div style={{ fontSize: 9, color: "#757575", textAlign: "center", marginBottom: 6 }}>Paiement rapide</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5, marginBottom: 8 }}>
         <div style={{ padding: "8px", borderRadius: 10, background: "#000", border: "1px solid rgba(255,255,255,0.14)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <svg width="44" height="19" viewBox="0 0 56 24" fill="none">
@@ -832,17 +832,17 @@ function ScreenPaiement() {
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 7 }}>
         <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
-        <span style={{ fontSize: 9, color: "#5A5A5A" }}>ou par carte</span>
+        <span style={{ fontSize: 9, color: "#757575" }}>ou par carte</span>
         <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
       </div>
       <div style={{ padding: "8px 12px", borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.12)", marginBottom: 5 }}>
-        <div style={{ fontSize: 9, color: "#5A5A5A", marginBottom: 3 }}>Numéro de carte</div>
+        <div style={{ fontSize: 9, color: "#757575", marginBottom: 3 }}>Numéro de carte</div>
         <div style={{ fontSize: 12, color: "#fff", letterSpacing: "0.1em" }}>•••• •••• •••• 4242</div>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5, marginBottom: 7 }}>
         {[["Expiration","12 / 27"],["CVC","•••"]].map(([l, v]) => (
           <div key={l} style={{ padding: "7px 10px", borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.12)" }}>
-            <div style={{ fontSize: 9, color: "#5A5A5A", marginBottom: 2 }}>{l}</div>
+            <div style={{ fontSize: 9, color: "#757575", marginBottom: 2 }}>{l}</div>
             <div style={{ fontSize: 11, color: "#fff" }}>{v}</div>
           </div>
         ))}
@@ -856,8 +856,8 @@ function ScreenPaiement() {
           <div style={{ fontSize: 8, color: "#8A8A8A" }}>Envoyées automatiquement</div>
         </div>
       </div>
-      <div style={{ fontSize: 9, color: "#5A5A5A", textAlign: "center", marginBottom: 7, display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
-        <svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="#5A5A5A" strokeWidth="2" /></svg>
+      <div style={{ fontSize: 9, color: "#757575", textAlign: "center", marginBottom: 7, display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="#757575" strokeWidth="2" /></svg>
         Paiement sécurisé par Stripe
       </div>
       <div style={{ padding: "10px", borderRadius: 100, background: "#CBFF03", textAlign: "center", fontSize: 11, fontWeight: 700, color: "#000" }}>Payer 50 €</div>
@@ -906,7 +906,7 @@ function ScreenDashboard() {
         {/* Prochaine séance */}
         <div style={{ padding: "9px 10px", borderRadius: 12, background: "rgba(203,255,3,0.05)", border: "1px solid rgba(203,255,3,0.2)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-            <div style={{ fontSize: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#5A5A5A" }}>Prochaine séance</div>
+            <div style={{ fontSize: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#757575" }}>Prochaine séance</div>
             <div style={{ padding: "3px 7px", borderRadius: 20, background: "rgba(203,255,3,0.1)", border: "1px solid rgba(203,255,3,0.2)", display: "flex", alignItems: "center" }}>
               <span style={{ fontSize: 7, color: "#CBFF03", fontWeight: 600, lineHeight: 1 }}>Dans 2 jours</span>
             </div>
@@ -938,7 +938,7 @@ function ScreenDashboard() {
         {/* Factures */}
         <div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 5 }}>
-            <div style={{ fontSize: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#5A5A5A" }}>Factures</div>
+            <div style={{ fontSize: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#757575" }}>Factures</div>
             <span style={{ fontSize: 8, color: "#CBFF03" }}>Voir tout</span>
           </div>
           {[
@@ -957,7 +957,7 @@ function ScreenDashboard() {
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                 <div style={{ fontSize: 9, fontWeight: 700, color: "#fff" }}>{f.montant}</div>
-                <svg width="8" height="8" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="#5A5A5A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                <svg width="8" height="8" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke="#757575" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </div>
             </div>
           ))}
@@ -966,7 +966,7 @@ function ScreenDashboard() {
         {/* Historique */}
         <div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 5 }}>
-            <div style={{ fontSize: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#5A5A5A" }}>Historique</div>
+            <div style={{ fontSize: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#757575" }}>Historique</div>
             <span style={{ fontSize: 8, color: "#CBFF03" }}>Voir tout</span>
           </div>
           {[

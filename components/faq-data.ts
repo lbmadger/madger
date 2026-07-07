@@ -7,7 +7,7 @@ export const faqs = [
   },
   {
     q: "Comment fonctionne le lien coach ?",
-    a: "Vous obtenez une page personnalisée à votre nom, par exemple madger.app/marie. Vous la partagez en bio Instagram, en signature d'email, partout. Vos clients y voient vos offres, choisissent leur créneau et paient directement. Aucune installation, aucune friction.",
+    a: "Vous obtenez une page personnalisée à votre nom, par exemple madger.app/marie. Vous la partagez en bio Instagram, en signature d'email, partout. Vos clients y voient vos prestations, choisissent leur créneau et paient directement. Aucune installation, aucune friction.",
   },
   {
     q: "Mes clients doivent-ils créer un compte ?",
@@ -31,6 +31,6 @@ export const faqs = [
   },
   {
     q: "Puis-je gérer plusieurs types de séances ?",
-    a: "Oui. Vous créez autant d'offres que vous voulez : séance découverte, coaching individuel, suivi mensuel, pack séances… Chaque offre a son tarif, sa durée et ses disponibilités. Vos clients voient toutes vos offres et choisissent celle qui leur convient.",
+    a: "Oui. Vous créez autant de prestations que vous voulez : séance découverte, coaching individuel, suivi mensuel, pack séances… Chaque prestation a son tarif, sa durée et ses disponibilités. Vos clients voient tout et choisissent ce qui leur convient.",
   },
 ];

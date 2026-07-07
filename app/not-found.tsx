@@ -12,7 +12,7 @@ export default function NotFound() {
         404
       </p>
       <p className="text-white font-bold text-xl mb-3">Page introuvable</p>
-      <p className="mb-10" style={{ color: "#5A5A5A" }}>Cette page n'existe pas ou a été déplacée.</p>
+      <p className="mb-10" style={{ color: "#757575" }}>Cette page n'existe pas ou a été déplacée.</p>
       <Link
         href="/"
         className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm text-black"

@@ -21,22 +21,24 @@ export default async function SubscriptionPage({
   const daysLeft = proDaysLeft(coach?.pro_until);
 
   // Commission réellement prélevée sur 90 jours : l'argument chiffré de la
-  // carte Pro (« la commission t'a coûté X €, en Pro : 0 € »).
+  // carte Pro. Datée du versement (released_at, ou résolution de litige),
+  // pas de l'encaissement : c'est au versement que la commission naît.
   let commission90d = 0;
   if (!pro) {
     const supabase = createClient();
     const { data } = await supabase
       .from("payments")
-      .select("commission_cents")
-      .gt("commission_cents", 0)
-      .gte(
-        "paid_at",
-        new Date(Date.now() - 90 * 86400000).toISOString()
-      );
-    commission90d = (data ?? []).reduce(
-      (s, r) => s + ((r.commission_cents as number) || 0),
-      0
-    );
+      .select("commission_cents, released_at, resolved_at, paid_at")
+      .gt("commission_cents", 0);
+    const since = Date.now() - 90 * 86400000;
+    commission90d = (data ?? []).reduce((s, r) => {
+      const at =
+        (r.released_at as string | null) ??
+        (r.resolved_at as string | null) ??
+        (r.paid_at as string | null);
+      if (!at || new Date(at).getTime() < since) return s;
+      return s + ((r.commission_cents as number) || 0);
+    }, 0);
   }
   const untilStr = coach?.pro_until
     ? new Date(coach.pro_until).toLocaleDateString(

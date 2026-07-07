@@ -229,6 +229,8 @@ const fr = {
     pendingBanner: "demande de réservation à confirmer",
     pendingBannerPlural: "demandes de réservation à confirmer",
     pendingSeeAll: "Voir toutes les demandes",
+    declineConfirm:
+      "Refuser cette demande ? Si le client a réglé, il sera intégralement remboursé.",
     blocked: "Bloqué",
     blockBtn: "Bloquer un créneau",
     blockDesc: "Les clients ne pourront pas réserver sur cette plage.",
@@ -304,6 +306,8 @@ const fr = {
     annualMonthlyEq: "soit 40,83 € par mois",
     savingsIntro: "Sur les 90 derniers jours, la commission Madger t'a coûté",
     savingsOutro: "En Pro, elle serait tombée à 0 €.",
+    savingsProj1: "À ce rythme, environ",
+    savingsProj2: "de commission par an, contre 490 € en Pro annuel.",
     upgrading: "Redirection…",
     featuresFree: [
       "Lien public personnalisé",
@@ -330,6 +334,7 @@ const fr = {
     upsellComputedTitle: "Sur 30 jours, la commission t'a coûté",
     upsellComputedDesc:
       "En Pro : 0 % de commission. Il se rembourse souvent tout seul.",
+    upsellNetIntro: "En Pro (49 € par mois), tu aurais gardé",
     upsellCta: "Découvrir Pro",
   },
   promo: {
@@ -653,6 +658,7 @@ const fr = {
       "Ton créneau est gardé de côté. Un compte en 30 secondes pour suivre tes séances, annuler en un clic et échanger avec ton coach.",
     loginCta: "J'ai déjà un compte",
     slotKept: "Créneau conservé :",
+    draftRestored: "On a retrouvé ta sélection : ton créneau est toujours là.",
     backToBooking: "Revenir à ma réservation",
     contactCoach: "Contacter le coach",
     freeHint:
@@ -733,7 +739,7 @@ const fr = {
     minNotice: "Délai minimum de réservation",
     minNoticeBefore: "avant la séance",
     minNoticeHint:
-      "En deçà de ce délai, plus aucune réservation possible et tu ne peux plus accepter une demande en attente (elle est annulée sans débit du client).",
+      "En deçà de ce délai, aucune réservation n'est plus possible et une demande en attente ne peut plus être acceptée (elle est annulée sans débit du client).",
     timezone: "Fuseau horaire",
     timezoneHint:
       "Les créneaux proposés à tes clients et tes horaires s'affichent dans ce fuseau.",
@@ -938,7 +944,7 @@ const fr = {
     madgerSubtitle:
       "La commission de service du mois, en une facture. L'abonnement Pro est facturé séparément par Stripe.",
     madgerEmpty:
-      "Aucune commission prélevée pour l'instant. En plan Pro, la commission est de 0 %.",
+      "Aucune commission prélevée pour l'instant. En Pro, la commission est de 0 %.",
     sessionsCount: "séances",
     period: "Période :",
     commissionService: "Commission de service Madger",
@@ -1054,7 +1060,7 @@ const fr = {
       },
       pro: {
         title: "Passe en Pro : tu gardes 100 % de ce que tu encaisses",
-        body: "Tu encaisses régulièrement : avec le plan Pro, la commission Madger passe de 5% à 0%. Il se rembourse souvent tout seul.",
+        body: "Tu encaisses régulièrement : avec le plan Pro, la commission Madger passe de 5 % à 0 %. Il se rembourse souvent tout seul.",
         cta: "Découvrir Pro",
       },
     },
@@ -1313,6 +1319,8 @@ const en: Dictionary = {
     pendingBanner: "booking request to confirm",
     pendingBannerPlural: "booking requests to confirm",
     pendingSeeAll: "See all requests",
+    declineConfirm:
+      "Decline this request? If the client already paid, they will be fully refunded.",
     blocked: "Blocked",
     blockBtn: "Block a slot",
     blockDesc: "Clients will not be able to book during this window.",
@@ -1387,6 +1395,8 @@ const en: Dictionary = {
     annualMonthlyEq: "that is €40.83 per month",
     savingsIntro: "Over the last 90 days, the Madger commission cost you",
     savingsOutro: "On Pro, it would have been €0.",
+    savingsProj1: "At this pace, about",
+    savingsProj2: "in commission per year, versus €490 on annual Pro.",
     upgrading: "Redirecting…",
     featuresFree: [
       "Personalized public link",
@@ -1413,6 +1423,7 @@ const en: Dictionary = {
     upsellComputedTitle: "Over 30 days, the commission cost you",
     upsellComputedDesc:
       "On Pro: 0% commission. It often pays for itself.",
+    upsellNetIntro: "On Pro (€49 per month), you would have kept",
     upsellCta: "Discover Pro",
   },
   promo: {
@@ -1734,6 +1745,7 @@ const en: Dictionary = {
       "Your slot is set aside. An account in 30 seconds to track your sessions, cancel in one click and chat with your coach.",
     loginCta: "I already have an account",
     slotKept: "Slot kept:",
+    draftRestored: "We found your selection: your slot is still here.",
     backToBooking: "Back to my booking",
     contactCoach: "Contact the coach",
     freeHint:

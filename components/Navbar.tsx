@@ -207,7 +207,7 @@ export default function Navbar() {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.26 }}
                 className="text-center text-xs"
-                style={{ color: "#5A5A5A" }}
+                style={{ color: "#757575" }}
               >
                 Inscriptions ouvertes · Sans engagement
               </motion.p>

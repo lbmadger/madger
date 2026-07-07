@@ -202,7 +202,7 @@ export default function CoachProfile({
             <h1 className="flex flex-wrap items-center justify-center gap-2 text-2xl font-extrabold tracking-tight text-text-base sm:justify-start">
               {coachFullName(coach)}
               {isSuperCoach(coach) && (
-                <span className="rounded-full bg-accent px-2.5 py-1 text-[11px] font-bold text-black">
+                <span className="rounded-full bg-accent px-2.5 py-1 text-[11px] font-semibold text-black">
                   <TrophyIcon size={12} className="mr-1 inline-block align-[-2px]" />{t("marketplace.superCoach")}
                 </span>
               )}

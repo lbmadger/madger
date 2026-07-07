@@ -67,7 +67,7 @@ export default async function OverviewPage() {
     // graphiques) : inutile de rapatrier plus.
     supabase
       .from("payments")
-      .select("amount_cents, paid_at, commission_cents")
+      .select("amount_cents, paid_at, commission_cents, released_at")
       .eq("status", "paid")
       .not("paid_at", "is", null)
       .gte(
@@ -179,6 +179,21 @@ export default async function OverviewPage() {
 
   // ── Revenus par mois (depuis le premier encaissement, 12 mois min, 24 max) ─
   const payments = paymentsRes.data ?? [];
+
+  // Commission Madger réellement prélevée sur les 30 derniers jours, datée
+  // du versement (released_at) : c'est là que la commission naît. Alimente
+  // la bannière Pro chiffrée et évite le doublon avec le conseil Leia.
+  const commission30d = payments.reduce((s, p) => {
+    const c = ((p as { commission_cents?: number | null }).commission_cents ??
+      0) as number;
+    if (c <= 0) return s;
+    const at =
+      ((p as { released_at?: string | null }).released_at as string | null) ??
+      (p.paid_at as string | null);
+    if (!at || new Date(at).getTime() < now.getTime() - 30 * 86400000)
+      return s;
+    return s + c;
+  }, 0);
   const firstPaid = payments.reduce<number | null>((min, p) => {
     const t = new Date(p.paid_at as string).getTime();
     return min === null || t < min ? t : min;
@@ -343,7 +358,11 @@ export default async function OverviewPage() {
     bookings30d,
     isPro: pro,
     paidCount: payments.length,
-  });
+  }).filter(
+    // La bannière Pro chiffrée dit déjà « 0 % de commission » : on ne
+    // répète pas le même argument dans les conseils Leia.
+    (tip) => !(tip.id === "pro" && commission30d > 0)
+  );
   const leiaDailyIndex = dailyTipIndex(now);
 
   // Séances du mois en cours (grille de 8 tuiles bien remplie).
@@ -584,40 +603,32 @@ export default async function OverviewPage() {
         {/* Relance vers l'offre Pro (coachs en Free uniquement). Chiffrée dès
             que de la commission a été prélevée sur 30 jours : le coach voit
             SON argent, pas un slogan. */}
-        {!pro &&
-          (() => {
-            const commission30d = payments.reduce((s, p) => {
-              const paidAt = p.paid_at as string | null;
-              if (
-                !paidAt ||
-                new Date(paidAt).getTime() < now.getTime() - 30 * 86400000
-              )
-                return s;
-              return s + (((p as { commission_cents?: number | null }).commission_cents as number) || 0);
-            }, 0);
-            return (
-              <Link
-                href="/dashboard/abonnement"
-                className="mb-6 flex items-center justify-between gap-3 rounded-2xl border border-accent/25 bg-accent/[0.05] px-4 py-3 transition-colors hover:border-accent/40"
-              >
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-text-base">
-                    {commission30d > 0
-                      ? `${dict.plans.upsellComputedTitle} ${euros(commission30d)}`
-                      : dict.plans.upsellTitle}
-                  </p>
-                  <p className="truncate text-xs text-text-muted">
-                    {commission30d > 0
-                      ? dict.plans.upsellComputedDesc
-                      : dict.plans.upsellDesc}
-                  </p>
-                </div>
-                <span className="shrink-0 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-black">
-                  {dict.plans.upsellCta}
-                </span>
-              </Link>
-            );
-          })()}
+        {!pro && (
+          <Link
+            href="/dashboard/abonnement"
+            className="mb-6 flex items-center justify-between gap-3 rounded-2xl border border-accent/25 bg-accent/[0.05] px-4 py-3 transition-colors hover:border-accent/40"
+          >
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-text-base">
+                {commission30d > 0
+                  ? `${dict.plans.upsellComputedTitle} ${euros(commission30d)}`
+                  : dict.plans.upsellTitle}
+              </p>
+              <p className="truncate text-xs text-text-muted">
+                {/* Au-delà du prix du Pro, on affiche le gain NET : c'est le
+                    chiffre qui déclenche la décision. */}
+                {commission30d > 4900
+                  ? `${dict.plans.upsellNetIntro} ${euros(commission30d - 4900)}.`
+                  : commission30d > 0
+                  ? dict.plans.upsellComputedDesc
+                  : dict.plans.upsellDesc}
+              </p>
+            </div>
+            <span className="shrink-0 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-black">
+              {dict.plans.upsellCta}
+            </span>
+          </Link>
+        )}
 
         {/* KPI animés (compteurs) : 2 colonnes mobile, 4 desktop */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
@@ -767,7 +778,7 @@ export default async function OverviewPage() {
                 <h3 className="flex items-center gap-2 text-base font-semibold text-text-base">
                   {dict.nav.messages}
                   {msgs24h > 0 && (
-                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[10px] font-bold text-black">
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[10px] font-semibold text-black">
                       {msgs24h}
                     </span>
                   )}

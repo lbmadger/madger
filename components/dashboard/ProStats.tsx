@@ -12,8 +12,8 @@ export type ProStatItem = {
 };
 
 // Statistiques avancées, réservées au plan Pro. En Gratuit : tuiles floutées
-// (avec des valeurs factices, les vraies ne sont jamais envoyées au
-// navigateur) + cadenas + bouton vers l'abonnement. En Pro : tout est net.
+// avec les VRAIES valeurs du coach (choix produit : « débloque TES chiffres »
+// vend mieux qu'un décor) + cadenas + bouton vers l'abonnement. En Pro : net.
 export default function ProStats({
   items,
   locked,
@@ -29,7 +29,7 @@ export default function ProStats({
         <h3 className="text-xs font-medium uppercase tracking-wide text-text-dim">
           {t("overview.proStats.title")}
         </h3>
-        <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-black">
+        <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-black">
           PRO
         </span>
         {locked && <LockIcon size={13} className="text-text-dim" />}
@@ -79,7 +79,7 @@ export default function ProStats({
             </p>
             <Link
               href="/dashboard/abonnement"
-              className="mt-1 rounded-full bg-accent px-4 py-2 text-xs font-bold text-black transition-opacity hover:opacity-90"
+              className="mt-1 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-black transition-opacity hover:opacity-90"
             >
               {t("overview.proStats.unlock")}
             </Link>

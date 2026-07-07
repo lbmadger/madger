@@ -45,7 +45,7 @@ export default async function ServicesPage() {
           </div>
         )}
         {stripeReady && !siretReady && (
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-warning/30 bg-warning/[0.05] px-4 py-3">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-warning/30 bg-warning/[0.06] px-4 py-3">
             <div className="min-w-0">
               <p className="text-sm font-semibold text-text-base">
                 {dict.services.needSiretTitle}

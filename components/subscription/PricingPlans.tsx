@@ -144,6 +144,15 @@ export default function PricingPlans({
               )}
             </strong>{" "}
             {p.savingsOutro}
+            {/* Projection annuelle : rend le choix de l'annuel évident. */}{" "}
+            {p.savingsProj1}{" "}
+            <strong className="text-accent">
+              {((commission90dCents * 4) / 100).toLocaleString(
+                locale === "fr" ? "fr-FR" : "en-US",
+                { style: "currency", currency: "EUR", maximumFractionDigits: 0 }
+              )}
+            </strong>{" "}
+            {p.savingsProj2}
           </p>
         )}
 

@@ -47,7 +47,7 @@ export default function LeiaTips({
           {t("leia.title")}
         </span>
         {tips.length > 0 && (
-          <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-accent px-1.5 text-[10px] font-bold text-black">
+          <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-accent px-1.5 text-[10px] font-semibold text-black">
             {tips.length}
           </span>
         )}

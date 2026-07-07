@@ -91,7 +91,7 @@ export default function Comparison() {
         >
           <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(203,255,3,0.1)", background: "rgba(203,255,3,0.04)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: "#CBFF03" }}>Madger fait tout ça</span>
-            <span style={{ fontSize: 11, color: "#5A5A5A" }}>vs Calendly, WhatsApp, Excel</span>
+            <span style={{ fontSize: 11, color: "#757575" }}>vs Calendly, WhatsApp, Excel</span>
           </div>
           {features.map((f, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 18px", borderBottom: i < features.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none", background: i % 2 === 0 ? "rgba(255,255,255,0.01)" : "transparent" }}>
@@ -207,7 +207,7 @@ export default function Comparison() {
                 alignItems: "center",
               }}
             >
-              <div style={{ fontSize: 11, color: "#5A5A5A" }}>
+              <div style={{ fontSize: 11, color: "#757575" }}>
                 ✓ Gratuit pour commencer · 0 % commission en Pro
               </div>
               {cols.map(({ key, label, highlight }) => (

@@ -17,7 +17,7 @@ export default function ChartePaiement() {
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-sm mb-12 transition-colors duration-200"
-          style={{ color: "#5A5A5A" }}
+          style={{ color: "#757575" }}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -31,7 +31,7 @@ export default function ChartePaiement() {
         >
           Charte de paiement & annulation
         </h1>
-        <p className="mb-10" style={{ color: "#5A5A5A", fontSize: 14 }}>
+        <p className="mb-10" style={{ color: "#757575", fontSize: 14 }}>
           Cette charte définit les droits du client et du coach sur les séances
           payées via Madger. Elle complète les CGV.
         </p>
@@ -168,7 +168,7 @@ export default function ChartePaiement() {
           </section>
 
           <section>
-            <p style={{ color: "#5A5A5A", fontSize: 13 }}>
+            <p style={{ color: "#757575", fontSize: 13 }}>
               Pour toute question :{" "}
               <a href="mailto:contact@madger.app" style={{ color: "#CBFF03" }}>
                 contact@madger.app
