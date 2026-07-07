@@ -41,9 +41,16 @@ function matchesPrefix(pathname: string, prefixes: string[]): boolean {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Interrupteur de lancement : SITE_LAUNCHED=1 dans Vercel désactive le
+  // verrou pré-lancement. Marketplace, profils coachs et inscription
+  // deviennent publics et crawlables (le sitemap et les metadata sont déjà
+  // prêts) ; les espaces authentifiés restent protégés par la session.
+  const launched = process.env.SITE_LAUNCHED === "1";
+
   // Le verrou ne s'applique jamais aux routes API (webhooks Stripe, crons… n'ont
   // pas le cookie et gèrent leur propre sécurité) ni aux pages publiques.
   const isGated =
+    !launched &&
     !pathname.startsWith("/api/") &&
     !PUBLIC_EXACT.has(pathname) &&
     !matchesPrefix(pathname, PUBLIC_PREFIXES);

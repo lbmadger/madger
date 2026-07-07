@@ -147,7 +147,7 @@ export async function GET(req: NextRequest) {
     const { data: due } = await supabase
       .from("payments")
       .select(
-        "id, coach_id, booking_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, refunded_cents, bookings(status, clients(first_name, last_name, email), coaches(first_name, last_name))"
+        "id, coach_id, booking_id, amount_cents, currency, paid_at, stripe_charge_id, stripe_fee_cents, refunded_cents, released_cents, commission_cents, bookings(status, clients(first_name, last_name, email), coaches(first_name, last_name))"
       )
       .eq("escrow_status", "held")
       .lte("release_after", nowIso)
@@ -161,7 +161,7 @@ export async function GET(req: NextRequest) {
     const coachIds = Array.from(new Set(batch.map((p) => p.coach_id as string)));
     const { data: coachRows } = await supabase
       .from("coaches")
-      .select("id, stripe_account_id, pro_until")
+      .select("id, stripe_account_id, pro_until, locale")
       .in("id", coachIds);
     const coachById = new Map(
       (coachRows ?? []).map((c) => [c.id as string, c])
@@ -177,6 +177,20 @@ export async function GET(req: NextRequest) {
         /* best-effort */
       }
     }
+    // Packs du lot : un paiement de pack se libère séance par séance.
+    const { data: packRows } = await supabase
+      .from("pack_credits")
+      .select("id, payment_id, total, used")
+      .in(
+        "payment_id",
+        batch.map((p) => p.id as string)
+      );
+    const packByPayment = new Map(
+      (packRows ?? [])
+        .filter((pk) => pk.payment_id)
+        .map((pk) => [pk.payment_id as string, pk])
+    );
+
     // Emails du lot envoyés APRÈS les débits : le budget temps sert d'abord
     // à verser, jamais à attendre Resend.
     const emailJobs: Array<() => Promise<unknown>> = [];
@@ -260,13 +274,147 @@ export async function GET(req: NextRequest) {
         alreadyRefunded
       );
 
+      const alreadyReleased = (p.released_cents as number | null) ?? 0;
+
+      // ── Pack en cours de consommation : libération séance par séance ──────
+      // La part des séances consommées (passées depuis 24 h) part au coach,
+      // le reste demeure sous séquestre (remboursable au prorata si le client
+      // annule). Sécurité : libération totale 180 jours après l'achat.
+      const pack = packByPayment.get(p.id as string);
+      const packExpired =
+        pack &&
+        p.paid_at &&
+        Date.now() - new Date(p.paid_at as string).getTime() >
+          180 * 86400000;
+      if (pack && pack.total > 1 && pack.used < pack.total && !packExpired) {
+        // Séances liées au pack, non annulées, terminées depuis 24 h.
+        const { count: matured } = await supabase
+          .from("bookings")
+          .select("*", { count: "exact", head: true })
+          .eq("pack_credit_id", pack.id)
+          .neq("status", "cancelled")
+          .lte(
+            "ends_at",
+            new Date(Date.now() - 24 * 3600 * 1000).toISOString()
+          );
+        // La 1re séance (celle de l'achat) est portée par p.booking_id : son
+        // release_after est dépassé puisque la ligne est dans le lot.
+        const selfUnit =
+          p.booking_id && bookingRow && bookingRow.status !== "cancelled"
+            ? 1
+            : 0;
+        const units = Math.min(pack.total, (matured ?? 0) + selfUnit);
+        const targetReleased = Math.floor(
+          (breakdown.payoutCents * units) / pack.total
+        );
+        const targetCommission = Math.floor(
+          (breakdown.commissionCents * units) / pack.total
+        );
+        const deltaPayout = targetReleased - alreadyReleased;
+        const nextCheck = new Date(Date.now() + 7 * 86400000).toISOString();
+
+        if (deltaPayout <= 0) {
+          // Rien de mûr : on repasse dans une semaine.
+          await supabase
+            .from("payments")
+            .update({ release_after: nextCheck })
+            .eq("id", p.id)
+            .eq("escrow_status", "held");
+          continue;
+        }
+
+        const prevCommission = (p.commission_cents as number | null) ?? 0;
+        const { data: claimedPack } = await supabase
+          .from("payments")
+          .update({
+            released_cents: targetReleased,
+            payout_cents: targetReleased,
+            commission_cents: targetCommission,
+            released_at: nowIso,
+            release_after: nextCheck,
+          })
+          .eq("id", p.id)
+          .eq("escrow_status", "held")
+          .eq("released_cents", alreadyReleased)
+          .select("id");
+        if (!claimedPack?.length) continue;
+
+        try {
+          const transfer = await stripe.transfers.create(
+            {
+              amount: deltaPayout,
+              currency: p.currency || "eur",
+              destination: coach.stripe_account_id,
+              source_transaction: p.stripe_charge_id as string,
+              transfer_group: `coach_${p.coach_id}`,
+            },
+            { idempotencyKey: `release_${p.id}_u${units}` }
+          );
+          await supabase
+            .from("payments")
+            .update({ stripe_transfer_id: transfer.id })
+            .eq("id", p.id);
+        } catch (e) {
+          await supabase
+            .from("payments")
+            .update({
+              released_cents: alreadyReleased,
+              payout_cents: alreadyReleased,
+              commission_cents: prevCommission,
+              released_at: null,
+            })
+            .eq("id", p.id)
+            .eq("released_cents", targetReleased);
+          throw e;
+        }
+        released++;
+
+        const coachEmailPack = coachEmailById.get(p.coach_id as string);
+        if (coachEmailPack) {
+          const eurosStr = (cents: number) =>
+            (cents / 100).toLocaleString("fr-FR", {
+              style: "currency",
+              currency: "EUR",
+            });
+          const cl0 = Array.isArray(bookingRow?.clients)
+            ? bookingRow?.clients[0]
+            : bookingRow?.clients;
+          const tpl = payoutReleasedCoach({
+            locale: coach.locale === "en" ? "en" : "fr",
+            clientName:
+              [cl0?.first_name, cl0?.last_name].filter(Boolean).join(" ") ||
+              "ton client",
+            payoutStr: eurosStr(deltaPayout),
+            dashboardUrl: `${APP_URL}/dashboard/paiements`,
+            commissionStr:
+              targetCommission - prevCommission > 0
+                ? eurosStr(targetCommission - prevCommission)
+                : undefined,
+          });
+          emailJobs.push(() =>
+            sendEmail({
+              to: coachEmailPack,
+              subject: tpl.subject,
+              html: tpl.html,
+            })
+          );
+        }
+        continue;
+      }
+
+      // ── Libération finale (séance simple, ou pack consommé/expiré) ────────
       // Réclame la ligne AVANT l'appel Stripe : un seul processus gagne.
+      const finalTransfer = Math.max(
+        0,
+        breakdown.payoutCents - alreadyReleased
+      );
       const { data: claimed } = await supabase
         .from("payments")
         .update({
           escrow_status: "released",
           commission_cents: breakdown.commissionCents,
           payout_cents: breakdown.payoutCents,
+          released_cents: breakdown.payoutCents,
           released_at: nowIso,
         })
         .eq("id", p.id)
@@ -274,11 +422,11 @@ export async function GET(req: NextRequest) {
         .select("id");
       if (!claimed?.length) continue;
 
-      if (breakdown.payoutCents > 0) {
+      if (finalTransfer > 0) {
         try {
           const transfer = await stripe.transfers.create(
             {
-              amount: breakdown.payoutCents,
+              amount: finalTransfer,
               currency: p.currency || "eur",
               destination: coach.stripe_account_id,
               source_transaction: p.stripe_charge_id as string,
@@ -294,7 +442,11 @@ export async function GET(req: NextRequest) {
           // Transfert raté : on rend la ligne au prochain run.
           await supabase
             .from("payments")
-            .update({ escrow_status: "held", released_at: null })
+            .update({
+              escrow_status: "held",
+              released_cents: alreadyReleased,
+              released_at: null,
+            })
             .eq("id", p.id);
           throw e;
         }
@@ -302,7 +454,7 @@ export async function GET(req: NextRequest) {
 
       // Prévient le coach du versement (avec la commission prélevée et le
       // rappel « 0 % en Pro » pour les coachs Gratuit). Différé après le lot.
-      if (breakdown.payoutCents > 0) {
+      if (finalTransfer > 0) {
         const coachEmail = coachEmailById.get(p.coach_id as string);
         if (coachEmail) {
           const eurosStr = (cents: number) =>
@@ -317,8 +469,9 @@ export async function GET(req: NextRequest) {
             [cl0?.first_name, cl0?.last_name].filter(Boolean).join(" ") ||
             "ton client";
           const tpl = payoutReleasedCoach({
+            locale: coach.locale === "en" ? "en" : "fr",
             clientName: clientLabel,
-            payoutStr: eurosStr(breakdown.payoutCents),
+            payoutStr: eurosStr(finalTransfer),
             dashboardUrl: `${APP_URL}/dashboard/paiements`,
             commissionStr:
               breakdown.commissionCents > 0

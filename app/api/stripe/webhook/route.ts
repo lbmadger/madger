@@ -96,7 +96,13 @@ export async function POST(req: NextRequest) {
             if (coachAuth?.user?.email) {
               const { proWelcomeCoach } = await import("@/lib/email/templates");
               const { sendEmail } = await import("@/lib/email/resend");
+              const { data: coachPrefs } = await supabase
+                .from("coaches")
+                .select("locale")
+                .eq("id", s.metadata.coach_id)
+                .maybeSingle();
               const tpl = proWelcomeCoach({
+                locale: coachPrefs?.locale === "en" ? "en" : "fr",
                 dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL || "https://madger.app"}/dashboard`,
               });
               await sendEmail({

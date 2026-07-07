@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
         : null;
       const { data: coachRow } = await admin
         .from("coaches")
-        .select("first_name, last_name")
+        .select("first_name, last_name, locale")
         .eq("id", sub.coach_id)
         .maybeSingle();
       const clientTpl = subscriptionCancelledClient({
@@ -102,6 +102,7 @@ export async function POST(req: NextRequest) {
       );
       if (coachAuth?.user?.email) {
         const coachTpl = subscriptionCancelledCoach({
+          locale: coachRow?.locale === "en" ? "en" : "fr",
           clientName:
             [clientRow?.first_name, clientRow?.last_name]
               .filter(Boolean)

@@ -1,8 +1,10 @@
-// Gabarits d'emails transactionnels Madger — design travaillé, cohérent avec
+// Gabarits d'emails transactionnels Madger : design travaillé, cohérent avec
 // la landing (fond #0A0A0A, accent #CBFF03, Inter). Compatible clients mail :
 // tables + styles inline uniquement. Chaque fonction renvoie { subject, html }.
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
+
+export type EmailLocale = "fr" | "en";
 
 type Email = { subject: string; html: string };
 
@@ -60,10 +62,34 @@ function layout(opts: {
   blocks?: string[];
   cta?: { label: string; url: string };
   outro?: string;
+  locale?: EmailLocale;
 }): string {
-  const { preheader, eyebrow, title, intro, blocks = [], cta, outro } = opts;
+  const {
+    preheader,
+    eyebrow,
+    title,
+    intro,
+    blocks = [],
+    cta,
+    outro,
+    locale = "fr",
+  } = opts;
+  const F =
+    locale === "en"
+      ? {
+          tagline: "Madger · the all-in-one app for independent coaches.",
+          charter: "Payment charter",
+          legal:
+            "You are receiving this email because of activity linked to your Madger account or booking.",
+        }
+      : {
+          tagline: "Madger · l'app tout-en-un des coachs indépendants.",
+          charter: "Charte de paiement",
+          legal:
+            "Tu reçois cet email car une activité est liée à ton compte ou ta réservation Madger.",
+        };
   return `<!DOCTYPE html>
-<html lang="fr">
+<html lang="${locale}">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark"></head>
 <body style="margin:0;padding:0;background:${C.bg};">
   <!-- Préheader : visible dans l'aperçu de la boîte mail, pas dans l'email -->
@@ -99,14 +125,14 @@ function layout(opts: {
         <!-- Pied de page -->
         <tr><td align="center" style="${FONT}padding:26px 12px 0;">
           <p style="margin:0;font-size:12px;line-height:1.8;color:${C.dim};">
-            Madger · l'app tout-en-un des coachs indépendants.<br>
+            ${F.tagline}<br>
             <a href="${APP_URL}" style="color:${C.muted};text-decoration:none;">madger.app</a>
             &nbsp;·&nbsp;
-            <a href="${APP_URL}/charte-paiement" style="color:${C.muted};text-decoration:none;">Charte de paiement</a>
+            <a href="${APP_URL}/charte-paiement" style="color:${C.muted};text-decoration:none;">${F.charter}</a>
             &nbsp;·&nbsp;
             <a href="mailto:contact@madger.app" style="color:${C.muted};text-decoration:none;">contact@madger.app</a>
           </p>
-          <p style="margin:10px 0 0;font-size:11px;color:#3d3d3d;">Tu reçois cet email car une activité est liée à ton compte ou ta réservation Madger.</p>
+          <p style="margin:10px 0 0;font-size:11px;color:#3d3d3d;">${F.legal}</p>
         </td></tr>
 
       </table>
@@ -182,28 +208,64 @@ export function bookingNotificationCoach(p: {
   priceStr: string;
   online: boolean;
   dashboardUrl: string;
+  locale?: EmailLocale;
 }): Email {
+  const locale = p.locale ?? "fr";
+  const L =
+    locale === "en"
+      ? {
+          subject: `New booking: ${p.clientName} · ${p.dateStr}`,
+          preheader: `${p.clientName} booked and paid for "${p.serviceName}" · ${p.priceStr}.`,
+          eyebrow: "New booking",
+          title: "A client just booked 🎉",
+          intro: `Good news: <b style="color:${C.text};">${p.clientName}</b> booked <b style="color:${C.text};">and paid for</b> a session. It's already in your calendar.`,
+          client: "Client",
+          service: "Service",
+          dateTime: "Date & time",
+          format: "Format",
+          online: "Online",
+          inPerson: "In person",
+          amount: "Session amount",
+          payoutTitle: "Payout",
+          payoutBody: `The payment is held securely by Madger and will be <b style="color:${C.text};">transferred to your Stripe account 24 hours after the session</b>, minus the Madger commission and bank fees. The exact breakdown will arrive with your payout email.`,
+          cta: "Open my calendar",
+        }
+      : {
+          subject: `Nouvelle réservation : ${p.clientName} · ${p.dateStr}`,
+          preheader: `${p.clientName} a réservé et payé « ${p.serviceName} » · ${p.priceStr}.`,
+          eyebrow: "Nouvelle réservation",
+          title: "Un client vient de réserver 🎉",
+          intro: `Bonne nouvelle : <b style="color:${C.text};">${p.clientName}</b> a réservé <b style="color:${C.text};">et payé</b> une séance. Elle est déjà dans ton agenda.`,
+          client: "Client",
+          service: "Prestation",
+          dateTime: "Date & heure",
+          format: "Format",
+          online: "En visio",
+          inPerson: "En présentiel",
+          amount: "Montant de la séance",
+          payoutTitle: "Versement",
+          payoutBody: `Le paiement est sécurisé par Madger et te sera <b style="color:${C.text};">transféré 24 h après la séance</b> sur ton compte Stripe, déduction faite de la commission Madger et des frais bancaires. Le détail exact arrive avec l'email de versement.`,
+          cta: "Ouvrir mon agenda",
+        };
   return {
-    subject: `Nouvelle réservation : ${p.clientName} · ${p.dateStr}`,
+    subject: L.subject,
     html: layout({
-      preheader: `${p.clientName} a réservé et payé « ${p.serviceName} » · ${p.priceStr}.`,
-      eyebrow: "Nouvelle réservation",
-      title: "Un client vient de réserver 🎉",
-      intro: `Bonne nouvelle : <b style="color:${C.text};">${p.clientName}</b> a réservé <b style="color:${C.text};">et payé</b> une séance. Elle est déjà dans ton agenda.`,
+      locale,
+      preheader: L.preheader,
+      eyebrow: L.eyebrow,
+      title: L.title,
+      intro: L.intro,
       blocks: [
         detailsTable([
-          { label: "Client", value: p.clientName },
-          { label: "Prestation", value: p.serviceName },
-          { label: "Date & heure", value: p.dateStr },
-          { label: "Format", value: p.online ? "En visio" : "En présentiel" },
-          { label: "Montant de la séance", value: p.priceStr, accent: true },
+          { label: L.client, value: p.clientName },
+          { label: L.service, value: p.serviceName },
+          { label: L.dateTime, value: p.dateStr },
+          { label: L.format, value: p.online ? L.online : L.inPerson },
+          { label: L.amount, value: p.priceStr, accent: true },
         ]),
-        infoBox(
-          "Versement",
-          `Le paiement est sécurisé par Madger et te sera <b style="color:${C.text};">transféré 24 h après la séance</b> sur ton compte Stripe, déduction faite de la commission Madger et des frais bancaires. Le détail exact arrive avec l'email de versement.`
-        ),
+        infoBox(L.payoutTitle, L.payoutBody),
       ],
-      cta: { label: "Ouvrir mon agenda", url: p.dashboardUrl },
+      cta: { label: L.cta, url: p.dashboardUrl },
     }),
   };
 }
@@ -260,36 +322,68 @@ export function newRequestCoach(p: {
   online: boolean;
   instant: boolean;
   dashboardUrl: string;
+  locale?: EmailLocale;
 }): Email {
+  const locale = p.locale ?? "fr";
+  const L =
+    locale === "en"
+      ? {
+          subjectInstant: `New session booked · ${p.clientName}`,
+          subjectRequest: `✋ New session request · ${p.clientName}`,
+          preheaderSuffix: " · awaiting your reply",
+          eyebrowInstant: "New booking",
+          eyebrowRequest: "Request to confirm",
+          titleInstant: "A slot was just booked ⚡",
+          titleRequest: "A client is waiting for your reply",
+          introInstant: `Instant booking: the slot was confirmed automatically.`,
+          introRequest: `Accept or decline the request from your calendar. Until you reply, the slot stays blocked for other clients.`,
+          client: "Client",
+          when: "When",
+          format: "Format",
+          online: "Online",
+          inPerson: "In person",
+          boxTitle: "You have 6 days to reply",
+          boxBody:
+            "The client's card authorization expires after that. If you don't reply within 6 days, the request is cancelled automatically and the client is never charged.",
+          cta: "Open my calendar",
+        }
+      : {
+          subjectInstant: `Nouvelle séance réservée · ${p.clientName}`,
+          subjectRequest: `✋ Nouvelle demande de séance · ${p.clientName}`,
+          preheaderSuffix: " · à confirmer",
+          eyebrowInstant: "Nouvelle réservation",
+          eyebrowRequest: "Demande à confirmer",
+          titleInstant: "Un créneau vient d'être réservé ⚡",
+          titleRequest: "Un client attend ta réponse",
+          introInstant: `Réservation instantanée : le créneau est confirmé automatiquement.`,
+          introRequest: `Confirme ou refuse la demande depuis ton agenda : sans réponse, le créneau reste bloqué pour les autres clients.`,
+          client: "Client",
+          when: "Quand",
+          format: "Format",
+          online: "En visio",
+          inPerson: "En présentiel",
+          boxTitle: "Tu as 6 jours pour répondre",
+          boxBody:
+            "L'empreinte bancaire du client expire ensuite : sans réponse de ta part sous 6 jours, la demande est annulée automatiquement et rien n'est débité au client.",
+          cta: "Ouvrir mon agenda",
+        };
   return {
-    subject: p.instant
-      ? `Nouvelle séance réservée · ${p.clientName}`
-      : `✋ Nouvelle demande de séance · ${p.clientName}`,
+    subject: p.instant ? L.subjectInstant : L.subjectRequest,
     html: layout({
-      preheader: `${p.clientName} · ${p.dateStr}${p.instant ? "" : " · à confirmer"}`,
-      eyebrow: p.instant ? "Nouvelle réservation" : "Demande à confirmer",
-      title: p.instant
-        ? "Un créneau vient d'être réservé ⚡"
-        : "Un client attend ta réponse",
-      intro: p.instant
-        ? `Réservation instantanée : le créneau est confirmé automatiquement.`
-        : `Confirme ou refuse la demande depuis ton agenda : sans réponse, le créneau reste bloqué pour les autres clients.`,
+      locale,
+      preheader: `${p.clientName} · ${p.dateStr}${p.instant ? "" : L.preheaderSuffix}`,
+      eyebrow: p.instant ? L.eyebrowInstant : L.eyebrowRequest,
+      title: p.instant ? L.titleInstant : L.titleRequest,
+      intro: p.instant ? L.introInstant : L.introRequest,
       blocks: [
         detailsTable([
-          { label: "Client", value: p.clientName },
-          { label: "Quand", value: p.dateStr },
-          { label: "Format", value: p.online ? "En visio" : "En présentiel" },
+          { label: L.client, value: p.clientName },
+          { label: L.when, value: p.dateStr },
+          { label: L.format, value: p.online ? L.online : L.inPerson },
         ]),
-        ...(p.instant
-          ? []
-          : [
-              infoBox(
-                "Tu as 6 jours pour répondre",
-                "L'empreinte bancaire du client expire ensuite : sans réponse de ta part sous 6 jours, la demande est annulée automatiquement et rien n'est débité au client."
-              ),
-            ]),
+        ...(p.instant ? [] : [infoBox(L.boxTitle, L.boxBody)]),
       ],
-      cta: { label: "Ouvrir mon agenda", url: p.dashboardUrl },
+      cta: { label: L.cta, url: p.dashboardUrl },
     }),
   };
 }
@@ -383,23 +477,54 @@ export function subscriptionStartedCoach(p: {
   clientName: string;
   serviceName: string;
   priceStr: string;
+  locale?: EmailLocale;
 }): Email {
+  const locale = p.locale ?? "fr";
+  const L =
+    locale === "en"
+      ? {
+          subject: `New subscriber: ${p.clientName} 🎉`,
+          preheader: `${p.clientName} just subscribed to ${p.serviceName}.`,
+          eyebrow: "Subscription",
+          title: "New subscriber!",
+          intro: `<b style="color:${C.text};">${p.clientName}</b> just subscribed to your <b style="color:${C.text};">${p.serviceName}</b> plan. The amount is paid out to you automatically every month. Reach out to your new client to schedule your sessions.`,
+          client: "Client",
+          plan: "Plan",
+          amount: "Amount",
+          perMonth: `${p.priceStr} / month`,
+          cta: "Open my clients",
+          outro: "Send them a welcome message today, it makes a difference.",
+        }
+      : {
+          subject: `Nouvel abonné : ${p.clientName} 🎉`,
+          preheader: `${p.clientName} vient de souscrire ${p.serviceName}.`,
+          eyebrow: "Abonnement",
+          title: "Nouvel abonné !",
+          intro: `<b style="color:${C.text};">${p.clientName}</b> vient de souscrire ta formule <b style="color:${C.text};">${p.serviceName}</b>. Le montant t'est versé automatiquement chaque mois. Contacte ton nouveau client pour planifier vos séances.`,
+          client: "Client",
+          plan: "Formule",
+          amount: "Montant",
+          perMonth: `${p.priceStr} / mois`,
+          cta: "Ouvrir mes clients",
+          outro: "Pense à lui envoyer un message de bienvenue dès aujourd'hui.",
+        };
   return {
-    subject: `Nouvel abonné : ${p.clientName} 🎉`,
+    subject: L.subject,
     html: layout({
-      preheader: `${p.clientName} vient de souscrire ${p.serviceName}.`,
-      eyebrow: "Abonnement",
-      title: "Nouvel abonné !",
-      intro: `<b style="color:${C.text};">${p.clientName}</b> vient de souscrire ta formule <b style="color:${C.text};">${p.serviceName}</b>. Le montant t'est versé automatiquement chaque mois. Contacte ton nouveau client pour planifier vos séances.`,
+      locale,
+      preheader: L.preheader,
+      eyebrow: L.eyebrow,
+      title: L.title,
+      intro: L.intro,
       blocks: [
         detailsTable([
-          { label: "Client", value: p.clientName },
-          { label: "Formule", value: p.serviceName },
-          { label: "Montant", value: `${p.priceStr} / mois`, accent: true },
+          { label: L.client, value: p.clientName },
+          { label: L.plan, value: p.serviceName },
+          { label: L.amount, value: L.perMonth, accent: true },
         ]),
       ],
-      cta: { label: "Ouvrir mes clients", url: `${APP_URL}/dashboard/clients` },
-      outro: "Pense à lui envoyer un message de bienvenue dès aujourd'hui.",
+      cta: { label: L.cta, url: `${APP_URL}/dashboard/clients` },
+      outro: L.outro,
     }),
   };
 }
@@ -476,33 +601,63 @@ export function payoutReleasedCoach(p: {
   // Commission Madger prélevée sur ce versement (coachs Gratuit) : ligne
   // dédiée + rappel « 0 % en Pro ». Absente = pas de ligne (coach Pro).
   commissionStr?: string;
+  locale?: EmailLocale;
 }): Email {
+  const locale = p.locale ?? "fr";
+  const L =
+    locale === "en"
+      ? {
+          subject: `${p.payoutStr} sent to your account 💸`,
+          preheader: `Session with ${p.clientName} completed: ${p.payoutStr} transferred to your Stripe account.`,
+          eyebrow: "Payout sent",
+          title: "You just got paid",
+          intro: `Your session with <b style="color:${C.text};">${p.clientName}</b> went smoothly: your share has been transferred to your Stripe account.`,
+          client: "Client",
+          amount: "Amount paid out",
+          commission: "Madger commission",
+          availability: "Availability",
+          availabilityValue: "Per your Stripe payout schedule",
+          boxTitle: "With Pro, this commission would be 0",
+          boxBody:
+            "The Pro plan drops the Madger commission from 5% to 0% on every session you get paid for. If you get paid regularly, it pays for itself.",
+          cta: "View my payments",
+        }
+      : {
+          subject: `${p.payoutStr} versés sur ton compte 💸`,
+          preheader: `Séance avec ${p.clientName} réglée : ${p.payoutStr} transférés vers ton compte Stripe.`,
+          eyebrow: "Versement effectué",
+          title: "Tu viens d'être payé",
+          intro: `La séance avec <b style="color:${C.text};">${p.clientName}</b> est passée sans encombre : ta part a été transférée vers ton compte Stripe.`,
+          client: "Client",
+          amount: "Montant versé",
+          commission: "Commission Madger",
+          availability: "Disponibilité",
+          availabilityValue: "Selon ton calendrier Stripe",
+          boxTitle: "En Pro, cette commission serait de 0 €",
+          boxBody:
+            "Le plan Pro passe la commission Madger de 5 % à 0 % sur chaque séance encaissée. Si tu encaisses régulièrement, il se rembourse tout seul.",
+          cta: "Voir mes paiements",
+        };
   return {
-    subject: `${p.payoutStr} versés sur ton compte 💸`,
+    subject: L.subject,
     html: layout({
-      preheader: `Séance avec ${p.clientName} réglée : ${p.payoutStr} transférés vers ton compte Stripe.`,
-      eyebrow: "Versement effectué",
-      title: "Tu viens d'être payé",
-      intro: `La séance avec <b style="color:${C.text};">${p.clientName}</b> est passée sans encombre : ta part a été transférée vers ton compte Stripe.`,
+      locale,
+      preheader: L.preheader,
+      eyebrow: L.eyebrow,
+      title: L.title,
+      intro: L.intro,
       blocks: [
         detailsTable([
-          { label: "Client", value: p.clientName },
-          { label: "Montant versé", value: p.payoutStr, accent: true },
+          { label: L.client, value: p.clientName },
+          { label: L.amount, value: p.payoutStr, accent: true },
           ...(p.commissionStr
-            ? [{ label: "Commission Madger", value: p.commissionStr }]
+            ? [{ label: L.commission, value: p.commissionStr }]
             : []),
-          { label: "Disponibilité", value: "Selon ton calendrier Stripe" },
+          { label: L.availability, value: L.availabilityValue },
         ]),
-        ...(p.commissionStr
-          ? [
-              infoBox(
-                "En Pro, cette commission serait de 0 €",
-                "Le plan Pro passe la commission Madger de 5 % à 0 % sur chaque séance encaissée. Si tu encaisses régulièrement, il se rembourse tout seul."
-              ),
-            ]
-          : []),
+        ...(p.commissionStr ? [infoBox(L.boxTitle, L.boxBody)] : []),
       ],
-      cta: { label: "Voir mes paiements", url: p.dashboardUrl },
+      cta: { label: L.cta, url: p.dashboardUrl },
     }),
   };
 }
@@ -537,33 +692,56 @@ export function bookingCancelledCoach(p: {
   refundStr: string | null; // null = aucune somme remboursée
   keptStr: string | null; // part conservée pour le coach (formule d'annulation)
   dashboardUrl: string;
+  locale?: EmailLocale;
 }): Email {
+  const locale = p.locale ?? "fr";
+  const L =
+    locale === "en"
+      ? {
+          subject: `${p.clientName} cancelled the session on ${p.dateStr}`,
+          preheader: `The ${p.dateStr} slot is now free in your calendar.`,
+          eyebrow: "Client cancellation",
+          title: "A session was just cancelled",
+          intro: `<b style="color:${C.text};">${p.clientName}</b> cancelled the session on <b style="color:${C.text};">${p.dateStr}</b>. The slot is available again in your calendar.`,
+          client: "Client",
+          session: "Session",
+          refunded: "Refunded to the client",
+          kept: "Kept for you (cancellation policy)",
+          cta: "View my calendar",
+        }
+      : {
+          subject: `${p.clientName} a annulé sa séance du ${p.dateStr}`,
+          preheader: `Le créneau du ${p.dateStr} se libère dans ton agenda.`,
+          eyebrow: "Annulation client",
+          title: "Une séance vient d'être annulée",
+          intro: `<b style="color:${C.text};">${p.clientName}</b> a annulé sa séance du <b style="color:${C.text};">${p.dateStr}</b>. Le créneau est de nouveau libre dans ton agenda.`,
+          client: "Client",
+          session: "Séance",
+          refunded: "Remboursé au client",
+          kept: "Conservé pour toi (formule d'annulation)",
+          cta: "Voir mon agenda",
+        };
   return {
-    subject: `${p.clientName} a annulé sa séance du ${p.dateStr}`,
+    subject: L.subject,
     html: layout({
-      preheader: `Le créneau du ${p.dateStr} se libère dans ton agenda.`,
-      eyebrow: "Annulation client",
-      title: "Une séance vient d'être annulée",
-      intro: `<b style="color:${C.text};">${p.clientName}</b> a annulé sa séance du <b style="color:${C.text};">${p.dateStr}</b>. Le créneau est de nouveau libre dans ton agenda.`,
+      locale,
+      preheader: L.preheader,
+      eyebrow: L.eyebrow,
+      title: L.title,
+      intro: L.intro,
       blocks: [
         detailsTable([
-          { label: "Client", value: p.clientName },
-          { label: "Séance", value: p.dateStr },
+          { label: L.client, value: p.clientName },
+          { label: L.session, value: p.dateStr },
           ...(p.refundStr
-            ? [{ label: "Remboursé au client", value: p.refundStr }]
+            ? [{ label: L.refunded, value: p.refundStr }]
             : []),
           ...(p.keptStr
-            ? [
-                {
-                  label: "Conservé pour toi (formule d'annulation)",
-                  value: p.keptStr,
-                  accent: true,
-                },
-              ]
+            ? [{ label: L.kept, value: p.keptStr, accent: true }]
             : []),
         ]),
       ],
-      cta: { label: "Voir mon agenda", url: p.dashboardUrl },
+      cta: { label: L.cta, url: p.dashboardUrl },
     }),
   };
 }
@@ -574,35 +752,57 @@ export function disputeResolvedCoach(p: {
   payoutStr: string | null; // null = rien versé
   refundStr: string | null; // part remboursée au client
   dashboardUrl: string;
+  locale?: EmailLocale;
 }): Email {
+  const locale = p.locale ?? "fr";
+  const L =
+    locale === "en"
+      ? {
+          subject: "Dispute resolved: the case is closed",
+          preheader: "Madger reviewed the report and allocated the funds.",
+          eyebrow: "Dispute resolved",
+          title: "The dispute has been resolved",
+          intro: `The report about your session with <b style="color:${C.text};">${p.clientName}</b> has been reviewed. Here is the outcome, in line with the payment charter.`,
+          paidToYou: "Paid to your account",
+          refunded: "Refunded to the client",
+          boxTitle: "Questions about the decision?",
+          boxBody:
+            "Just reply to this email and explain your situation: someone from the Madger team will get back to you.",
+          cta: "View my payments",
+        }
+      : {
+          subject: "Litige tranché : le dossier est clos",
+          preheader: "Madger a examiné le signalement et réparti les fonds.",
+          eyebrow: "Litige résolu",
+          title: "Le litige est tranché",
+          intro: `Le signalement concernant ta séance avec <b style="color:${C.text};">${p.clientName}</b> a été examiné. Voici la répartition décidée, conformément à la charte de paiement.`,
+          paidToYou: "Versé sur ton compte",
+          refunded: "Remboursé au client",
+          boxTitle: "Une question sur la décision ?",
+          boxBody:
+            "Réponds simplement à cet email en expliquant ta situation : un membre de l'équipe Madger te répondra.",
+          cta: "Voir mes paiements",
+        };
   return {
-    subject: "Litige tranché : le dossier est clos",
+    subject: L.subject,
     html: layout({
-      preheader: "Madger a examiné le signalement et réparti les fonds.",
-      eyebrow: "Litige résolu",
-      title: "Le litige est tranché",
-      intro: `Le signalement concernant ta séance avec <b style="color:${C.text};">${p.clientName}</b> a été examiné. Voici la répartition décidée, conformément à la charte de paiement.`,
+      locale,
+      preheader: L.preheader,
+      eyebrow: L.eyebrow,
+      title: L.title,
+      intro: L.intro,
       blocks: [
         detailsTable([
           ...(p.payoutStr
-            ? [
-                {
-                  label: "Versé sur ton compte",
-                  value: p.payoutStr,
-                  accent: true,
-                },
-              ]
+            ? [{ label: L.paidToYou, value: p.payoutStr, accent: true }]
             : []),
           ...(p.refundStr
-            ? [{ label: "Remboursé au client", value: p.refundStr }]
+            ? [{ label: L.refunded, value: p.refundStr }]
             : []),
         ]),
-        infoBox(
-          "Une question sur la décision ?",
-          "Réponds simplement à cet email en expliquant ta situation : un membre de l'équipe Madger te répondra."
-        ),
+        infoBox(L.boxTitle, L.boxBody),
       ],
-      cta: { label: "Voir mes paiements", url: p.dashboardUrl },
+      cta: { label: L.cta, url: p.dashboardUrl },
     }),
   };
 }
@@ -633,37 +833,85 @@ export function subscriptionCancelledCoach(p: {
   clientName: string;
   endDateStr: string | null;
   dashboardUrl: string;
+  locale?: EmailLocale;
 }): Email {
+  const locale = p.locale ?? "fr";
+  const L =
+    locale === "en"
+      ? {
+          subject: `${p.clientName} is ending their subscription`,
+          preheader:
+            "The subscription stays active until the end of the paid period.",
+          eyebrow: "Subscription",
+          title: "A subscriber is leaving",
+          intro: `<b style="color:${C.text};">${p.clientName}</b> ended their subscription.${p.endDateStr ? ` It stays active until <b style="color:${C.text};">${p.endDateStr}</b>.` : ""} A quick message from you can make a difference: ask what led to their decision.`,
+          cta: "Open messages",
+        }
+      : {
+          subject: `${p.clientName} arrête son abonnement`,
+          preheader:
+            "L'abonnement reste actif jusqu'à la fin de la période payée.",
+          eyebrow: "Abonnement",
+          title: "Un abonné s'arrête",
+          intro: `<b style="color:${C.text};">${p.clientName}</b> a mis fin à son abonnement.${p.endDateStr ? ` Il reste actif jusqu'au <b style="color:${C.text};">${p.endDateStr}</b>.` : ""} Un petit message de ta part peut faire la différence : demande-lui ce qui a motivé son choix.`,
+          cta: "Ouvrir la messagerie",
+        };
   return {
-    subject: `${p.clientName} arrête son abonnement`,
+    subject: L.subject,
     html: layout({
-      preheader: "L'abonnement reste actif jusqu'à la fin de la période payée.",
-      eyebrow: "Abonnement",
-      title: "Un abonné s'arrête",
-      intro: `<b style="color:${C.text};">${p.clientName}</b> a mis fin à son abonnement.${p.endDateStr ? ` Il reste actif jusqu'au <b style="color:${C.text};">${p.endDateStr}</b>.` : ""} Un petit message de ta part peut faire la différence : demande-lui ce qui a motivé son choix.`,
+      locale,
+      preheader: L.preheader,
+      eyebrow: L.eyebrow,
+      title: L.title,
+      intro: L.intro,
       blocks: [],
-      cta: { label: "Ouvrir la messagerie", url: p.dashboardUrl },
+      cta: { label: L.cta, url: p.dashboardUrl },
     }),
   };
 }
 
 // ── Coach : bienvenue dans le plan Pro ──────────────────────────────────────
-export function proWelcomeCoach(p: { dashboardUrl: string }): Email {
+export function proWelcomeCoach(p: {
+  dashboardUrl: string;
+  locale?: EmailLocale;
+}): Email {
+  const locale = p.locale ?? "fr";
+  const L =
+    locale === "en"
+      ? {
+          subject: "Welcome to Pro: 0% commission starting now 🎉",
+          preheader:
+            "Your Pro plan is active: 0% commission, advanced stats unlocked.",
+          eyebrow: "Pro plan",
+          title: "Your Pro plan is active",
+          intro: `From now on, <b style="color:${C.text};">you keep 100% of what you earn</b>: the Madger commission drops to 0% on all your sessions. Your advanced stats are unlocked on your dashboard.`,
+          boxTitle: "Your invoice",
+          boxBody:
+            "Stripe sends you the receipt for your subscription. You can manage your subscription at any time from the Subscription page.",
+          cta: "View my stats",
+        }
+      : {
+          subject: "Bienvenue en Pro : 0 % de commission dès maintenant 🎉",
+          preheader:
+            "Ton plan Pro est actif : 0 % de commission, stats avancées débloquées.",
+          eyebrow: "Plan Pro",
+          title: "Ton plan Pro est actif",
+          intro: `À partir de maintenant, <b style="color:${C.text};">tu gardes 100 % de ce que tu encaisses</b> : la commission Madger passe à 0 % sur toutes tes séances. Tes statistiques avancées sont débloquées sur ton dashboard.`,
+          boxTitle: "Ta facture",
+          boxBody:
+            "Le reçu de ton abonnement t'est envoyé par Stripe. Tu peux gérer ton abonnement à tout moment depuis la page Abonnement.",
+          cta: "Voir mes statistiques",
+        };
   return {
-    subject: "Bienvenue en Pro : 0 % de commission dès maintenant 🎉",
+    subject: L.subject,
     html: layout({
-      preheader:
-        "Ton plan Pro est actif : 0 % de commission, stats avancées débloquées.",
-      eyebrow: "Plan Pro",
-      title: "Ton plan Pro est actif",
-      intro: `À partir de maintenant, <b style="color:${C.text};">tu gardes 100 % de ce que tu encaisses</b> : la commission Madger passe à 0 % sur toutes tes séances. Tes statistiques avancées sont débloquées sur ton dashboard.`,
-      blocks: [
-        infoBox(
-          "Ta facture",
-          "Le reçu de ton abonnement t'est envoyé par Stripe. Tu peux gérer ton abonnement à tout moment depuis la page Abonnement."
-        ),
-      ],
-      cta: { label: "Voir mes statistiques", url: p.dashboardUrl },
+      locale,
+      preheader: L.preheader,
+      eyebrow: L.eyebrow,
+      title: L.title,
+      intro: L.intro,
+      blocks: [infoBox(L.boxTitle, L.boxBody)],
+      cta: { label: L.cta, url: p.dashboardUrl },
     }),
   };
 }

@@ -271,7 +271,7 @@ export async function fulfillCheckoutSession(
     const [{ data: coachRow }, { data: coachAuth }] = await Promise.all([
       supabase
         .from("coaches")
-        .select("first_name, last_name, timezone")
+        .select("first_name, last_name, timezone, locale")
         .eq("id", m.coach_id)
         .maybeSingle(),
       supabase.auth.admin.getUserById(m.coach_id),
@@ -279,6 +279,7 @@ export async function fulfillCheckoutSession(
     const coachName =
       [coachRow?.first_name, coachRow?.last_name].filter(Boolean).join(" ") ||
       "Ton coach";
+    const coachLocale = coachRow?.locale === "en" ? ("en" as const) : ("fr" as const);
     const dateStr = starts.toLocaleString("fr-FR", {
       weekday: "long",
       day: "numeric",
@@ -327,6 +328,7 @@ export async function fulfillCheckoutSession(
       }
       if (coachEmail) {
         const t = newRequestCoach({
+          locale: coachLocale,
           clientName,
           dateStr,
           online,
@@ -350,6 +352,7 @@ export async function fulfillCheckoutSession(
       }
       if (coachEmail) {
         const t = bookingNotificationCoach({
+          locale: coachLocale,
           clientName,
           dateStr,
           serviceName: "Séance",

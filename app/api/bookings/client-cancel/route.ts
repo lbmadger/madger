@@ -83,6 +83,7 @@ export async function POST(req: NextRequest) {
       const euros = (c: number) =>
         (c / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
       const tpl = bookingCancelledCoach({
+        locale: coach?.locale === "en" ? "en" : "fr",
         clientName:
           [clientRow?.first_name, clientRow?.last_name]
             .filter(Boolean)
@@ -108,7 +109,7 @@ export async function POST(req: NextRequest) {
   const { data: coach } = await admin
     .from("coaches")
     .select(
-      "stripe_account_id, pro_until, cancellation_policy, first_name, last_name"
+      "stripe_account_id, pro_until, cancellation_policy, first_name, last_name, locale"
     )
     .eq("id", booking.coach_id)
     .maybeSingle();
@@ -116,7 +117,7 @@ export async function POST(req: NextRequest) {
   const { data: payment } = await admin
     .from("payments")
     .select(
-      "id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status, stripe_payment_intent_id"
+      "id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status, stripe_payment_intent_id, released_cents"
     )
     .eq("booking_id", bookingId)
     .maybeSingle();
@@ -190,10 +191,16 @@ export async function POST(req: NextRequest) {
       )
     : amount;
 
-  const refund = refundCents(
-    normalizePolicy(coach?.cancellation_policy),
-    new Date(booking.starts_at),
-    baseAmount
+  // Part déjà transférée au coach (packs libérés séance par séance) : elle
+  // n'est plus remboursable.
+  const alreadyReleased = (payment.released_cents as number | null) ?? 0;
+  const refund = Math.min(
+    refundCents(
+      normalizePolicy(coach?.cancellation_policy),
+      new Date(booking.starts_at),
+      baseAmount
+    ),
+    Math.max(0, amount - alreadyReleased)
   );
   const breakdown = computePayout(
     amount,
@@ -229,14 +236,15 @@ export async function POST(req: NextRequest) {
       );
     }
     let transferId: string | null = null;
+    const cancelTransfer = Math.max(0, breakdown.payoutCents - alreadyReleased);
     if (
-      breakdown.payoutCents > 0 &&
+      cancelTransfer > 0 &&
       coach?.stripe_account_id &&
       payment.stripe_charge_id
     ) {
       const transfer = await stripe.transfers.create(
         {
-          amount: breakdown.payoutCents,
+          amount: cancelTransfer,
           currency: payment.currency || "eur",
           destination: coach.stripe_account_id,
           source_transaction: payment.stripe_charge_id,

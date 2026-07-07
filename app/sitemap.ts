@@ -9,9 +9,22 @@ export const revalidate = 3600;
 // « coach sportif <ville> »). Les slugs viennent de la base à la demande.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
+  // Avant le lancement (SITE_LAUNCHED non posé), le verrou d'accès bloque la
+  // marketplace : ne lister que les pages réellement servies aux crawlers,
+  // sinon Search Console se remplit d'URL en redirection.
+  const launched = process.env.SITE_LAUNCHED === "1";
   const fixed: MetadataRoute.Sitemap = [
     { url: "https://madger.app", lastModified: now, changeFrequency: "weekly", priority: 1 },
-    { url: "https://madger.app/coachs", lastModified: now, changeFrequency: "daily", priority: 0.9 },
+    ...(launched
+      ? [
+          {
+            url: "https://madger.app/coachs",
+            lastModified: now,
+            changeFrequency: "daily" as const,
+            priority: 0.9,
+          },
+        ]
+      : []),
     { url: "https://madger.app/charte-paiement", lastModified: now, changeFrequency: "yearly", priority: 0.3 },
     { url: "https://madger.app/mentions-legales", lastModified: now, changeFrequency: "yearly", priority: 0.2 },
     { url: "https://madger.app/politique-de-confidentialite", lastModified: now, changeFrequency: "yearly", priority: 0.2 },
@@ -20,7 +33,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: "https://madger.app/politique-cookies", lastModified: now, changeFrequency: "yearly", priority: 0.2 },
   ];
 
-  // Pages coachs (best-effort : sans service role, on renvoie le fixe).
+  // Pages coachs (uniquement après lancement ; best-effort : sans service
+  // role, on renvoie le fixe).
+  if (!launched) return fixed;
   const admin = createAdminClient();
   if (!admin) return fixed;
   const { data: coaches } = await admin

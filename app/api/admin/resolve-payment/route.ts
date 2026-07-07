@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
   const { data: payment } = await admin
     .from("payments")
     .select(
-      "id, coach_id, client_id, booking_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status"
+      "id, coach_id, client_id, booking_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status, released_cents"
     )
     .eq("id", paymentId)
     .maybeSingle();
@@ -56,7 +56,11 @@ export async function POST(req: NextRequest) {
   }
 
   const amount = payment.amount_cents;
-  const refund = Math.min(Math.max(0, Number(body.refund_cents) || 0), amount);
+  const alreadyReleased = (payment.released_cents as number | null) ?? 0;
+  const refund = Math.min(
+    Math.max(0, Number(body.refund_cents) || 0),
+    Math.max(0, amount - alreadyReleased)
+  );
 
   const { data: coach } = await admin
     .from("coaches")
@@ -101,14 +105,15 @@ export async function POST(req: NextRequest) {
       );
     }
     let transferId: string | null = null;
+    const resolveTransfer = Math.max(0, breakdown.payoutCents - alreadyReleased);
     if (
-      breakdown.payoutCents > 0 &&
+      resolveTransfer > 0 &&
       coach?.stripe_account_id &&
       payment.stripe_charge_id
     ) {
       const transfer = await stripe.transfers.create(
         {
-          amount: breakdown.payoutCents,
+          amount: resolveTransfer,
           currency: payment.currency || "eur",
           destination: coach.stripe_account_id,
           source_transaction: payment.stripe_charge_id,
@@ -146,7 +151,7 @@ export async function POST(req: NextRequest) {
         .maybeSingle();
       const { data: coachRow } = await admin
         .from("coaches")
-        .select("first_name, last_name")
+        .select("first_name, last_name, locale")
         .eq("id", payment.coach_id)
         .maybeSingle();
       if (refund > 0 && clientRow?.email) {
@@ -169,6 +174,7 @@ export async function POST(req: NextRequest) {
       );
       if (coachAuth?.user?.email) {
         const tpl = disputeResolvedCoach({
+          locale: coachRow?.locale === "en" ? "en" : "fr",
           clientName:
             [clientRow?.first_name, clientRow?.last_name]
               .filter(Boolean)

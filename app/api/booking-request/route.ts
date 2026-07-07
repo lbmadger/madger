@@ -232,7 +232,13 @@ export async function POST(req: NextRequest) {
             coach.id as string
           );
           if (u?.user?.email) {
+            const { data: coachPrefs } = await admin
+              .from("coaches")
+              .select("locale")
+              .eq("id", coach.id as string)
+              .maybeSingle();
             const tplCoach = newRequestCoach({
+              locale: coachPrefs?.locale === "en" ? "en" : "fr",
               clientName: [first_name, last_name].filter(Boolean).join(" "),
               dateStr,
               online: Boolean(online),

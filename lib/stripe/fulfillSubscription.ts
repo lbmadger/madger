@@ -86,7 +86,7 @@ export async function fulfillSubscriptionSession(
       await Promise.all([
         supabase
           .from("coaches")
-          .select("first_name, last_name")
+          .select("first_name, last_name, locale")
           .eq("id", m.coach_id)
           .maybeSingle(),
         supabase
@@ -111,6 +111,7 @@ export async function fulfillSubscriptionSession(
     const coachEmail = coachAuth?.user?.email;
     if (coachEmail) {
       const tpl = subscriptionStartedCoach({
+        locale: coachRow?.locale === "en" ? "en" : "fr",
         clientName:
           [m.first_name, m.last_name].filter(Boolean).join(" ") || "Un client",
         serviceName,
