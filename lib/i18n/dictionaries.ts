@@ -147,6 +147,9 @@ const fr = {
     daysLabel: "Tes jours",
     fromLabel: "De",
     toLabel: "À",
+    siret: "SIRET",
+    siretHint:
+      "Obligatoire sur tes factures. Il figurera automatiquement sur chacune d'elles. Modifiable à tout moment dans les réglages.",
     doneTitle: "Ton profil est prêt",
     doneSubtitle:
       "Dernière marche pour apparaître sur la marketplace et encaisser tes séances : active tes paiements. C'est fait en 5 minutes.",
@@ -1193,6 +1196,9 @@ const en: Dictionary = {
     daysLabel: "Your days",
     fromLabel: "From",
     toLabel: "To",
+    siret: "SIRET",
+    siretHint:
+      "Mandatory on your invoices. It will appear automatically on each of them. Editable anytime in the settings.",
     doneTitle: "Your profile is ready",
     doneSubtitle:
       "Last step to appear on the marketplace and get paid: enable payments. It takes 5 minutes.",

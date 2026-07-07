@@ -60,6 +60,7 @@ export default function OnboardingForm({
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Étape 3 : activité
+  const [siret, setSiret] = useState("");
   const [sport, setSport] = useState("");
   const [specialties, setSpecialties] = useState<string[]>([]);
   const [venues, setVenues] = useState<string[]>([]);
@@ -107,6 +108,7 @@ export default function OnboardingForm({
           lat: coords?.lat ?? null,
           lng: coords?.lng ?? null,
           accepts_online: acceptsOnline,
+          siret: siret.trim() || null,
           slug,
           listed: true,
           onboarding_completed: true,
@@ -411,6 +413,21 @@ export default function OnboardingForm({
               placeholder={t("onboarding.cityPlaceholder")}
               inputClassName={inputClass}
             />
+          </label>
+
+          <label className="flex flex-col gap-1.5">
+            <span className={labelClass}>{t("onboarding.siret")}</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={siret}
+              onChange={(e) => setSiret(e.target.value)}
+              placeholder="123 456 789 00012"
+              className={inputClass}
+            />
+            <span className="text-xs text-text-dim">
+              {t("onboarding.siretHint")}
+            </span>
           </label>
 
           <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3">
