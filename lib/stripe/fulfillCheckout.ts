@@ -96,12 +96,25 @@ export async function fulfillCheckoutSession(
     .lt("starts_at", ends.toISOString())
     .gt("ends_at", starts.toISOString())
     .limit(1);
-  if ((overlapping ?? []).length > 0 && chargeId) {
-    await stripe.refunds.create(
-      { charge: chargeId },
-      { idempotencyKey: `conflict_refund_${piId}` }
-    );
+  if ((overlapping ?? []).length > 0) {
+    // Le conflit est acté AVANT l'appel Stripe : même si l'annulation/le
+    // remboursement échoue ponctuellement, le client ne voit jamais un faux
+    // « payé » (et Stripe libère une empreinte expirée tout seul).
     result.conflict = true;
+    // Empreinte non capturée : on ANNULE la PaymentIntent (refund impossible
+    // sur une charge non capturée). Paiement débité : remboursement intégral.
+    if (authorized) {
+      await stripe.paymentIntents.cancel(
+        piId,
+        {},
+        { idempotencyKey: `conflict_cancel_${piId}` }
+      );
+    } else if (chargeId) {
+      await stripe.refunds.create(
+        { charge: chargeId },
+        { idempotencyKey: `conflict_refund_${piId}` }
+      );
+    }
     return result;
   }
 

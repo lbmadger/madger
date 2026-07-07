@@ -10,6 +10,7 @@ import type { Availability } from "@/lib/availability/types";
 import AddSessionModal from "./AddSessionModal";
 import WeekView from "./WeekView";
 import Button from "@/components/ui/Button";
+import Dialog from "@/components/ui/Dialog";
 import { PencilIcon } from "@/components/ui/icons";
 
 function dayKey(iso: string): string {
@@ -318,7 +319,7 @@ export default function AgendaView({
                   </button>
                 </div>
                 {actionError && actionErrorId === b.id && (
-                  <p className="w-full text-xs text-danger">{t(actionError)}</p>
+                  <p role="alert" className="w-full text-xs text-danger">{t(actionError)}</p>
                 )}
               </li>
             ))}
@@ -604,14 +605,11 @@ export default function AgendaView({
 
       {/* Fiche d'une séance cliquée dans la grille semaine */}
       {selected && (
-        <div
-          className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center sm:p-4"
-          onClick={() => setSelected(null)}
+        <Dialog
+          onClose={() => setSelected(null)}
+          label={clientName(selected)}
+          className="w-full max-w-sm rounded-t-2xl border border-border bg-bg-card p-5 sm:rounded-2xl"
         >
-          <div
-            className="w-full max-w-sm rounded-t-2xl border border-border bg-bg-card p-5 sm:rounded-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <h2 className="truncate text-lg font-extrabold tracking-tight text-text-base">
@@ -645,7 +643,7 @@ export default function AgendaView({
             </div>
 
             {actionError && (
-              <p className="mt-3 text-sm text-danger">{t(actionError)}</p>
+              <p role="alert" className="mt-3 text-sm text-danger">{t(actionError)}</p>
             )}
 
             {selected.is_block ? (
@@ -752,20 +750,16 @@ export default function AgendaView({
                 </Button>
               </div>
             )}
-          </div>
-        </div>
+        </Dialog>
       )}
 
       {/* Blocage d'un créneau */}
       {blocking && (
-        <div
-          className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center sm:p-4"
-          onClick={() => setBlocking(false)}
+        <Dialog
+          onClose={() => setBlocking(false)}
+          label={t("agenda.blockBtn")}
+          className="w-full max-w-sm rounded-t-2xl border border-border bg-bg-card p-5 sm:rounded-2xl"
         >
-          <div
-            className="w-full max-w-sm rounded-t-2xl border border-border bg-bg-card p-5 sm:rounded-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
             <h2 className="text-lg font-extrabold tracking-tight text-text-base">
               {t("agenda.blockBtn")}
             </h2>
@@ -812,7 +806,7 @@ export default function AgendaView({
               </div>
 
               {blockError && (
-                <p className="text-sm text-danger">{t(blockError)}</p>
+                <p role="alert" className="text-sm text-danger">{t(blockError)}</p>
               )}
 
               <div className="mt-1 flex gap-2">
@@ -832,8 +826,7 @@ export default function AgendaView({
                 </Button>
               </div>
             </div>
-          </div>
-        </div>
+        </Dialog>
       )}
 
       {adding && (

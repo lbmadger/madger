@@ -86,6 +86,28 @@ export async function POST(req: NextRequest) {
             "@/lib/stripe/fulfillSubscription"
           );
           await fulfillSubscriptionSession(s.id);
+        } else if (s.mode === "subscription" && s.metadata?.coach_id) {
+          // Souscription initiale au plan Pro : email de bienvenue au coach
+          // (les renouvellements passent par invoice.paid, sans re-email).
+          try {
+            const { data: coachAuth } = await supabase.auth.admin.getUserById(
+              s.metadata.coach_id
+            );
+            if (coachAuth?.user?.email) {
+              const { proWelcomeCoach } = await import("@/lib/email/templates");
+              const { sendEmail } = await import("@/lib/email/resend");
+              const tpl = proWelcomeCoach({
+                dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL || "https://madger.app"}/dashboard`,
+              });
+              await sendEmail({
+                to: coachAuth.user.email,
+                subject: tpl.subject,
+                html: tpl.html,
+              });
+            }
+          } catch {
+            /* best-effort */
+          }
         }
         break;
       }
@@ -107,12 +129,96 @@ export async function POST(req: NextRequest) {
         }
         break;
       }
+      // Remboursement effectué HORS de l'app (dashboard Stripe, outil
+      // externe) : synchronise refunded_cents, sinon le cron verserait au
+      // coach une part d'argent déjà rendue au client.
+      case "charge.refunded": {
+        const ch = event.data.object as Stripe.Charge;
+        const refunded = ch.amount_refunded ?? 0;
+        await supabase
+          .from("payments")
+          .update({ refunded_cents: refunded })
+          .eq("stripe_charge_id", ch.id)
+          .in("escrow_status", ["held", "authorized", "disputed"]);
+        // Tout remboursé : plus rien à verser, on clôture le séquestre
+        // (conditionnel : ne touche jamais une ligne déjà released).
+        if (refunded >= (ch.amount ?? 0)) {
+          await supabase
+            .from("payments")
+            .update({ escrow_status: "refunded", status: "refunded" })
+            .eq("stripe_charge_id", ch.id)
+            .in("escrow_status", ["held", "authorized"]);
+        }
+        break;
+      }
       case "invoice.paid": {
         const invoice = event.data.object as Stripe.Invoice;
         const subId = invoiceSubscriptionId(invoice);
         if (subId) {
           const sub = await stripe.subscriptions.retrieve(subId);
           await applyFromSubscription(sub);
+          // Abonnement CLIENT chez un coach : chaque échéance encaissée entre
+          // dans la comptabilité (facture client, commission Madger, CSV).
+          // Idempotent via l'index unique sur stripe_payment_intent_id.
+          if (
+            sub.metadata?.kind === "client_sub" &&
+            (invoice.amount_paid ?? 0) > 0
+          ) {
+            const { data: reg } = await supabase
+              .from("client_subscriptions")
+              .select("coach_id, client_id, service_id")
+              .eq("stripe_subscription_id", sub.id)
+              .maybeSingle();
+            if (reg) {
+              const inv = invoice as Stripe.Invoice & {
+                charge?: string | Stripe.Charge | null;
+                payment_intent?: string | Stripe.PaymentIntent | null;
+              };
+              // Commission réellement prélevée (application fee de la charge).
+              let commission = 0;
+              let chargeId: string | null = null;
+              try {
+                chargeId =
+                  typeof inv.charge === "string"
+                    ? inv.charge
+                    : inv.charge?.id ?? null;
+                if (chargeId) {
+                  const ch = await stripe.charges.retrieve(chargeId);
+                  commission =
+                    typeof ch.application_fee_amount === "number"
+                      ? ch.application_fee_amount
+                      : 0;
+                }
+              } catch {
+                /* commission inconnue : 0 par défaut */
+              }
+              const piId =
+                typeof inv.payment_intent === "string"
+                  ? inv.payment_intent
+                  : inv.payment_intent?.id ?? null;
+              await supabase.from("payments").insert({
+                coach_id: reg.coach_id,
+                client_id: reg.client_id,
+                service_id: reg.service_id,
+                booking_id: null,
+                amount_cents: invoice.amount_paid,
+                currency: invoice.currency || "eur",
+                status: "paid",
+                stripe_payment_intent_id: piId ?? `sub_inv_${invoice.id}`,
+                stripe_charge_id: chargeId,
+                paid_at: new Date().toISOString(),
+                // Versé directement au coach par Stripe (destination charge) :
+                // aucun séquestre, la ligne est immédiatement soldée.
+                escrow_status: "released",
+                released_at: new Date().toISOString(),
+                commission_cents: commission,
+                payout_cents: Math.max(
+                  0,
+                  (invoice.amount_paid ?? 0) - commission
+                ),
+              });
+            }
+          }
         }
         break;
       }

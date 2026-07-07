@@ -19,6 +19,19 @@
   padding: 0;
 }
 
+/* Fondu d'entrée de page (app/template.tsx), en CSS pur. */
+.page-fade {
+  animation: page-fade-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 html {
   scroll-behavior: smooth;
   /* Les contrôles natifs (liste des <select>, date pickers…) se rendent en
@@ -228,5 +241,18 @@ textarea:focus-visible {
   .text-shimmer,
   .glow-dot {
     animation: none;
+  }
+}
+/* Motricité réduite : coupe TOUTES les animations/transitions CSS (le
+   fondu de page, les shimmer, les keyframes des composants). Les
+   animations JS (framer-motion) restent limitées à des fondus d'opacité. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

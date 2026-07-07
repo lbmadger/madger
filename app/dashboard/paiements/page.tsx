@@ -3,6 +3,8 @@ import StripeConnectButton from "@/components/dashboard/payments/StripeConnectBu
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getCoach } from "@/lib/coach/getCoach";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdmin } from "@supabase/supabase-js";
+import { SUPABASE_URL } from "@/lib/supabase/config";
 import { getStripe } from "@/lib/stripe/server";
 import { isPro } from "@/lib/subscription/plan";
 
@@ -28,11 +30,15 @@ export default async function PaymentsPage() {
       const acct = await stripe.accounts.retrieve(accountId);
       chargesEnabled = acct.charges_enabled;
       if (chargesEnabled !== coach.stripe_charges_enabled) {
-        const supabase = createClient();
-        await supabase
-          .from("coaches")
-          .update({ stripe_charges_enabled: chargesEnabled })
-          .eq("id", coach.id);
+        // Colonne Stripe protégée par la RLS (0035) : service role requis.
+        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        if (serviceKey) {
+          const admin = createAdmin(SUPABASE_URL, serviceKey);
+          await admin
+            .from("coaches")
+            .update({ stripe_charges_enabled: chargesEnabled })
+            .eq("id", coach.id);
+        }
       }
     } catch {
       /* ignore */

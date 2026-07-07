@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
+import Dialog from "@/components/ui/Dialog";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 
 // Modal d'ajout d'un client. Insère via le client navigateur Supabase :
@@ -68,14 +69,11 @@ export default function AddClientModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4"
-      onClick={onClose}
+    <Dialog
+      onClose={onClose}
+      label={t("clients.form.title")}
+      className="w-full max-w-md rounded-t-2xl border border-border bg-bg-card p-5 sm:rounded-2xl"
     >
-      <div
-        className="w-full max-w-md rounded-t-2xl border border-border bg-bg-card p-5 sm:rounded-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
         <h2 className="text-lg font-semibold text-text-base">
           {t("clients.form.title")}
         </h2>
@@ -118,7 +116,7 @@ export default function AddClientModal({
             />
           </label>
 
-          {error && <p className="text-sm text-danger">{error}</p>}
+          {error && <p role="alert" className="text-sm text-danger">{error}</p>}
 
           <div className="mt-1 flex gap-2">
             <Button
@@ -134,8 +132,7 @@ export default function AddClientModal({
             </Button>
           </div>
         </form>
-      </div>
-    </div>
+    </Dialog>
   );
 }
 

@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Booking, ClientOption, LocationKind } from "@/lib/bookings/types";
 import Button from "@/components/ui/Button";
+import Dialog from "@/components/ui/Dialog";
 import { inputClass } from "@/lib/ui/styles";
 
 const DURATIONS = [30, 45, 60, 90];
@@ -141,14 +142,11 @@ export default function AddSessionModal({
   const fieldClass = inputClass;
 
   return (
-    <div
-      className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center sm:p-4"
-      onClick={onClose}
+    <Dialog
+      onClose={onClose}
+      label={editing ? t("agenda.form.editTitle") : t("agenda.form.title")}
+      className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-2xl border border-border bg-bg-card p-5 sm:rounded-2xl"
     >
-      <div
-        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-2xl border border-border bg-bg-card p-5 sm:rounded-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
         <h2 className="text-lg font-semibold text-text-base">
           {editing ? t("agenda.form.editTitle") : t("agenda.form.title")}
         </h2>
@@ -284,7 +282,7 @@ export default function AddSessionModal({
             />
           </label>
 
-          {error && <p className="text-sm text-danger">{error}</p>}
+          {error && <p role="alert" className="text-sm text-danger">{error}</p>}
 
           <div className="mt-1 flex gap-2">
             <Button
@@ -306,7 +304,6 @@ export default function AddSessionModal({
             </Button>
           </div>
         </form>
-      </div>
-    </div>
+    </Dialog>
   );
 }

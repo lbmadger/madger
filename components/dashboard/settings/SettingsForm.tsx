@@ -268,7 +268,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
               {uploading ? t("settings.photoUploading") : t("settings.photoChange")}
             </button>
             {avatarError && (
-              <p className="mt-1 text-xs text-danger">{avatarError}</p>
+              <p role="alert" className="mt-1 text-xs text-danger">{avatarError}</p>
             )}
           </div>
           <input
@@ -343,7 +343,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             </span>
           </label>
 
-          {error && feedbackFor === "profile" && <p className="text-sm text-danger">{error}</p>}
+          {error && feedbackFor === "profile" && <p role="alert" className="text-sm text-danger">{error}</p>}
           {saved && feedbackFor === "profile" && <p className="text-sm text-accent">{t("settings.saved")}</p>}
 
           <Button onClick={() => handleSave("profile")} disabled={loading} className="mt-1 self-start">
@@ -447,7 +447,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             <Button onClick={() => handleSave("activity")} disabled={loading} className="self-start">
               {loading ? t("settings.saving") : t("settings.save")}
             </Button>
-            {error && feedbackFor === "activity" && <p className="text-sm text-danger">{error}</p>}
+            {error && feedbackFor === "activity" && <p role="alert" className="text-sm text-danger">{error}</p>}
             {saved && feedbackFor === "activity" && <p className="text-sm text-accent">{t("settings.saved")}</p>}
           </div>
         </div>
@@ -516,7 +516,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           <Button onClick={() => handleSave("booking")} disabled={loading} className="self-start">
             {loading ? t("settings.saving") : t("settings.save")}
           </Button>
-          {error && feedbackFor === "booking" && <p className="text-sm text-danger">{error}</p>}
+          {error && feedbackFor === "booking" && <p role="alert" className="text-sm text-danger">{error}</p>}
           {saved && feedbackFor === "booking" && <p className="text-sm text-accent">{t("settings.saved")}</p>}
         </div>
       </SettingsSection>
@@ -576,7 +576,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             {loading ? t("cancellation.saving") : t("cancellation.save")}
           </Button>
           {error && feedbackFor === "cancellation" && (
-            <p className="text-sm text-danger">{error}</p>
+            <p role="alert" className="text-sm text-danger">{error}</p>
           )}
           {saved && feedbackFor === "cancellation" && (
             <p className="text-sm text-accent">{t("settings.saved")}</p>
@@ -636,7 +636,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             <Button onClick={() => handleSave("billing")} disabled={loading} className="self-start">
               {loading ? t("settings.saving") : t("settings.save")}
             </Button>
-            {error && feedbackFor === "billing" && <p className="text-sm text-danger">{error}</p>}
+            {error && feedbackFor === "billing" && <p role="alert" className="text-sm text-danger">{error}</p>}
             {saved && feedbackFor === "billing" && <p className="text-sm text-accent">{t("settings.saved")}</p>}
           </div>
         </div>
@@ -721,7 +721,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             <Button onClick={() => handleSave("prefs")} disabled={loading} className="self-start">
               {loading ? t("settings.saving") : t("settings.save")}
             </Button>
-            {error && feedbackFor === "prefs" && <p className="text-sm text-danger">{error}</p>}
+            {error && feedbackFor === "prefs" && <p role="alert" className="text-sm text-danger">{error}</p>}
             {saved && feedbackFor === "prefs" && <p className="text-sm text-accent">{t("settings.saved")}</p>}
           </div>
         </div>

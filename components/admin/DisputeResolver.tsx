@@ -113,7 +113,7 @@ export default function DisputeResolver({ dispute }: { dispute: Dispute }) {
           </button>
         </div>
       </div>
-      {error && <p className="mt-2 text-xs text-danger">{error}</p>}
+      {error && <p role="alert" className="mt-2 text-xs text-danger">{error}</p>}
     </div>
   );
 }

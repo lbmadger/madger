@@ -24,6 +24,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "server_error" }, { status: 500 });
   }
   const { searchParams } = new URL(req.url);
+  // Libellés d'heures dans la langue du visiteur (14:30 vs 2:30 PM).
+  const localeTag =
+    searchParams.get("locale") === "en" ? "en-US" : "fr-FR";
   const slug = searchParams.get("coach");
   const duration = Math.min(
     240,
@@ -94,7 +97,7 @@ export async function GET(req: NextRequest) {
         const end = t + duration * 60000;
         if (t < minStart) continue;
         if (busy.some((b) => t < b.end && end > b.start)) continue;
-        const label = new Intl.DateTimeFormat("fr-FR", {
+        const label = new Intl.DateTimeFormat(localeTag, {
           timeZone: tz,
           hour: "2-digit",
           minute: "2-digit",

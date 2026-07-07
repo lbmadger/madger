@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
+import Dialog from "@/components/ui/Dialog";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import type { Service, ServiceType, ServiceLocation } from "@/lib/services/types";
 
@@ -87,14 +88,11 @@ export default function AddServiceModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center sm:p-4"
-      onClick={onClose}
+    <Dialog
+      onClose={onClose}
+      label={service ? t("services.form.editTitle") : t("services.form.title")}
+      className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-2xl border border-border bg-bg-card p-5 sm:rounded-2xl"
     >
-      <div
-        className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-2xl border border-border bg-bg-card p-5 sm:rounded-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
         <h2 className="text-lg font-semibold text-text-base">
           {service ? t("services.form.editTitle") : t("services.form.title")}
         </h2>
@@ -212,7 +210,7 @@ export default function AddServiceModal({
             />
           </label>
 
-          {error && <p className="text-sm text-danger">{error}</p>}
+          {error && <p role="alert" className="text-sm text-danger">{error}</p>}
 
           <div className="mt-1 flex gap-2">
             <Button type="button" variant="secondary" onClick={onClose} className="flex-1">
@@ -227,7 +225,6 @@ export default function AddServiceModal({
             </Button>
           </div>
         </form>
-      </div>
-    </div>
+    </Dialog>
   );
 }

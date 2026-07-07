@@ -86,7 +86,7 @@ export default function ReportProblem({ bookingId }: { bookingId: string }) {
           className={`${inputClass} resize-none`}
         />
       </label>
-      {error && <p className="text-sm text-danger">{error}</p>}
+      {error && <p role="alert" className="text-sm text-danger">{error}</p>}
       <Button type="submit" disabled={loading} className="self-start">
         {loading ? t("cancellation.reportSending") : t("cancellation.reportSubmit")}
       </Button>

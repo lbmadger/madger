@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
+import Dialog from "@/components/ui/Dialog";
 import PolicyTiers from "@/components/booking/PolicyTiers";
 import { LockIcon, RepeatIcon, MapPinIcon } from "@/components/ui/icons";
 import { inputClass, labelClass } from "@/lib/ui/styles";
@@ -62,10 +63,13 @@ export default function BookingModal({
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
+  // Coach avec des prestations payantes : la « demande simple sans paiement »
+  // disparaît (elle permettrait de réserver un vrai créneau sans payer) ; la
+  // première prestation est présélectionnée.
   const [serviceId, setServiceId] = useState(
     initialServiceId && paidServices.some((s) => s.id === initialServiceId)
       ? initialServiceId
-      : ""
+      : paidServices[0]?.id ?? ""
   );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -172,7 +176,7 @@ export default function BookingModal({
     let alive = true;
     setSlotState({ mode: "loading" });
     setSelectedIso(null);
-    fetch(`/api/slots?coach=${coach.slug}&duration=${effectiveDuration}`)
+    fetch(`/api/slots?coach=${coach.slug}&duration=${effectiveDuration}&locale=${locale}`)
       .then((r) => {
         if (!r.ok) throw new Error("slots_failed");
         return r.json();
@@ -211,7 +215,7 @@ export default function BookingModal({
     return () => {
       alive = false;
     };
-  }, [coach.slug, effectiveDuration, slotRetry]);
+  }, [coach.slug, effectiveDuration, slotRetry, locale]);
 
   function dayChipLabel(dateISO: string): string {
     const d = new Date(dateISO + "T12:00:00");
@@ -311,6 +315,8 @@ export default function BookingModal({
           setError(t("booking.errors.slotTaken"));
         else if (data.error === "too_soon")
           setError(t("booking.errors.tooSoon"));
+        else if (data.error === "payment_required")
+          setError(t("booking.errors.paymentRequired"));
         else
           setError(
             data.detail
@@ -335,14 +341,11 @@ export default function BookingModal({
     slotState.days.some((d) => d.slots.length > 0);
 
   return (
-    <div
-      className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center sm:p-4"
-      onClick={onClose}
+    <Dialog
+      onClose={onClose}
+      label={t("booking.title")}
+      className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-2xl border border-border bg-bg-card p-5 sm:rounded-2xl"
     >
-      <div
-        className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-2xl border border-border bg-bg-card p-5 sm:rounded-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
         {done ? (
           <div className="py-6 text-center">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent/10 text-accent">
@@ -450,7 +453,6 @@ export default function BookingModal({
                     onChange={(e) => setServiceId(e.target.value)}
                     className={inputClass}
                   >
-                    <option value="">{t("booking.serviceNone")}</option>
                     {paidServices.map((s) => (
                       <option key={s.id} value={s.id}>
                         {s.name} ·{" "}
@@ -720,7 +722,7 @@ export default function BookingModal({
                 <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={2} placeholder={t("booking.messagePlaceholder")} className={`${inputClass} resize-none`} />
               </label>
 
-              {error && <p className="text-sm text-danger">{error}</p>}
+              {error && <p role="alert" className="text-sm text-danger">{error}</p>}
 
               <div className="mt-1 flex gap-2">
                 <Button type="button" variant="secondary" onClick={onClose} className="flex-1">
@@ -750,7 +752,6 @@ export default function BookingModal({
             </form>
           </>
         )}
-      </div>
-    </div>
+    </Dialog>
   );
 }

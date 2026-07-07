@@ -7,7 +7,12 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const redirect = searchParams.get("redirect") || "/dashboard";
+  // Chemin interne uniquement (anti open redirect).
+  const rawRedirect = searchParams.get("redirect") || "/dashboard";
+  const redirect =
+    rawRedirect.startsWith("/") && !rawRedirect.startsWith("//")
+      ? rawRedirect
+      : "/dashboard";
   // `as` indique l'intention (coach/client) lors d'une connexion Google : le
   // flux OAuth ne transmet pas de métadonnées utilisateur, donc on attribue le
   // rôle ici. Pour un coach, on crée sa ligne `coaches` (la RLS coaches_insert_self

@@ -251,7 +251,7 @@ export default function WeekView({
           <button
             type="button"
             onClick={() => setOffset((o) => o - 1)}
-            aria-label="←"
+            aria-label={t("agenda.prevWeek")}
             className="flex h-8 w-8 items-center justify-center rounded-full border border-border-strong text-text-muted transition-colors hover:text-text-base"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
@@ -268,7 +268,7 @@ export default function WeekView({
           <button
             type="button"
             onClick={() => setOffset((o) => o + 1)}
-            aria-label="→"
+            aria-label={t("agenda.nextWeek")}
             className="flex h-8 w-8 items-center justify-center rounded-full border border-border-strong text-text-muted transition-colors hover:text-text-base"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>

@@ -175,7 +175,7 @@ export default function ClientDetail({ client }: { client: Client }) {
               />
             </label>
 
-            {error && <p className="text-sm text-danger">{error}</p>}
+            {error && <p role="alert" className="text-sm text-danger">{error}</p>}
 
             <div className="mt-1 flex gap-2">
               <Button
@@ -193,7 +193,7 @@ export default function ClientDetail({ client }: { client: Client }) {
         )}
       </div>
 
-      {error && !editing && <p className="mt-3 text-sm text-danger">{error}</p>}
+      {error && !editing && <p role="alert" className="mt-3 text-sm text-danger">{error}</p>}
     </>
   );
 }

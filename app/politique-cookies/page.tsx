@@ -36,9 +36,13 @@ export default function PolitiqueCookies() {
               (Google Analytics, Meta Pixel, etc.).
             </p>
             <p className="mt-3">
-              Seuls des cookies techniques strictement nécessaires au fonctionnement peuvent être déposés
-              (session de connexion, préférences d'affichage). Ces cookies ne nécessitent pas de consentement
-              préalable conformément aux recommandations de la CNIL.
+              Seuls des cookies techniques strictement nécessaires au fonctionnement sont déposés :
+              le cookie de <strong className="text-white">session Supabase</strong> (authentification,
+              durée de la session, indispensable pour rester connecté), le cookie de{" "}
+              <strong className="text-white">langue</strong> (madger_locale, 12 mois) et, pendant la
+              phase d'accès anticipé, le cookie du <strong className="text-white">code d'accès</strong>.
+              Ces cookies ne nécessitent pas de consentement préalable conformément aux
+              recommandations de la CNIL.
             </p>
             <p className="mt-3">
               Les pages de paiement utilisent des cookies <strong className="text-white">Stripe</strong> à des

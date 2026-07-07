@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdmin } from "@supabase/supabase-js";
+import { SUPABASE_URL } from "@/lib/supabase/config";
 import { getStripe } from "@/lib/stripe/server";
 
 export const dynamic = "force-dynamic";
@@ -44,7 +46,13 @@ export async function POST(req: NextRequest) {
       },
     });
     accountId = account.id;
-    await supabase
+    // Colonne Stripe protégée par la RLS (0035) : écriture via service role.
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!serviceKey) {
+      return NextResponse.json({ error: "not_configured" }, { status: 500 });
+    }
+    const admin = createAdmin(SUPABASE_URL, serviceKey);
+    await admin
       .from("coaches")
       .update({ stripe_account_id: accountId })
       .eq("id", user.id);

@@ -89,6 +89,32 @@ export async function POST(req: NextRequest) {
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Coach qui encaisse en ligne avec des prestations payantes : la demande
+    // gratuite est fermée côté serveur (le modal ne la propose déjà plus).
+    // Sinon un client pourrait réserver un vrai créneau sans payer.
+    {
+      const { data: pubCoach } = await supabase
+        .from("public_coaches")
+        .select("id, stripe_charges_enabled")
+        .eq("slug", String(coach_slug))
+        .maybeSingle();
+      if (pubCoach?.stripe_charges_enabled) {
+        const { data: paidSvc } = await supabase
+          .from("public_services")
+          .select("id")
+          .eq("coach_id", pubCoach.id)
+          .gt("price_cents", 0)
+          .limit(1);
+        if ((paidSvc ?? []).length > 0) {
+          return NextResponse.json(
+            { error: "payment_required" },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
     const { data: bookingId, error } = await supabase.rpc("request_booking", {
       coach_slug: String(coach_slug),
       client_first_name: String(first_name),

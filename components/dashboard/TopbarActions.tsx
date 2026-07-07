@@ -120,8 +120,18 @@ export function NotificationBell() {
     function onClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setOpen(false);
+        ref.current?.querySelector("button")?.focus();
+      }
+    }
     document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
   }, []);
 
   const count = items.length;
@@ -132,6 +142,7 @@ export function NotificationBell() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-label={t("topbar.notifications")}
+        aria-haspopup="menu"
         aria-expanded={open}
         className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-border-strong bg-white/[0.03] text-text-muted transition-colors hover:border-accent hover:text-text-base"
       >

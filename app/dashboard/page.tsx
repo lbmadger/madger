@@ -37,7 +37,6 @@ export default async function OverviewPage() {
 
   const [
     clientsRes,
-    weekRes,
     upcomingRes,
     availRes,
     servicesRes,
@@ -46,13 +45,6 @@ export default async function OverviewPage() {
     weeksRes,
   ] = await Promise.all([
     supabase.from("clients").select("*", { count: "exact", head: true }),
-    supabase
-      .from("bookings")
-      .select("*", { count: "exact", head: true })
-      .gte("starts_at", weekStart.toISOString())
-      .lt("starts_at", weekEnd.toISOString())
-      .neq("status", "cancelled")
-      .eq("is_block", false),
     supabase
       .from("bookings")
       .select("*, clients(first_name, last_name)")
@@ -128,7 +120,13 @@ export default async function OverviewPage() {
     ]);
 
   const clientsCount = clientsRes.count ?? 0;
-  const weekCount = weekRes.count ?? 0;
+  // Séances de la semaine : dérivé de weeksRes (déjà borné < weekEnd et
+  // filtré is_block), une requête count de moins par affichage.
+  const weekCount = (weeksRes.data ?? []).filter(
+    (b) =>
+      b.status !== "cancelled" &&
+      new Date(b.starts_at as string).getTime() >= weekStart.getTime()
+  ).length;
   const upcoming = (upcomingRes.data ?? []) as Booking[];
   const availRows = availRes.data ?? [];
   const availabilityDone = availRows.length > 0;

@@ -29,7 +29,11 @@ export default async function SubscriptionPage({
     const { data } = await supabase
       .from("payments")
       .select("commission_cents, released_at, resolved_at, paid_at")
-      .gt("commission_cents", 0);
+      .gt("commission_cents", 0)
+      // paid_at précède toujours le versement : 210 jours couvrent largement
+      // la fenêtre de 90 jours, sans rapatrier tout l'historique.
+      .gte("paid_at", new Date(Date.now() - 210 * 86400000).toISOString())
+      .limit(2000);
     const since = Date.now() - 90 * 86400000;
     commission90d = (data ?? []).reduce((s, r) => {
       const at =

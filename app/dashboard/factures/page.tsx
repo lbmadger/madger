@@ -32,10 +32,18 @@ export default async function InvoicesPage() {
       .order("paid_at", { ascending: false })
       .limit(100),
     // Commissions Madger prélevées : regroupées par mois côté page.
+    // Borné à 36 mois et 2000 lignes : au-delà, Supabase tronquerait en
+    // silence (max-rows) et les totaux seraient faux.
     supabase
       .from("payments")
       .select("commission_cents, released_at, resolved_at, paid_at")
-      .gt("commission_cents", 0),
+      .gt("commission_cents", 0)
+      .gte(
+        "paid_at",
+        new Date(Date.now() - 36 * 31 * 86400000).toISOString()
+      )
+      .order("paid_at", { ascending: false })
+      .limit(2000),
   ]);
 
   const rows = (payments ?? []).map((p) => {

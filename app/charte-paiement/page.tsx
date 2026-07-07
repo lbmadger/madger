@@ -52,6 +52,16 @@ export default function ChartePaiement() {
               , sauf annulation ou signalement d'un problème par le client dans ce
               délai.
             </p>
+            <p className="mt-3">
+              <strong className="text-white">Réservation avec validation du coach</strong> :
+              lorsque le coach valide chaque demande à la main, la carte du client
+              est simplement <strong className="text-white">pré-autorisée (empreinte
+              bancaire)</strong> au moment de la demande. Aucun débit n'a lieu tant
+              que le coach n'a pas accepté. S'il refuse, ou sans réponse de sa part
+              sous 6 jours, l'empreinte est levée et rien n'est prélevé. Une fois la
+              demande acceptée, le paiement est débité et suit le circuit de
+              séquestre décrit ci-dessus.
+            </p>
           </section>
 
           <section>

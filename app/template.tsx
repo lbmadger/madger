@@ -1,19 +1,10 @@
-"use client";
-
-import { motion } from "framer-motion";
-
-// Transition d'entrée de page : fondu en opacité UNIQUEMENT. On évite
-// volontairement transform/filter sur ce conteneur car ils créeraient un
-// bloc englobant qui casserait le position:fixed (fond animé) et le sticky
-// (hero). L'opacité, elle, est sans effet de bord sur le positionnement.
+// Transition d'entrée de page : fondu en opacité UNIQUEMENT, en CSS pur
+// (classe .page-fade dans globals.css). L'ancienne version passait par
+// framer-motion, ce qui embarquait la librairie (~45 KB gz) dans le First
+// Load JS de TOUTES les routes, y compris celles qui n'animent rien.
+// On évite volontairement transform/filter sur ce conteneur : ils créeraient
+// un bloc englobant qui casserait position:fixed (fond animé) et sticky
+// (hero). L'opacité est sans effet de bord sur le positionnement.
 export default function Template({ children }: { children: React.ReactNode }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className="page-fade">{children}</div>;
 }

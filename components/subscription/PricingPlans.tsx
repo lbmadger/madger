@@ -173,7 +173,7 @@ export default function PricingPlans({
               {loading ? t("plans.upgrading") : t("plans.upgrade")}
             </button>
             {error && (
-              <p className="mt-2 text-center text-sm text-danger">{error}</p>
+              <p role="alert" className="mt-2 text-center text-sm text-danger">{error}</p>
             )}
           </>
         )}

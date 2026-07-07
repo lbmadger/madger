@@ -147,7 +147,7 @@ export async function GET(req: NextRequest) {
     const { data: due } = await supabase
       .from("payments")
       .select(
-        "id, coach_id, booking_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, refunded_cents, bookings(status)"
+        "id, coach_id, booking_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, refunded_cents, bookings(status, clients(first_name, last_name, email), coaches(first_name, last_name))"
       )
       .eq("escrow_status", "held")
       .lte("release_after", nowIso)
@@ -166,6 +166,20 @@ export async function GET(req: NextRequest) {
     const coachById = new Map(
       (coachRows ?? []).map((c) => [c.id as string, c])
     );
+    // Email de chaque coach du lot (1 appel Auth par coach, pas par paiement).
+    const coachEmailById = new Map<string, string>();
+    for (const cid of coachIds) {
+      if (Date.now() - startedAt > TIME_BUDGET_MS) break;
+      try {
+        const { data: u } = await supabase.auth.admin.getUserById(cid);
+        if (u?.user?.email) coachEmailById.set(cid, u.user.email);
+      } catch {
+        /* best-effort */
+      }
+    }
+    // Emails du lot envoyés APRÈS les débits : le budget temps sert d'abord
+    // à verser, jamais à attendre Resend.
+    const emailJobs: Array<() => Promise<unknown>> = [];
 
   for (const p of batch) {
     if (Date.now() - startedAt > TIME_BUDGET_MS) break;
@@ -287,50 +301,33 @@ export async function GET(req: NextRequest) {
       }
 
       // Prévient le coach du versement (avec la commission prélevée et le
-      // rappel « 0 % en Pro » pour les coachs Gratuit). Best-effort.
+      // rappel « 0 % en Pro » pour les coachs Gratuit). Différé après le lot.
       if (breakdown.payoutCents > 0) {
-        try {
-          const { data: coachAuth } = await supabase.auth.admin.getUserById(
-            p.coach_id as string
+        const coachEmail = coachEmailById.get(p.coach_id as string);
+        if (coachEmail) {
+          const eurosStr = (cents: number) =>
+            (cents / 100).toLocaleString("fr-FR", {
+              style: "currency",
+              currency: "EUR",
+            });
+          const cl0 = Array.isArray(bookingRow?.clients)
+            ? bookingRow?.clients[0]
+            : bookingRow?.clients;
+          const clientLabel =
+            [cl0?.first_name, cl0?.last_name].filter(Boolean).join(" ") ||
+            "ton client";
+          const tpl = payoutReleasedCoach({
+            clientName: clientLabel,
+            payoutStr: eurosStr(breakdown.payoutCents),
+            dashboardUrl: `${APP_URL}/dashboard/paiements`,
+            commissionStr:
+              breakdown.commissionCents > 0
+                ? eurosStr(breakdown.commissionCents)
+                : undefined,
+          });
+          emailJobs.push(() =>
+            sendEmail({ to: coachEmail, subject: tpl.subject, html: tpl.html })
           );
-          const coachEmail = coachAuth?.user?.email;
-          if (coachEmail) {
-            const eurosStr = (cents: number) =>
-              (cents / 100).toLocaleString("fr-FR", {
-                style: "currency",
-                currency: "EUR",
-              });
-            let clientLabel = "ton client";
-            if (p.booking_id) {
-              const { data: bk0 } = await supabase
-                .from("bookings")
-                .select("clients(first_name, last_name)")
-                .eq("id", p.booking_id)
-                .maybeSingle();
-              const cl0 = Array.isArray(bk0?.clients)
-                ? bk0?.clients[0]
-                : bk0?.clients;
-              clientLabel =
-                [cl0?.first_name, cl0?.last_name].filter(Boolean).join(" ") ||
-                clientLabel;
-            }
-            const tpl = payoutReleasedCoach({
-              clientName: clientLabel,
-              payoutStr: eurosStr(breakdown.payoutCents),
-              dashboardUrl: `${APP_URL}/dashboard/paiements`,
-              commissionStr:
-                breakdown.commissionCents > 0
-                  ? eurosStr(breakdown.commissionCents)
-                  : undefined,
-            });
-            await sendEmail({
-              to: coachEmail,
-              subject: tpl.subject,
-              html: tpl.html,
-            });
-          }
-        } catch {
-          /* best-effort */
         }
       }
 
@@ -341,26 +338,25 @@ export async function GET(req: NextRequest) {
           .eq("id", p.booking_id)
           .neq("status", "cancelled");
 
-        // Invite le client à noter sa séance (1 client = 1 avis). Best-effort.
-        try {
-          const { data: bk } = await supabase
-            .from("bookings")
-            .select("client_id, clients(email), coaches(first_name, last_name)")
-            .eq("id", p.booking_id)
-            .maybeSingle();
-          const cl = Array.isArray(bk?.clients) ? bk?.clients[0] : bk?.clients;
-          const co = Array.isArray(bk?.coaches) ? bk?.coaches[0] : bk?.coaches;
-          if (cl?.email) {
-            const tpl = reviewRequestClient({
-              coachName:
-                [co?.first_name, co?.last_name].filter(Boolean).join(" ") ||
-                "ton coach",
-              reservationUrl: `${APP_URL}/reservation/${p.booking_id}`,
-            });
-            await sendEmail({ to: cl.email, subject: tpl.subject, html: tpl.html });
-          }
-        } catch {
-          /* best-effort */
+        // Invite le client à noter sa séance (1 client = 1 avis). Différé.
+        const cl = Array.isArray(bookingRow?.clients)
+          ? bookingRow?.clients[0]
+          : bookingRow?.clients;
+        const co = Array.isArray(bookingRow?.coaches)
+          ? bookingRow?.coaches[0]
+          : bookingRow?.coaches;
+        const bkId = p.booking_id as string;
+        if (cl?.email) {
+          const clEmail = cl.email as string;
+          const tpl = reviewRequestClient({
+            coachName:
+              [co?.first_name, co?.last_name].filter(Boolean).join(" ") ||
+              "ton coach",
+            reservationUrl: `${APP_URL}/reservation/${bkId}`,
+          });
+          emailJobs.push(() =>
+            sendEmail({ to: clEmail, subject: tpl.subject, html: tpl.html })
+          );
         }
       }
       released++;
@@ -369,6 +365,9 @@ export async function GET(req: NextRequest) {
       errors.push(`${p.id}: ${e instanceof Error ? e.message : "error"}`);
     }
   }
+
+  // Les débits du lot sont faits : on envoie les emails en parallèle.
+  await Promise.allSettled(emailJobs.map((job) => job()));
   }
 
   return NextResponse.json({ released, refunded, expired, errors });

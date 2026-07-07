@@ -7,10 +7,15 @@ import { computePayout } from "@/lib/stripe/escrow";
 import { refundCents, normalizePolicy } from "@/lib/booking/cancellation";
 import { isPro } from "@/lib/subscription/plan";
 import { sendEmail } from "@/lib/email/resend";
-import { refundClient } from "@/lib/email/templates";
+import {
+  refundClient,
+  bookingCancelledCoach,
+} from "@/lib/email/templates";
 import { detachMeetFromBooking } from "@/lib/google/calendar";
 
 export const dynamic = "force-dynamic";
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
 // Annulation par le CLIENT (espace « Mes séances »). Le compte connecté doit
 // correspondre (email) au client de la réservation. La formule d'annulation du
@@ -54,7 +59,7 @@ export async function POST(req: NextRequest) {
   // Vérifie que la réservation appartient bien au compte connecté (email).
   const { data: clientRow } = await admin
     .from("clients")
-    .select("id, email")
+    .select("id, email, first_name, last_name")
     .eq("id", booking.client_id)
     .maybeSingle();
   if (
@@ -62,6 +67,42 @@ export async function POST(req: NextRequest) {
     clientRow.email.trim().toLowerCase() !== user.email.trim().toLowerCase()
   ) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  }
+
+
+  // Prévient le coach que son créneau se libère (best-effort, jamais
+  // bloquant). Appelé sur chaque chemin d'annulation réussi.
+  async function notifyCoachCancelled(refunded: number, kept: number) {
+    if (!booking) return;
+    try {
+      const { data: coachAuth } = await admin.auth.admin.getUserById(
+        booking.coach_id as string
+      );
+      const coachEmail = coachAuth?.user?.email;
+      if (!coachEmail) return;
+      const euros = (c: number) =>
+        (c / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+      const tpl = bookingCancelledCoach({
+        clientName:
+          [clientRow?.first_name, clientRow?.last_name]
+            .filter(Boolean)
+            .join(" ") || "Ton client",
+        dateStr: new Date(booking.starts_at).toLocaleString("fr-FR", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZone: "Europe/Paris",
+        }),
+        refundStr: refunded > 0 ? euros(refunded) : null,
+        keptStr: kept > 0 ? euros(kept) : null,
+        dashboardUrl: `${APP_URL}/dashboard/agenda`,
+      });
+      await sendEmail({ to: coachEmail, subject: tpl.subject, html: tpl.html });
+    } catch {
+      /* best-effort */
+    }
   }
 
   const { data: coach } = await admin
@@ -119,6 +160,7 @@ export async function POST(req: NextRequest) {
       .from("bookings")
       .update({ status: "cancelled" })
       .eq("id", bookingId);
+    await notifyCoachCancelled(0, 0);
     return NextResponse.json({ ok: true, refunded_cents: 0 });
   }
 
@@ -129,6 +171,7 @@ export async function POST(req: NextRequest) {
       .from("bookings")
       .update({ status: "cancelled" })
       .eq("id", bookingId);
+    await notifyCoachCancelled(0, 0);
     return NextResponse.json({ ok: true, refunded_cents: 0 });
   }
 
@@ -241,6 +284,8 @@ export async function POST(req: NextRequest) {
         /* best-effort */
       }
     }
+
+    await notifyCoachCancelled(refund, breakdown.payoutCents);
 
     return NextResponse.json({
       ok: true,

@@ -144,7 +144,7 @@ export default function ServicesView({
       )}
 
       {deleteError && (
-        <p className="mt-3 text-sm text-danger">{t("services.errors.generic")}</p>
+        <p role="alert" className="mt-3 text-sm text-danger">{t("services.errors.generic")}</p>
       )}
 
       {adding && (

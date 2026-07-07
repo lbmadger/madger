@@ -425,7 +425,7 @@ export default function CoachProfile({
               : t("coachProfile.approvalNote")}
           </p>
           {contactError && (
-            <p className="mt-2 text-sm text-danger">{contactError}</p>
+            <p role="alert" className="mt-2 text-sm text-danger">{contactError}</p>
           )}
         </div>
       </aside>

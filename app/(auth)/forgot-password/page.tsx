@@ -58,7 +58,7 @@ export default function ForgotPasswordPage() {
               className={inputClass}
             />
           </label>
-          {error && <p className="text-sm text-danger">{error}</p>}
+          {error && <p role="alert" className="text-sm text-danger">{error}</p>}
           <Button type="submit" disabled={loading} className="mt-1 w-full">
             {loading ? t("common.loading") : t("auth.forgot.submit")}
           </Button>

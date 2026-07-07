@@ -136,7 +136,7 @@ export default async function InvoicePage({
           <tbody>
             <tr className="border-b border-border">
               <td className="py-3 font-medium text-text-base">
-                {(service?.name as string) ?? "Séance de coaching"}
+                {(service?.name as string) ?? inv.defaultService}
               </td>
               <td className="py-3 text-text-muted">
                 {booking?.starts_at

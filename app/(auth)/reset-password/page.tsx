@@ -79,7 +79,7 @@ export default function ResetPasswordPage() {
           })}
         </ul>
 
-        {error && <p className="text-sm text-danger">{error}</p>}
+        {error && <p role="alert" className="text-sm text-danger">{error}</p>}
         {okMsg && <p className="text-sm text-accent">{t("auth.reset.success")}</p>}
 
         <Button type="submit" disabled={loading || okMsg} className="mt-1 w-full">

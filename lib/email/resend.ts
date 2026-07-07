@@ -26,8 +26,17 @@ export async function sendEmail(opts: {
         ...(opts.replyTo ? { reply_to: opts.replyTo } : {}),
       }),
     });
+    if (!res.ok) {
+      // Trace serveur (logs Vercel) : quota Resend épuisé, adresse rejetée…
+      console.error(
+        "sendEmail failed:",
+        res.status,
+        (await res.text().catch(() => "")).slice(0, 300)
+      );
+    }
     return res.ok;
-  } catch {
+  } catch (e) {
+    console.error("sendEmail error:", e instanceof Error ? e.message : e);
     return false;
   }
 }

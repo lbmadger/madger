@@ -61,7 +61,22 @@ export async function middleware(request: NextRequest) {
     return await updateSession(request);
   }
 
-  return NextResponse.next();
+  const res = NextResponse.next();
+
+  // Première visite sans langue choisie : déduit la langue du navigateur
+  // (Accept-Language). Un visiteur anglophone du marketplace obtient l'EN
+  // sans action ; le choix explicite (cookie posé par LanguagePicker) prime.
+  if (!request.cookies.get("madger_locale")) {
+    const accept = request.headers.get("accept-language") ?? "";
+    const prefersEnglish = /^en\b/i.test(accept.split(",")[0] ?? "");
+    res.cookies.set("madger_locale", prefersEnglish ? "en" : "fr", {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: "lax",
+    });
+  }
+
+  return res;
 }
 
 export const config = {

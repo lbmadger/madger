@@ -6,6 +6,13 @@ import { SUPABASE_URL } from "@/lib/supabase/config";
 import { computePayout } from "@/lib/stripe/escrow";
 import { isPro } from "@/lib/subscription/plan";
 import { isAdminEmail } from "@/lib/admin";
+import { sendEmail } from "@/lib/email/resend";
+import {
+  refundClient,
+  disputeResolvedCoach,
+} from "@/lib/email/templates";
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +44,7 @@ export async function POST(req: NextRequest) {
   const { data: payment } = await admin
     .from("payments")
     .select(
-      "id, coach_id, booking_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status"
+      "id, coach_id, client_id, booking_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status"
     )
     .eq("id", paymentId)
     .maybeSingle();
@@ -64,6 +71,28 @@ export async function POST(req: NextRequest) {
     refund
   );
 
+  // Réclame la ligne AVANT tout appel Stripe (même patron que cancel/release) :
+  // un seul processus gagne. Empêche le double traitement resolve + cron sur
+  // une ligne encore `held`.
+  const fullyRefunded = refund >= amount;
+  const previousStatus = payment.escrow_status as string;
+  const { data: claimed } = await admin
+    .from("payments")
+    .update({
+      escrow_status: fullyRefunded ? "refunded" : "released",
+      status: fullyRefunded ? "refunded" : "paid",
+      refunded_cents: refund,
+      commission_cents: breakdown.commissionCents,
+      payout_cents: breakdown.payoutCents,
+      resolved_at: new Date().toISOString(),
+    })
+    .eq("id", payment.id)
+    .eq("escrow_status", previousStatus)
+    .select("id");
+  if (!claimed?.length) {
+    return NextResponse.json({ error: "already_resolved" }, { status: 409 });
+  }
+
   try {
     if (refund > 0 && payment.stripe_charge_id) {
       await stripe.refunds.create(
@@ -89,20 +118,12 @@ export async function POST(req: NextRequest) {
       );
       transferId = transfer.id;
     }
-
-    const fullyRefunded = refund >= amount;
-    await admin
-      .from("payments")
-      .update({
-        escrow_status: fullyRefunded ? "refunded" : "released",
-        status: fullyRefunded ? "refunded" : "paid",
-        refunded_cents: refund,
-        commission_cents: breakdown.commissionCents,
-        payout_cents: breakdown.payoutCents,
-        stripe_transfer_id: transferId,
-        resolved_at: new Date().toISOString(),
-      })
-      .eq("id", payment.id);
+    if (transferId) {
+      await admin
+        .from("payments")
+        .update({ stripe_transfer_id: transferId })
+        .eq("id", payment.id);
+    }
 
     if (payment.booking_id) {
       await admin
@@ -111,12 +132,81 @@ export async function POST(req: NextRequest) {
         .eq("id", payment.booking_id);
     }
 
+    // La décision est notifiée aux deux parties (best-effort).
+    try {
+      const euros = (c: number) =>
+        (c / 100).toLocaleString("fr-FR", {
+          style: "currency",
+          currency: (payment.currency || "eur").toUpperCase(),
+        });
+      const { data: clientRow } = await admin
+        .from("clients")
+        .select("email, first_name, last_name")
+        .eq("id", payment.client_id)
+        .maybeSingle();
+      const { data: coachRow } = await admin
+        .from("coaches")
+        .select("first_name, last_name")
+        .eq("id", payment.coach_id)
+        .maybeSingle();
+      if (refund > 0 && clientRow?.email) {
+        const tpl = refundClient({
+          coachName:
+            [coachRow?.first_name, coachRow?.last_name]
+              .filter(Boolean)
+              .join(" ") || "ton coach",
+          refundStr: euros(refund),
+          reason: "dispute",
+        });
+        await sendEmail({
+          to: clientRow.email,
+          subject: tpl.subject,
+          html: tpl.html,
+        });
+      }
+      const { data: coachAuth } = await admin.auth.admin.getUserById(
+        payment.coach_id as string
+      );
+      if (coachAuth?.user?.email) {
+        const tpl = disputeResolvedCoach({
+          clientName:
+            [clientRow?.first_name, clientRow?.last_name]
+              .filter(Boolean)
+              .join(" ") || "ton client",
+          payoutStr:
+            breakdown.payoutCents > 0 ? euros(breakdown.payoutCents) : null,
+          refundStr: refund > 0 ? euros(refund) : null,
+          dashboardUrl: `${APP_URL}/dashboard/paiements`,
+        });
+        await sendEmail({
+          to: coachAuth.user.email,
+          subject: tpl.subject,
+          html: tpl.html,
+          replyTo: "contact@madger.app",
+        });
+      }
+    } catch {
+      /* best-effort */
+    }
+
     return NextResponse.json({
       ok: true,
       refunded_cents: refund,
       payout_cents: breakdown.payoutCents,
     });
   } catch (e) {
+    // Échec Stripe après le claim : on rend la ligne à son état d'origine
+    // pour qu'elle reste visible et re-traitable (les idempotency keys
+    // protègent d'un double refund/transfer au rejeu).
+    await admin
+      .from("payments")
+      .update({
+        escrow_status: previousStatus,
+        status: "paid",
+        resolved_at: null,
+      })
+      .eq("id", payment.id)
+      .eq("escrow_status", fullyRefunded ? "refunded" : "released");
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "stripe_error" },
       { status: 500 }

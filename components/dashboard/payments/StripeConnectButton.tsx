@@ -35,7 +35,7 @@ export default function StripeConnectButton({ label }: { label: string }) {
         {loading ? t("payments.connecting") : label}
       </Button>
       {error && (
-        <p className="mt-2 text-xs text-danger">{t("payments.connectError")}</p>
+        <p role="alert" className="mt-2 text-xs text-danger">{t("payments.connectError")}</p>
       )}
     </div>
   );

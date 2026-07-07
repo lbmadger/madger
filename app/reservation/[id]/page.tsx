@@ -160,14 +160,14 @@ export default async function ReservationPage({
                     )}
                     <a
                       href={googleCalendarUrl({
-                        title: `Séance avec ${booking.coach_name}`,
+                        title: `${r.calSession} ${booking.coach_name}`,
                         start: new Date(booking.starts_at),
                         end: new Date(booking.ends_at),
                         details: [
                           booking.meeting_url
-                            ? `Visio : ${booking.meeting_url}`
+                            ? `${r.calVideo} ${booking.meeting_url}`
                             : null,
-                          `Ma réservation : ${APP_URL}/reservation/${params.id}`,
+                          `${r.calMy} ${APP_URL}/reservation/${params.id}`,
                         ]
                           .filter(Boolean)
                           .join("\n"),

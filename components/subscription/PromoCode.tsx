@@ -81,7 +81,7 @@ export default function PromoCode({ compact }: { compact?: boolean }) {
           {loading ? t("promo.redeeming") : t("promo.redeem")}
         </Button>
       </div>
-      {error && <p className="mt-2 text-sm text-danger">{error}</p>}
+      {error && <p role="alert" className="mt-2 text-sm text-danger">{error}</p>}
     </div>
   );
 }

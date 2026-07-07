@@ -392,7 +392,7 @@ export default function ClientSpace({
                           : t("clientSpace.confirmCancel")}
                       </button>
                     </div>
-                    {error && <p className="text-xs text-danger">{error}</p>}
+                    {error && <p role="alert" className="text-xs text-danger">{error}</p>}
                   </div>
                 ) : (
                   <button

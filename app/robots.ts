@@ -5,7 +5,19 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/api/"],
+      // Défense en profondeur : ces espaces sont déjà derrière une session
+      // (et noindex), mais on les écarte aussi explicitement du crawl.
+      disallow: [
+        "/api/",
+        "/dashboard",
+        "/admin",
+        "/onboarding",
+        "/onboarding-client",
+        "/espace",
+        "/messages",
+        "/reservation",
+        "/acces",
+      ],
     },
     sitemap: "https://madger.app/sitemap.xml",
   };

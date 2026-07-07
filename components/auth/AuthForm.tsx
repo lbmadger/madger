@@ -25,9 +25,15 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   const role = searchParams.get("role") === "client" ? "client" : "coach";
   // Client : direction le profil sportif (3 étapes) après inscription — sauf
   // destination explicite (ex. retour sur la page d'un coach pour le contacter).
+  // Seuls les chemins INTERNES sont acceptés ("/..." mais pas "//evil.com") :
+  // sinon un lien madger.app/login?redirect=https://piege.fr servirait de
+  // tremplin de phishing après connexion.
+  const fallback = role === "client" ? "/onboarding-client" : "/dashboard";
+  const rawRedirect = searchParams.get("redirect") || fallback;
   const redirectTo =
-    searchParams.get("redirect") ||
-    (role === "client" ? "/onboarding-client" : "/dashboard");
+    rawRedirect.startsWith("/") && !rawRedirect.startsWith("//")
+      ? rawRedirect
+      : fallback;
 
   const isSignup = mode === "signup";
 
@@ -218,7 +224,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           </ul>
         )}
 
-        {error && <p className="text-sm text-danger">{error}</p>}
+        {error && <p role="alert" className="text-sm text-danger">{error}</p>}
 
         <Button type="submit" disabled={loading} className="mt-2 w-full">
           {loading

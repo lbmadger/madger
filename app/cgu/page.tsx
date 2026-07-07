@@ -42,9 +42,17 @@ export default function CGU() {
           <section>
             <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>Utilisation</h2>
             <p>
-              Le service est réservé aux professionnels majeurs exerçant une activité de coaching.
-              L'utilisateur est seul responsable des prestations proposées à ses clients et de
-              la déclaration de ses revenus aux organismes compétents.
+              L'espace coach est réservé aux professionnels majeurs exerçant une activité de coaching.
+              Le coach est seul responsable des prestations proposées à ses clients et de
+              la déclaration de ses revenus aux organismes compétents. La mise en vente de
+              prestations payantes nécessite un compte de paiement Stripe actif et un numéro
+              SIRET valide.
+            </p>
+            <p className="mt-3">
+              La réservation d'une séance par un client nécessite la création d'un compte
+              client (email et mot de passe). Ce compte permet au client de suivre ses séances,
+              d'annuler selon la formule d'annulation du coach, d'accéder à ses factures et
+              d'échanger avec son coach.
             </p>
           </section>
 
@@ -67,7 +75,7 @@ export default function CGU() {
           </section>
 
           <p style={{ fontSize: 13, color: "#3A3A3A", marginTop: 8 }}>
-            Dernière mise à jour : juin 2026
+            Dernière mise à jour : juillet 2026
           </p>
         </div>
       </div>

@@ -8,6 +8,8 @@ export const dynamic = "force-dynamic";
 
 // Back-office équipe Madger. Réservé aux e-mails listés dans ADMIN_EMAILS.
 // Le gating est fait ici une fois pour toutes les pages /admin/*.
+export const metadata = { robots: { index: false } };
+
 export default async function AdminLayout({
   children,
 }: {

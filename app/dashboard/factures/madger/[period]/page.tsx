@@ -31,12 +31,20 @@ export default async function MadgerInvoicePage({
   const { coach } = await getCoach();
   if (!coach) notFound();
 
+  // Fenêtre large autour du mois demandé (une séance se paie rarement plus
+  // de 6 mois avant son versement) : évite de rapatrier tout l'historique.
+  const [py0, pm0] = params.period.split("-").map(Number);
+  const windowStart = new Date(Date.UTC(py0, pm0 - 1 - 8, 1)).toISOString();
+  const windowEnd = new Date(Date.UTC(py0, pm0 + 1, 1)).toISOString();
   const { data: commissions } = await supabase
     .from("payments")
     .select(
       "id, amount_cents, refunded_cents, commission_cents, released_at, resolved_at, paid_at, clients(first_name, last_name)"
     )
-    .gt("commission_cents", 0);
+    .gt("commission_cents", 0)
+    .gte("paid_at", windowStart)
+    .lt("paid_at", windowEnd)
+    .limit(2000);
 
   // Même règle de rattachement que la liste : mois du versement au coach.
   const lines = (commissions ?? [])

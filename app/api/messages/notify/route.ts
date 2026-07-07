@@ -88,7 +88,23 @@ export async function POST(req: NextRequest) {
       ? `${APP_URL}/dashboard/messages/${conversationId}`
       : `${APP_URL}/messages/${conversationId}`,
   });
-  const sent = await sendEmail({ to: email, subject: tpl.subject, html: tpl.html });
+  // reply-to : répondre à l'email écrit à l'expéditeur, pas à Madger.
+  let replyTo: string | undefined;
+  try {
+    const senderId = toCoach ? conv.client_id : conv.coach_id;
+    const { data: sender } = await admin.auth.admin.getUserById(
+      senderId as string
+    );
+    replyTo = sender?.user?.email ?? undefined;
+  } catch {
+    /* best-effort */
+  }
+  const sent = await sendEmail({
+    to: email,
+    subject: tpl.subject,
+    html: tpl.html,
+    replyTo,
+  });
 
   if (sent) {
     await admin

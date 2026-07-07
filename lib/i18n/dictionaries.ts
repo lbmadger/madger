@@ -226,6 +226,8 @@ const fr = {
     viewWeek: "Semaine",
     viewList: "Liste",
     todayBtn: "Aujourd'hui",
+    prevWeek: "Semaine précédente",
+    nextWeek: "Semaine suivante",
     pendingBanner: "demande de réservation à confirmer",
     pendingBannerPlural: "demandes de réservation à confirmer",
     pendingSeeAll: "Voir toutes les demandes",
@@ -652,6 +654,8 @@ const fr = {
         "Les créneaux n'ont pas pu être chargés. Réessaie d'abord de les recharger.",
       tooSoon:
         "Ce créneau est trop proche : le coach n'accepte plus de réservation à si court délai. Choisis un créneau plus tard.",
+      paymentRequired:
+        "Ce coach réserve ses créneaux aux prestations payées en ligne. Choisis une prestation pour réserver.",
     },
     authRequiredTitle: "Dernière étape : ton compte",
     authRequiredDesc:
@@ -783,6 +787,9 @@ const fr = {
       "Ta carte n'a pas été débitée. Le débit n'aura lieu que si le coach accepte ; sinon, rien n'est prélevé. Tu seras prévenu par email dans les deux cas.",
     pendingDesc:
       "Le coach confirme ta demande au plus vite. Tu seras prévenu par email dès sa réponse.",
+    calSession: "Séance avec",
+    calVideo: "Visio :",
+    calMy: "Ma réservation :",
   },
   cancellation: {
     title: "Politique d'annulation",
@@ -953,6 +960,7 @@ const fr = {
     statusSettled: "Prélevée sur tes encaissements",
     madgerFooter:
       "Commission de service prélevée sur les paiements encaissés via la plateforme, conformément aux CGV. Document généré automatiquement par Madger.",
+    defaultService: "Séance de coaching",
     commissionYearTotal: "Commission Madger",
     commissionYearPro: "En Pro, elle serait de 0 €.",
     commissionYearCta: "Passer à Pro",
@@ -1316,6 +1324,8 @@ const en: Dictionary = {
     viewWeek: "Week",
     viewList: "List",
     todayBtn: "Today",
+    prevWeek: "Previous week",
+    nextWeek: "Next week",
     pendingBanner: "booking request to confirm",
     pendingBannerPlural: "booking requests to confirm",
     pendingSeeAll: "See all requests",
@@ -1382,7 +1392,7 @@ const en: Dictionary = {
     welcomePro:
       "Welcome to Pro. 0% commission, advanced stats unlocked.",
     proUntil: "Pro until",
-    daysLeft: "d left",
+    daysLeft: "days left",
     freeDesc: "To get started.",
     proDesc: "To go further.",
     priceFree: "€0",
@@ -1392,7 +1402,7 @@ const en: Dictionary = {
     billingMonthly: "Monthly",
     billingAnnual: "Annual",
     annualSave: "2 months free",
-    annualMonthlyEq: "that is €40.83 per month",
+    annualMonthlyEq: "i.e. €40.83 per month",
     savingsIntro: "Over the last 90 days, the Madger commission cost you",
     savingsOutro: "On Pro, it would have been €0.",
     savingsProj1: "At this pace, about",
@@ -1480,7 +1490,7 @@ const en: Dictionary = {
     clients: "Clients",
     sessionsMonth: "Sessions this month",
     upcoming: "Upcoming",
-    pending: "Pending",
+    pending: "To confirm",
     revenue: "Revenue this month",
     revenueHint: "Available with payments",
     newClients: "New clients",
@@ -1492,7 +1502,7 @@ const en: Dictionary = {
     byStatus: "Sessions breakdown",
     none: "No data to show yet.",
     status: {
-      pending: "Pending",
+      pending: "To confirm",
       confirmed: "Confirmed",
       completed: "Completed",
       cancelled: "Cancelled",
@@ -1739,6 +1749,8 @@ const en: Dictionary = {
         "Slots could not be loaded. Try reloading them first.",
       tooSoon:
         "This slot is too close: the coach no longer accepts bookings on such short notice. Pick a later slot.",
+      paymentRequired:
+        "This coach only takes bookings through paid services. Pick a service to book.",
     },
     authRequiredTitle: "Last step: your account",
     authRequiredDesc:
@@ -1866,6 +1878,9 @@ const en: Dictionary = {
       "Your card has not been charged. It will only be charged if the coach accepts; otherwise nothing is taken. You will be notified by email either way.",
     pendingDesc:
       "The coach will confirm your request as soon as possible. You will be notified by email.",
+    calSession: "Session with",
+    calVideo: "Video:",
+    calMy: "My booking:",
   },
   cancellation: {
     title: "Cancellation policy",
@@ -1963,7 +1978,7 @@ const en: Dictionary = {
   },
   clientSheet: {
     title: "Client profile",
-    age: "y.o.",
+    age: "yrs",
     bmi: "BMI",
   },
   taxonomy: {
@@ -2033,6 +2048,7 @@ const en: Dictionary = {
     statusSettled: "Deducted from your payouts",
     madgerFooter:
       "Service commission deducted from payments collected through the platform, as per the Terms. Document generated automatically by Madger.",
+    defaultService: "Coaching session",
     commissionYearTotal: "Madger commission",
     commissionYearPro: "On Pro, it would be €0.",
     commissionYearCta: "Go Pro",
