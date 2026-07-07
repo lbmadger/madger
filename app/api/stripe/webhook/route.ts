@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
 import { subPeriodEnd, invoiceSubscriptionId } from "@/lib/stripe/subscription";
 import { SUPABASE_URL } from "@/lib/supabase/config";
+import { isPro } from "@/lib/subscription/plan";
 
 export const dynamic = "force-dynamic";
 // L'enregistrement d'un paiement (webhook) peut dépasser 10 s : marge large.
@@ -135,6 +136,44 @@ export async function POST(req: NextRequest) {
         }
         break;
       }
+      // Fin de litige : Stripe a tranché. Sans ce handler, une ligne disputed
+      // gagnée resterait gelée à vie (plus aucun versement possible).
+      case "charge.dispute.closed": {
+        const dispute = event.data.object as Stripe.Dispute;
+        const chargeId =
+          typeof dispute.charge === "string" ? dispute.charge : dispute.charge?.id;
+        if (chargeId) {
+          if (dispute.status === "won") {
+            // Litige gagné : la ligne redevient libérable par le cron
+            // (conditionnel : ne touche que les lignes encore gelées).
+            await supabase
+              .from("payments")
+              .update({ escrow_status: "held" })
+              .eq("stripe_charge_id", chargeId)
+              .eq("escrow_status", "disputed");
+          } else if (dispute.status === "lost") {
+            // Litige perdu : la banque a rendu l'argent au client, on solde
+            // la ligne (montant de la charge, dispute.amount en secours).
+            let lostAmount = dispute.amount ?? 0;
+            try {
+              const ch = await stripe.charges.retrieve(chargeId);
+              lostAmount = ch.amount ?? lostAmount;
+            } catch {
+              /* montant de la charge indisponible : celui du litige suffit */
+            }
+            await supabase
+              .from("payments")
+              .update({
+                refunded_cents: lostAmount,
+                escrow_status: "refunded",
+                status: "refunded",
+              })
+              .eq("stripe_charge_id", chargeId)
+              .eq("escrow_status", "disputed");
+          }
+        }
+        break;
+      }
       // Remboursement effectué HORS de l'app (dashboard Stripe, outil
       // externe) : synchronise refunded_cents, sinon le cron verserait au
       // coach une part d'argent déjà rendue au client.
@@ -176,6 +215,31 @@ export async function POST(req: NextRequest) {
               .eq("stripe_subscription_id", sub.id)
               .maybeSingle();
             if (reg) {
+              // La commission de l'abonnement est figée à sa création : si le
+              // statut Pro du coach a changé depuis, on réaligne la
+              // subscription Stripe (0 % en Pro, 5 % sinon) pour les
+              // échéances suivantes. Best-effort.
+              try {
+                const { data: coachPro } = await supabase
+                  .from("coaches")
+                  .select("pro_until")
+                  .eq("id", reg.coach_id)
+                  .maybeSingle();
+                const expectedFee = isPro(coachPro?.pro_until) ? 0 : 5;
+                const currentFee =
+                  (
+                    sub as Stripe.Subscription & {
+                      application_fee_percent?: number | null;
+                    }
+                  ).application_fee_percent ?? 0;
+                if (currentFee !== expectedFee) {
+                  await stripe.subscriptions.update(sub.id, {
+                    application_fee_percent: expectedFee,
+                  });
+                }
+              } catch {
+                /* réalignement raté : retenté à la prochaine échéance */
+              }
               const inv = invoice as Stripe.Invoice & {
                 charge?: string | Stripe.Charge | null;
                 payment_intent?: string | Stripe.PaymentIntent | null;
@@ -235,8 +299,21 @@ export async function POST(req: NextRequest) {
       }
     }
   } catch {
-    // On renvoie 200 : Stripe réessaie sinon en boucle. Les erreurs ponctuelles
-    // sont rattrapées au renouvellement suivant / au retour de session.
+    // Événements MONÉTAIRES : une erreur de traitement laisserait la base
+    // désynchronisée pour toujours (ex. refunded_cents jamais posé → le cron
+    // verserait au coach de l'argent déjà rendu au client). On renvoie 500
+    // pour que Stripe rejoue l'événement (les handlers sont idempotents).
+    const monetary = new Set([
+      "charge.refunded",
+      "charge.dispute.created",
+      "charge.dispute.closed",
+      "invoice.paid",
+    ]);
+    if (monetary.has(event.type)) {
+      return NextResponse.json({ error: "processing_failed" }, { status: 500 });
+    }
+    // Les autres types restent en 200 : ils sont rattrapés au renouvellement
+    // suivant / au retour de session, inutile que Stripe boucle dessus.
   }
 
   return NextResponse.json({ received: true });

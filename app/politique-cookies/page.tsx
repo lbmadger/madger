@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/politique-cookies" },
   title: "Cookies · Madger",
   description: "Politique de cookies de Madger.",
 };

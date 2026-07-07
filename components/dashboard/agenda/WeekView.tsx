@@ -170,7 +170,7 @@ export default function WeekView({
         {hours.map((h) => (
           <span
             key={h}
-            className="absolute inset-x-0 border-t border-border/50"
+            className="pointer-events-none absolute inset-x-0 border-t border-border/50"
             style={{ top: top(h * 60) }}
           />
         ))}
@@ -200,7 +200,7 @@ export default function WeekView({
         {dayAvail.map((a) => (
           <span
             key={a.id}
-            className="absolute inset-x-0.5 rounded-md border border-accent/20 bg-accent/[0.07]"
+            className="pointer-events-none absolute inset-x-0.5 rounded-md border border-accent/20 bg-accent/[0.07]"
             style={{
               top: top(toMinutes(a.start_time)),
               height: top(toMinutes(a.end_time)) - top(toMinutes(a.start_time)),

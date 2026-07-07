@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useCallback, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useCallback,
+  useEffect,
+  type ReactNode,
+} from "react";
 import type { Dictionary } from "./dictionaries";
 import { LOCALE_COOKIE, type Locale } from "./config";
 
@@ -24,6 +30,14 @@ export function I18nProvider({
   dict: Dictionary;
   children: ReactNode;
 }) {
+  // <html lang> est rendu statiquement en "fr" (le layout racine ne lit pas
+  // les cookies pour rester cacheable) : on aligne l'attribut sur la locale
+  // réelle pour que les lecteurs d'écran vocalisent l'UI anglaise en anglais.
+  useEffect(() => {
+    if (document.documentElement.lang !== locale) {
+      document.documentElement.lang = locale;
+    }
+  }, [locale]);
   return (
     <I18nContext.Provider value={{ locale, dict }}>
       {children}

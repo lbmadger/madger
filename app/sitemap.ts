@@ -13,6 +13,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // marketplace : ne lister que les pages réellement servies aux crawlers,
   // sinon Search Console se remplit d'URL en redirection.
   const launched = process.env.SITE_LAUNCHED === "1";
+  // Pages légales : date de dernière révision réelle (pas de fraîcheur
+  // factice qui changerait à chaque régénération).
+  const legalDate = new Date("2026-07-07");
   const fixed: MetadataRoute.Sitemap = [
     { url: "https://madger.app", lastModified: now, changeFrequency: "weekly", priority: 1 },
     ...(launched
@@ -25,12 +28,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           },
         ]
       : []),
-    { url: "https://madger.app/charte-paiement", lastModified: now, changeFrequency: "yearly", priority: 0.3 },
-    { url: "https://madger.app/mentions-legales", lastModified: now, changeFrequency: "yearly", priority: 0.2 },
-    { url: "https://madger.app/politique-de-confidentialite", lastModified: now, changeFrequency: "yearly", priority: 0.2 },
-    { url: "https://madger.app/cgu", lastModified: now, changeFrequency: "yearly", priority: 0.2 },
-    { url: "https://madger.app/cgv", lastModified: now, changeFrequency: "yearly", priority: 0.2 },
-    { url: "https://madger.app/politique-cookies", lastModified: now, changeFrequency: "yearly", priority: 0.2 },
+    { url: "https://madger.app/charte-paiement", lastModified: legalDate, changeFrequency: "yearly", priority: 0.3 },
+    { url: "https://madger.app/mentions-legales", lastModified: legalDate, changeFrequency: "yearly", priority: 0.2 },
+    { url: "https://madger.app/politique-de-confidentialite", lastModified: legalDate, changeFrequency: "yearly", priority: 0.2 },
+    { url: "https://madger.app/cgu", lastModified: legalDate, changeFrequency: "yearly", priority: 0.2 },
+    { url: "https://madger.app/cgv", lastModified: legalDate, changeFrequency: "yearly", priority: 0.2 },
+    { url: "https://madger.app/politique-cookies", lastModified: legalDate, changeFrequency: "yearly", priority: 0.2 },
   ];
 
   // Pages coachs (uniquement après lancement ; best-effort : sans service

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/mentions-legales" },
   title: "Mentions légales · Madger",
   description: "Mentions légales de Madger.",
 };
@@ -36,6 +37,7 @@ export default function MentionsLegales() {
               <strong className="text-white">Léonard Bondeau</strong>, Madger<br />
               SIRET : 933 449 365 00016<br />
               Adresse : Boulevard de la Fontaine des Suisses, 21000 Dijon<br />
+              Directeur de la publication : Léonard Bondeau<br />
               Email : <a href="mailto:contact@madger.app" style={{ color: "#CBFF03" }}>contact@madger.app</a>
             </p>
           </section>
@@ -45,7 +47,18 @@ export default function MentionsLegales() {
             <p>
               <strong className="text-white">Vercel Inc.</strong><br />
               440 N Barranca Ave #4133, Covina, CA 91723, États-Unis<br />
+              Téléphone : +1 559 288 7060<br />
               <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" style={{ color: "#CBFF03" }}>vercel.com</a>
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>Médiation de la consommation</h2>
+            <p>
+              Médiateur : <strong className="text-white">CM2C</strong>, 49 rue de Ponthieu, 75008 Paris,{" "}
+              <a href="https://www.cm2c.net" target="_blank" rel="noopener noreferrer" style={{ color: "#CBFF03" }}>cm2c.net</a>.
+              Le recours au médiateur est gratuit après une première réclamation écrite
+              restée sans réponse satisfaisante.
             </p>
           </section>
 

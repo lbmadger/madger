@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/politique-de-confidentialite" },
   title: "Politique de confidentialité · Madger",
   description: "Politique de confidentialité de Madger. Comment nous collectons et utilisons vos données personnelles.",
 };
@@ -95,6 +96,11 @@ export default function PolitiqueConfidentialite() {
               <li><strong className="text-white">Vercel</strong> (États-Unis) : hébergement du site et mesure d&apos;audience sans cookies</li>
               <li><strong className="text-white">Resend</strong> : envoi des emails transactionnels (confirmations, rappels, factures)</li>
             </ul>
+            <p className="mt-3">
+              Certains de ces prestataires (Vercel, Stripe, Google, Resend) sont établis aux
+              États-Unis : les transferts de données sont encadrés par le Data Privacy Framework
+              UE-États-Unis ou par les clauses contractuelles types de la Commission européenne.
+            </p>
           </section>
 
           <section>
@@ -103,6 +109,7 @@ export default function PolitiqueConfidentialite() {
               <li>Compte et profil : tant que le compte est actif, puis supprimés à la clôture.</li>
               <li>Pièces comptables (paiements, factures) : 10 ans, conformément au Code de commerce.</li>
               <li>Données de forme : supprimées avec le compte, ou à votre demande à tout moment.</li>
+              <li>Messagerie coach-client : conservée tant que les deux comptes sont actifs, supprimée avec le compte.</li>
               <li>Formulaire d&apos;accès anticipé : 3 ans à compter de l&apos;inscription, puis suppression ou anonymisation.</li>
             </ul>
           </section>

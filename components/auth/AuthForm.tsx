@@ -196,7 +196,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
 
         {!isSignup && (
           <Link
-            href="/forgot-password"
+            href={`/forgot-password${searchParams.toString() ? `?${searchParams.toString()}` : ""}`}
             className="-mt-1 self-end text-xs text-text-muted transition-colors hover:text-accent"
           >
             {t("auth.forgot.link")}
@@ -235,10 +235,31 @@ export default function AuthForm({ mode }: { mode: Mode }) {
         </Button>
       </form>
 
+      {isSignup && (
+        <p className="mt-3 text-center text-xs text-text-dim">
+          {t("auth.signup.termsPrefix")}{" "}
+          <Link href="/cgu" className="underline hover:text-accent" target="_blank">
+            {t("auth.signup.termsCgu")}
+          </Link>{" "}
+          {t("auth.signup.termsAnd")}{" "}
+          <Link
+            href="/politique-de-confidentialite"
+            className="underline hover:text-accent"
+            target="_blank"
+          >
+            {t("auth.signup.termsPrivacy")}
+          </Link>
+          .
+        </p>
+      )}
+
+      {/* Bascule login/signup : la query string (role=client, redirect,
+          book, slot) est conservée, sinon un client en plein tunnel de
+          réservation créerait un compte coach et perdrait sa destination. */}
       <p className="mt-5 text-center text-sm text-text-muted">
         {isSignup ? t("auth.signup.haveAccount") : t("auth.login.noAccount")}{" "}
         <Link
-          href={isSignup ? "/login" : "/signup"}
+          href={`${isSignup ? "/login" : "/signup"}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`}
           className="font-medium text-accent hover:underline"
         >
           {isSignup ? t("auth.signup.link") : t("auth.login.link")}

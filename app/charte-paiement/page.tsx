@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/charte-paiement" },
   title: "Charte de paiement & annulation · Madger",
   description:
     "Comment Madger sécurise les paiements : séquestre, délais de versement, formules d'annulation et résolution des litiges.",
@@ -44,7 +45,8 @@ export default function ChartePaiement() {
             <p>
               Quand un client règle une séance sur Madger, l'argent n'est{" "}
               <strong className="text-white">pas versé immédiatement</strong> au
-              coach : il est retenu par Madger. Les fonds sont{" "}
+              coach : les fonds sont conservés par notre prestataire de paiement
+              agréé Stripe jusqu&apos;à leur libération. Ils sont{" "}
               <strong className="text-white">
                 libérés automatiquement au coach 24 heures après la fin de la
                 séance

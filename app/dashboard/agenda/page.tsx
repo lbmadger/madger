@@ -17,7 +17,14 @@ export default async function AgendaPage() {
       supabase
         .from("bookings")
         .select("*, clients(first_name, last_name)")
-        .order("starts_at", { ascending: true }),
+        // Fenêtre glissante : sans borne, PostgREST plafonne à 1000 lignes et
+        // un gros historique évincerait silencieusement les séances futures.
+        .gte(
+          "starts_at",
+          new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+        )
+        .order("starts_at", { ascending: true })
+        .limit(1000),
       supabase
         .from("clients")
         .select("id, first_name, last_name")

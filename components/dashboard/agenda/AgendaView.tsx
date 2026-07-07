@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -69,6 +69,10 @@ export default function AgendaView({
   const [blockTo, setBlockTo] = useState("12:00");
   const [blockSaving, setBlockSaving] = useState(false);
   const [blockError, setBlockError] = useState<string | null>(null);
+  // Blocage direct au tap : cases en cours d'envoi (anti double-tap) et
+  // erreur du dernier essai.
+  const pendingSlots = useRef<Set<string>>(new Set());
+  const [quickBlockError, setQuickBlockError] = useState(false);
 
   const loc = locale === "fr" ? "fr-FR" : "en-US";
 
@@ -132,9 +136,12 @@ export default function AgendaView({
   }
 
   // Blocage DIRECT d'une case du calendrier (1 h) : tap sur une case libre,
-  // le créneau se grise immédiatement. Un tap sur le bloc propose Débloquer.
+  // le créneau se grise immédiatement (optimiste). Un tap sur le bloc propose
+  // Débloquer. Un double tap rapide est absorbé par pendingSlots.
   async function quickBlock(start: Date) {
     if (start.getTime() < Date.now()) return;
+    const iso = start.toISOString();
+    if (pendingSlots.current.has(iso)) return;
     const ends = new Date(start.getTime() + 60 * 60 * 1000);
     // Case déjà occupée localement (séance ou blocage qui chevauche) : inerte.
     const overlap = bookings.some(
@@ -144,12 +151,29 @@ export default function AgendaView({
         new Date(b.ends_at).getTime() > start.getTime()
     );
     if (overlap) return;
+    pendingSlots.current.add(iso);
+    setQuickBlockError(false);
+    // Optimiste : la case se grise tout de suite, remplacée par la vraie
+    // ligne au retour serveur, retirée si l'insert échoue.
+    const tempId = `temp-block-${iso}`;
+    const temp = {
+      id: tempId,
+      coach_id: "",
+      client_id: null,
+      is_block: true,
+      status: "confirmed",
+      starts_at: iso,
+      ends_at: ends.toISOString(),
+      location: "in_person",
+      clients: null,
+    } as unknown as Booking;
+    setBookings((bs) => [...bs, temp]);
     try {
       const supabase = createClient();
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) throw new Error("no_user");
       const { data: created, error } = await supabase
         .from("bookings")
         .insert({
@@ -157,18 +181,25 @@ export default function AgendaView({
           client_id: null,
           is_block: true,
           status: "confirmed",
-          starts_at: start.toISOString(),
+          starts_at: iso,
           ends_at: ends.toISOString(),
           location: "in_person",
         })
         .select("*")
         .single();
-      if (!error && created) {
-        setBookings((bs) => [...bs, { ...(created as Booking), clients: null }]);
-        router.refresh();
-      }
+      if (error || !created) throw new Error(error?.message ?? "insert_failed");
+      setBookings((bs) =>
+        bs.map((b) =>
+          b.id === tempId ? ({ ...(created as Booking), clients: null } as Booking) : b
+        )
+      );
+      router.refresh();
     } catch {
-      /* la case reste libre, le coach peut retenter */
+      // Échec : la case redevient libre et une erreur est annoncée.
+      setBookings((bs) => bs.filter((b) => b.id !== tempId));
+      setQuickBlockError(true);
+    } finally {
+      pendingSlots.current.delete(iso);
     }
   }
 
@@ -444,6 +475,15 @@ export default function AgendaView({
           </Button>
         </div>
       </div>
+
+      {quickBlockError && (
+        <p
+          role="alert"
+          className="rounded-xl border border-danger/30 bg-danger/10 px-4 py-2.5 text-sm text-danger"
+        >
+          {t("agenda.quickBlockError")}
+        </p>
+      )}
 
       {view === "week" ? (
         <WeekView

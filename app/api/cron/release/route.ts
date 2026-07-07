@@ -144,14 +144,28 @@ export async function GET(req: NextRequest) {
   const skipIds = new Set<string>();
 
   while (Date.now() - startedAt < TIME_BUDGET_MS) {
-    const { data: due } = await supabase
+    // Les lignes écartées sont exclues CÔTÉ SERVEUR : filtrer après coup ne
+    // suffit pas, 50 lignes en échec en tête de file (order + limit 50)
+    // rempliraient chaque lot et bloqueraient tous les versements suivants.
+    const dueQuery = supabase
       .from("payments")
       .select(
         "id, coach_id, booking_id, amount_cents, currency, paid_at, stripe_charge_id, stripe_fee_cents, refunded_cents, released_cents, commission_cents, bookings(status, clients(first_name, last_name, email), coaches(first_name, last_name))"
       )
       .eq("escrow_status", "held")
       .lte("release_after", nowIso)
-      .not("stripe_charge_id", "is", null)
+      .not("stripe_charge_id", "is", null);
+    if (skipIds.size > 0) {
+      // Format PostgREST pour une liste d'uuid : ("id1","id2").
+      dueQuery.not(
+        "id",
+        "in",
+        `(${Array.from(skipIds)
+          .map((id) => `"${id}"`)
+          .join(",")})`
+      );
+    }
+    const { data: due } = await dueQuery
       .order("release_after", { ascending: true })
       .limit(50);
     const batch = (due ?? []).filter((p) => !skipIds.has(p.id as string));
@@ -254,6 +268,14 @@ export async function GET(req: NextRequest) {
             .from("payments")
             .update({ escrow_status: "held", status: "paid", refunded_cents: alreadyRefunded, resolved_at: null })
             .eq("id", p.id);
+          // La réservation aussi doit retrouver son statut pending : laissée
+          // cancelled, le run suivant ne repasserait plus par cette branche
+          // et VERSERAIT la ligne au coach au lieu de retenter le refund.
+          await supabase
+            .from("bookings")
+            .update({ status: "pending" })
+            .eq("id", p.booking_id as string)
+            .eq("status", "cancelled");
           throw e;
         }
         refunded++;
@@ -286,9 +308,15 @@ export async function GET(req: NextRequest) {
         p.paid_at &&
         Date.now() - new Date(p.paid_at as string).getTime() >
           180 * 86400000;
-      if (pack && pack.total > 1 && pack.used < pack.total && !packExpired) {
-        // Séances liées au pack, non annulées, terminées depuis 24 h.
-        const { count: matured } = await supabase
+      // Un pack reste en mode progressif tant que toutes ses séances ne sont
+      // pas MÛRES : `used` compte les séances RÉSERVÉES (le trigger incrémente
+      // à la confirmation), pas effectuées. Un pack entièrement planifié
+      // d'avance basculerait sinon en libération totale dès la 1re séance.
+      if (pack && pack.total > 1 && !packExpired) {
+        // Séances liées au pack, non annulées, terminées depuis 24 h. La
+        // séance de l'achat (p.booking_id, rattachée au pack par
+        // fulfillCheckout) est exclue : elle est déjà comptée via selfUnit.
+        let maturedQuery = supabase
           .from("bookings")
           .select("*", { count: "exact", head: true })
           .eq("pack_credit_id", pack.id)
@@ -297,6 +325,10 @@ export async function GET(req: NextRequest) {
             "ends_at",
             new Date(Date.now() - 24 * 3600 * 1000).toISOString()
           );
+        if (p.booking_id) {
+          maturedQuery = maturedQuery.neq("id", p.booking_id as string);
+        }
+        const { count: matured } = await maturedQuery;
         // La 1re séance (celle de l'achat) est portée par p.booking_id : son
         // release_after est dépassé puisque la ligne est dans le lot.
         const selfUnit =
@@ -304,102 +336,109 @@ export async function GET(req: NextRequest) {
             ? 1
             : 0;
         const units = Math.min(pack.total, (matured ?? 0) + selfUnit);
-        const targetReleased = Math.floor(
-          (breakdown.payoutCents * units) / pack.total
-        );
-        const targetCommission = Math.floor(
-          (breakdown.commissionCents * units) / pack.total
-        );
-        const deltaPayout = targetReleased - alreadyReleased;
-        const nextCheck = new Date(Date.now() + 7 * 86400000).toISOString();
 
-        if (deltaPayout <= 0) {
-          // Rien de mûr : on repasse dans une semaine.
-          await supabase
-            .from("payments")
-            .update({ release_after: nextCheck })
-            .eq("id", p.id)
-            .eq("escrow_status", "held");
-          continue;
-        }
-
-        const prevCommission = (p.commission_cents as number | null) ?? 0;
-        const { data: claimedPack } = await supabase
-          .from("payments")
-          .update({
-            released_cents: targetReleased,
-            payout_cents: targetReleased,
-            commission_cents: targetCommission,
-            released_at: nowIso,
-            release_after: nextCheck,
-          })
-          .eq("id", p.id)
-          .eq("escrow_status", "held")
-          .eq("released_cents", alreadyReleased)
-          .select("id");
-        if (!claimedPack?.length) continue;
-
-        try {
-          const transfer = await stripe.transfers.create(
-            {
-              amount: deltaPayout,
-              currency: p.currency || "eur",
-              destination: coach.stripe_account_id,
-              source_transaction: p.stripe_charge_id as string,
-              transfer_group: `coach_${p.coach_id}`,
-            },
-            { idempotencyKey: `release_${p.id}_u${units}` }
+        // Tant qu'il reste des séances non mûres, on verse au prorata et on
+        // garde le reste sous séquestre. La libération finale (ci-dessous)
+        // n'arrive que pack entièrement mûr ou expiré (cap 180 jours).
+        if (units < pack.total) {
+          const targetReleased = Math.floor(
+            (breakdown.payoutCents * units) / pack.total
           );
-          await supabase
-            .from("payments")
-            .update({ stripe_transfer_id: transfer.id })
-            .eq("id", p.id);
-        } catch (e) {
-          await supabase
+          const targetCommission = Math.floor(
+            (breakdown.commissionCents * units) / pack.total
+          );
+          const deltaPayout = targetReleased - alreadyReleased;
+          const nextCheck = new Date(Date.now() + 7 * 86400000).toISOString();
+
+          if (deltaPayout <= 0) {
+            // Rien de mûr : on repasse dans une semaine.
+            await supabase
+              .from("payments")
+              .update({ release_after: nextCheck })
+              .eq("id", p.id)
+              .eq("escrow_status", "held");
+            continue;
+          }
+
+          const prevCommission = (p.commission_cents as number | null) ?? 0;
+          const { data: claimedPack } = await supabase
             .from("payments")
             .update({
-              released_cents: alreadyReleased,
-              payout_cents: alreadyReleased,
-              commission_cents: prevCommission,
-              released_at: null,
+              released_cents: targetReleased,
+              payout_cents: targetReleased,
+              commission_cents: targetCommission,
+              released_at: nowIso,
+              release_after: nextCheck,
             })
             .eq("id", p.id)
-            .eq("released_cents", targetReleased);
-          throw e;
-        }
-        released++;
+            .eq("escrow_status", "held")
+            .eq("released_cents", alreadyReleased)
+            .select("id");
+          if (!claimedPack?.length) continue;
 
-        const coachEmailPack = coachEmailById.get(p.coach_id as string);
-        if (coachEmailPack) {
-          const eurosStr = (cents: number) =>
-            (cents / 100).toLocaleString("fr-FR", {
-              style: "currency",
-              currency: "EUR",
+          try {
+            const transfer = await stripe.transfers.create(
+              {
+                amount: deltaPayout,
+                currency: p.currency || "eur",
+                destination: coach.stripe_account_id,
+                source_transaction: p.stripe_charge_id as string,
+                transfer_group: `coach_${p.coach_id}`,
+              },
+              { idempotencyKey: `release_${p.id}_u${units}` }
+            );
+            await supabase
+              .from("payments")
+              .update({ stripe_transfer_id: transfer.id })
+              .eq("id", p.id);
+          } catch (e) {
+            await supabase
+              .from("payments")
+              .update({
+                released_cents: alreadyReleased,
+                payout_cents: alreadyReleased,
+                commission_cents: prevCommission,
+                released_at: null,
+              })
+              .eq("id", p.id)
+              .eq("released_cents", targetReleased);
+            throw e;
+          }
+          released++;
+
+          const coachEmailPack = coachEmailById.get(p.coach_id as string);
+          if (coachEmailPack) {
+            const eurosStr = (cents: number) =>
+              (cents / 100).toLocaleString("fr-FR", {
+                style: "currency",
+                currency: "EUR",
+              });
+            const cl0 = Array.isArray(bookingRow?.clients)
+              ? bookingRow?.clients[0]
+              : bookingRow?.clients;
+            const tpl = payoutReleasedCoach({
+              locale: coach.locale === "en" ? "en" : "fr",
+              clientName:
+                [cl0?.first_name, cl0?.last_name].filter(Boolean).join(" ") ||
+                "ton client",
+              payoutStr: eurosStr(deltaPayout),
+              dashboardUrl: `${APP_URL}/dashboard/paiements`,
+              commissionStr:
+                targetCommission - prevCommission > 0
+                  ? eurosStr(targetCommission - prevCommission)
+                  : undefined,
             });
-          const cl0 = Array.isArray(bookingRow?.clients)
-            ? bookingRow?.clients[0]
-            : bookingRow?.clients;
-          const tpl = payoutReleasedCoach({
-            locale: coach.locale === "en" ? "en" : "fr",
-            clientName:
-              [cl0?.first_name, cl0?.last_name].filter(Boolean).join(" ") ||
-              "ton client",
-            payoutStr: eurosStr(deltaPayout),
-            dashboardUrl: `${APP_URL}/dashboard/paiements`,
-            commissionStr:
-              targetCommission - prevCommission > 0
-                ? eurosStr(targetCommission - prevCommission)
-                : undefined,
-          });
-          emailJobs.push(() =>
-            sendEmail({
-              to: coachEmailPack,
-              subject: tpl.subject,
-              html: tpl.html,
-            })
-          );
+            emailJobs.push(() =>
+              sendEmail({
+                to: coachEmailPack,
+                subject: tpl.subject,
+                html: tpl.html,
+              })
+            );
+          }
+          continue;
         }
-        continue;
+        // Toutes les séances du pack sont mûres : libération finale.
       }
 
       // ── Libération finale (séance simple, ou pack consommé/expiré) ────────

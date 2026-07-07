@@ -91,6 +91,10 @@ const fr = {
       clientSubtitle:
         "Suis tes séances, tes packs et échange avec ton coach au même endroit.",
       submit: "Créer mon compte",
+      termsPrefix: "En créant un compte, tu acceptes les",
+      termsCgu: "CGU",
+      termsAnd: "et la",
+      termsPrivacy: "politique de confidentialité",
       haveAccount: "Tu as déjà un compte ?",
       link: "Se connecter",
       checkEmailTitle: "Vérifie ta boîte mail",
@@ -238,6 +242,8 @@ const fr = {
     blockDesc: "Les clients ne pourront pas réserver sur cette plage.",
     blockCta: "Bloquer",
     tapToBlock: "Toucher une case libre la bloque",
+    quickBlockError:
+      "Le blocage n'a pas pu être enregistré. La case est de nouveau libre, réessaie.",
     unblock: "Débloquer",
     legendAvailable: "Disponible",
     legendBooked: "Séance",
@@ -1194,6 +1200,10 @@ const en: Dictionary = {
       clientSubtitle:
         "Track your sessions, your packs and chat with your coach in one place.",
       submit: "Create my account",
+      termsPrefix: "By creating an account, you agree to the",
+      termsCgu: "Terms of Service",
+      termsAnd: "and the",
+      termsPrivacy: "privacy policy",
       haveAccount: "Already have an account?",
       link: "Sign in",
       checkEmailTitle: "Check your inbox",
@@ -1337,6 +1347,8 @@ const en: Dictionary = {
     blockDesc: "Clients will not be able to book during this window.",
     blockCta: "Block",
     tapToBlock: "Tap a free cell to block it",
+    quickBlockError:
+      "The block could not be saved. The cell is free again, please retry.",
     unblock: "Unblock",
     legendAvailable: "Available",
     legendBooked: "Session",
