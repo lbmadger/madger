@@ -24,26 +24,37 @@ export default async function SubscriptionPage({
   // carte Pro. Datée du versement (released_at, ou résolution de litige),
   // pas de l'encaissement : c'est au versement que la commission naît.
   let commission90d = 0;
-  if (!pro) {
+  // Pour un coach PRO : commission qu'il AURAIT payée en Gratuit (5 % des
+  // montants versés sur 90 jours). Argument central de l'écran de rétention.
+  let avoided90d = 0;
+  {
     const supabase = createClient();
     const { data } = await supabase
       .from("payments")
-      .select("commission_cents, released_at, resolved_at, paid_at")
-      .gt("commission_cents", 0)
+      .select("amount_cents, commission_cents, released_at, resolved_at, paid_at")
       // paid_at précède toujours le versement : 210 jours couvrent largement
       // la fenêtre de 90 jours, sans rapatrier tout l'historique.
       .gte("paid_at", new Date(Date.now() - 210 * 86400000).toISOString())
+      .in("escrow_status", ["released", "canceled"])
       .limit(2000);
     const since = Date.now() - 90 * 86400000;
-    commission90d = (data ?? []).reduce((s, r) => {
+    for (const r of data ?? []) {
       const at =
         (r.released_at as string | null) ??
         (r.resolved_at as string | null) ??
         (r.paid_at as string | null);
-      if (!at || new Date(at).getTime() < since) return s;
-      return s + ((r.commission_cents as number) || 0);
-    }, 0);
+      if (!at || new Date(at).getTime() < since) continue;
+      commission90d += (r.commission_cents as number) || 0;
+      avoided90d += Math.round(((r.amount_cents as number) || 0) * 0.05);
+    }
   }
+  const savedStr =
+    pro && avoided90d > 0
+      ? (avoided90d / 100).toLocaleString(locale === "fr" ? "fr-FR" : "en-US", {
+          style: "currency",
+          currency: "EUR",
+        })
+      : null;
   const untilStr = coach?.pro_until
     ? new Date(coach.pro_until).toLocaleDateString(
         locale === "fr" ? "fr-FR" : "en-US",
@@ -61,35 +72,43 @@ export default async function SubscriptionPage({
             {p.welcomePro}
           </p>
         )}
-        {/* Statut */}
+        {/* Statut : plan bien lisible en haut, action rangée en dessous
+            (le bouton coincé à droite écrasait la carte sur mobile). */}
         <div
-          className={`mb-6 flex items-center justify-between gap-3 rounded-2xl border p-5 ${
+          className={`mb-6 rounded-2xl border p-5 ${
             pro
               ? "border-accent/30 bg-accent/[0.05]"
               : "border-border bg-bg-card"
           }`}
         >
-          <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-text-dim">
-              {p.currentPlan}
-            </p>
-            <p className="mt-1 text-xl font-extrabold text-text-base">
-              {pro ? p.pro : p.free}
-            </p>
-            {pro && untilStr && (
-              <p className="mt-0.5 text-sm text-text-muted">
-                {p.proUntil} {untilStr} · {daysLeft} {p.daysLeft}
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-text-dim">
+                {p.currentPlan}
               </p>
-            )}
-          </div>
-          <div className="flex flex-col items-end gap-2">
+              <p className="mt-1 text-xl font-extrabold text-text-base">
+                {pro ? p.pro : p.free}
+              </p>
+              {pro && untilStr && (
+                <p className="mt-0.5 text-sm text-text-muted">
+                  {p.proUntil} {untilStr} · {daysLeft} {p.daysLeft}
+                </p>
+              )}
+            </div>
             {pro && (
-              <span className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-black">
+              <span className="shrink-0 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-black">
                 {p.proActive}
               </span>
             )}
-            {coach?.stripe_customer_id && <ManageSubscription />}
           </div>
+          {coach?.stripe_customer_id && (
+            <div className="mt-4 border-t border-border pt-4">
+              <ManageSubscription
+                savedStr={savedStr}
+                plan={coach?.subscription_plan ?? null}
+              />
+            </div>
+          )}
         </div>
 
         {/* Code promo */}

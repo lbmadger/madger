@@ -57,7 +57,7 @@ const fr = {
       title: "Nouveau mot de passe",
       desc: "Choisis ton nouveau mot de passe.",
       submit: "Changer mon mot de passe",
-      success: "Mot de passe changé. Redirection…",
+      success: "Mot de passe changé. Une seconde, on t'emmène…",
     },
     or: "ou",
     googleContinue: "Continuer avec Google",
@@ -317,7 +317,7 @@ const fr = {
     savingsOutro: "En Pro, elle serait tombée à 0 €.",
     savingsProj1: "À ce rythme, environ",
     savingsProj2: "de commission par an, contre 490 € en Pro annuel.",
-    upgrading: "Redirection…",
+    upgrading: "Ouverture du paiement sécurisé…",
     featuresFree: [
       "Lien public personnalisé",
       "Réservations et paiements illimités",
@@ -337,6 +337,30 @@ const fr = {
     upgradeError: "Paiement indisponible pour le moment. Réessaie plus tard.",
     manage: "Gérer mon abonnement",
     opening: "Ouverture…",
+    manageBilling: "Carte bancaire et factures",
+    manageBillingDesc: "Mettre à jour ton moyen de paiement, télécharger tes reçus.",
+    manageCancel: "Je réfléchis à arrêter Pro",
+    manageCancelDesc: "Voir ce que ça changerait pour toi avant de décider.",
+    retain: {
+      title: "Avant de partir, fais le calcul",
+      intro:
+        "Pro se rembourse tout seul dès que tu encaisses. Voilà ce que tu perds en repassant en Gratuit :",
+      savedLine: "de commission évitée sur tes 90 derniers jours grâce à Pro.",
+      lossCommission:
+        "Retour à 5 % de commission sur chaque séance encaissée, dès le premier euro.",
+      lossBadge:
+        "Tu perds la priorité d'affichage et les stats avancées du plan Pro.",
+      stay: "Je reste en Pro",
+      switchAnnual: "Passer à l'annuel : 490 €/an, 2 mois offerts",
+      switching: "Bascule en cours…",
+      talk: "Un souci ? Écris-nous, on répond vite",
+      proceedCancel: "Continuer vers la résiliation quand même",
+      error: "Ça n'a pas fonctionné. Réessaie ou écris-nous.",
+      switchedTitle: "Bien joué, tu passes à l'annuel",
+      switchedDesc:
+        "Ton abonnement est maintenant à 490 €/an, soit 2 mois offerts. Le mois en cours déjà payé est déduit automatiquement.",
+      switchedCta: "Parfait",
+    },
     currentBadge: "Ton offre actuelle",
     upsellTitle: "Passe à Pro",
     upsellDesc: "0 % de commission, page personnalisée, stats avancées.",
@@ -366,7 +390,7 @@ const fr = {
     connectDesc:
       "Branche ton compte Stripe pour recevoir les paiements de tes clients directement sur ton compte.",
     connect: "Connecter Stripe",
-    connecting: "Redirection…",
+    connecting: "Ouverture de Stripe…",
     connectError:
       "La connexion à Stripe n'a pas pu démarrer. Réessaie dans un instant.",
     connectedTitle: "Compte Stripe connecté",
@@ -640,7 +664,7 @@ const fr = {
     escrowDesc:
       "Ton argent est retenu par Madger et versé au coach 24 h après la séance. En cas de souci, tu peux signaler un problème et les fonds restent bloqués.",
     pay: "Payer",
-    redirecting: "Redirection vers le paiement…",
+    redirecting: "Ouverture du paiement sécurisé…",
     submit: "Envoyer la demande",
     sending: "Envoi…",
     cancel: "Annuler",
@@ -1173,7 +1197,7 @@ const en: Dictionary = {
       title: "New password",
       desc: "Pick your new password.",
       submit: "Change my password",
-      success: "Password changed. Redirecting…",
+      success: "Password changed. One second, taking you back…",
     },
     or: "or",
     googleContinue: "Continue with Google",
@@ -1428,7 +1452,7 @@ const en: Dictionary = {
     savingsOutro: "On Pro, it would have been €0.",
     savingsProj1: "At this pace, about",
     savingsProj2: "in commission per year, versus €490 on annual Pro.",
-    upgrading: "Redirecting…",
+    upgrading: "Opening secure payment…",
     featuresFree: [
       "Personalized public link",
       "Unlimited bookings and payments",
@@ -1448,6 +1472,30 @@ const en: Dictionary = {
     upgradeError: "Payment unavailable right now. Please try again later.",
     manage: "Manage subscription",
     opening: "Opening…",
+    manageBilling: "Card and invoices",
+    manageBillingDesc: "Update your payment method, download receipts.",
+    manageCancel: "I'm thinking about leaving Pro",
+    manageCancelDesc: "See what would change for you before deciding.",
+    retain: {
+      title: "Before you go, run the numbers",
+      intro:
+        "Pro pays for itself as soon as you get paid. Here is what you lose by going back to Free:",
+      savedLine: "in commission avoided over your last 90 days thanks to Pro.",
+      lossCommission:
+        "Back to a 5% commission on every session you collect, from the first euro.",
+      lossBadge:
+        "You lose priority placement and the advanced stats of the Pro plan.",
+      stay: "I'm staying on Pro",
+      switchAnnual: "Switch to annual: 490 EUR/year, 2 months free",
+      switching: "Switching…",
+      talk: "Something wrong? Write to us, we answer fast",
+      proceedCancel: "Continue to cancellation anyway",
+      error: "That did not work. Try again or write to us.",
+      switchedTitle: "Nice move, you are on annual now",
+      switchedDesc:
+        "Your subscription is now 490 EUR/year, which means 2 months free. The month you already paid is deducted automatically.",
+      switchedCta: "Perfect",
+    },
     currentBadge: "Your current plan",
     upsellTitle: "Go Pro",
     upsellDesc: "0% commission, custom page, advanced stats.",
@@ -1477,7 +1525,7 @@ const en: Dictionary = {
     connectDesc:
       "Connect your Stripe account to receive client payments directly.",
     connect: "Connect Stripe",
-    connecting: "Redirecting…",
+    connecting: "Opening Stripe…",
     connectError: "Stripe connection could not start. Try again in a moment.",
     connectedTitle: "Stripe account connected",
     connectedDesc:
@@ -1749,7 +1797,7 @@ const en: Dictionary = {
     escrowDesc:
       "Your money is held by Madger and paid to the coach 24h after the session. If anything goes wrong, you can report a problem and the funds stay frozen.",
     pay: "Pay",
-    redirecting: "Redirecting to payment…",
+    redirecting: "Opening secure payment…",
     submit: "Send request",
     sending: "Sending…",
     cancel: "Cancel",
