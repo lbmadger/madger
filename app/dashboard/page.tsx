@@ -45,6 +45,8 @@ export default async function OverviewPage() {
     paymentsRes,
     heldRes,
     weeksRes,
+    rpcMonthlyRes,
+    rpcWeeklyRes,
   ] = await Promise.all([
     supabase.from("clients").select("*", { count: "exact", head: true }),
     supabase
@@ -61,8 +63,9 @@ export default async function OverviewPage() {
       .limit(5),
     supabase.from("availabilities").select("weekday, start_time, end_time"),
     supabase.from("services").select("type"),
-    // Historique encaissé borné à 24 mois (le max affiché par les
-    // graphiques) : inutile de rapatrier plus.
+    // Lignes brutes limitées à 12 mois (panier moyen, commission 30 j…) :
+    // les graphiques longue durée passent par les agrégats SQL ci-dessous,
+    // insensibles au plafond de 1000 lignes de PostgREST.
     supabase
       .from("payments")
       .select("amount_cents, paid_at, commission_cents, released_at")
@@ -70,13 +73,15 @@ export default async function OverviewPage() {
       .not("paid_at", "is", null)
       .gte(
         "paid_at",
-        new Date(now.getFullYear(), now.getMonth() - 23, 1).toISOString()
-      ),
+        new Date(now.getFullYear(), now.getMonth() - 11, 1).toISOString()
+      )
+      .limit(2000),
     supabase
       .from("payments")
       .select("amount_cents")
       .eq("escrow_status", "held"),
-    // Borné à 52 semaines (le max affiché) au lieu de tout l'historique.
+    // Lignes brutes limitées à 12 semaines (stats Pro, remplissage…) : le
+    // graphique 52 semaines passe par l'agrégat SQL.
     supabase
       .from("bookings")
       .select("starts_at, ends_at, status, client_id")
@@ -84,8 +89,12 @@ export default async function OverviewPage() {
       .lt("starts_at", weekEnd.toISOString())
       .gte(
         "starts_at",
-        new Date(weekStart.getTime() - 52 * 7 * 86400000).toISOString()
-      ),
+        new Date(weekStart.getTime() - 12 * 7 * 86400000).toISOString()
+      )
+      .limit(2000),
+    // Agrégats SQL (migration 0040) : exacts quel que soit le volume.
+    supabase.rpc("coach_monthly_revenue", { p_months: 24 }),
+    supabase.rpc("coach_weekly_sessions", { p_weeks: 52 }),
   ]);
 
   // Dernières factures, avis, demandes à confirmer, derniers messages reçus,
@@ -219,10 +228,24 @@ export default async function OverviewPage() {
       return s;
     return s + c;
   }, 0);
-  const firstPaid = payments.reduce<number | null>((min, p) => {
-    const t = new Date(p.paid_at as string).getTime();
-    return min === null || t < min ? t : min;
-  }, null);
+  // Agrégat SQL prioritaire (exact à tout volume) ; repli sur les lignes
+  // brutes tant que la migration 0040 n'est pas passée.
+  const rpcMonths = !rpcMonthlyRes.error
+    ? ((rpcMonthlyRes.data ?? []) as { month: string; total_cents: number }[])
+    : null;
+  const monthKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}`;
+  const rpcMonthMap = new Map(
+    (rpcMonths ?? []).map((r) => {
+      const d = new Date(r.month);
+      return [monthKey(d), Number(r.total_cents) || 0];
+    })
+  );
+  const firstPaid = rpcMonths?.length
+    ? new Date(rpcMonths[0].month).getTime()
+    : payments.reduce<number | null>((min, p) => {
+        const t = new Date(p.paid_at as string).getTime();
+        return min === null || t < min ? t : min;
+      }, null);
   const monthsSinceFirst = firstPaid
     ? (now.getFullYear() - new Date(firstPaid).getFullYear()) * 12 +
       (now.getMonth() - new Date(firstPaid).getMonth()) +
@@ -238,12 +261,16 @@ export default async function OverviewPage() {
         1
       );
       const next = new Date(d.getFullYear(), d.getMonth() + 1, 1);
-      const sum = payments
-        .filter((p) => {
-          const t = p.paid_at ? new Date(p.paid_at as string).getTime() : 0;
-          return t >= d.getTime() && t < next.getTime();
-        })
-        .reduce((s, p) => s + ((p.amount_cents as number) || 0), 0);
+      const sum = rpcMonths
+        ? rpcMonthMap.get(monthKey(d)) ?? 0
+        : payments
+            .filter((p) => {
+              const t = p.paid_at
+                ? new Date(p.paid_at as string).getTime()
+                : 0;
+              return t >= d.getTime() && t < next.getTime();
+            })
+            .reduce((s, p) => s + ((p.amount_cents as number) || 0), 0);
       return {
         label: d.toLocaleDateString(loc, { month: "short" }),
         value: sum,
@@ -265,14 +292,31 @@ export default async function OverviewPage() {
     0
   );
 
-  // ── Séances par semaine (depuis la première séance, 12 sem. min, 52 max) ──
+  // ── Séances par semaine : agrégat SQL prioritaire, repli lignes brutes ──
   const weekBookings = (weeksRes.data ?? []).filter(
     (b) => b.status !== "cancelled"
   );
-  const firstBooking = weekBookings.reduce<number | null>((min, b) => {
-    const t = new Date(b.starts_at as string).getTime();
-    return min === null || t < min ? t : min;
-  }, null);
+  const rpcWeeks = !rpcWeeklyRes.error
+    ? ((rpcWeeklyRes.data ?? []) as { week: string; sessions: number }[])
+    : null;
+  const weekKey = (d: Date) => {
+    const k = new Date(d);
+    k.setHours(0, 0, 0, 0);
+    k.setDate(k.getDate() - ((k.getDay() + 6) % 7));
+    return `${k.getFullYear()}-${k.getMonth()}-${k.getDate()}`;
+  };
+  const rpcWeekMap = new Map(
+    (rpcWeeks ?? []).map((r) => [
+      weekKey(new Date(r.week)),
+      Number(r.sessions) || 0,
+    ])
+  );
+  const firstBooking = rpcWeeks?.length
+    ? new Date(rpcWeeks[0].week).getTime()
+    : weekBookings.reduce<number | null>((min, b) => {
+        const t = new Date(b.starts_at as string).getTime();
+        return min === null || t < min ? t : min;
+      }, null);
   const weeksSinceFirst = firstBooking
     ? Math.floor((weekStart.getTime() - firstBooking) / (7 * 86400000)) + 1
     : 0;
@@ -282,10 +326,12 @@ export default async function OverviewPage() {
     start.setDate(weekStart.getDate() - 7 * (weeksBack - 1 - i));
     const end = new Date(start);
     end.setDate(start.getDate() + 7);
-    const count = weekBookings.filter((b) => {
-      const t = new Date(b.starts_at as string).getTime();
-      return t >= start.getTime() && t < end.getTime();
-    }).length;
+    const count = rpcWeeks
+      ? rpcWeekMap.get(weekKey(start)) ?? 0
+      : weekBookings.filter((b) => {
+          const t = new Date(b.starts_at as string).getTime();
+          return t >= start.getTime() && t < end.getTime();
+        }).length;
     return {
       label: start.toLocaleDateString(loc, { day: "2-digit", month: "2-digit" }),
       value: count,

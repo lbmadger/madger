@@ -21,17 +21,16 @@ export default async function AdminOverview() {
       admin.from("bookings").select("id", head),
       admin.from("payments").select("id", head).eq("escrow_status", "disputed"),
       admin.from("payments").select("id", head).eq("escrow_status", "released"),
-      admin.from("payments").select("commission_cents").not("commission_cents", "is", null),
+      // Somme en base (migration 0040) : exacte à tout volume, là où un
+      // select de lignes plafonnerait à 1000.
+      admin.rpc("admin_total_commission"),
     ]);
     coaches = c1.count ?? 0;
     clients = c2.count ?? 0;
     bookings = c3.count ?? 0;
     disputes = c4.count ?? 0;
     released = c5.count ?? 0;
-    commission = (comm.data ?? []).reduce(
-      (s, p) => s + ((p.commission_cents as number) || 0),
-      0
-    );
+    commission = Number(comm.data ?? 0) || 0;
   }
 
   const cards = [

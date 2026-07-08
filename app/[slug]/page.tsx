@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { unstable_cache } from "next/cache";
+import { createClient as createAnon } from "@supabase/supabase-js";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { getServerDictionary } from "@/lib/i18n/server";
-import { createClient } from "@/lib/supabase/server";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/supabase/config";
 import PublicHeader from "@/components/marketplace/PublicHeader";
 import CoachProfile from "@/components/marketplace/CoachProfile";
 import {
@@ -17,20 +19,47 @@ import type { PublicService } from "@/lib/services/types";
 // priorité ; seules les URL non reconnues atterrissent ici, et renvoient un
 // 404 propre si le slug ne correspond à aucun coach visible.
 
+// Profil + prestations + avis en cache 120 s par slug : la page reste
+// dynamique (langue via cookie) mais le crawl Google des 1000 pages coach
+// ne retape plus Supabase à chaque hit. Client anon SANS cookies
+// (obligatoire dans unstable_cache ; les vues publiques suffisent).
+const getCoachPageData = unstable_cache(
+  async (slug: string) => {
+    const supabase = createAnon(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const { data: coach, error } = await supabase
+      .from("public_coaches")
+      .select("*")
+      .eq("slug", slug)
+      .maybeSingle();
+    // Une erreur de la VUE (migration en cours, vue recréée) n'est pas un
+    // slug inconnu : on la trace pour la voir dans les logs Vercel au lieu
+    // d'un 404 muet.
+    if (error) {
+      console.error("[slug] public_coaches query failed:", error.message);
+    }
+    if (!coach) return { coach: null, services: [], reviews: [] };
+    const [{ data: services }, { data: reviews }] = await Promise.all([
+      supabase.from("public_services").select("*").eq("coach_id", coach.id),
+      supabase
+        .from("public_reviews")
+        .select("*")
+        .eq("coach_id", coach.id)
+        .order("created_at", { ascending: false })
+        .limit(10),
+    ]);
+    return {
+      coach: coach as PublicCoach,
+      services: (services ?? []) as PublicService[],
+      reviews: (reviews ?? []) as PublicReview[],
+    };
+  },
+  ["coach-page"],
+  { revalidate: 120 }
+);
+
 async function getCoachBySlug(slug: string): Promise<PublicCoach | null> {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("public_coaches")
-    .select("*")
-    .eq("slug", slug)
-    .maybeSingle();
-  // Une erreur de la VUE (migration en cours, vue recréée) n'est pas un
-  // slug inconnu : on la trace pour la voir dans les logs Vercel au lieu
-  // d'un 404 muet.
-  if (error) {
-    console.error("[slug] public_coaches query failed:", error.message);
-  }
-  return (data as PublicCoach | null) ?? null;
+  const { coach } = await getCoachPageData(slug);
+  return coach;
 }
 
 export async function generateMetadata({
@@ -69,23 +98,11 @@ export default async function CoachPublicPage({
   searchParams: { paid?: string; conflict?: string; sub?: string };
 }) {
   const { locale, dict } = getServerDictionary();
-  const coach = await getCoachBySlug(params.slug);
+  const { coach, services, reviews } = await getCoachPageData(params.slug);
 
   if (!coach) {
     notFound();
   }
-
-  // Prestations actives + derniers avis du coach (vues publiques).
-  const supabase = createClient();
-  const [{ data: services }, { data: reviews }] = await Promise.all([
-    supabase.from("public_services").select("*").eq("coach_id", coach.id),
-    supabase
-      .from("public_reviews")
-      .select("*")
-      .eq("coach_id", coach.id)
-      .order("created_at", { ascending: false })
-      .limit(10),
-  ]);
 
   // Données structurées (Google). Person n'est pas éligible aux extraits
   // d'avis : la note passe par un Service avec offres (prestations réelles),
@@ -108,9 +125,9 @@ export default async function CoachPublicPage({
     url: `https://madger.app/${coach.slug}`,
     provider: person,
     ...(coach.city ? { areaServed: coach.city } : {}),
-    ...((services ?? []).length > 0
+    ...(services.length > 0
       ? {
-          offers: (services ?? [])
+          offers: services
             .filter((s) => (s.price_cents as number) > 0)
             .slice(0, 10)
             .map((s) => ({
@@ -162,8 +179,8 @@ export default async function CoachPublicPage({
         )}
         <CoachProfile
           coach={coach}
-          services={(services ?? []) as PublicService[]}
-          reviews={(reviews ?? []) as PublicReview[]}
+          services={services}
+          reviews={reviews}
         />
       </div>
     </I18nProvider>
