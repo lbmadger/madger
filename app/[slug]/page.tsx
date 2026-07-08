@@ -87,9 +87,10 @@ export default async function CoachPublicPage({
       .limit(10),
   ]);
 
-  // Données structurées (Google) : personne + note agrégée si avis.
-  const jsonLd = {
-    "@context": "https://schema.org",
+  // Données structurées (Google). Person n'est pas éligible aux extraits
+  // d'avis : la note passe par un Service avec offres (prestations réelles),
+  // le coach reste décrit en Person via provider.
+  const person = {
     "@type": "Person",
     name: coachFullName(coach),
     jobTitle: coach.specialty || "Coach sportif",
@@ -97,6 +98,31 @@ export default async function CoachPublicPage({
     ...(coach.avatar_url ? { image: coach.avatar_url } : {}),
     ...(coach.city
       ? { address: { "@type": "PostalAddress", addressLocality: coach.city } }
+      : {}),
+  };
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    serviceType: coach.specialty || "Coaching sportif",
+    name: `Coaching avec ${coachFullName(coach)}`,
+    url: `https://madger.app/${coach.slug}`,
+    provider: person,
+    ...(coach.city ? { areaServed: coach.city } : {}),
+    ...((services ?? []).length > 0
+      ? {
+          offers: (services ?? [])
+            .filter((s) => (s.price_cents as number) > 0)
+            .slice(0, 10)
+            .map((s) => ({
+              "@type": "Offer",
+              name: s.name,
+              price: ((s.price_cents as number) / 100).toFixed(2),
+              priceCurrency: (
+                (s.currency as string) || "eur"
+              ).toUpperCase(),
+              url: `https://madger.app/${coach.slug}`,
+            })),
+        }
       : {}),
     ...(coach.rating_avg != null && coach.rating_count > 0
       ? {
