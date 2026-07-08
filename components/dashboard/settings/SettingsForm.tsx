@@ -373,6 +373,11 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
                 className="w-full bg-transparent py-3 pr-4 text-base text-text-base outline-none"
               />
             </div>
+            {slug !== (coach.slug ?? "") && Boolean(coach.slug) && (
+              <span role="alert" className="text-xs text-warning">
+                {t("settings.slugChangeWarning")}
+              </span>
+            )}
           </label>
 
           <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3">
@@ -739,6 +744,8 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
               <button
                 type="button"
                 onClick={async () => {
+                  if (!window.confirm(t("settings.googleDisconnectConfirm")))
+                    return;
                   await fetch("/api/google/disconnect", { method: "POST" });
                   router.refresh();
                 }}

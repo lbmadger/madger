@@ -554,6 +554,33 @@ export function subscriptionStartedCoach(p: {
 }
 
 // ── Client : demande déclinée / séance annulée SANS paiement en jeu ─────────
+// ── Client : séance déplacée par le coach ────────────────────────────────
+export function bookingRescheduledClient(p: {
+  coachName: string;
+  oldDateStr: string;
+  dateStr: string;
+  reservationUrl: string;
+}): Email {
+  return {
+    subject: `Séance déplacée : ${p.dateStr}`,
+    html: layout({
+      preheader: `Nouvel horaire : ${p.dateStr}`,
+      eyebrow: "Séance déplacée",
+      title: "Ta séance a été déplacée",
+      intro: `<b style="color:${C.text};">${p.coachName}</b> a déplacé votre séance.`,
+      blocks: [
+        infoBox(
+          "Nouvel horaire",
+          `Ancien horaire : <span style="text-decoration:line-through;">${p.oldDateStr}</span><br/>Nouvel horaire : <b style="color:${C.text};">${p.dateStr}</b>`
+        ),
+      ],
+      cta: { label: "Voir ma réservation", url: p.reservationUrl },
+      outro:
+        "Un empêchement ? Réponds directement à cet email ou gère ta réservation depuis ton espace.",
+    }),
+  };
+}
+
 export function bookingCancelledClient(p: {
   coachName: string;
   dateStr: string;

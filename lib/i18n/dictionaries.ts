@@ -600,6 +600,8 @@ const fr = {
     setupAvailability: "Définir mes disponibilités",
     setupServices: "Créer mes prestations et forfaits",
     setupStripe: "Connecter Stripe pour encaisser",
+    setupFirstClient: "Ajouter ton premier client",
+    setupFirstBooking: "Recevoir ta première réservation",
   },
   marketplace: {
     title: "Trouve ton coach",
@@ -808,6 +810,10 @@ const fr = {
     googleConnect: "Connecter mon compte Google",
     googleConnected: "Compte Google connecté",
     googleDisconnect: "Déconnecter",
+    googleDisconnectConfirm:
+      "Déconnecter Google ? Les prochaines séances ne créeront plus d'événement agenda ni de lien Meet.",
+    slugChangeWarning:
+      "Attention : ton ancien lien (bio Instagram, cartes de visite…) ne fonctionnera plus après l'enregistrement.",
     googleNotConfigured:
       "Les clés Google ne sont pas encore actives côté serveur : ajoute GOOGLE_CLIENT_ID et GOOGLE_CLIENT_SECRET dans Vercel, puis redéploie.",
     googleError:
@@ -1765,6 +1771,8 @@ const en: Dictionary = {
     setupAvailability: "Set my availability",
     setupServices: "Create my services and packages",
     setupStripe: "Connect Stripe to get paid",
+    setupFirstClient: "Add your first client",
+    setupFirstBooking: "Get your first booking",
   },
   marketplace: {
     title: "Find your coach",
@@ -1969,6 +1977,10 @@ const en: Dictionary = {
     googleConnect: "Connect my Google account",
     googleConnected: "Google account connected",
     googleDisconnect: "Disconnect",
+    googleDisconnectConfirm:
+      "Disconnect Google? Upcoming sessions will no longer create calendar events or Meet links.",
+    slugChangeWarning:
+      "Careful: your old link (Instagram bio, business cards…) will stop working once you save.",
     googleNotConfigured:
       "Google keys are not active on the server yet: add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Vercel, then redeploy.",
     googleError:

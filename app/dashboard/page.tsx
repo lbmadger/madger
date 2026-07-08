@@ -177,8 +177,15 @@ export default async function OverviewPage() {
   // prestations, paiements Stripe).
   const profileDone = Boolean(coach?.avatar_url && (coach?.bio ?? "").trim());
   const stripeDone = Boolean(coach?.stripe_charges_enabled);
+  const firstClientDone = clientsCount > 0;
+  const firstBookingDone = (weeksRes.data ?? []).length > 0;
   const showChecklist =
-    !profileDone || !availabilityDone || !servicesDone || !stripeDone;
+    !profileDone ||
+    !availabilityDone ||
+    !servicesDone ||
+    !stripeDone ||
+    !firstClientDone ||
+    !firstBookingDone;
 
   // Note moyenne du coach (avis clients).
   const ratings = (reviewsRes.data ?? []).map((r) => r.rating as number);
@@ -814,6 +821,8 @@ export default async function OverviewPage() {
                 availabilityDone={availabilityDone}
                 servicesDone={servicesDone}
                 stripeDone={stripeDone}
+                clientDone={firstClientDone}
+                bookingDone={firstBookingDone}
               />
             )}
 

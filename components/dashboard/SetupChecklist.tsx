@@ -10,11 +10,16 @@ export default function SetupChecklist({
   availabilityDone,
   servicesDone,
   stripeDone = false,
+  clientDone,
+  bookingDone,
 }: {
   profileDone?: boolean;
   availabilityDone: boolean;
   servicesDone: boolean;
   stripeDone?: boolean;
+  // Étapes d'ACTIVATION : premier client, première réservation.
+  clientDone?: boolean;
+  bookingDone?: boolean;
 }) {
   const { t } = useI18n();
 
@@ -39,6 +44,24 @@ export default function SetupChecklist({
       href: "/dashboard/paiements",
       done: stripeDone,
     },
+    ...(clientDone !== undefined
+      ? [
+          {
+            labelKey: "overview.setupFirstClient",
+            href: "/dashboard/clients",
+            done: clientDone,
+          },
+        ]
+      : []),
+    ...(bookingDone !== undefined
+      ? [
+          {
+            labelKey: "overview.setupFirstBooking",
+            href: "/dashboard/agenda",
+            done: bookingDone,
+          },
+        ]
+      : []),
   ];
 
   return (

@@ -131,6 +131,25 @@ export default function AddSessionModal({
         setError(t("agenda.errors.generic"));
         return;
       }
+      // Séance CONFIRMÉE déplacée : le client est prévenu par email et
+      // l'événement Google est recalé (fire-and-forget : l'update est déjà
+      // acquis, un échec d'email ne doit pas bloquer la fermeture).
+      if (
+        editing &&
+        booking &&
+        booking.status === "confirmed" &&
+        booking.client_id &&
+        new Date(booking.starts_at).getTime() !== starts.getTime()
+      ) {
+        fetch("/api/bookings/reschedule-notify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            booking_id: booking.id,
+            old_starts_at: booking.starts_at,
+          }),
+        }).catch(() => {});
+      }
       onCreated();
     } catch {
       setError(t("agenda.errors.generic"));
