@@ -73,7 +73,7 @@ export default async function ReservationPage({
 
   const dateStr = booking
     ? new Date(booking.starts_at).toLocaleString(
-        locale === "fr" ? "fr-FR" : "en-US",
+        locale === "fr" ? "fr-FR" : "en-GB",
         {
           weekday: "long",
           day: "numeric",

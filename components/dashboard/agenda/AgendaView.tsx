@@ -79,7 +79,7 @@ export default function AgendaView({
   const pendingSlots = useRef<Set<string>>(new Set());
   const [quickBlockError, setQuickBlockError] = useState(false);
 
-  const loc = locale === "fr" ? "fr-FR" : "en-US";
+  const loc = locale === "fr" ? "fr-FR" : "en-GB";
 
   // Crée le blocage : une séance sans client marquée is_block, que les
   // créneaux publics et les contrôles de chevauchement excluent déjà.

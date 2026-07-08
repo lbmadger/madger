@@ -429,6 +429,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
                   <button
                     key={s}
                     type="button"
+                    aria-pressed={active}
                     onClick={() =>
                       setSpecialties((prev) =>
                         active ? prev.filter((x) => x !== s) : [...prev, s]
@@ -456,6 +457,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
                   <button
                     key={v}
                     type="button"
+                    aria-pressed={active}
                     onClick={() =>
                       setVenues((prev) =>
                         active ? prev.filter((x) => x !== v) : [...prev, v]

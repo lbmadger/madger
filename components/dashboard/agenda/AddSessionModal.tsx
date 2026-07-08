@@ -231,6 +231,7 @@ export default function AddSessionModal({
                 <button
                   key={opt}
                   type="button"
+                  aria-pressed={location === opt}
                   onClick={() => setLocation(opt)}
                   className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
                     location === opt

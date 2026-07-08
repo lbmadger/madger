@@ -111,6 +111,7 @@ export default function PricingPlans({
             <button
               key={opt}
               type="button"
+              aria-pressed={period === opt}
               onClick={() => setPeriod(opt)}
               className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                 period === opt
@@ -145,7 +146,7 @@ export default function PricingPlans({
             {p.savingsIntro}{" "}
             <strong className="text-accent">
               {(commission90dCents / 100).toLocaleString(
-                locale === "fr" ? "fr-FR" : "en-US",
+                locale === "fr" ? "fr-FR" : "en-GB",
                 { style: "currency", currency: "EUR", maximumFractionDigits: 0 }
               )}
             </strong>{" "}
@@ -154,7 +155,7 @@ export default function PricingPlans({
             {p.savingsProj1}{" "}
             <strong className="text-accent">
               {((commission90dCents * 4) / 100).toLocaleString(
-                locale === "fr" ? "fr-FR" : "en-US",
+                locale === "fr" ? "fr-FR" : "en-GB",
                 { style: "currency", currency: "EUR", maximumFractionDigits: 0 }
               )}
             </strong>{" "}

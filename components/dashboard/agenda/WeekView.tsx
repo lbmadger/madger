@@ -48,7 +48,7 @@ export default function WeekView({
   onSlotClick?: (start: Date) => void;
 }) {
   const { t, locale } = useI18n();
-  const loc = locale === "fr" ? "fr-FR" : "en-US";
+  const loc = locale === "fr" ? "fr-FR" : "en-GB";
   const [offset, setOffset] = useState(0); // 0 = semaine courante
 
   const days = useMemo(() => {

@@ -45,7 +45,7 @@ export default function PromoCode({ compact }: { compact?: boolean }) {
 
   if (until) {
     const d = new Date(until).toLocaleDateString(
-      locale === "fr" ? "fr-FR" : "en-US",
+      locale === "fr" ? "fr-FR" : "en-GB",
       { day: "numeric", month: "long", year: "numeric" }
     );
     return (

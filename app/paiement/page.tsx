@@ -8,10 +8,15 @@ import PaymentEmbed from "@/components/payment/PaymentEmbed";
 // s'affiche ici, sur madger.app, dans notre habillage. Le client ne quitte
 // plus le site pour payer. Le client_secret arrive en query (?cs=...), créé
 // par /api/stripe/checkout ou /api/stripe/subscription.
-export const metadata: Metadata = {
-  title: "Paiement sécurisé · Madger",
-  robots: { index: false, follow: false },
-};
+// Titre d'onglet dans la langue de l'utilisateur (page bilingue).
+export async function generateMetadata(): Promise<Metadata> {
+  const { locale } = getServerDictionary();
+  return {
+    title:
+      locale === "en" ? "Secure payment · Madger" : "Paiement sécurisé · Madger",
+    robots: { index: false, follow: false },
+  };
+}
 
 export const dynamic = "force-dynamic";
 

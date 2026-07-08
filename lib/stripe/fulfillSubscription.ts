@@ -110,12 +110,22 @@ export async function fulfillSubscriptionSession(
     }
     const coachEmail = coachAuth?.user?.email;
     if (coachEmail) {
+      // Prix et repli dans la langue du coach (le client reste FR).
+      const coachLocale = coachRow?.locale === "en" ? ("en" as const) : ("fr" as const);
+      const coachPriceStr = ((svc?.price_cents ?? 0) / 100).toLocaleString(
+        coachLocale === "en" ? "en-GB" : "fr-FR",
+        {
+          style: "currency",
+          currency: (svc?.currency || "eur").toUpperCase(),
+        }
+      );
       const tpl = subscriptionStartedCoach({
-        locale: coachRow?.locale === "en" ? "en" : "fr",
+        locale: coachLocale,
         clientName:
-          [m.first_name, m.last_name].filter(Boolean).join(" ") || "Un client",
+          [m.first_name, m.last_name].filter(Boolean).join(" ") ||
+          (coachLocale === "en" ? "A client" : "Un client"),
         serviceName,
-        priceStr,
+        priceStr: coachPriceStr,
       });
       await sendEmail({ to: coachEmail, subject: tpl.subject, html: tpl.html });
     }

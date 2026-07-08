@@ -560,6 +560,7 @@ export default function OnboardingForm({
                 <button
                   key={k}
                   type="button"
+                  aria-pressed={specialties.includes(k)}
                   onClick={() => toggle(specialties, setSpecialties, k)}
                   className={chipClass(specialties.includes(k))}
                 >
@@ -576,6 +577,7 @@ export default function OnboardingForm({
                 <button
                   key={k}
                   type="button"
+                  aria-pressed={venues.includes(k)}
                   onClick={() => toggle(venues, setVenues, k)}
                   className={chipClass(venues.includes(k))}
                 >
@@ -678,6 +680,7 @@ export default function OnboardingForm({
                 <button
                   key={weekday}
                   type="button"
+                  aria-pressed={days.includes(weekday)}
                   onClick={() =>
                     setDays(
                       days.includes(weekday)

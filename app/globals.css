@@ -319,7 +319,9 @@ textarea:focus-visible {
 }
 /* Motricité réduite : coupe TOUTES les animations/transitions CSS (le
    fondu de page, les shimmer, les keyframes des composants). Les
-   animations JS (framer-motion) restent limitées à des fondus d'opacité. */
+   animations JS (framer-motion) sont neutralisées séparément via
+   <MotionConfig reducedMotion="user"> (components/ui/MotionSettings.tsx) :
+   cette règle CSS ne les atteint pas. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

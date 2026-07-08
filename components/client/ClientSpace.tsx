@@ -62,7 +62,7 @@ export default function ClientSpace({
 }) {
   const { t, locale } = useI18n();
   const router = useRouter();
-  const loc = locale === "fr" ? "fr-FR" : "en-US";
+  const loc = locale === "fr" ? "fr-FR" : "en-GB";
   const [cancelId, setCancelId] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState<string | null>(null);

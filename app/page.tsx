@@ -1,4 +1,5 @@
 import dynamic from "next/dynamic";
+import MotionSettings from "@/components/ui/MotionSettings";
 import Navbar from "@/components/Navbar";
 import HeroScrollExperience from "@/components/HeroScrollExperience";
 import TrustBar from "@/components/TrustBar";
@@ -37,24 +38,26 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
-      <ScrollBackground />
-      <StickyMobileCTA />
-      <main className="bg-bg relative" style={{ zIndex: 1 }}>
-        <Navbar />
-        <HeroScrollExperience />
-        <div id="after-hero" />
-        <TrustBar />
-        <Problem />
-        <Athletes />
-        <CoachDashboard />
-        <Comparison />
-        <Compliance2026 />
-        <Testimonials />
-        <Pricing />
-        <FAQ />
-        <EarlyAccessForm />
-        <Footer />
-      </main>
+      <MotionSettings>
+        <ScrollBackground />
+        <StickyMobileCTA />
+        <main id="main" tabIndex={-1} className="bg-bg relative" style={{ zIndex: 1 }}>
+          <Navbar />
+          <HeroScrollExperience />
+          <div id="after-hero" />
+          <TrustBar />
+          <Problem />
+          <Athletes />
+          <CoachDashboard />
+          <Comparison />
+          <Compliance2026 />
+          <Testimonials />
+          <Pricing />
+          <FAQ />
+          <EarlyAccessForm />
+          <Footer />
+        </main>
+      </MotionSettings>
     </>
   );
 }

@@ -119,6 +119,7 @@ export default function AddServiceModal({
                 <button
                   key={ty}
                   type="button"
+                  aria-pressed={type === ty}
                   onClick={() => setType(ty)}
                   className={`flex-1 rounded-full border px-2 py-2 text-sm font-medium transition-colors ${
                     type === ty
@@ -184,6 +185,7 @@ export default function AddServiceModal({
                 <button
                   key={opt}
                   type="button"
+                  aria-pressed={location === opt}
                   onClick={() => setLocation(opt)}
                   className={`flex-1 rounded-full border px-3 py-2 text-sm font-medium transition-colors ${
                     location === opt

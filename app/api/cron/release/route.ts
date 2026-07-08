@@ -98,7 +98,7 @@ export async function GET(req: NextRequest) {
         try {
           const { data: bk } = await supabase
             .from("bookings")
-            .select("starts_at, clients(email), coaches(first_name, last_name)")
+            .select("starts_at, clients(email), coaches(first_name, last_name, timezone)")
             .eq("id", p.booking_id)
             .maybeSingle();
           const cl = Array.isArray(bk?.clients) ? bk?.clients[0] : bk?.clients;
@@ -116,7 +116,7 @@ export async function GET(req: NextRequest) {
                   month: "long",
                   hour: "2-digit",
                   minute: "2-digit",
-                  timeZone: "Europe/Paris",
+                  timeZone: (co?.timezone as string | null) || "Europe/Paris",
                 }
               ),
               declined: true,
@@ -183,15 +183,12 @@ export async function GET(req: NextRequest) {
     );
     // Email de chaque coach du lot (1 appel Auth par coach, pas par paiement).
     const coachEmailById = new Map<string, string>();
-    for (const cid of coachIds) {
-      if (Date.now() - startedAt > TIME_BUDGET_MS) break;
-      try {
+    await Promise.allSettled(
+      coachIds.map(async (cid) => {
         const { data: u } = await supabase.auth.admin.getUserById(cid);
         if (u?.user?.email) coachEmailById.set(cid, u.user.email);
-      } catch {
-        /* best-effort */
-      }
-    }
+      })
+    );
     // Packs du lot : un paiement de pack se libère séance par séance.
     const { data: packRows } = await supabase
       .from("pack_credits")
@@ -210,9 +207,12 @@ export async function GET(req: NextRequest) {
     // à verser, jamais à attendre Resend.
     const emailJobs: Array<() => Promise<unknown>> = [];
 
-  for (const p of batch) {
-    if (Date.now() - startedAt > TIME_BUDGET_MS) break;
-    try {
+  // Traitement PAR GROUPES DE 8 EN PARALLÈLE : en sériel, chaque versement
+  // coûte ~0,5-1 s (claim + transfert Stripe + updates) et le run de 45 s
+  // plafonnait à ~60 paiements/jour. Les transitions conditionnelles
+  // (eq escrow_status/released_cents) rendent la concurrence sûre.
+  const processPayment = async (p: (typeof batch)[number]) => {
+    {
       const alreadyRefunded = (p.refunded_cents as number | null) ?? 0;
       const remaining = Math.max(0, p.amount_cents - alreadyRefunded);
 
@@ -223,27 +223,17 @@ export async function GET(req: NextRequest) {
           .update({ escrow_status: "refunded", status: "refunded", resolved_at: nowIso })
           .eq("id", p.id)
           .eq("escrow_status", "held");
-        continue;
+        return;
       }
 
       // Séance jamais confirmée par le coach (mode approbation) et déjà
       // passée : remboursement intégral du restant au lieu de verser.
       const bookingRow = Array.isArray(p.bookings) ? p.bookings[0] : p.bookings;
       if (bookingRow?.status === "pending" && p.booking_id) {
-        // Le coach peut confirmer pendant ce run : transition conditionnelle.
-        const { data: claimedBooking } = await supabase
-          .from("bookings")
-          .update({ status: "cancelled" })
-          .eq("id", p.booking_id)
-          .eq("status", "pending")
-          .select("id");
-        if (!claimedBooking?.length) {
-          // Confirmée entre-temps : on écarte du run courant.
-          skipIds.add(p.id as string);
-          continue;
-        }
-        await detachMeetFromBooking(supabase, p.booking_id as string);
-
+        // Le PAIEMENT est réclamé EN PREMIER : si le processus mourait entre
+        // l'annulation de la réservation et le claim, la ligne (booking
+        // cancelled + paiement held) partirait en versement au coach au run
+        // suivant au lieu d'être remboursée.
         const { data: claimedPay } = await supabase
           .from("payments")
           .update({
@@ -256,7 +246,32 @@ export async function GET(req: NextRequest) {
           .eq("id", p.id)
           .eq("escrow_status", "held")
           .select("id");
-        if (!claimedPay?.length) continue;
+        if (!claimedPay?.length) return;
+
+        // Le coach peut confirmer pendant ce run : transition conditionnelle.
+        const { data: claimedBooking } = await supabase
+          .from("bookings")
+          .update({ status: "cancelled" })
+          .eq("id", p.booking_id)
+          .eq("status", "pending")
+          .select("id");
+        if (!claimedBooking?.length) {
+          // Confirmée entre-temps : on rend le paiement et on écarte.
+          await supabase
+            .from("payments")
+            .update({
+              escrow_status: "held",
+              status: "paid",
+              refunded_cents: alreadyRefunded,
+              payout_cents: null,
+              resolved_at: null,
+            })
+            .eq("id", p.id)
+            .eq("escrow_status", "refunded");
+          skipIds.add(p.id as string);
+          return;
+        }
+        await detachMeetFromBooking(supabase, p.booking_id as string);
 
         try {
           await stripe.refunds.create(
@@ -306,14 +321,14 @@ export async function GET(req: NextRequest) {
           }
         }
         refunded++;
-        continue;
+        return;
       }
 
       const coach = coachById.get(p.coach_id as string);
       if (!coach?.stripe_account_id) {
         // Compte Connect absent : intraitable ce run, on écarte.
         skipIds.add(p.id as string);
-        continue;
+        return;
       }
 
       const breakdown = computePayout(
@@ -384,7 +399,7 @@ export async function GET(req: NextRequest) {
               .update({ release_after: nextCheck })
               .eq("id", p.id)
               .eq("escrow_status", "held");
-            continue;
+            return;
           }
 
           const prevCommission = (p.commission_cents as number | null) ?? 0;
@@ -401,7 +416,7 @@ export async function GET(req: NextRequest) {
             .eq("escrow_status", "held")
             .eq("released_cents", alreadyReleased)
             .select("id");
-          if (!claimedPack?.length) continue;
+          if (!claimedPack?.length) return;
 
           try {
             const transfer = await stripe.transfers.create(
@@ -442,7 +457,7 @@ export async function GET(req: NextRequest) {
                 coachLocale === "en" ? "en-GB" : "fr-FR",
                 {
                   style: "currency",
-                  currency: "EUR",
+                  currency: ((p.currency as string) || "eur").toUpperCase(),
                 }
               );
             const cl0 = Array.isArray(bookingRow?.clients)
@@ -468,7 +483,7 @@ export async function GET(req: NextRequest) {
               })
             );
           }
-          continue;
+          return;
         }
         // Toutes les séances du pack sont mûres : libération finale.
       }
@@ -491,7 +506,7 @@ export async function GET(req: NextRequest) {
         .eq("id", p.id)
         .eq("escrow_status", "held")
         .select("id");
-      if (!claimed?.length) continue;
+      if (!claimed?.length) return;
 
       if (finalTransfer > 0) {
         try {
@@ -535,7 +550,7 @@ export async function GET(req: NextRequest) {
               coachLocale === "en" ? "en-GB" : "fr-FR",
               {
                 style: "currency",
-                currency: "EUR",
+                currency: ((p.currency as string) || "eur").toUpperCase(),
               }
             );
           const cl0 = Array.isArray(bookingRow?.clients)
@@ -589,10 +604,22 @@ export async function GET(req: NextRequest) {
         }
       }
       released++;
-    } catch (e) {
-      skipIds.add(p.id as string);
-      errors.push(`${p.id}: ${e instanceof Error ? e.message : "error"}`);
     }
+  };
+
+  for (let i = 0; i < batch.length; i += 8) {
+    if (Date.now() - startedAt > TIME_BUDGET_MS) break;
+    const chunk = batch.slice(i, i + 8);
+    const results = await Promise.allSettled(chunk.map(processPayment));
+    results.forEach((r, j) => {
+      if (r.status === "rejected") {
+        const p = chunk[j];
+        skipIds.add(p.id as string);
+        errors.push(
+          `${p.id}: ${r.reason instanceof Error ? r.reason.message : "error"}`
+        );
+      }
+    });
   }
 
   // Les débits du lot sont faits : on envoie les emails en parallèle.

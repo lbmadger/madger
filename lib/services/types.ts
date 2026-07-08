@@ -36,7 +36,7 @@ export function formatPrice(
   currency: string,
   locale: string
 ): string {
-  return new Intl.NumberFormat(locale === "fr" ? "fr-FR" : "en-US", {
+  return new Intl.NumberFormat(locale === "fr" ? "fr-FR" : "en-GB", {
     style: "currency",
     currency: (currency || "eur").toUpperCase(),
     maximumFractionDigits: cents % 100 === 0 ? 0 : 2,

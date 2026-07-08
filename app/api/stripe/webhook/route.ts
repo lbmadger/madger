@@ -99,9 +99,19 @@ export async function POST(req: NextRequest) {
               const { sendEmail } = await import("@/lib/email/resend");
               const { data: coachPrefs } = await supabase
                 .from("coaches")
-                .select("locale")
+                .select("locale, stripe_subscription_id")
                 .eq("id", s.metadata.coach_id)
                 .maybeSingle();
+              // Redélivrance Stripe : la subscription déjà enregistrée sur
+              // le coach signifie que ce même événement a déjà été traité,
+              // on ne renvoie pas l'email de bienvenue.
+              const subId =
+                typeof s.subscription === "string"
+                  ? s.subscription
+                  : s.subscription?.id ?? null;
+              if (subId && coachPrefs?.stripe_subscription_id === subId) {
+                break;
+              }
               const tpl = proWelcomeCoach({
                 locale: coachPrefs?.locale === "en" ? "en" : "fr",
                 dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL || "https://madger.app"}/dashboard`,
@@ -136,9 +146,24 @@ export async function POST(req: NextRequest) {
             .select("id, coach_id, client_id, amount_cents, currency");
           // Alerte email aux admins (même patron que bookings/report).
           // Best-effort : un échec d'email ne doit jamais faire rejouer un
-          // événement monétaire.
+          // événement monétaire. IMPORTANT : les chargebacks arrivent le
+          // plus souvent APRÈS la libération à J+1 (ligne released, rien de
+          // gelé) : l'alerte part donc dans TOUS les cas, en signalant si
+          // les fonds sont déjà versés.
           try {
-            const p = frozen?.[0];
+            let p = frozen?.[0] ?? null;
+            let alreadyReleased = false;
+            if (!p) {
+              const { data: found } = await supabase
+                .from("payments")
+                .select("id, coach_id, client_id, amount_cents, currency, escrow_status")
+                .eq("stripe_charge_id", chargeId)
+                .maybeSingle();
+              if (found) {
+                p = found;
+                alreadyReleased = found.escrow_status === "released";
+              }
+            }
             const admins = (process.env.ADMIN_EMAILS || "")
               .split(",")
               .map((e) => e.trim())
@@ -178,7 +203,15 @@ export async function POST(req: NextRequest) {
                     currency: (p.currency || "eur").toUpperCase(),
                   }
                 ),
-                reason: dispute.reason || null,
+                reason:
+                  [
+                    dispute.reason || null,
+                    alreadyReleased
+                      ? "ATTENTION : fonds deja verses au coach (chargeback post-liberation)"
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ") || null,
                 adminUrl: `${APP_URL}/admin/litiges`,
               });
               for (const to of admins) {
@@ -198,31 +231,44 @@ export async function POST(req: NextRequest) {
         const chargeId =
           typeof dispute.charge === "string" ? dispute.charge : dispute.charge?.id;
         if (chargeId) {
-          if (dispute.status === "won") {
-            // Litige gagné : la ligne redevient libérable par le cron
-            // (conditionnel : ne touche que les lignes encore gelées).
+          if (dispute.status === "lost") {
+            // Litige perdu : la banque a rendu au client le montant CONTESTÉ
+            // (souvent partiel). On cumule, et on ne solde la ligne que si
+            // tout le paiement est reparti ; sinon le reste redevient
+            // libérable (les caps refunded_cents protègent le versement).
+            const { data: row } = await supabase
+              .from("payments")
+              .select("id, amount_cents, refunded_cents")
+              .eq("stripe_charge_id", chargeId)
+              .eq("escrow_status", "disputed")
+              .maybeSingle();
+            if (row) {
+              const amount = (row.amount_cents as number) ?? 0;
+              const already = (row.refunded_cents as number) ?? 0;
+              const lost = Math.min(
+                amount,
+                already + (dispute.amount ?? amount)
+              );
+              await supabase
+                .from("payments")
+                .update(
+                  lost >= amount
+                    ? {
+                        refunded_cents: lost,
+                        escrow_status: "refunded",
+                        status: "refunded",
+                      }
+                    : { refunded_cents: lost, escrow_status: "held" }
+                )
+                .eq("id", row.id)
+                .eq("escrow_status", "disputed");
+            }
+          } else {
+            // Gagné, ou clos sans suite (warning_closed, inquiry) : la ligne
+            // redevient libérable, sinon elle resterait gelée à vie.
             await supabase
               .from("payments")
               .update({ escrow_status: "held" })
-              .eq("stripe_charge_id", chargeId)
-              .eq("escrow_status", "disputed");
-          } else if (dispute.status === "lost") {
-            // Litige perdu : la banque a rendu l'argent au client, on solde
-            // la ligne (montant de la charge, dispute.amount en secours).
-            let lostAmount = dispute.amount ?? 0;
-            try {
-              const ch = await stripe.charges.retrieve(chargeId);
-              lostAmount = ch.amount ?? lostAmount;
-            } catch {
-              /* montant de la charge indisponible : celui du litige suffit */
-            }
-            await supabase
-              .from("payments")
-              .update({
-                refunded_cents: lostAmount,
-                escrow_status: "refunded",
-                status: "refunded",
-              })
               .eq("stripe_charge_id", chargeId)
               .eq("escrow_status", "disputed");
           }
@@ -462,10 +508,25 @@ export async function POST(req: NextRequest) {
       }
       case "customer.subscription.deleted": {
         const sub = event.data.object as Stripe.Subscription;
+        // Lu AVANT applyFromSubscription : un statut déjà 'canceled' signale
+        // une redélivrance de l'événement, on ne renvoie pas l'email.
+        let wasAlreadyCanceled = false;
+        if (sub.metadata?.coach_id && sub.metadata?.kind !== "client_sub") {
+          const { data: prev } = await supabase
+            .from("coaches")
+            .select("subscription_status")
+            .eq("id", sub.metadata.coach_id)
+            .maybeSingle();
+          wasAlreadyCanceled = prev?.subscription_status === "canceled";
+        }
         await applyFromSubscription(sub);
         // Fin de l'abonnement PRO d'un coach (jamais pour les abonnements
         // clients) : email chaleureux, retour en Basic + CTA réactiver.
-        if (sub.metadata?.coach_id && sub.metadata?.kind !== "client_sub") {
+        if (
+          sub.metadata?.coach_id &&
+          sub.metadata?.kind !== "client_sub" &&
+          !wasAlreadyCanceled
+        ) {
           try {
             const [{ data: coachAuth }, { data: coachPrefs }] =
               await Promise.all([
@@ -505,6 +566,9 @@ export async function POST(req: NextRequest) {
     // verserait au coach de l'argent déjà rendu au client). On renvoie 500
     // pour que Stripe rejoue l'événement (les handlers sont idempotents).
     const monetary = new Set([
+      // fulfill est idempotent (index unique sur le PaymentIntent) : un
+      // échec ici sans retry = client débité sans réservation enregistrée.
+      "checkout.session.completed",
       "charge.refunded",
       "charge.dispute.created",
       "charge.dispute.closed",

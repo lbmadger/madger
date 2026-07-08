@@ -26,7 +26,7 @@ export default function ClientDetail({ client }: { client: Client }) {
   const [error, setError] = useState<string | null>(null);
 
   const since = new Date(client.created_at).toLocaleDateString(
-    locale === "fr" ? "fr-FR" : "en-US",
+    locale === "fr" ? "fr-FR" : "en-GB",
     { year: "numeric", month: "long", day: "numeric" }
   );
 

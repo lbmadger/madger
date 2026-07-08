@@ -128,7 +128,7 @@ export default function CGV() {
           </section>
 
           <p style={{ fontSize: 13, color: "#3A3A3A", marginTop: 8 }}>
-            Dernière mise à jour : juin 2026
+            Dernière mise à jour : juillet 2026
           </p>
         </div>
       </div>

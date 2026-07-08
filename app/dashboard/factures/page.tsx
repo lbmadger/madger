@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 export default async function InvoicesPage() {
   const { dict, locale } = getServerDictionary();
   const inv = dict.invoices;
-  const loc = locale === "fr" ? "fr-FR" : "en-US";
+  const loc = locale === "fr" ? "fr-FR" : "en-GB";
   const supabase = createClient();
   const { coach } = await getCoach();
 

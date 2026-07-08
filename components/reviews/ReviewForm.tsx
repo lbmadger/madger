@@ -83,11 +83,17 @@ export default function ReviewForm({ bookingId }: { bookingId: string }) {
       </div>
 
       {/* Sélecteur d'étoiles */}
-      <div className="flex items-center gap-1">
+      <div
+        role="radiogroup"
+        aria-label={t("reviews.ratingLabel")}
+        className="flex items-center gap-1"
+      >
         {Array.from({ length: 5 }, (_, i) => (
           <button
             key={i}
             type="button"
+            role="radio"
+            aria-checked={rating === i + 1}
             onClick={() => setRating(i + 1)}
             onMouseEnter={() => setHover(i + 1)}
             onMouseLeave={() => setHover(0)}

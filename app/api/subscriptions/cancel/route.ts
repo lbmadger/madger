@@ -101,13 +101,22 @@ export async function POST(req: NextRequest) {
         sub.coach_id as string
       );
       if (coachAuth?.user?.email) {
+        // Date et repli dans la langue du coach (le client reste FR).
+        const coachLocale = coachRow?.locale === "en" ? "en" : "fr";
+        const coachEndDateStr = sub.current_period_end
+          ? new Date(sub.current_period_end as string).toLocaleDateString(
+              coachLocale === "en" ? "en-GB" : "fr-FR",
+              { day: "numeric", month: "long", year: "numeric" }
+            )
+          : null;
         const coachTpl = subscriptionCancelledCoach({
-          locale: coachRow?.locale === "en" ? "en" : "fr",
+          locale: coachLocale,
           clientName:
             [clientRow?.first_name, clientRow?.last_name]
               .filter(Boolean)
-              .join(" ") || "Un client",
-          endDateStr,
+              .join(" ") ||
+            (coachLocale === "en" ? "A client" : "Un client"),
+          endDateStr: coachEndDateStr,
           dashboardUrl: `${APP_URL}/dashboard/messages`,
         });
         await sendEmail({

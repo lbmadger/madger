@@ -273,6 +273,7 @@ export default function ClientOnboarding() {
                     <button
                       key={g}
                       type="button"
+                      aria-pressed={active}
                       onClick={() => toggleGoal(g)}
                       className={`rounded-full border px-3.5 py-2 text-sm font-medium transition-colors ${
                         active
@@ -294,6 +295,7 @@ export default function ClientOnboarding() {
                   <button
                     key={l}
                     type="button"
+                    aria-pressed={level === l}
                     onClick={() => setLevel(l)}
                     className={`flex-1 rounded-full border px-3 py-2 text-sm font-medium transition-colors ${
                       level === l

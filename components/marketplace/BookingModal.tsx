@@ -43,7 +43,7 @@ export default function BookingModal({
   onContact?: () => void;
 }) {
   const { t, locale } = useI18n();
-  const loc = locale === "fr" ? "fr-FR" : "en-US";
+  const loc = locale === "fr" ? "fr-FR" : "en-GB";
   const instant = coach.booking_mode === "instant";
 
   // Prestations payantes (paiement possible seulement si le coach encaisse).
@@ -502,6 +502,7 @@ export default function BookingModal({
                     <button
                       key={String(opt)}
                       type="button"
+                      aria-pressed={online === opt}
                       onClick={() => setOnline(opt)}
                       className={`flex-1 rounded-full border px-3 py-2 text-sm font-medium transition-colors ${
                         online === opt
@@ -527,7 +528,11 @@ export default function BookingModal({
 
               {/* ── Créneaux réels (pas pour un abonnement) ─────────────── */}
               {!isSubscription && slotState.mode === "loading" && (
-                <div className="rounded-xl border border-border bg-bg-elevated p-4 text-center text-sm text-text-dim">
+                <div
+                  role="status"
+                  aria-busy={slotState.mode === "loading"}
+                  className="rounded-xl border border-border bg-bg-elevated p-4 text-center text-sm text-text-dim"
+                >
                   {t("booking.slotsLoading")}
                 </div>
               )}
@@ -585,6 +590,7 @@ export default function BookingModal({
                             <button
                               key={d.date}
                               type="button"
+                              aria-pressed={active}
                               disabled={empty}
                               onClick={() => {
                                 setDayIdx(i);
@@ -610,6 +616,7 @@ export default function BookingModal({
                             <button
                               key={s.iso}
                               type="button"
+                              aria-pressed={selectedIso === s.iso}
                               onClick={() => setSelectedIso(s.iso)}
                               className={`rounded-lg border py-2 text-sm font-medium transition-colors ${
                                 selectedIso === s.iso

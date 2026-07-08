@@ -308,6 +308,7 @@ export default function MarketplaceView({
               <button
                 key={f}
                 type="button"
+                aria-pressed={filter === f}
                 onClick={() => setFilter(f)}
                 className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
                   filter === f

@@ -221,7 +221,7 @@ export default function CoachProfile({
               <p className="mt-1.5 flex items-center justify-center gap-1.5 sm:justify-start">
                 <Stars value={Number(coach.rating_avg)} />
                 <span className="text-sm font-semibold text-text-base">
-                  {Number(coach.rating_avg).toLocaleString(locale === "fr" ? "fr-FR" : "en-US")}
+                  {Number(coach.rating_avg).toLocaleString(locale === "fr" ? "fr-FR" : "en-GB")}
                 </span>
                 <span className="text-xs text-text-dim">
                   ({coach.rating_count} {t("reviews.countLabel")})
@@ -351,7 +351,7 @@ export default function CoachProfile({
                   )}
                   <p className="mt-1.5 text-[11px] text-text-dim">
                     {new Date(r.created_at).toLocaleDateString(
-                      locale === "fr" ? "fr-FR" : "en-US",
+                      locale === "fr" ? "fr-FR" : "en-GB",
                       { month: "long", year: "numeric" }
                     )}
                   </p>

@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   // Libellés d'heures dans la langue du visiteur (14:30 vs 2:30 PM).
   const localeTag =
-    searchParams.get("locale") === "en" ? "en-US" : "fr-FR";
+    searchParams.get("locale") === "en" ? "en-GB" : "fr-FR";
   const slug = searchParams.get("coach");
   const duration = Math.min(
     240,

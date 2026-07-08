@@ -20,7 +20,7 @@ export default function ConversationList({
   previews?: Record<string, { body: string; mine: boolean }>;
 }) {
   const { t, locale } = useI18n();
-  const loc = locale === "fr" ? "fr-FR" : "en-US";
+  const loc = locale === "fr" ? "fr-FR" : "en-GB";
 
   if (conversations.length === 0) {
     return (

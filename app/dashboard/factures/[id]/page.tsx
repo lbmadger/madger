@@ -17,7 +17,7 @@ export default async function InvoicePage({
 }) {
   const { dict, locale } = getServerDictionary();
   const inv = dict.invoices;
-  const loc = locale === "fr" ? "fr-FR" : "en-US";
+  const loc = locale === "fr" ? "fr-FR" : "en-GB";
   const supabase = createClient();
   const { coach } = await getCoach();
 

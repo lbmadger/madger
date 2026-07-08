@@ -22,7 +22,7 @@ export default async function MadgerInvoicePage({
 }) {
   const { dict, locale } = getServerDictionary();
   const inv = dict.invoices;
-  const loc = locale === "fr" ? "fr-FR" : "en-US";
+  const loc = locale === "fr" ? "fr-FR" : "en-GB";
 
   // Période attendue : AAAA-MM strict.
   if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(params.period)) notFound();

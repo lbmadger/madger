@@ -173,6 +173,27 @@ export async function fulfillCheckoutSession(
     .single();
   result.bookingId = booking?.id ?? "";
 
+  // Réservation impossible à créer : SANS ce garde, le paiement serait
+  // enregistré avec booking_id null et le cron finirait par VERSER au coach
+  // l'argent d'une séance qui n'existe pas. On rend l'argent et on sort
+  // (même traitement que le conflit de créneau ci-dessus).
+  if (!booking?.id) {
+    result.conflict = true;
+    if (authorized) {
+      await stripe.paymentIntents.cancel(
+        piId,
+        {},
+        { idempotencyKey: `nobooking_cancel_${piId}` }
+      );
+    } else if (chargeId) {
+      await stripe.refunds.create(
+        { charge: chargeId },
+        { idempotencyKey: `nobooking_refund_${piId}` }
+      );
+    }
+    return result;
+  }
+
   const { data: payment, error: payError } = await supabase
     .from("payments")
     .insert({

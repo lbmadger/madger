@@ -7,6 +7,7 @@ import MarketplaceView from "@/components/marketplace/MarketplaceView";
 import type { PublicCoach } from "@/lib/coaches/public-types";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/coachs" },
   title: "Madger · Trouve ton coach",
   description:
     "Trouve un coach sportif près de chez toi ou en ligne, et réserve ta séance.",

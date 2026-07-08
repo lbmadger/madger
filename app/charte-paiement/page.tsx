@@ -165,7 +165,7 @@ export default function ChartePaiement() {
               <strong className="text-white">frais de traitement Stripe</strong>{" "}
               sont à la charge du coach. La{" "}
               <strong className="text-white">commission Madger</strong> est de 0 %
-              pour un coach Pro et de 5 % pour un coach sur le plan gratuit,
+              pour un coach Pro et de 5 % pour un coach Madger Basic,
               prélevée sur la part effectivement conservée par le coach.
             </p>
           </section>

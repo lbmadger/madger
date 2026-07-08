@@ -60,7 +60,7 @@ export function CopyLinkPill() {
 
 export function NotificationBell() {
   const { t, locale } = useI18n();
-  const loc = locale === "fr" ? "fr-FR" : "en-US";
+  const loc = locale === "fr" ? "fr-FR" : "en-GB";
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<PendingItem[]>([]);
   const ref = useRef<HTMLDivElement>(null);

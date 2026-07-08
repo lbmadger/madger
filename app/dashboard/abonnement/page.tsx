@@ -49,14 +49,14 @@ export default async function SubscriptionPage({
   }
   const savedStr =
     pro && avoided90d > 0
-      ? (avoided90d / 100).toLocaleString(locale === "fr" ? "fr-FR" : "en-US", {
+      ? (avoided90d / 100).toLocaleString(locale === "fr" ? "fr-FR" : "en-GB", {
           style: "currency",
           currency: "EUR",
         })
       : null;
   const untilStr = coach?.pro_until
     ? new Date(coach.pro_until).toLocaleDateString(
-        locale === "fr" ? "fr-FR" : "en-US",
+        locale === "fr" ? "fr-FR" : "en-GB",
         { day: "numeric", month: "long", year: "numeric" }
       )
     : null;

@@ -10,10 +10,14 @@ import ClientSpace, {
   type ClientSub,
 } from "@/components/client/ClientSpace";
 
-export const metadata: Metadata = {
-  title: "Madger · Mes séances",
-  robots: { index: false, follow: false },
-};
+// Titre d'onglet dans la langue de l'utilisateur (page bilingue).
+export async function generateMetadata(): Promise<Metadata> {
+  const { locale } = getServerDictionary();
+  return {
+    title: locale === "en" ? "Madger · My sessions" : "Madger · Mes séances",
+    robots: { index: false, follow: false },
+  };
+}
 
 export const dynamic = "force-dynamic";
 

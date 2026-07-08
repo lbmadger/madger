@@ -362,7 +362,10 @@ export async function POST(req: NextRequest) {
         commission_cents: (payment.commission_cents as number | null) ?? 0,
         payout_cents: (payment.payout_cents as number | null) ?? null,
       })
-      .eq("id", payment.id);
+      .eq("id", payment.id)
+      // Conditionnel : n'écrase jamais une écriture concurrente (webhook
+      // charge.refunded externe) arrivée entre le claim et ce revert.
+      .eq("escrow_status", totalRefunded >= amount ? "refunded" : "canceled");
     return NextResponse.json(
       { error: e instanceof Error ? e.message : "stripe_error" },
       { status: 500 }

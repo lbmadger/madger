@@ -14,6 +14,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://madger.app"),
+  alternates: { canonical: "/" },
   title: "Madger · De la demande client à la facture encaissée",
   description: "Réservations, paiements et facturation automatique en un seul lien. Pensé pour les coachs indépendants en France. Rejoignez l'accès anticipé.",
   keywords: ["coach", "application coach", "réservation séances", "facturation coach", "Stripe coach", "gestion clients coach", "accès anticipé", "early access"],
@@ -60,6 +61,12 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} antialiased`}>
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-full focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-black"
+        >
+          Aller au contenu
+        </a>
         {children}
         <GrainOverlay />
         <Analytics />

@@ -24,7 +24,7 @@ export default async function OverviewPage() {
   const { dict, locale } = getServerDictionary();
   const o = dict.overview;
   const supabase = createClient();
-  const loc = locale === "fr" ? "fr-FR" : "en-US";
+  const loc = locale === "fr" ? "fr-FR" : "en-GB";
 
   // Bornes de la semaine courante (lundi → dimanche).
   const now = new Date();
