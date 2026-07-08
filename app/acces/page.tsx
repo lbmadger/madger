@@ -2,7 +2,6 @@
 
 import { Suspense, useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 
 // Page de saisie du code d'accès pré-lancement. Une fois le bon code entré,
@@ -55,20 +54,11 @@ function AccessForm() {
         className="pointer-events-none absolute left-1/2 top-1/2 h-[560px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#CBFF03]/[0.06] blur-[130px]"
       />
 
-      <motion.div
-        initial={{ opacity: 0, y: 18 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="w-full max-w-sm text-center"
-      >
-        <motion.div
-          initial={{ scale: 0.7, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="flex justify-center"
-        >
+      {/* Entrées en CSS pur (remplace framer-motion). */}
+      <div className="anim-fade-up w-full max-w-sm text-center">
+        <div className="anim-scale-in flex justify-center">
           <MadgerLogo size={44} />
-        </motion.div>
+        </div>
 
         <p className="mt-4 text-sm font-extrabold tracking-tight text-white">
           Madger
@@ -86,12 +76,12 @@ function AccessForm() {
           code, tu fais partie des premiers.
         </p>
 
-        <motion.form
+        {/* key={shake} : remonte le formulaire à chaque erreur pour rejouer
+            la secousse CSS. */}
+        <form
           key={shake}
-          animate={shake > 0 ? { x: [0, -9, 9, -6, 6, -3, 0] } : {}}
-          transition={{ duration: 0.4 }}
           onSubmit={submit}
-          className="mt-7 flex flex-col gap-3"
+          className={`mt-7 flex flex-col gap-3 ${shake > 0 ? "anim-shake" : ""}`}
         >
           <input
             type="password"
@@ -111,7 +101,7 @@ function AccessForm() {
           >
             <span>{loading ? "Vérification…" : "Entrer"}</span>
           </button>
-        </motion.form>
+        </form>
 
         <a
           href="/"
@@ -119,7 +109,7 @@ function AccessForm() {
         >
           ‹ Retour à l&apos;accueil
         </a>
-      </motion.div>
+      </div>
     </main>
   );
 }

@@ -14,6 +14,7 @@ function Item({ q, a, isOpen, onToggle }: { q: string; a: string; isOpen: boolea
       }}
     >
       <button
+        id={`${panelId}-btn`}
         onClick={onToggle}
         aria-expanded={isOpen}
         aria-controls={panelId}
@@ -35,6 +36,7 @@ function Item({ q, a, isOpen, onToggle }: { q: string; a: string; isOpen: boolea
       <div
         id={panelId}
         role="region"
+        aria-labelledby={`${panelId}-btn`}
         className="grid transition-[grid-template-rows,opacity] duration-300 ease-out"
         style={{
           gridTemplateRows: isOpen ? "1fr" : "0fr",

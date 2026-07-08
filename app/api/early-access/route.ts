@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { sendEmail } from "@/lib/email/resend";
 
 // Route dynamique : pas de mise en cache, le count doit être lu à chaque appel.
 export const dynamic = "force-dynamic";
@@ -89,30 +90,8 @@ export async function GET() {
   );
 }
 
-async function sendEmail({
-  to,
-  subject,
-  html,
-}: {
-  to: string;
-  subject: string;
-  html: string;
-}) {
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "Madger <contact@madger.app>",
-      to,
-      subject,
-      html,
-    }),
-  });
-  return res.ok;
-}
+// L'envoi passe par sendEmail (lib/email/resend) : trace serveur en cas
+// d'échec et garde si RESEND_API_KEY est absente, au lieu d'un fetch muet.
 
 export async function POST(req: NextRequest) {
   try {

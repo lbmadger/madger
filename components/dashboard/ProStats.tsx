@@ -42,12 +42,11 @@ export default function ProStats({
           }`}
         >
           {items.map((it, i) => (
-            <motion.div
+            <div
               key={it.label}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.3 }}
-              className="rounded-xl border border-border bg-bg-elevated p-3"
+              // Fondu d'entrée en cascade, en CSS pur (remplace framer-motion).
+              className="anim-fade-up rounded-xl border border-border bg-bg-elevated p-3"
+              style={{ animationDelay: `${i * 0.05}s`, animationDuration: "0.3s" }}
             >
               <p className="text-[11px] text-text-dim">{it.label}</p>
               <p className="mt-1 text-lg font-extrabold capitalize tracking-tight text-text-base">
@@ -58,7 +57,7 @@ export default function ProStats({
                   {it.hint}
                 </p>
               )}
-            </motion.div>
+            </div>
           ))}
         </div>
 

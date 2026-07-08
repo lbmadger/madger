@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_URL } from "@/lib/supabase/config";
+import { sendEmail } from "@/lib/email/resend";
 
 // Envoi des codes promo personnels aux membres early access — à déclencher AU
 // LANCEMENT (sortie de l'accès anticipé). Chaque membre reçoit SON code par
@@ -40,21 +41,14 @@ function emailHtml(code: string): string {
   </table></body></html>`;
 }
 
-async function sendEmail(to: string, code: string): Promise<boolean> {
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "Madger <contact@madger.app>",
-      to,
-      subject: "Ton accès Pro Madger · 3 mois offerts 🎉",
-      html: emailHtml(code),
-    }),
+// L'envoi passe par sendEmail (lib/email/resend) : trace serveur en cas
+// d'échec et garde si RESEND_API_KEY est absente, au lieu d'un fetch muet.
+function sendPromoCode(to: string, code: string): Promise<boolean> {
+  return sendEmail({
+    to,
+    subject: "Ton accès Pro Madger · 3 mois offerts 🎉",
+    html: emailHtml(code),
   });
-  return res.ok;
 }
 
 export async function POST(req: NextRequest) {
@@ -85,7 +79,7 @@ export async function POST(req: NextRequest) {
 
   let sent = 0;
   for (const c of codes ?? []) {
-    const ok = await sendEmail(c.email as string, c.code as string);
+    const ok = await sendPromoCode(c.email as string, c.code as string);
     if (ok) {
       await supabase
         .from("promo_codes")

@@ -528,19 +528,24 @@ export async function GET(req: NextRequest) {
       if (finalTransfer > 0) {
         const coachEmail = coachEmailById.get(p.coach_id as string);
         if (coachEmail) {
+          // Montants et repli dans la langue du coach.
+          const coachLocale = coach.locale === "en" ? ("en" as const) : ("fr" as const);
           const eurosStr = (cents: number) =>
-            (cents / 100).toLocaleString("fr-FR", {
-              style: "currency",
-              currency: "EUR",
-            });
+            (cents / 100).toLocaleString(
+              coachLocale === "en" ? "en-GB" : "fr-FR",
+              {
+                style: "currency",
+                currency: "EUR",
+              }
+            );
           const cl0 = Array.isArray(bookingRow?.clients)
             ? bookingRow?.clients[0]
             : bookingRow?.clients;
           const clientLabel =
             [cl0?.first_name, cl0?.last_name].filter(Boolean).join(" ") ||
-            "ton client";
+            (coachLocale === "en" ? "your client" : "ton client");
           const tpl = payoutReleasedCoach({
-            locale: coach.locale === "en" ? "en" : "fr",
+            locale: coachLocale,
             clientName: clientLabel,
             payoutStr: eurosStr(finalTransfer),
             dashboardUrl: `${APP_URL}/dashboard/paiements`,

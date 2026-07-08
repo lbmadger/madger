@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import {
   SparklesIcon,
@@ -62,14 +61,20 @@ export default function LeiaTips({
         />
       </button>
 
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-          >
+      {/* Dépliage en CSS pur (grid-template-rows 0fr → 1fr) : la hauteur
+          animée suit le contenu réel, sans framer-motion. */}
+      <div
+        aria-hidden={!open}
+        className="grid transition-[grid-template-rows,opacity] duration-300 ease-out"
+        style={{
+          gridTemplateRows: open ? "1fr" : "0fr",
+          opacity: open ? 1 : 0,
+          // visibility : les liens repliés ne sont plus focusables au clavier.
+          visibility: open ? "visible" : "hidden",
+          transitionProperty: "grid-template-rows, opacity, visibility",
+        }}
+      >
+        <div className="min-h-0 overflow-hidden">
             <div className="border-t border-border px-4 pb-4 pt-3">
               {tips.length === 0 ? (
                 <p className="text-xs leading-relaxed text-text-muted">
@@ -115,9 +120,8 @@ export default function LeiaTips({
                 </p>
               </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </div>
+      </div>
     </section>
   );
 }
