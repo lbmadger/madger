@@ -9,6 +9,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import { slugify, isValidSlug } from "@/lib/utils/slug";
 import Button from "@/components/ui/Button";
 import CityAutocomplete from "@/components/ui/CityAutocomplete";
+import GymAutocomplete, { type GymPlace } from "@/components/ui/GymAutocomplete";
 import LanguagePicker from "@/components/settings/LanguagePicker";
 import SettingsSection from "./SettingsSection";
 import {
@@ -85,6 +86,18 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   );
   const [venues, setVenues] = useState<string[]>(coach.venues ?? []);
   const [gymName, setGymName] = useState(coach.gym_name ?? "");
+  // Salle validée (recherche OpenStreetMap) : adresse + coordonnées.
+  const [gymPlace, setGymPlace] = useState<GymPlace | null>(
+    coach.gym_place_id && coach.gym_lat != null && coach.gym_lng != null
+      ? {
+          id: coach.gym_place_id,
+          name: coach.gym_name ?? "",
+          address: coach.gym_address ?? "",
+          lat: coach.gym_lat,
+          lng: coach.gym_lng,
+        }
+      : null
+  );
   const [timezone, setTimezone] = useState(coach.timezone || "Europe/Paris");
   const [minNotice, setMinNotice] = useState(coach.min_notice_hours ?? 2);
   // Mentions légales de facturation (SIRET, TVA, adresse).
@@ -205,6 +218,20 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         if (error.code === "23505") setError(t("settings.errors.slugTaken"));
         else setError(t("settings.errors.generic"));
         return;
+      }
+      // Salle validée : colonnes de la migration 0039, envoyées À PART et en
+      // best-effort pour que l'enregistrement principal ne dépende jamais
+      // d'une migration pas encore passée.
+      if (section === "activity" || section === "profile") {
+        await supabase
+          .from("coaches")
+          .update({
+            gym_place_id: gymPlace?.id ?? null,
+            gym_address: gymPlace?.address ?? null,
+            gym_lat: gymPlace?.lat ?? null,
+            gym_lng: gymPlace?.lng ?? null,
+          })
+          .eq("id", coach.id);
       }
       setSaved(true);
       router.refresh();
@@ -451,12 +478,12 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           {venues.includes("coach_gym") && (
             <label className="flex flex-col gap-1.5">
               <span className={labelClass}>{t("settings.gymName")}</span>
-              <input
-                type="text"
+              <GymAutocomplete
                 value={gymName}
-                onChange={(e) => setGymName(e.target.value)}
-                placeholder={t("settings.gymNamePlaceholder")}
-                className={inputClass}
+                selectedAddress={gymPlace?.address || null}
+                onChange={setGymName}
+                onSelect={setGymPlace}
+                inputClassName={inputClass}
               />
             </label>
           )}

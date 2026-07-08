@@ -760,6 +760,10 @@ const fr = {
     venuesLabel: "Où se passent tes séances ?",
     gymName: "Nom de ta salle",
     gymNamePlaceholder: "Ex. Fitness Park Lyon 3",
+    gymLabel: "Salle de sport",
+    gymSearchPlaceholder: "Cherche ta salle (ex. Basic Fit Dijon)",
+    gymVerified: "Salle validée",
+    gymNoResult: "Aucune salle trouvée. Vérifie l'orthographe ou ajoute la ville.",
     bookingSection: "Réservations",
     bookingSectionDesc:
       "Comment les nouvelles demandes de séance sont acceptées.",
@@ -1913,6 +1917,10 @@ const en: Dictionary = {
     venuesLabel: "Where do your sessions happen?",
     gymName: "Your gym's name",
     gymNamePlaceholder: "E.g. Fitness Park Lyon 3",
+    gymLabel: "Gym",
+    gymSearchPlaceholder: "Search your gym (e.g. Basic Fit Dijon)",
+    gymVerified: "Gym verified",
+    gymNoResult: "No gym found. Check the spelling or add the city.",
     bookingSection: "Bookings",
     bookingSectionDesc: "How new session requests get accepted.",
     bookingMode: {

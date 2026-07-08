@@ -45,6 +45,11 @@ export type Coach = {
   specialties: string[];
   venues: string[];
   gym_name: string | null;
+  // Salle VALIDÉE via la recherche OpenStreetMap (migration 0039).
+  gym_place_id: string | null;
+  gym_address: string | null;
+  gym_lat: number | null;
+  gym_lng: number | null;
   // Google Calendar + Meet (migration 0027)
   google_refresh_token: string | null;
   google_connected_at: string | null;
