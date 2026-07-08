@@ -473,9 +473,24 @@ export default function EarlyAccessForm() {
           </AnimatePresence>
 
           {!submitted && (
-            <p className="text-xs mt-6" style={{ color: "#3A3A3A" }}>
-              Accès sélectionné manuellement. Aucun spam.
-            </p>
+            <>
+              <p className="text-xs mt-6" style={{ color: "#3A3A3A" }}>
+                Accès sélectionné manuellement. Aucun spam.
+              </p>
+              {/* Information RGPD (art. 13) au point de collecte. */}
+              <p className="text-[11px] mt-2 leading-relaxed" style={{ color: "#3A3A3A" }}>
+                Tes coordonnées servent uniquement à te recontacter pour le
+                lancement de Madger (base légale : consentement), conservées
+                3 ans maximum.{" "}
+                <a
+                  href="/politique-de-confidentialite"
+                  className="underline"
+                  style={{ color: "#5A5A5A" }}
+                >
+                  Politique de confidentialité
+                </a>
+              </p>
+            </>
           )}
         </motion.div>
       </div>

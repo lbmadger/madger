@@ -758,6 +758,22 @@ export default function BookingModal({
                   {t("booking.chargedOnAccept")}
                 </p>
               )}
+              {/* Information précontractuelle (L.221-5 / L.221-28 12°) :
+                  acceptation des CGV et de la charte, pas de rétractation
+                  pour une séance à date déterminée. */}
+              {payMode && (
+                <p className="text-center text-[11px] leading-relaxed text-text-dim">
+                  {t("booking.legalPrefix")}{" "}
+                  <Link href="/cgv" target="_blank" className="underline hover:text-text-muted">
+                    {t("booking.legalCgv")}
+                  </Link>{" "}
+                  {t("booking.legalAnd")}{" "}
+                  <Link href="/charte-paiement" target="_blank" className="underline hover:text-text-muted">
+                    {t("booking.legalCharter")}
+                  </Link>
+                  {isSubscription ? "" : ` ${t("booking.legalNoWithdrawal")}`}
+                </p>
+              )}
             </form>
           </>
         )}
