@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
-import { disputeOpenedAdmin } from "@/lib/email/templates";
+import {
+  disputeOpenedAdmin,
+  disputeOpenedCoach,
+  disputeReceivedClient,
+} from "@/lib/email/templates";
 
 export const dynamic = "force-dynamic";
 
@@ -88,40 +92,93 @@ export async function POST(req: NextRequest) {
     })
     .eq("id", payment.id);
 
-  // Alerte email aux admins (best-effort).
+  // Emails de litige (best-effort) : alerte admins, information du coach
+  // (versement gelé) et accusé de réception au client.
   try {
+    const { data: coach } = await supabase
+      .from("coaches")
+      .select("first_name, last_name, locale")
+      .eq("id", payment.coach_id)
+      .maybeSingle();
+    const { data: clientRow } = await supabase
+      .from("clients")
+      .select("first_name, last_name")
+      .eq("id", payment.client_id)
+      .maybeSingle();
+    const clientName =
+      [clientRow?.first_name, clientRow?.last_name].filter(Boolean).join(" ") ||
+      "Client";
+    const coachName =
+      [coach?.first_name, coach?.last_name].filter(Boolean).join(" ") || "Coach";
+    const coachLocale = coach?.locale === "en" ? ("en" as const) : ("fr" as const);
+    const amountStr = (payment.amount_cents / 100).toLocaleString(
+      coachLocale === "en" ? "en-GB" : "fr-FR",
+      {
+        style: "currency",
+        currency: (payment.currency || "eur").toUpperCase(),
+      }
+    );
+    // Montant formaté en français pour les emails admin + client (FR).
+    const amountStrFr = (payment.amount_cents / 100).toLocaleString("fr-FR", {
+      style: "currency",
+      currency: (payment.currency || "eur").toUpperCase(),
+    });
+
     const admins = (process.env.ADMIN_EMAILS || "")
       .split(",")
       .map((e) => e.trim())
       .filter(Boolean);
     if (admins.length) {
-      const { data: coach } = await supabase
-        .from("coaches")
-        .select("first_name, last_name")
-        .eq("id", payment.coach_id)
-        .maybeSingle();
-      const { data: clientRow } = await supabase
-        .from("clients")
-        .select("first_name, last_name")
-        .eq("id", payment.client_id)
-        .maybeSingle();
-      const amountStr = (payment.amount_cents / 100).toLocaleString("fr-FR", {
-        style: "currency",
-        currency: (payment.currency || "eur").toUpperCase(),
-      });
       const tpl = disputeOpenedAdmin({
-        clientName:
-          [clientRow?.first_name, clientRow?.last_name].filter(Boolean).join(" ") ||
-          "Client",
-        coachName:
-          [coach?.first_name, coach?.last_name].filter(Boolean).join(" ") || "Coach",
-        amountStr,
+        clientName,
+        coachName,
+        amountStr: amountStrFr,
         reason,
         adminUrl: `${APP_URL}/admin/litiges`,
       });
       for (const to of admins) {
         await sendEmail({ to, subject: tpl.subject, html: tpl.html });
       }
+    }
+
+    // Coach : son versement est gelé le temps de l'examen (ton neutre).
+    try {
+      const { data: coachAuth } = await supabase.auth.admin.getUserById(
+        payment.coach_id as string
+      );
+      if (coachAuth?.user?.email) {
+        const tpl = disputeOpenedCoach({
+          locale: coachLocale,
+          clientName,
+          amountStr,
+          dashboardUrl: `${APP_URL}/dashboard/paiements`,
+        });
+        await sendEmail({
+          to: coachAuth.user.email,
+          subject: tpl.subject,
+          html: tpl.html,
+          replyTo: "contact@madger.app",
+        });
+      }
+    } catch {
+      /* best-effort */
+    }
+
+    // Client : accusé de réception (son email vient d'être vérifié ci-dessus).
+    try {
+      const tpl = disputeReceivedClient({
+        coachName,
+        amountStr: amountStrFr,
+        reservationUrl: `${APP_URL}/reservation/${bookingId}`,
+      });
+      await sendEmail({
+        to: email,
+        subject: tpl.subject,
+        html: tpl.html,
+        replyTo: "contact@madger.app",
+      });
+    } catch {
+      /* best-effort */
     }
   } catch {
     /* best-effort */

@@ -58,10 +58,11 @@ export async function POST(req: NextRequest) {
     ],
     subscription_data: { metadata: { coach_id: coach.id, plan } },
     metadata: { coach_id: coach.id, plan },
-    success_url: `${origin}/api/stripe/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/dashboard/abonnement`,
+    // Paiement EMBARQUÉ : le formulaire s'affiche dans /paiement.
+    ui_mode: "embedded_page",
+    return_url: `${origin}/api/stripe/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
     allow_promotion_codes: true,
   });
 
-  return NextResponse.json({ url: session.url });
+  return NextResponse.json({ client_secret: session.client_secret });
 }

@@ -125,14 +125,69 @@ export async function POST(req: NextRequest) {
         const chargeId =
           typeof dispute.charge === "string" ? dispute.charge : dispute.charge?.id;
         if (chargeId) {
-          await supabase
+          const { data: frozen } = await supabase
             .from("payments")
             .update({
               escrow_status: "disputed",
               disputed_at: new Date().toISOString(),
             })
             .eq("stripe_charge_id", chargeId)
-            .eq("escrow_status", "held");
+            .eq("escrow_status", "held")
+            .select("id, coach_id, client_id, amount_cents, currency");
+          // Alerte email aux admins (même patron que bookings/report).
+          // Best-effort : un échec d'email ne doit jamais faire rejouer un
+          // événement monétaire.
+          try {
+            const p = frozen?.[0];
+            const admins = (process.env.ADMIN_EMAILS || "")
+              .split(",")
+              .map((e) => e.trim())
+              .filter(Boolean);
+            if (p && admins.length) {
+              const { disputeOpenedAdmin } = await import(
+                "@/lib/email/templates"
+              );
+              const { sendEmail } = await import("@/lib/email/resend");
+              const APP_URL =
+                process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
+              const [{ data: coach }, { data: clientRow }] = await Promise.all([
+                supabase
+                  .from("coaches")
+                  .select("first_name, last_name")
+                  .eq("id", p.coach_id)
+                  .maybeSingle(),
+                supabase
+                  .from("clients")
+                  .select("first_name, last_name")
+                  .eq("id", p.client_id)
+                  .maybeSingle(),
+              ]);
+              const tpl = disputeOpenedAdmin({
+                clientName:
+                  [clientRow?.first_name, clientRow?.last_name]
+                    .filter(Boolean)
+                    .join(" ") || "Client",
+                coachName:
+                  [coach?.first_name, coach?.last_name]
+                    .filter(Boolean)
+                    .join(" ") || "Coach",
+                amountStr: ((p.amount_cents ?? 0) / 100).toLocaleString(
+                  "fr-FR",
+                  {
+                    style: "currency",
+                    currency: (p.currency || "eur").toUpperCase(),
+                  }
+                ),
+                reason: dispute.reason || null,
+                adminUrl: `${APP_URL}/admin/litiges`,
+              });
+              for (const to of admins) {
+                await sendEmail({ to, subject: tpl.subject, html: tpl.html });
+              }
+            }
+          } catch {
+            /* best-effort */
+          }
         }
         break;
       }
@@ -266,35 +321,181 @@ export async function POST(req: NextRequest) {
                 typeof inv.payment_intent === "string"
                   ? inv.payment_intent
                   : inv.payment_intent?.id ?? null;
-              await supabase.from("payments").insert({
-                coach_id: reg.coach_id,
-                client_id: reg.client_id,
-                service_id: reg.service_id,
-                booking_id: null,
-                amount_cents: invoice.amount_paid,
-                currency: invoice.currency || "eur",
-                status: "paid",
-                stripe_payment_intent_id: piId ?? `sub_inv_${invoice.id}`,
-                stripe_charge_id: chargeId,
-                paid_at: new Date().toISOString(),
-                // Versé directement au coach par Stripe (destination charge) :
-                // aucun séquestre, la ligne est immédiatement soldée.
-                escrow_status: "released",
-                released_at: new Date().toISOString(),
-                commission_cents: commission,
-                payout_cents: Math.max(
-                  0,
-                  (invoice.amount_paid ?? 0) - commission
-                ),
-              });
+              const { error: insertError } = await supabase
+                .from("payments")
+                .insert({
+                  coach_id: reg.coach_id,
+                  client_id: reg.client_id,
+                  service_id: reg.service_id,
+                  booking_id: null,
+                  amount_cents: invoice.amount_paid,
+                  currency: invoice.currency || "eur",
+                  status: "paid",
+                  stripe_payment_intent_id: piId ?? `sub_inv_${invoice.id}`,
+                  stripe_charge_id: chargeId,
+                  paid_at: new Date().toISOString(),
+                  // Versé directement au coach par Stripe (destination charge) :
+                  // aucun séquestre, la ligne est immédiatement soldée.
+                  escrow_status: "released",
+                  released_at: new Date().toISOString(),
+                  commission_cents: commission,
+                  payout_cents: Math.max(
+                    0,
+                    (invoice.amount_paid ?? 0) - commission
+                  ),
+                });
+              // Échéance encaissée : le coach est prévenu (best-effort, et
+              // seulement si l'insert a gagné : un rejeu du webhook ne doit
+              // pas renvoyer l'email).
+              if (!insertError) {
+                try {
+                  const [{ data: coachAuth }, { data: coachRow }, { data: clientRow }] =
+                    await Promise.all([
+                      supabase.auth.admin.getUserById(reg.coach_id as string),
+                      supabase
+                        .from("coaches")
+                        .select("locale")
+                        .eq("id", reg.coach_id)
+                        .maybeSingle(),
+                      supabase
+                        .from("clients")
+                        .select("first_name, last_name")
+                        .eq("id", reg.client_id)
+                        .maybeSingle(),
+                    ]);
+                  if (coachAuth?.user?.email) {
+                    const { subscriptionPaymentCoach } = await import(
+                      "@/lib/email/templates"
+                    );
+                    const { sendEmail } = await import("@/lib/email/resend");
+                    const coachLocale =
+                      coachRow?.locale === "en" ? ("en" as const) : ("fr" as const);
+                    const fmt = (cents: number) =>
+                      (cents / 100).toLocaleString(
+                        coachLocale === "en" ? "en-GB" : "fr-FR",
+                        {
+                          style: "currency",
+                          currency: (invoice.currency || "eur").toUpperCase(),
+                        }
+                      );
+                    const tpl = subscriptionPaymentCoach({
+                      locale: coachLocale,
+                      clientName:
+                        [clientRow?.first_name, clientRow?.last_name]
+                          .filter(Boolean)
+                          .join(" ") ||
+                        (coachLocale === "en" ? "your client" : "ton client"),
+                      amountStr: fmt(invoice.amount_paid ?? 0),
+                      commissionStr:
+                        commission > 0 ? fmt(commission) : undefined,
+                      dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL || "https://madger.app"}/dashboard/paiements`,
+                    });
+                    await sendEmail({
+                      to: coachAuth.user.email,
+                      subject: tpl.subject,
+                      html: tpl.html,
+                    });
+                  }
+                } catch {
+                  /* best-effort */
+                }
+              }
             }
           }
         }
         break;
       }
-      case "customer.subscription.updated":
-      case "customer.subscription.deleted": {
+      // Échec du prélèvement d'un abonnement mensuel CLIENT : le client est
+      // invité à mettre à jour sa carte. Ce case ne figure PAS dans la liste
+      // des événements monétaires (catch final) : un échec d'email ne doit
+      // pas faire rejouer l'événement en boucle par Stripe.
+      case "invoice.payment_failed": {
+        try {
+          const invoice = event.data.object as Stripe.Invoice;
+          const subId = invoiceSubscriptionId(invoice);
+          if (!subId) break;
+          const sub = await stripe.subscriptions.retrieve(subId);
+          if (sub.metadata?.kind !== "client_sub") break;
+          const { data: reg } = await supabase
+            .from("client_subscriptions")
+            .select("coach_id, client_id")
+            .eq("stripe_subscription_id", sub.id)
+            .maybeSingle();
+          if (!reg) break;
+          const [{ data: clientRow }, { data: coachRow }] = await Promise.all([
+            supabase
+              .from("clients")
+              .select("email")
+              .eq("id", reg.client_id)
+              .maybeSingle(),
+            supabase
+              .from("coaches")
+              .select("first_name, last_name")
+              .eq("id", reg.coach_id)
+              .maybeSingle(),
+          ]);
+          if (clientRow?.email) {
+            const { subscriptionPaymentFailedClient } = await import(
+              "@/lib/email/templates"
+            );
+            const { sendEmail } = await import("@/lib/email/resend");
+            const tpl = subscriptionPaymentFailedClient({
+              coachName:
+                [coachRow?.first_name, coachRow?.last_name]
+                  .filter(Boolean)
+                  .join(" ") || "ton coach",
+            });
+            await sendEmail({
+              to: clientRow.email,
+              subject: tpl.subject,
+              html: tpl.html,
+            });
+          }
+        } catch {
+          /* best-effort : simple notification */
+        }
+        break;
+      }
+      case "customer.subscription.updated": {
         await applyFromSubscription(event.data.object as Stripe.Subscription);
+        break;
+      }
+      case "customer.subscription.deleted": {
+        const sub = event.data.object as Stripe.Subscription;
+        await applyFromSubscription(sub);
+        // Fin de l'abonnement PRO d'un coach (jamais pour les abonnements
+        // clients) : email chaleureux, retour en Basic + CTA réactiver.
+        if (sub.metadata?.coach_id && sub.metadata?.kind !== "client_sub") {
+          try {
+            const [{ data: coachAuth }, { data: coachPrefs }] =
+              await Promise.all([
+                supabase.auth.admin.getUserById(sub.metadata.coach_id),
+                supabase
+                  .from("coaches")
+                  .select("locale")
+                  .eq("id", sub.metadata.coach_id)
+                  .maybeSingle(),
+              ]);
+            if (coachAuth?.user?.email) {
+              const { proCancelledCoach } = await import(
+                "@/lib/email/templates"
+              );
+              const { sendEmail } = await import("@/lib/email/resend");
+              const tpl = proCancelledCoach({
+                locale: coachPrefs?.locale === "en" ? "en" : "fr",
+                dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL || "https://madger.app"}/dashboard/abonnement`,
+              });
+              await sendEmail({
+                to: coachAuth.user.email,
+                subject: tpl.subject,
+                html: tpl.html,
+                replyTo: "contact@madger.app",
+              });
+            }
+          } catch {
+            /* best-effort */
+          }
+        }
         break;
       }
     }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 import MagneticButton from "@/components/ui/MagneticButton";
 
@@ -57,6 +56,12 @@ export default function Navbar() {
     transition: "background 0.4s ease, box-shadow 0.4s ease, backdrop-filter 0.4s ease, transform 0.35s ease",
   };
 
+  // Traits du hamburger : transitions CSS pures (croix quand le menu est ouvert).
+  const barBase: React.CSSProperties = {
+    width: 16,
+    transition: "transform 0.22s ease-in-out, opacity 0.18s ease",
+  };
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 ${hidden && !open ? "-translate-y-full md:translate-y-0" : "translate-y-0"}`}
@@ -88,18 +93,15 @@ export default function Navbar() {
 
         {/* CTA desktop + hamburger mobile */}
         <div className="flex items-center gap-3">
-          {/* CTA desktop */}
+          {/* CTA desktop : survol en CSS pur (échelle + halo) */}
           <MagneticButton className="hidden md:inline-block" strength={0.5}>
-            <motion.a
+            <a
               href="#early-access"
-              className="cta-shine inline-flex items-center text-sm font-semibold px-5 py-2.5 rounded-full"
+              className="cta-shine inline-flex items-center text-sm font-semibold px-5 py-2.5 rounded-full transition-[transform,box-shadow] duration-200 hover:scale-[1.03] hover:shadow-[0_0_22px_rgba(203,255,3,0.45)] active:scale-[0.97]"
               style={{ background: "#CBFF03", color: "#000" }}
-              whileHover={{ scale: 1.03, boxShadow: "0 0 22px rgba(203,255,3,0.45)" }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ duration: 0.18 }}
             >
               Rejoindre l'accès anticipé
-            </motion.a>
+            </a>
           </MagneticButton>
 
           {/* CTA mobile compact */}
@@ -122,99 +124,98 @@ export default function Navbar() {
               transition: "background 0.2s",
             }}
             aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
           >
-            <motion.span
+            <span
               className="block h-px bg-white rounded-full"
-              style={{ width: 16, originX: 0.5, originY: 0.5 }}
-              animate={open ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
-              transition={{ duration: 0.22, ease: "easeInOut" }}
+              style={{ ...barBase, transform: open ? "translateY(6px) rotate(45deg)" : "none" }}
             />
-            <motion.span
+            <span
               className="block h-px bg-white rounded-full"
-              style={{ width: 16 }}
-              animate={open ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }}
-              transition={{ duration: 0.18 }}
+              style={{ ...barBase, opacity: open ? 0 : 1, transform: open ? "scaleX(0)" : "none" }}
             />
-            <motion.span
+            <span
               className="block h-px bg-white rounded-full"
-              style={{ width: 16, originX: 0.5, originY: 0.5 }}
-              animate={open ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
-              transition={{ duration: 0.22, ease: "easeInOut" }}
+              style={{ ...barBase, transform: open ? "translateY(-6px) rotate(-45deg)" : "none" }}
             />
           </button>
         </div>
       </div>
 
       {/* ── Menu mobile ── */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            key="mobile-menu"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-            style={{ overflow: "hidden", borderTop: "1px solid rgba(255,255,255,0.06)" }}
-          >
-            <div className="px-5 pt-4 pb-8 flex flex-col gap-2">
+      {/* Dépliage en CSS pur : grid-template-rows 0fr → 1fr suit la hauteur
+          réelle du contenu. Les liens restent inertes quand c'est fermé
+          (visibility hidden via aria-hidden + contenu replié). */}
+      <div
+        id="mobile-menu"
+        aria-hidden={!open}
+        className="grid transition-[grid-template-rows,opacity] duration-300 ease-out"
+        style={{
+          gridTemplateRows: open ? "1fr" : "0fr",
+          opacity: open ? 1 : 0,
+          borderTop: open ? "1px solid rgba(255,255,255,0.06)" : "1px solid transparent",
+          visibility: open ? "visible" : "hidden",
+          transitionProperty: "grid-template-rows, opacity, visibility",
+        }}
+      >
+        <div style={{ overflow: "hidden", minHeight: 0 }}>
+          <div className="px-5 pt-4 pb-8 flex flex-col gap-2">
 
-              {/* Liens de navigation */}
-              {LINKS.map((l, i) => (
-                <motion.a
-                  key={l.href}
-                  href={l.href}
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.04 + i * 0.06, duration: 0.28, ease: "easeOut" }}
-                  className="flex items-center justify-between text-white font-medium py-3.5 px-4 rounded-xl"
-                  style={{ background: "rgba(255,255,255,0.03)", fontSize: 16 }}
-                  onClick={() => setOpen(false)}
-                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.03)")}
-                >
-                  {l.label}
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                    <path d="M9 18L15 12L9 6" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </motion.a>
-              ))}
-
-              {/* Divider */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.16 }}
-                className="my-1"
-                style={{ height: 1, background: "rgba(255,255,255,0.06)" }}
-              />
-
-              {/* CTA principal */}
-              <motion.a
-                href="#early-access"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.28, ease: "easeOut" }}
-                className="flex items-center justify-center font-bold py-4 rounded-2xl text-black"
-                style={{ background: "#CBFF03", fontSize: 16 }}
+            {/* Liens de navigation (léger décalage en cascade à l'ouverture) */}
+            {LINKS.map((l, i) => (
+              <a
+                key={l.href}
+                href={l.href}
+                className={open ? "anim-slide-in flex items-center justify-between text-white font-medium py-3.5 px-4 rounded-xl" : "flex items-center justify-between text-white font-medium py-3.5 px-4 rounded-xl"}
+                style={{
+                  background: "rgba(255,255,255,0.03)",
+                  fontSize: 16,
+                  animationDelay: open ? `${0.04 + i * 0.06}s` : undefined,
+                }}
+                tabIndex={open ? undefined : -1}
                 onClick={() => setOpen(false)}
+                onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")}
+                onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.03)")}
               >
-                Rejoindre l'accès anticipé →
-              </motion.a>
+                {l.label}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M9 18L15 12L9 6" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </a>
+            ))}
 
-              {/* Sous-texte */}
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.26 }}
-                className="text-center text-xs"
-                style={{ color: "var(--text-dim)" }}
-              >
-                Inscriptions ouvertes · Sans engagement
-              </motion.p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            {/* Divider */}
+            <div
+              className="my-1"
+              style={{ height: 1, background: "rgba(255,255,255,0.06)" }}
+            />
+
+            {/* CTA principal */}
+            <a
+              href="#early-access"
+              className={open ? "anim-fade-up flex items-center justify-center font-bold py-4 rounded-2xl text-black" : "flex items-center justify-center font-bold py-4 rounded-2xl text-black"}
+              style={{
+                background: "#CBFF03",
+                fontSize: 16,
+                animationDelay: open ? "0.2s" : undefined,
+              }}
+              tabIndex={open ? undefined : -1}
+              onClick={() => setOpen(false)}
+            >
+              Rejoindre l'accès anticipé →
+            </a>
+
+            {/* Sous-texte */}
+            <p
+              className={open ? "anim-fade-in text-center text-xs" : "text-center text-xs"}
+              style={{ color: "var(--text-dim)", animationDelay: open ? "0.26s" : undefined }}
+            >
+              Inscriptions ouvertes · Sans engagement
+            </p>
+          </div>
+        </div>
+      </div>
     </header>
   );
 }

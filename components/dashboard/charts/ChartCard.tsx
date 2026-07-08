@@ -95,6 +95,7 @@ export default function ChartCard({
               key={p.label}
               type="button"
               onClick={() => select(i)}
+              aria-pressed={sel === i}
               className={`rounded-full px-2 py-0.5 text-[10px] font-semibold transition-colors ${
                 sel === i
                   ? "bg-accent text-black"
@@ -108,6 +109,7 @@ export default function ChartCard({
             <button
               type="button"
               onClick={() => select(presets.length)}
+              aria-pressed={isMax}
               className={`rounded-full px-2 py-0.5 text-[10px] font-semibold transition-colors ${
                 isMax
                   ? "bg-accent text-black"

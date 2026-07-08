@@ -34,6 +34,11 @@ export default function PricingPlans({
         body: JSON.stringify({ plan: period }),
       });
       const data = await res.json().catch(() => ({}));
+      if (data.client_secret) {
+        // Paiement EMBARQUÉ : le formulaire Stripe s'affiche sur /paiement.
+        window.location.href = `/paiement?cs=${encodeURIComponent(data.client_secret)}&back=${encodeURIComponent("/dashboard/abonnement")}`;
+        return;
+      }
       if (data.url) {
         window.location.href = data.url;
         return;

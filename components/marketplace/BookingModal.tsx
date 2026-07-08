@@ -277,11 +277,19 @@ export default function BookingModal({
           }),
         });
         const data = await res.json().catch(() => ({}));
-        if (data.url) {
+        if (data.client_secret || data.url) {
           // Brouillon sauvegardé aussi avant Stripe : si le client annule le
           // paiement, il retrouve créneau et champs au retour.
           saveDraft();
-          window.location.href = data.url; // page de paiement Stripe
+          if (data.client_secret) {
+            // Paiement EMBARQUÉ : le formulaire Stripe s'affiche sur
+            // /paiement, aux couleurs Madger. `back` rouvre la modale avec
+            // le brouillon si le client renonce.
+            const back = `/${coach.slug}?payment=canceled&book=${selectedService.id}`;
+            window.location.href = `/paiement?cs=${encodeURIComponent(data.client_secret)}&back=${encodeURIComponent(back)}`;
+          } else {
+            window.location.href = data.url; // secours : page Stripe hébergée
+          }
           return;
         }
         if (data.error === "too_soon") setError(t("booking.errors.tooSoon"));

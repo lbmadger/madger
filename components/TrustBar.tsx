@@ -1,7 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
-
 const INTEGRATIONS = [
   {
     name: "Stripe",
@@ -41,12 +39,9 @@ const INTEGRATIONS = [
 
 export default function TrustBar() {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-40px" }}
-      transition={{ duration: 0.6 }}
-      className="py-8 sm:py-10"
+    // Fondu d'entrée en CSS pur (remplace framer-motion).
+    <div
+      className="anim-fade-up py-8 sm:py-10"
       style={{
         borderTop: "1px solid rgba(255,255,255,0.06)",
         borderBottom: "1px solid rgba(255,255,255,0.06)",
@@ -88,6 +83,6 @@ export default function TrustBar() {
           ))}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

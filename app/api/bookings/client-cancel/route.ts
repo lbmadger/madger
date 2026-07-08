@@ -10,6 +10,7 @@ import { sendEmail } from "@/lib/email/resend";
 import {
   refundClient,
   bookingCancelledCoach,
+  cancellationNoRefundClient,
 } from "@/lib/email/templates";
 import { detachMeetFromBooking } from "@/lib/google/calendar";
 
@@ -83,21 +84,26 @@ export async function POST(req: NextRequest) {
       );
       const coachEmail = coachAuth?.user?.email;
       if (!coachEmail) return;
+      // Email destiné au coach : dates et montants dans SA langue et son
+      // fuseau (en-GB s'il est en anglais).
+      const coachLocale = coach?.locale === "en" ? ("en" as const) : ("fr" as const);
+      const intl = coachLocale === "en" ? "en-GB" : "fr-FR";
       const euros = (c: number) =>
-        (c / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+        (c / 100).toLocaleString(intl, { style: "currency", currency: "EUR" });
       const tpl = bookingCancelledCoach({
-        locale: coach?.locale === "en" ? "en" : "fr",
+        locale: coachLocale,
         clientName:
           [clientRow?.first_name, clientRow?.last_name]
             .filter(Boolean)
-            .join(" ") || "Ton client",
-        dateStr: new Date(booking.starts_at).toLocaleString("fr-FR", {
+            .join(" ") ||
+          (coachLocale === "en" ? "Your client" : "Ton client"),
+        dateStr: new Date(booking.starts_at).toLocaleString(intl, {
           weekday: "long",
           day: "numeric",
           month: "long",
           hour: "2-digit",
           minute: "2-digit",
-          timeZone: "Europe/Paris",
+          timeZone: coach?.timezone || "Europe/Paris",
         }),
         refundStr: refunded > 0 ? euros(refunded) : null,
         keptStr: kept > 0 ? euros(kept) : null,
@@ -112,7 +118,7 @@ export async function POST(req: NextRequest) {
   const { data: coach } = await admin
     .from("coaches")
     .select(
-      "stripe_account_id, pro_until, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, first_name, last_name, locale"
+      "stripe_account_id, pro_until, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, first_name, last_name, locale, timezone"
     )
     .eq("id", booking.coach_id)
     .maybeSingle();
@@ -280,23 +286,37 @@ export async function POST(req: NextRequest) {
         .eq("id", pack.id);
     }
 
-    // Email de confirmation de remboursement (best-effort).
-    if (refund > 0) {
-      try {
-        const tpl = refundClient({
-          coachName:
-            [coach?.first_name, coach?.last_name].filter(Boolean).join(" ") ||
-            "Ton coach",
-          refundStr: (refund / 100).toLocaleString("fr-FR", {
-            style: "currency",
-            currency: (payment.currency || "eur").toUpperCase(),
-          }),
-          reason: "cancellation",
-        });
-        await sendEmail({ to: user.email, subject: tpl.subject, html: tpl.html });
-      } catch {
-        /* best-effort */
-      }
+    // Email de confirmation au client (best-effort) : remboursement s'il y a
+    // lieu, sinon annulation actée SANS remboursement (formule du coach),
+    // pour qu'il ne reste jamais sans réponse.
+    try {
+      const coachName =
+        [coach?.first_name, coach?.last_name].filter(Boolean).join(" ") ||
+        "Ton coach";
+      const tpl =
+        refund > 0
+          ? refundClient({
+              coachName,
+              refundStr: (refund / 100).toLocaleString("fr-FR", {
+                style: "currency",
+                currency: (payment.currency || "eur").toUpperCase(),
+              }),
+              reason: "cancellation",
+            })
+          : cancellationNoRefundClient({
+              coachName,
+              dateStr: new Date(booking.starts_at).toLocaleString("fr-FR", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                hour: "2-digit",
+                minute: "2-digit",
+                timeZone: coach?.timezone || "Europe/Paris",
+              }),
+            });
+      await sendEmail({ to: user.email, subject: tpl.subject, html: tpl.html });
+    } catch {
+      /* best-effort */
     }
 
     await notifyCoachCancelled(refund, breakdown.payoutCents);

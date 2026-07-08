@@ -8,7 +8,7 @@ import { isPro } from "@/lib/subscription/plan";
 import { isAdminEmail } from "@/lib/admin";
 import { sendEmail } from "@/lib/email/resend";
 import {
-  refundClient,
+  disputeResolvedClient,
   disputeResolvedCoach,
 } from "@/lib/email/templates";
 
@@ -144,8 +144,10 @@ export async function POST(req: NextRequest) {
 
     // La décision est notifiée aux deux parties (best-effort).
     try {
-      const euros = (c: number) =>
-        (c / 100).toLocaleString("fr-FR", {
+      // Montants formatés selon la langue du destinataire (client FR, coach
+      // FR ou EN).
+      const euros = (c: number, loc: "fr" | "en" = "fr") =>
+        (c / 100).toLocaleString(loc === "en" ? "en-GB" : "fr-FR", {
           style: "currency",
           currency: (payment.currency || "eur").toUpperCase(),
         });
@@ -159,19 +161,20 @@ export async function POST(req: NextRequest) {
         .select("first_name, last_name, locale")
         .eq("id", payment.coach_id)
         .maybeSingle();
-      if (refund > 0 && clientRow?.email) {
-        const tpl = refundClient({
-          coachName:
-            [coachRow?.first_name, coachRow?.last_name]
-              .filter(Boolean)
-              .join(" ") || "ton coach",
-          refundStr: euros(refund),
-          reason: "dispute",
+      const coachLocale = coachRow?.locale === "en" ? ("en" as const) : ("fr" as const);
+      // Le client est TOUJOURS informé de la décision, remboursé ou non :
+      // un signalement rejeté sans réponse laisserait le dossier ouvert
+      // pour lui.
+      if (clientRow?.email) {
+        const tpl = disputeResolvedClient({
+          refunded: refund > 0,
+          refundStr: refund > 0 ? euros(refund) : null,
         });
         await sendEmail({
           to: clientRow.email,
           subject: tpl.subject,
           html: tpl.html,
+          replyTo: "contact@madger.app",
         });
       }
       const { data: coachAuth } = await admin.auth.admin.getUserById(
@@ -179,14 +182,17 @@ export async function POST(req: NextRequest) {
       );
       if (coachAuth?.user?.email) {
         const tpl = disputeResolvedCoach({
-          locale: coachRow?.locale === "en" ? "en" : "fr",
+          locale: coachLocale,
           clientName:
             [clientRow?.first_name, clientRow?.last_name]
               .filter(Boolean)
-              .join(" ") || "ton client",
+              .join(" ") ||
+            (coachLocale === "en" ? "your client" : "ton client"),
           payoutStr:
-            breakdown.payoutCents > 0 ? euros(breakdown.payoutCents) : null,
-          refundStr: refund > 0 ? euros(refund) : null,
+            breakdown.payoutCents > 0
+              ? euros(breakdown.payoutCents, coachLocale)
+              : null,
+          refundStr: refund > 0 ? euros(refund, coachLocale) : null,
           dashboardUrl: `${APP_URL}/dashboard/paiements`,
         });
         await sendEmail({

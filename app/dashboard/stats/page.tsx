@@ -8,7 +8,8 @@ type Booking = { starts_at: string; ends_at: string; status: Status };
 type ClientRow = { created_at: string };
 
 export default async function StatsPage() {
-  const { dict } = getServerDictionary();
+  const { dict, locale } = getServerDictionary();
+  const loc = locale === "fr" ? "fr-FR" : "en-GB";
   const s = dict.stats;
   const supabase = createClient();
 
@@ -134,7 +135,7 @@ export default async function StatsPage() {
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <StatCard
             label={s.revenue}
-            value={(revenueMonth / 100).toLocaleString("fr-FR", {
+            value={(revenueMonth / 100).toLocaleString(loc, {
               style: "currency",
               currency: "EUR",
               maximumFractionDigits: revenueMonth % 100 === 0 ? 0 : 2,

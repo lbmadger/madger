@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
   // Limite d'acceptation : min_notice_hours avant le début de la séance.
   const { data: me } = await supabase
     .from("coaches")
-    .select("first_name, last_name, min_notice_hours")
+    .select("first_name, last_name, min_notice_hours, timezone")
     .eq("id", user.id)
     .maybeSingle();
   const noticeMs = ((me?.min_notice_hours as number) || 2) * 3600000;
@@ -192,7 +192,8 @@ export async function POST(req: NextRequest) {
               month: "long",
               hour: "2-digit",
               minute: "2-digit",
-              timeZone: "Europe/Paris",
+              // Fuseau du coach : la séance a lieu à son heure locale.
+              timeZone: (me?.timezone as string | null) || "Europe/Paris",
             }
           ),
           instant: true, // variante « confirmée »

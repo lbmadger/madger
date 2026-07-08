@@ -9,6 +9,7 @@ import {
   reviewRequestClient,
   bookingCancelledClient,
   payoutReleasedCoach,
+  refundClient,
 } from "@/lib/email/templates";
 import { cronAuthorized } from "@/lib/cron/auth";
 import { detachMeetFromBooking } from "@/lib/google/calendar";
@@ -278,6 +279,32 @@ export async function GET(req: NextRequest) {
             .eq("status", "cancelled");
           throw e;
         }
+        // Remboursement parti : le client est prévenu (best-effort, différé
+        // après le lot comme les autres emails).
+        {
+          const cl = Array.isArray(bookingRow?.clients)
+            ? bookingRow?.clients[0]
+            : bookingRow?.clients;
+          const co = Array.isArray(bookingRow?.coaches)
+            ? bookingRow?.coaches[0]
+            : bookingRow?.coaches;
+          if (cl?.email) {
+            const clEmail = cl.email as string;
+            const tpl = refundClient({
+              coachName:
+                [co?.first_name, co?.last_name].filter(Boolean).join(" ") ||
+                "Ton coach",
+              refundStr: (remaining / 100).toLocaleString("fr-FR", {
+                style: "currency",
+                currency: (p.currency || "eur").toUpperCase(),
+              }),
+              reason: "cancellation",
+            });
+            emailJobs.push(() =>
+              sendEmail({ to: clEmail, subject: tpl.subject, html: tpl.html })
+            );
+          }
+        }
         refunded++;
         continue;
       }
@@ -408,19 +435,24 @@ export async function GET(req: NextRequest) {
 
           const coachEmailPack = coachEmailById.get(p.coach_id as string);
           if (coachEmailPack) {
+            // Montants et repli dans la langue du coach.
+            const coachLocale = coach.locale === "en" ? ("en" as const) : ("fr" as const);
             const eurosStr = (cents: number) =>
-              (cents / 100).toLocaleString("fr-FR", {
-                style: "currency",
-                currency: "EUR",
-              });
+              (cents / 100).toLocaleString(
+                coachLocale === "en" ? "en-GB" : "fr-FR",
+                {
+                  style: "currency",
+                  currency: "EUR",
+                }
+              );
             const cl0 = Array.isArray(bookingRow?.clients)
               ? bookingRow?.clients[0]
               : bookingRow?.clients;
             const tpl = payoutReleasedCoach({
-              locale: coach.locale === "en" ? "en" : "fr",
+              locale: coachLocale,
               clientName:
                 [cl0?.first_name, cl0?.last_name].filter(Boolean).join(" ") ||
-                "ton client",
+                (coachLocale === "en" ? "your client" : "ton client"),
               payoutStr: eurosStr(deltaPayout),
               dashboardUrl: `${APP_URL}/dashboard/paiements`,
               commissionStr:

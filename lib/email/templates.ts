@@ -424,23 +424,47 @@ export function newMessageNotif(p: {
   senderName: string;
   preview: string;
   threadUrl: string;
+  locale?: EmailLocale;
 }): Email {
+  const locale = p.locale ?? "fr";
   const safe = p.preview
     .slice(0, 300)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
+  const L =
+    locale === "en"
+      ? {
+          subject: `New message from ${p.senderName}`,
+          eyebrow: "Messages",
+          title: "New message",
+          intro: `<b style="color:${C.text};">${p.senderName}</b> wrote to you:`,
+          boxTitle: "Message",
+          cta: "Reply",
+          outro:
+            "Replying quickly makes all the difference: most clients pick the coach who answers first.",
+        }
+      : {
+          subject: `Nouveau message de ${p.senderName}`,
+          eyebrow: "Messagerie",
+          title: "Nouveau message",
+          intro: `<b style="color:${C.text};">${p.senderName}</b> t'a écrit :`,
+          boxTitle: "Message",
+          cta: "Répondre",
+          outro:
+            "Répondre vite fait toute la différence : la plupart des clients choisissent le coach qui répond en premier.",
+        };
   return {
-    subject: `Nouveau message de ${p.senderName}`,
+    subject: L.subject,
     html: layout({
+      locale,
       preheader: p.preview.slice(0, 90),
-      eyebrow: "Messagerie",
-      title: "Nouveau message",
-      intro: `<b style="color:${C.text};">${p.senderName}</b> t'a écrit :`,
-      blocks: [infoBox("Message", `« ${safe} »`)],
-      cta: { label: "Répondre", url: p.threadUrl },
-      outro:
-        "Répondre vite fait toute la différence : la plupart des clients choisissent le coach qui répond en premier.",
+      eyebrow: L.eyebrow,
+      title: L.title,
+      intro: L.intro,
+      blocks: [infoBox(L.boxTitle, `« ${safe} »`)],
+      cta: { label: L.cta, url: p.threadUrl },
+      outro: L.outro,
     }),
   };
 }
@@ -949,6 +973,304 @@ export function disputeOpenedAdmin(p: {
       cta: { label: "Trancher le litige", url: p.adminUrl },
       outro:
         "Rappel charte : séance non assurée → remboursement intégral ; non conforme → total ou partiel selon les éléments ; séance correctement assurée ou signalement injustifié → versement au coach.",
+    }),
+  };
+}
+
+// ── Coach : un client a signalé un problème (litige ouvert) ─────────────────
+export function disputeOpenedCoach(p: {
+  clientName: string;
+  amountStr: string;
+  dashboardUrl: string;
+  locale?: EmailLocale;
+}): Email {
+  const locale = p.locale ?? "fr";
+  const L =
+    locale === "en"
+      ? {
+          subject: "A report is under review on one of your sessions",
+          preheader: `The ${p.amountStr} payout is paused while Madger reviews the report.`,
+          eyebrow: "Report under review",
+          title: "A client reported an issue",
+          intro: `<b style="color:${C.text};">${p.clientName}</b> reported an issue about a session. This happens and does not imply anything about you: the Madger team simply reviews the situation with both sides, as set out in the payment charter.`,
+          client: "Client",
+          amount: "Amount on hold",
+          boxTitle: "Payout paused",
+          boxBody: `The payout for this session is <b style="color:${C.text};">on hold during the review</b>. Nothing is decided yet: once the review is done, the funds are allocated and you receive an email with the outcome.`,
+          cta: "View my payments",
+          outro:
+            "You can reply to this email to share your side of the story: it helps the team decide fairly and quickly.",
+        }
+      : {
+          subject: "Un signalement est en cours d'examen sur une de tes séances",
+          preheader: `Le versement de ${p.amountStr} est en pause le temps de l'examen.`,
+          eyebrow: "Signalement en cours",
+          title: "Un client a signalé un problème",
+          intro: `<b style="color:${C.text};">${p.clientName}</b> a signalé un problème sur une séance. Ça arrive et ça ne présume rien te concernant : l'équipe Madger examine simplement la situation avec les deux parties, comme le prévoit la charte de paiement.`,
+          client: "Client",
+          amount: "Montant en attente",
+          boxTitle: "Versement en pause",
+          boxBody: `Le versement de cette séance est <b style="color:${C.text};">gelé le temps de l'examen</b>. Rien n'est encore décidé : une fois l'examen terminé, les fonds sont répartis et tu reçois un email avec la décision.`,
+          cta: "Voir mes paiements",
+          outro:
+            "Tu peux répondre à cet email pour donner ta version des faits : ça aide l'équipe à trancher vite et juste.",
+        };
+  return {
+    subject: L.subject,
+    html: layout({
+      locale,
+      preheader: L.preheader,
+      eyebrow: L.eyebrow,
+      title: L.title,
+      intro: L.intro,
+      blocks: [
+        detailsTable([
+          { label: L.client, value: p.clientName },
+          { label: L.amount, value: p.amountStr, accent: true },
+        ]),
+        infoBox(L.boxTitle, L.boxBody),
+      ],
+      cta: { label: L.cta, url: p.dashboardUrl },
+      outro: L.outro,
+    }),
+  };
+}
+
+// ── Client : accusé de réception d'un signalement ───────────────────────────
+export function disputeReceivedClient(p: {
+  coachName: string;
+  amountStr: string;
+  reservationUrl?: string;
+}): Email {
+  return {
+    subject: "Ton signalement est bien reçu ✅",
+    html: layout({
+      preheader: `Les fonds (${p.amountStr}) sont gelés le temps de l'examen.`,
+      eyebrow: "Signalement reçu",
+      title: "On s'en occupe",
+      intro: `Ton signalement concernant ta séance avec <b style="color:${C.text};">${p.coachName}</b> est bien enregistré. L'équipe Madger examine la situation et revient vers toi rapidement.`,
+      blocks: [
+        detailsTable([
+          { label: "Coach", value: p.coachName },
+          { label: "Montant gelé", value: p.amountStr, accent: true },
+        ]),
+        infoBox(
+          "Fonds gelés",
+          `Le paiement de <b style="color:${C.text};">${p.amountStr}</b> est gelé le temps de l'examen : rien n'est versé au coach tant que l'équipe n'a pas tranché, conformément à la charte de paiement.`
+        ),
+      ],
+      cta: p.reservationUrl
+        ? { label: "Voir ma réservation", url: p.reservationUrl }
+        : undefined,
+      outro:
+        "Tu peux répondre à cet email pour ajouter des précisions ou des éléments : tout est pris en compte dans l'examen.",
+    }),
+  };
+}
+
+// ── Client : litige tranché par Madger ──────────────────────────────────────
+export function disputeResolvedClient(p: {
+  refunded: boolean;
+  refundStr?: string | null;
+}): Email {
+  if (p.refunded && p.refundStr) {
+    return {
+      subject: "Litige tranché : ton remboursement arrive 💸",
+      html: layout({
+        preheader: `Remboursement de ${p.refundStr} émis suite à ton signalement.`,
+        eyebrow: "Litige résolu",
+        title: "Le litige est tranché",
+        intro: `Ton signalement a été examiné par l'équipe Madger : tu as été remboursé de <b style="color:${C.text};">${p.refundStr}</b>, conformément à la charte de paiement.`,
+        blocks: [
+          detailsTable([
+            { label: "Montant remboursé", value: p.refundStr, accent: true },
+            { label: "Délai bancaire", value: "2 à 7 jours ouvrés" },
+          ]),
+        ],
+        cta: { label: "Trouver un coach", url: `${APP_URL}/coachs` },
+        outro:
+          "Le remboursement apparaîtra sur le moyen de paiement utilisé lors de la réservation. Une question sur la décision ? Réponds simplement à cet email.",
+      }),
+    };
+  }
+  return {
+    subject: "Litige tranché : le dossier est clos",
+    html: layout({
+      preheader: "Ton signalement a été examiné, voici la décision.",
+      eyebrow: "Litige résolu",
+      title: "Le litige est tranché",
+      intro: `Ton signalement a été examiné par l'équipe Madger. Après étude des éléments des deux parties, il n'a pas été retenu : le paiement de la séance est versé au coach, conformément à la charte de paiement.`,
+      blocks: [
+        infoBox(
+          "Une question sur la décision ?",
+          "Réponds simplement à cet email en expliquant ta situation : un membre de l'équipe Madger te répondra."
+        ),
+      ],
+      cta: { label: "Charte de paiement", url: `${APP_URL}/charte-paiement` },
+    }),
+  };
+}
+
+// ── Coach : échéance d'abonnement client encaissée ──────────────────────────
+export function subscriptionPaymentCoach(p: {
+  clientName: string;
+  amountStr: string;
+  // Commission Madger prélevée sur cette échéance (coachs Gratuit). Absente =
+  // pas de ligne (coach Pro, 0 %).
+  commissionStr?: string;
+  dashboardUrl: string;
+  locale?: EmailLocale;
+}): Email {
+  const locale = p.locale ?? "fr";
+  const L =
+    locale === "en"
+      ? {
+          subject: `Subscription payment received: ${p.amountStr} 💸`,
+          preheader: `${p.clientName}'s monthly payment went through: ${p.amountStr}.`,
+          eyebrow: "Subscription payment",
+          title: "A monthly payment just came in",
+          intro: `<b style="color:${C.text};">${p.clientName}</b>'s monthly subscription payment went through. The amount is paid straight to your Stripe account.`,
+          client: "Client",
+          amount: "Amount collected",
+          commission: "Madger commission",
+          cta: "View my payments",
+        }
+      : {
+          subject: `Échéance d'abonnement encaissée : ${p.amountStr} 💸`,
+          preheader: `Le prélèvement mensuel de ${p.clientName} est passé : ${p.amountStr}.`,
+          eyebrow: "Échéance d'abonnement",
+          title: "Une échéance vient d'être encaissée",
+          intro: `Le prélèvement mensuel de l'abonnement de <b style="color:${C.text};">${p.clientName}</b> est bien passé. Le montant est versé directement sur ton compte Stripe.`,
+          client: "Client",
+          amount: "Montant encaissé",
+          commission: "Commission Madger",
+          cta: "Voir mes paiements",
+        };
+  return {
+    subject: L.subject,
+    html: layout({
+      locale,
+      preheader: L.preheader,
+      eyebrow: L.eyebrow,
+      title: L.title,
+      intro: L.intro,
+      blocks: [
+        detailsTable([
+          { label: L.client, value: p.clientName },
+          { label: L.amount, value: p.amountStr, accent: true },
+          ...(p.commissionStr
+            ? [{ label: L.commission, value: p.commissionStr }]
+            : []),
+        ]),
+      ],
+      cta: { label: L.cta, url: p.dashboardUrl },
+    }),
+  };
+}
+
+// ── Client : échec du prélèvement de l'abonnement mensuel ───────────────────
+export function subscriptionPaymentFailedClient(p: {
+  coachName: string;
+}): Email {
+  return {
+    subject: "Le prélèvement de ton abonnement a échoué ⚠️",
+    html: layout({
+      preheader:
+        "Mets à jour ta carte pour garder ton abonnement actif.",
+      eyebrow: "Abonnement",
+      title: "Ton prélèvement n'est pas passé",
+      intro: `Le prélèvement mensuel de ton abonnement chez <b style="color:${C.text};">${p.coachName}</b> a échoué (carte expirée, plafond, solde insuffisant...). Pas de panique : mets à jour ta carte pour que tout rentre dans l'ordre.`,
+      blocks: [
+        infoBox(
+          "Que se passe-t-il maintenant ?",
+          "Le prélèvement est retenté automatiquement dans les prochains jours. Si le paiement échoue à nouveau, ton abonnement risque d'être suspendu."
+        ),
+      ],
+      cta: { label: "Mettre à jour ma carte", url: `${APP_URL}/espace` },
+      outro:
+        "Une question ? Réponds simplement à cet email ou écris à ton coach.",
+    }),
+  };
+}
+
+// ── Coach : abonnement Pro terminé (retour en Basic) ────────────────────────
+export function proCancelledCoach(p: {
+  dashboardUrl: string;
+  locale?: EmailLocale;
+}): Email {
+  const locale = p.locale ?? "fr";
+  const L =
+    locale === "en"
+      ? {
+          subject: "Your Pro plan has ended",
+          preheader:
+            "Your account is back on Madger Basic. You can reactivate Pro anytime.",
+          eyebrow: "Pro plan",
+          title: "Back to Madger Basic",
+          intro: `Your Pro subscription has ended and your account is back on <b style="color:${C.text};">Madger Basic</b>. Nothing else changes: your calendar, clients and payments keep working exactly the same. The only difference is that the <b style="color:${C.text};">5% Madger commission</b> applies again to your sessions.`,
+          boxTitle: "Come back whenever you want",
+          boxBody:
+            "Reactivate Pro in two clicks to get back to 0% commission and your advanced stats. Your data is right where you left it.",
+          cta: "Reactivate Pro",
+          outro:
+            "Thanks for having tried Pro. If something did not fit, just reply to this email: your feedback really helps us improve.",
+        }
+      : {
+          subject: "Ton plan Pro est terminé",
+          preheader:
+            "Ton compte repasse en Madger Basic. Tu peux réactiver Pro à tout moment.",
+          eyebrow: "Plan Pro",
+          title: "Retour en Madger Basic",
+          intro: `Ton abonnement Pro est arrivé à son terme : ton compte repasse en <b style="color:${C.text};">Madger Basic</b>. Rien d'autre ne change : ton agenda, tes clients et tes paiements continuent de fonctionner exactement pareil. Seule différence : la <b style="color:${C.text};">commission Madger de 5 %</b> s'applique de nouveau sur tes séances.`,
+          boxTitle: "Tu peux revenir quand tu veux",
+          boxBody:
+            "Réactive Pro en deux clics pour retrouver 0 % de commission et tes statistiques avancées. Tes données sont restées exactement là où tu les as laissées.",
+          cta: "Réactiver Pro",
+          outro:
+            "Merci d'avoir essayé Pro. Si quelque chose ne t'a pas convenu, réponds simplement à cet email : ton retour nous aide vraiment à progresser.",
+        };
+  return {
+    subject: L.subject,
+    html: layout({
+      locale,
+      preheader: L.preheader,
+      eyebrow: L.eyebrow,
+      title: L.title,
+      intro: L.intro,
+      blocks: [infoBox(L.boxTitle, L.boxBody)],
+      cta: { label: L.cta, url: p.dashboardUrl },
+      outro: L.outro,
+    }),
+  };
+}
+
+// ── Client : annulation confirmée, sans remboursement (formule du coach) ────
+export function cancellationNoRefundClient(p: {
+  coachName: string;
+  dateStr: string;
+}): Email {
+  return {
+    subject: "Ton annulation est confirmée",
+    html: layout({
+      preheader:
+        "Séance annulée. Aucun remboursement selon la formule d'annulation du coach.",
+      eyebrow: "Annulation",
+      title: "Séance annulée",
+      intro: `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> du <b style="color:${C.text};">${p.dateStr}</b> est bien annulée. Le créneau est libéré.`,
+      blocks: [
+        detailsTable([
+          { label: "Coach", value: p.coachName },
+          { label: "Séance", value: p.dateStr },
+          { label: "Montant remboursé", value: "0 €" },
+        ]),
+        infoBox(
+          "Pourquoi aucun remboursement ?",
+          `D'après la formule d'annulation de ${p.coachName}, cette annulation intervient trop tard pour donner droit à un remboursement : le montant de la séance est conservé par le coach. Les conditions exactes sont affichées sur ta réservation.`
+        ),
+      ],
+      cta: { label: "Choisir un autre créneau", url: `${APP_URL}/coachs` },
+      outro:
+        "Une question ? Réponds simplement à cet email, on est là pour aider.",
     }),
   };
 }

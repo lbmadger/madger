@@ -94,7 +94,12 @@ export default function MobileNav() {
         }
 
         return (
-          <Link key={tab.href} href={tab.href} className={className}>
+          <Link
+            key={tab.href}
+            href={tab.href}
+            aria-current={active ? "page" : undefined}
+            className={className}
+          >
             {inner}
           </Link>
         );

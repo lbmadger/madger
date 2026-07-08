@@ -111,6 +111,7 @@ function NavLink({ item }: { item: NavItem }) {
   return (
     <Link
       href={item.href}
+      aria-current={active ? "page" : undefined}
       className={`${base} ${
         active
           ? "bg-accent/10 text-accent"

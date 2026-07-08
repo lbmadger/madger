@@ -118,6 +118,7 @@ const fr = {
   },
   account: {
     signout: "Se déconnecter",
+    menuLabel: "Menu du compte",
   },
   onboarding: {
     title: "Bienvenue sur Madger",
@@ -196,6 +197,10 @@ const fr = {
     add: "Ajouter",
     none: "Aucun créneau",
     to: "à",
+    remove: "Supprimer ce créneau",
+    removeConfirm: "Supprimer ce créneau ? Les clients ne pourront plus réserver sur cette plage.",
+    startTime: "Heure de début",
+    endTime: "Heure de fin",
     days: {
       mon: "Lundi",
       tue: "Mardi",
@@ -451,6 +456,8 @@ const fr = {
     emptyTitle: "Aucune conversation",
     emptyDesc: "Tes échanges apparaîtront ici.",
     back: "Conversations",
+    backLabel: "Retour",
+    emptyThread: "Écris ton premier message",
     placeholder: "Écris un message…",
     send: "Envoyer",
     contactCta: "Contacter",
@@ -605,6 +612,8 @@ const fr = {
     heroSubtitle:
       "Des coachs vérifiés, des créneaux en temps réel, un paiement sécurisé. Réserve ta séance en 30 secondes.",
     cityPlaceholder: "Dans quelle ville ?",
+    cityLabel: "Ville",
+    radiusLabel: "Rayon de recherche",
     search: "Rechercher",
     filterAll: "Tout",
     filterOnline: "En ligne",
@@ -826,6 +835,11 @@ const fr = {
     calSession: "Séance avec",
     calVideo: "Visio :",
     calMy: "Ma réservation :",
+  },
+  payment: {
+    secure: "Paiement sécurisé",
+    back: "Revenir en arrière",
+    error: "Ce paiement n'est plus disponible. Reviens en arrière et réessaie.",
   },
   cancellation: {
     title: "Politique d'annulation",
@@ -1264,6 +1278,7 @@ const en: Dictionary = {
   },
   account: {
     signout: "Sign out",
+    menuLabel: "Account menu",
   },
   onboarding: {
     title: "Welcome to Madger",
@@ -1273,12 +1288,12 @@ const en: Dictionary = {
     back: "Back",
     next: "Continue",
     skip: "Skip this step",
-    photoTitle: "Your photo and presentation",
+    photoTitle: "Your photo and intro",
     photoSubtitle: "Coaches with a real photo get far more requests.",
     addPhoto: "Add my photo",
     changePhoto: "Change photo",
     photoHint: "Sharp image, natural light. 5 MB max.",
-    bioLabel: "Your presentation",
+    bioLabel: "About you",
     bioPlaceholder: "Your background, your method, your clients' results…",
     activityTitle: "Your activity",
     activitySubtitle: "This information powers the client search filters.",
@@ -1338,6 +1353,10 @@ const en: Dictionary = {
     add: "Add",
     none: "No slots",
     to: "to",
+    remove: "Remove this slot",
+    removeConfirm: "Remove this slot? Clients will no longer be able to book this range.",
+    startTime: "Start time",
+    endTime: "End time",
     days: {
       mon: "Monday",
       tue: "Tuesday",
@@ -1429,7 +1448,7 @@ const en: Dictionary = {
       dateRequired: "Pick a date and time.",
       overlap: "This slot overlaps another session. Pick another time.",
       captureFailed:
-        "Charging the client failed (expired card or authorization). Decline the request: nothing will be taken from them.",
+        "Charging the client failed (card expired or authorization lapsed). Decline the request: nothing will be taken from them.",
       tooLate:
         "Too late to accept: your minimum notice before the session has passed. The request will be cancelled automatically, without charging the client.",
     },
@@ -1536,7 +1555,7 @@ const en: Dictionary = {
     connectedTitle: "Stripe account connected",
     connectedDesc:
       "You can receive payments from your clients directly to your account.",
-    pendingTitle: "Setup to finish",
+    pendingTitle: "Finish your setup",
     pendingDesc:
       "Your Stripe account exists but setup isn't complete. Finish it to get paid.",
     finishSetup: "Finish setup",
@@ -1591,6 +1610,8 @@ const en: Dictionary = {
     emptyTitle: "No conversations",
     emptyDesc: "Your conversations will show up here.",
     back: "Conversations",
+    backLabel: "Back",
+    emptyThread: "Write your first message",
     placeholder: "Write a message…",
     send: "Send",
     contactCta: "Contact",
@@ -1643,7 +1664,7 @@ const en: Dictionary = {
   clients: {
     title: "Clients",
     add: "Add a client",
-    search: "Search a client…",
+    search: "Search clients…",
     count: "client(s)",
     emptyTitle: "No clients yet",
     emptyDesc: "Add your first client to start tracking them.",
@@ -1703,20 +1724,20 @@ const en: Dictionary = {
     fillRateHint: "booked hours / open hours this week",
     rating: "Average rating",
     sessionsMonth: "Sessions this month",
-    msgs24h: "Messages (24 h)",
+    msgs24h: "Messages (24h)",
     proStats: {
       title: "Advanced stats",
       lockedTitle: "Madger Pro only",
       lockedDesc:
         "Unlock your advanced stats: fill rate, average basket, best slots, loyal clients and projected revenue.",
       unlock: "Unlock with Pro",
-      avgBasket: "Average basket",
+      avgBasket: "Average payment",
       avgBasketHint: "average revenue per collected payment",
       cancelRate: "Cancellation rate",
       cancelRateHint: "last 30 days",
       bestDay: "Best day",
       bestDayHint: "most booked day",
-      bestHour: "Star slot",
+      bestHour: "Top time slot",
       bestHourHint: "most requested hour",
       loyalClients: "Loyal clients",
       loyalHint: "clients with 2 sessions or more",
@@ -1724,7 +1745,7 @@ const en: Dictionary = {
       forecastHint: "upcoming sessions over 30 days",
     },
     toConfirm: "To confirm",
-    noMessages: "No recent message.",
+    noMessages: "No recent messages.",
     nextSessions: "Upcoming sessions",
     noSessions: "No sessions scheduled yet.",
     setupTitle: "Finish your setup",
@@ -1745,6 +1766,8 @@ const en: Dictionary = {
     heroSubtitle:
       "Verified coaches, real time slots, secure payment. Book your session in 30 seconds.",
     cityPlaceholder: "Which city?",
+    cityLabel: "City",
+    radiusLabel: "Search radius",
     search: "Search",
     filterAll: "All",
     filterOnline: "Online",
@@ -1857,7 +1880,7 @@ const en: Dictionary = {
     paymentCanceledBanner:
       "The payment did not go through: nothing was charged. You can resume your booking anytime.",
     conflictBanner:
-      "This slot had just been taken by someone else: you have been fully refunded. Please pick another slot.",
+      "This slot was just taken by someone else: you have been fully refunded. Please pick another slot.",
     subBanner:
       "Subscription active! Your coach will contact you to plan your sessions. Confirmation sent by email.",
     subscriptionTitle: "Monthly subscription",
@@ -1876,7 +1899,7 @@ const en: Dictionary = {
     bioPlaceholder: "Introduce yourself: your approach, your experience…",
     acceptsOnline: "I also coach online (video)",
     slug: "Public link",
-    slugHint: "madger.app/your-link : lowercase, numbers and hyphens.",
+    slugHint: "madger.app/your-link: lowercase, numbers and hyphens.",
     listed: "Visible on the marketplace",
     listedHint: "Uncheck to temporarily hide your public profile.",
     photoChange: "Change photo",
@@ -1961,6 +1984,11 @@ const en: Dictionary = {
     calSession: "Session with",
     calVideo: "Video:",
     calMy: "My booking:",
+  },
+  payment: {
+    secure: "Secure payment",
+    back: "Go back",
+    error: "This payment is no longer available. Go back and try again.",
   },
   cancellation: {
     title: "Cancellation policy",
@@ -2148,7 +2176,7 @@ const en: Dictionary = {
     myProfile: "My profile",
     upcoming: "Upcoming",
     past: "Past",
-    noUpcoming: "No upcoming session. Find your coach and book your first session.",
+    noUpcoming: "No upcoming sessions. Find your coach and book your first session.",
     with: "with",
     online: "online",
     viewBooking: "Session details",
@@ -2211,7 +2239,7 @@ const en: Dictionary = {
         cta: "Add my photo",
       },
       bio: {
-        title: "Beef up your presentation",
+        title: "Beef up your bio",
         body: "Your bio is your storefront: share your background, your method and your clients' results. Aim for at least 3 or 4 sentences.",
         cta: "Complete my bio",
       },

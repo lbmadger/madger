@@ -40,7 +40,8 @@ export function CopyLinkPill() {
       <span className="max-w-[180px] truncate text-xs font-semibold text-accent">
         {url}
       </span>
-      <span className="flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-[10px] font-semibold text-black">
+      {/* role="status" : le passage à « Copié » est annoncé aux lecteurs d'écran. */}
+      <span role="status" className="flex items-center gap-1 rounded-full bg-accent px-2.5 py-1 text-[10px] font-semibold text-black">
         {copied ? (
           `${t("topbar.copied")}`
         ) : (

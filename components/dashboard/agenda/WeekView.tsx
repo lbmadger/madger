@@ -314,6 +314,7 @@ export default function WeekView({
                 key={ymd(d)}
                 type="button"
                 onClick={() => setMobileDayIdx(i)}
+                aria-pressed={active}
                 className={`flex min-w-11 flex-1 flex-col items-center rounded-xl px-1 py-1.5 transition-colors ${
                   active ? "bg-accent/10" : "hover:bg-white/[0.04]"
                 }`}

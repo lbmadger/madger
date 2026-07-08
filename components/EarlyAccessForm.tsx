@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 import { useEarlyAccessFull } from "@/components/ui/useEarlyAccessFull";
@@ -42,6 +42,13 @@ export default function EarlyAccessForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState(1);
+
+  // Bloc de confirmation : le focus y est déplacé après l'envoi pour que les
+  // lecteurs d'écran annoncent immédiatement le succès.
+  const confirmRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (submitted) confirmRef.current?.focus();
+  }, [submitted]);
 
   // État "complet" partagé avec le hero (aucun nombre exposé).
   const full = useEarlyAccessFull();
@@ -222,9 +229,12 @@ export default function EarlyAccessForm() {
             {submitted ? (
               <motion.div
                 key="confirm"
+                ref={confirmRef}
+                role="status"
+                tabIndex={-1}
                 initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="py-8 px-6 rounded-2xl"
+                className="py-8 px-6 rounded-2xl outline-none"
                 style={{ background: "rgba(203,255,3,0.08)", border: "1px solid rgba(203,255,3,0.2)" }}
               >
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" className="mx-auto mb-4">

@@ -166,11 +166,26 @@ export async function POST(req: NextRequest) {
           [coach.first_name, coach.last_name].filter(Boolean).join(" ") ||
           "Ton coach";
 
+        // Préférences du coach (langue, fuseau) récupérées AVANT le
+        // formatage des dates : son email doit être dans sa langue.
+        const svcKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        let coachPrefs: { locale: string | null; timezone: string | null } | null =
+          null;
+        if (svcKey) {
+          const adminPrefs = createClient(SUPABASE_URL, svcKey);
+          const { data: prefs } = await adminPrefs
+            .from("coaches")
+            .select("locale, timezone")
+            .eq("id", coach.id as string)
+            .maybeSingle();
+          coachPrefs = prefs ?? null;
+        }
+        const coachLocale = coachPrefs?.locale === "en" ? ("en" as const) : ("fr" as const);
+
         // Séance confirmée d'office (mode instantané) : événement dans
         // l'agenda Google du coach (Meet intégré si visio). En mode
         // approbation, l'événement est créé quand le coach confirme.
         let meetUrl: string | undefined;
-        const svcKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
         if (instant && svcKey && bookingId) {
           const adminC = createClient(SUPABASE_URL, svcKey);
           const s0 = new Date(String(starts_at));
@@ -186,14 +201,21 @@ export async function POST(req: NextRequest) {
               clientEmail: String(email),
             })) ?? undefined;
         }
-        const dateStr = new Date(String(starts_at)).toLocaleString("fr-FR", {
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-          hour: "2-digit",
-          minute: "2-digit",
-          timeZone: "Europe/Paris",
-        });
+        // Date formatée selon la langue du destinataire (client FR, coach FR
+        // ou EN), dans le fuseau du coach.
+        const fmtDate = (loc: "fr" | "en") =>
+          new Date(String(starts_at)).toLocaleString(
+            loc === "en" ? "en-GB" : "fr-FR",
+            {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              hour: "2-digit",
+              minute: "2-digit",
+              timeZone: coachPrefs?.timezone || "Europe/Paris",
+            }
+          );
+        const dateStr = fmtDate("fr");
 
         const starts = new Date(String(starts_at));
         const tplClient = requestReceivedClient({
@@ -227,22 +249,16 @@ export async function POST(req: NextRequest) {
         });
 
         // Email du coach : compte auth (service role requis).
-        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-        if (serviceKey) {
-          const admin = createClient(SUPABASE_URL, serviceKey);
+        if (svcKey) {
+          const admin = createClient(SUPABASE_URL, svcKey);
           const { data: u } = await admin.auth.admin.getUserById(
             coach.id as string
           );
           if (u?.user?.email) {
-            const { data: coachPrefs } = await admin
-              .from("coaches")
-              .select("locale")
-              .eq("id", coach.id as string)
-              .maybeSingle();
             const tplCoach = newRequestCoach({
-              locale: coachPrefs?.locale === "en" ? "en" : "fr",
+              locale: coachLocale,
               clientName: [first_name, last_name].filter(Boolean).join(" "),
-              dateStr,
+              dateStr: fmtDate(coachLocale),
               online: Boolean(online),
               instant,
               dashboardUrl: `${APP_URL}/dashboard/agenda`,

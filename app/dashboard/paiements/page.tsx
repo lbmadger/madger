@@ -13,7 +13,8 @@ export const dynamic = "force-dynamic";
 // Page Paiements : connexion Stripe du coach. La note de frais dépend du plan
 // réel : Pro = 0 % de commission Madger, Gratuit = 5 %.
 export default async function PaymentsPage() {
-  const { dict } = getServerDictionary();
+  const { dict, locale } = getServerDictionary();
+  const loc = locale === "fr" ? "fr-FR" : "en-GB";
   const pay = dict.payments;
   const { coach } = await getCoach();
   const feesNote = isPro(coach?.pro_until) ? pay.feesNotePro : pay.feesNoteFree;
@@ -57,7 +58,7 @@ export default async function PaymentsPage() {
     .limit(30);
 
   const euros = (cents: number) =>
-    (cents / 100).toLocaleString("fr-FR", {
+    (cents / 100).toLocaleString(loc, {
       style: "currency",
       currency: "EUR",
       maximumFractionDigits: cents % 100 === 0 ? 0 : 2,
@@ -163,7 +164,7 @@ export default async function PaymentsPage() {
                         </p>
                         <p className="mt-0.5 text-xs text-text-muted">
                           {new Date(p.paid_at as string).toLocaleDateString(
-                            "fr-FR",
+                            loc,
                             {
                               day: "numeric",
                               month: "long",
@@ -188,7 +189,7 @@ export default async function PaymentsPage() {
                     </div>
                     <p className="mt-2 border-t border-border pt-2 text-xs text-text-dim">
                       {p.escrow_status === "held" && p.release_after
-                        ? `${pay.releasePlanned} ${new Date(p.release_after as string).toLocaleDateString("fr-FR", { day: "numeric", month: "long", timeZone: "Europe/Paris" })}`
+                        ? `${pay.releasePlanned} ${new Date(p.release_after as string).toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: "Europe/Paris" })}`
                         : p.escrow_status === "released"
                         ? `${pay.netPaid} ${euros((p.payout_cents as number) || 0)}${((p.commission_cents as number) || 0) > 0 ? ` · ${pay.commissionLabel} ${euros((p.commission_cents as number) || 0)}` : ""}`
                         : refundedCents > 0

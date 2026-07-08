@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { animate, motion, useInView } from "framer-motion";
 
 // Tuile de statistique animée (comme le mockup de la landing) : entrée en
 // fondu + compteur qui monte jusqu'à la valeur. Types de format gérés :
 // monnaie (centimes), entier, pourcentage, décimal (note ⭐).
+// Sans framer-motion : IntersectionObserver pour le déclenchement à la vue,
+// requestAnimationFrame pour le compteur, transition CSS pour le fondu.
 
 export type StatKind = "currency" | "int" | "percent" | "decimal1";
 export type StatTrend = { text: string; positive: boolean } | null;
@@ -50,26 +51,57 @@ export default function AnimatedStat({
   index?: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-30px" });
+  const [inView, setInView] = useState(false);
   const [display, setDisplay] = useState(0);
 
+  // Déclenchement à l'entrée dans le viewport (une seule fois).
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          obs.disconnect();
+        }
+      },
+      { rootMargin: "-30px" }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  // Compteur en requestAnimationFrame avec sortie douce (ease-out cubique).
+  // Motricité réduite : on affiche directement la valeur finale.
   useEffect(() => {
     if (!inView) return;
-    const controls = animate(0, value, {
-      duration: 1.3,
-      ease: "easeOut",
-      onUpdate: (v) => setDisplay(v),
-    });
-    return () => controls.stop();
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setDisplay(value);
+      return;
+    }
+    const duration = 1300;
+    const start = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const p = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setDisplay(value * eased);
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, [inView, value]);
 
   return (
-    <motion.div
+    <div
       ref={ref}
-      initial={{ opacity: 0, y: 14 }}
-      animate={inView ? { opacity: 1, y: 0 } : undefined}
-      transition={{ duration: 0.5, delay: index * 0.06, ease: [0.16, 1, 0.3, 1] }}
-      className="h-full rounded-2xl border border-border bg-bg-card p-4 sm:p-5"
+      className="h-full rounded-2xl border border-border bg-bg-card p-4 sm:p-5 transition-[opacity,transform] duration-500"
+      style={{
+        opacity: inView ? 1 : 0,
+        transform: inView ? "none" : "translateY(14px)",
+        transitionDelay: `${index * 0.06}s`,
+        transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+      }}
     >
       <p className="text-xs font-medium uppercase tracking-wide text-text-dim">
         {label}
@@ -97,6 +129,6 @@ export default function AnimatedStat({
         )}
       </div>
       {hint && <p className="mt-1 text-[11px] text-text-dim">{hint}</p>}
-    </motion.div>
+    </div>
   );
 }

@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
     const { data: bookings } = await supabase
       .from("bookings")
       .select(
-        "id, starts_at, location, meeting_url, reminder_sent_at, status, clients(first_name, email), coaches(first_name, last_name)"
+        "id, starts_at, location, meeting_url, reminder_sent_at, status, clients(first_name, email), coaches(first_name, last_name, timezone)"
       )
       .eq("status", "confirmed")
       .eq("is_block", false)
@@ -67,7 +67,8 @@ export async function GET(req: NextRequest) {
         month: "long",
         hour: "2-digit",
         minute: "2-digit",
-        timeZone: "Europe/Paris",
+        // Fuseau du coach : la séance a lieu à son heure locale.
+        timeZone: (coach?.timezone as string | null) || "Europe/Paris",
       });
       const t = sessionReminderClient({
         coachName,

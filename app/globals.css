@@ -10,7 +10,7 @@
   --text-strong: #ffffff;
   --text-soft: #c0c0c0; /* texte de lecture landing (paragraphes) */
   --text-muted: #9a9a9a; /* = token text-muted */
-  --text-dim: #757575; /* = token text-dim */
+  --text-dim: #8C8C8C; /* = token text-dim (AA : environ 5,5:1 sur #141414) */
 }
 
 * {
@@ -30,6 +30,80 @@
   to {
     opacity: 1;
   }
+}
+
+/* ── Entrées en CSS pur (remplace framer-motion sur les pages critiques) ── */
+/* Fondu + légère remontée à l'apparition. La règle globale
+   prefers-reduced-motion (fin de fichier) neutralise ces animations. */
+@keyframes anim-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.anim-fade-up {
+  animation: anim-fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Simple fondu, sans déplacement. */
+@keyframes anim-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.anim-fade-in {
+  animation: anim-fade-in 0.5s ease both;
+}
+
+/* Apparition en zoom léger (logo de la page d'accès, confirmation). */
+@keyframes anim-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.anim-scale-in {
+  animation: anim-scale-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Glissement latéral (étapes du formulaire d'accès anticipé). */
+@keyframes anim-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.anim-slide-in {
+  animation: anim-slide-in 0.28s ease-out both;
+}
+
+/* Secousse horizontale (code d'accès incorrect). */
+@keyframes anim-shake {
+  0% { transform: translateX(0); }
+  15% { transform: translateX(-9px); }
+  30% { transform: translateX(9px); }
+  45% { transform: translateX(-6px); }
+  60% { transform: translateX(6px); }
+  80% { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+}
+.anim-shake {
+  animation: anim-shake 0.4s ease both;
 }
 
 html {

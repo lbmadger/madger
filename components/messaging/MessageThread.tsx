@@ -144,7 +144,7 @@ export default function MessageThread({
         <Link
           href={backPath}
           className="text-text-muted transition-colors hover:text-text-base"
-          aria-label="back"
+          aria-label={t("messages.backLabel")}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M15 18l-6-6 6-6" />
@@ -158,9 +158,16 @@ export default function MessageThread({
 
       {headerExtra}
 
-      {/* Messages */}
+      {/* Messages. role="log" : les nouveaux messages sont annoncés aux
+          lecteurs d'écran sans voler le focus. */}
       <div className="flex-1 overflow-y-auto px-4 py-4">
-        <div className="mx-auto flex max-w-2xl flex-col gap-2">
+        <div role="log" className="mx-auto flex max-w-2xl flex-col gap-2">
+          {/* Fil vide : invite à démarrer la conversation. */}
+          {messages.length === 0 && (
+            <p className="py-10 text-center text-sm text-text-dim">
+              {t("messages.emptyThread")}
+            </p>
+          )}
           {messages.map((m) => {
             const mine = m.sender_id === currentUserId;
             return (
@@ -190,6 +197,7 @@ export default function MessageThread({
           value={body}
           onChange={(e) => setBody(e.target.value)}
           placeholder={t("messages.placeholder")}
+          aria-label={t("messages.placeholder")}
           className="flex-1 rounded-full border border-border-strong bg-white/[0.03] px-4 py-2.5 text-base text-text-base outline-none transition-colors placeholder:text-text-dim focus:border-accent"
         />
         <button

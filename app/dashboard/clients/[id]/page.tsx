@@ -13,7 +13,8 @@ export default async function ClientDetailPage({
 }: {
   params: { id: string };
 }) {
-  const { dict } = getServerDictionary();
+  const { dict, locale } = getServerDictionary();
+  const loc = locale === "fr" ? "fr-FR" : "en-GB";
   const supabase = createClient();
 
   const { data } = await supabase
@@ -79,7 +80,7 @@ export default async function ClientDetailPage({
                   <span className="text-text-muted">
                     {" "}
                     ·{" "}
-                    {(s.price_cents / 100).toLocaleString("fr-FR", {
+                    {(s.price_cents / 100).toLocaleString(loc, {
                       style: "currency",
                       currency: "EUR",
                       maximumFractionDigits: s.price_cents % 100 === 0 ? 0 : 2,

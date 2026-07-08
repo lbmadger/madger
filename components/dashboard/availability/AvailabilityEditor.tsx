@@ -65,7 +65,7 @@ export default function AvailabilityEditor({
   return (
     <div className="flex flex-col gap-2">
       {saveError && (
-        <p className="rounded-xl border border-danger/25 bg-danger/10 px-3 py-2 text-sm text-danger">
+        <p role="alert" className="rounded-xl border border-danger/25 bg-danger/10 px-3 py-2 text-sm text-danger">
           {t("availability.errors.saveFailed")}
         </p>
       )}
@@ -143,9 +143,15 @@ function DayRow({
             <button
               type="button"
               disabled={busy}
-              onClick={() => onRemove(r.id)}
+              // Confirmation avant suppression : évite de perdre une plage
+              // d'un tap accidentel (action non annulable).
+              onClick={() => {
+                if (window.confirm(t("availability.removeConfirm"))) {
+                  onRemove(r.id);
+                }
+              }}
               className="text-text-dim transition-colors hover:text-danger"
-              aria-label="remove"
+              aria-label={`${t("availability.remove")} : ${label} ${hhmm(r.start_time)} ${t("availability.to")} ${hhmm(r.end_time)}`}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <path d="M18 6L6 18M6 6l12 12" />
@@ -162,6 +168,7 @@ function DayRow({
             type="time"
             value={start}
             onChange={(e) => setStart(e.target.value)}
+            aria-label={`${t("availability.startTime")} (${label})`}
             className="rounded-lg border border-border-strong bg-white/[0.03] px-3 py-2 text-sm text-text-base outline-none focus:border-accent"
           />
           <span className="text-text-dim">{t("availability.to")}</span>
@@ -169,6 +176,7 @@ function DayRow({
             type="time"
             value={end}
             onChange={(e) => setEnd(e.target.value)}
+            aria-label={`${t("availability.endTime")} (${label})`}
             className="rounded-lg border border-border-strong bg-white/[0.03] px-3 py-2 text-sm text-text-base outline-none focus:border-accent"
           />
           <button
@@ -182,7 +190,7 @@ function DayRow({
         </div>
       )}
       {error && (
-        <p className="mt-2 text-xs text-danger">
+        <p role="alert" className="mt-2 text-xs text-danger">
           {t("availability.errors.invalidRange")}
         </p>
       )}

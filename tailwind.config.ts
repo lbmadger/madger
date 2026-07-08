@@ -16,9 +16,10 @@ const config: Config = {
         "accent-glow": "rgba(203,255,3,0.15)",
         "text-base": "#FFFFFF",
         "text-muted": "#9A9A9A",
-        // Éclairci (#5A5A5A → #757575) pour rester lisible en petit corps sur
-        // fond #0A0A0A/#141414 (contraste ≈ 4,6:1, seuil AA).
-        "text-dim": "#757575",
+        // Éclairci (#757575 → #8C8C8C) : sur les cartes #141414, #757575 ne
+        // faisait qu'environ 4,0:1 en petit corps. #8C8C8C atteint environ
+        // 5,5:1, confortablement au-dessus du seuil AA (4,5:1).
+        "text-dim": "#8C8C8C",
         border: "rgba(255,255,255,0.06)",
         "border-strong": "rgba(255,255,255,0.12)",
         // Couleurs d'état : une seule source pour succès / attention / erreur.

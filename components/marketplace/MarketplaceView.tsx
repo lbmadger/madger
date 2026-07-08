@@ -3,7 +3,6 @@
 import { useState, useEffect, type FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
@@ -205,12 +204,8 @@ export default function MarketplaceView({
         <div className="absolute left-1/2 top-[-220px] h-[460px] w-[760px] -translate-x-1/2 rounded-full bg-accent/[0.07] blur-[120px]" />
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className="text-center"
-      >
+      {/* Entrée en fondu, en CSS pur (remplace framer-motion). */}
+      <div className="anim-fade-up text-center">
         <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.06] px-3.5 py-1.5 text-xs font-medium text-accent">
           <span className="glow-dot h-1.5 w-1.5 rounded-full bg-accent" />
           {t("marketplace.heroBadge")}
@@ -222,7 +217,7 @@ export default function MarketplaceView({
         <p className="mx-auto mt-3 max-w-xl text-sm text-text-muted sm:text-base">
           {t("marketplace.heroSubtitle")}
         </p>
-      </motion.div>
+      </div>
 
       {/* Barre : ouvrir les filtres + tout effacer */}
       <div className="mx-auto mt-6 flex max-w-2xl items-center justify-center gap-2">
@@ -276,6 +271,7 @@ export default function MarketplaceView({
                 runSearch(c.name, { lat: c.lat, lng: c.lng });
               }}
               placeholder={t("marketplace.cityPlaceholder")}
+              ariaLabel={t("marketplace.cityLabel")}
               className="flex-1"
               inputClassName="w-full rounded-full border border-border-strong bg-white/[0.03] px-4 py-2.5 text-base text-text-base outline-none transition-colors placeholder:text-text-dim focus:border-accent"
             />
@@ -288,6 +284,7 @@ export default function MarketplaceView({
                 if (query.trim()) runSearch(query, coords, v);
               }}
               disabled={!query.trim()}
+              aria-label={t("marketplace.radiusLabel")}
               className={`rounded-full border px-3 py-2.5 text-sm font-medium outline-none transition-colors disabled:opacity-40 ${
                 radiusKm > 0
                   ? "border-accent bg-accent/10 text-accent"
@@ -326,6 +323,7 @@ export default function MarketplaceView({
             <select
               value={sportFilter}
               onChange={(e) => setSportFilter(e.target.value)}
+              aria-label={t("marketplace.filterSport")}
               className={`rounded-full border px-3 py-1.5 text-sm font-medium outline-none transition-colors ${
                 sportFilter
                   ? "border-accent bg-accent/10 text-accent"
@@ -342,6 +340,7 @@ export default function MarketplaceView({
             <select
               value={specialtyFilter}
               onChange={(e) => setSpecialtyFilter(e.target.value)}
+              aria-label={t("marketplace.filterGoal")}
               className={`rounded-full border px-3 py-1.5 text-sm font-medium outline-none transition-colors ${
                 specialtyFilter
                   ? "border-accent bg-accent/10 text-accent"
@@ -378,8 +377,12 @@ export default function MarketplaceView({
         </p>
       )}
 
-      {/* Résultats */}
-      <div className="mt-8">
+      {/* Résultats. Pendant une recherche : zone estompée + aria-busy pour un
+          état de chargement perceptible (visuellement et au lecteur d'écran). */}
+      <div
+        aria-busy={loading}
+        className={`mt-8 transition-opacity ${loading ? "opacity-60" : ""}`}
+      >
         {shown.length === 0 ? (
           <div className="rounded-2xl border border-border bg-bg-card p-10 text-center">
             <h3 className="text-base font-semibold text-text-base">
@@ -401,15 +404,11 @@ export default function MarketplaceView({
             </p>
             <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {shown.map((c, i) => (
-                <motion.li
+                <li
                   key={c.id}
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    delay: Math.min(i * 0.05, 0.45),
-                    duration: 0.4,
-                    ease: "easeOut",
-                  }}
+                  className="anim-fade-up"
+                  // Léger décalage en cascade, plafonné (comme avant).
+                  style={{ animationDelay: `${Math.min(i * 0.05, 0.45)}s` }}
                 >
                   {/* Carte photo d'abord, façon Airbnb */}
                   <Link
@@ -474,7 +473,7 @@ export default function MarketplaceView({
                       </div>
                     </div>
                   </Link>
-                </motion.li>
+                </li>
               ))}
             </ul>
 

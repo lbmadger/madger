@@ -45,7 +45,9 @@ export default function AccountMenu() {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="flex h-9 w-9 items-center justify-center rounded-full border border-border-strong bg-bg-card text-sm font-semibold text-text-base transition-colors hover:border-accent"
-        aria-haspopup="menu"
+        // Pas de aria-haspopup="menu" : le panneau est une simple liste de
+        // liens, pas un menu ARIA (pattern clavier différent).
+        aria-label={t("account.menuLabel")}
         aria-expanded={open}
       >
         {initial}

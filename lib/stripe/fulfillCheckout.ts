@@ -209,14 +209,22 @@ export async function fulfillCheckoutSession(
     return result;
   }
 
+  // Prestation achetée : le nom sert aux emails, type/pack_size au circuit
+  // des packs ci-dessous.
+  let svc: { name: string | null; type: string | null; pack_size: number | null } | null =
+    null;
+  if (m.service_id) {
+    const { data: svcRow } = await supabase
+      .from("services")
+      .select("name, type, pack_size")
+      .eq("id", m.service_id)
+      .maybeSingle();
+    svc = svcRow ?? null;
+  }
+
   // Achat d'un PACK : crée le solde de crédits (la séance réservée à l'achat
   // compte pour 1) et rattache la séance au pack.
   if (m.service_id && clientId) {
-    const { data: svc } = await supabase
-      .from("services")
-      .select("type, pack_size")
-      .eq("id", m.service_id)
-      .maybeSingle();
     if (svc?.type === "pack" && (svc.pack_size ?? 0) > 1) {
       const { data: credit } = await supabase
         .from("pack_credits")
@@ -280,21 +288,30 @@ export async function fulfillCheckoutSession(
       [coachRow?.first_name, coachRow?.last_name].filter(Boolean).join(" ") ||
       "Ton coach";
     const coachLocale = coachRow?.locale === "en" ? ("en" as const) : ("fr" as const);
-    const dateStr = starts.toLocaleString("fr-FR", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: coachRow?.timezone || "Europe/Paris",
-    });
-    const priceStr = ((session.amount_total ?? 0) / 100).toLocaleString(
-      "fr-FR",
-      {
-        style: "currency",
-        currency: (session.currency ?? "eur").toUpperCase(),
-      }
-    );
+    // Dates et montants formatés selon la langue du destinataire : le client
+    // reste en français, le coach reçoit son format (en-GB s'il est en
+    // anglais).
+    const fmtDate = (loc: "fr" | "en") =>
+      starts.toLocaleString(loc === "en" ? "en-GB" : "fr-FR", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: coachRow?.timezone || "Europe/Paris",
+      });
+    const fmtPrice = (loc: "fr" | "en") =>
+      ((session.amount_total ?? 0) / 100).toLocaleString(
+        loc === "en" ? "en-GB" : "fr-FR",
+        {
+          style: "currency",
+          currency: (session.currency ?? "eur").toUpperCase(),
+        }
+      );
+    const dateStr = fmtDate("fr");
+    const priceStr = fmtPrice("fr");
+    const coachDateStr = fmtDate(coachLocale);
+    const coachPriceStr = fmtPrice(coachLocale);
     const online = m.online === "1";
     const reservationUrl = `${APP_URL}/reservation/${result.bookingId}`;
     const calendarUrl = googleCalendarUrl({
@@ -330,7 +347,7 @@ export async function fulfillCheckoutSession(
         const t = newRequestCoach({
           locale: coachLocale,
           clientName,
-          dateStr,
+          dateStr: coachDateStr,
           online,
           instant: false,
           dashboardUrl: `${APP_URL}/dashboard/agenda`,
@@ -354,9 +371,11 @@ export async function fulfillCheckoutSession(
         const t = bookingNotificationCoach({
           locale: coachLocale,
           clientName,
-          dateStr,
-          serviceName: "Séance",
-          priceStr,
+          dateStr: coachDateStr,
+          // Vrai nom de la prestation achetée (repli générique par langue).
+          serviceName:
+            svc?.name || (coachLocale === "en" ? "Session" : "Séance"),
+          priceStr: coachPriceStr,
           online,
           dashboardUrl: `${APP_URL}/dashboard/agenda`,
         });

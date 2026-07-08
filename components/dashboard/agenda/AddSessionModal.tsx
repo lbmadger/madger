@@ -152,14 +152,16 @@ export default function AddSessionModal({
         </h2>
 
         <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-3">
-          {/* Client */}
+          {/* Client (obligatoire : astérisque visuel + required natif) */}
           <label className="flex flex-col gap-1.5">
             <span className="text-xs font-medium text-text-muted">
               {t("agenda.form.client")}
+              <span aria-hidden="true" className="ml-0.5 text-danger">*</span>
             </span>
             <select
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
+              required
               className={fieldClass}
             >
               <option value="">{t("agenda.form.selectClient")}</option>
@@ -176,22 +178,26 @@ export default function AddSessionModal({
             <label className="flex flex-col gap-1.5">
               <span className="text-xs font-medium text-text-muted">
                 {t("agenda.form.date")}
+                <span aria-hidden="true" className="ml-0.5 text-danger">*</span>
               </span>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
+                required
                 className={fieldClass}
               />
             </label>
             <label className="flex flex-col gap-1.5">
               <span className="text-xs font-medium text-text-muted">
                 {t("agenda.form.time")}
+                <span aria-hidden="true" className="ml-0.5 text-danger">*</span>
               </span>
               <input
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
+                required
                 className={fieldClass}
               />
             </label>

@@ -42,14 +42,33 @@ export default async function ClientSpacePage() {
     const clientIds = (clientRows ?? []).map((c) => c.id as string);
 
     if (clientIds.length > 0) {
-      // Abonnements mensuels (actifs ou en cours d'arrêt).
-      const { data: subRows } = await admin
-        .from("client_subscriptions")
-        .select(
-          "id, status, current_period_end, services(name, price_cents), coaches(first_name, last_name)"
-        )
-        .in("client_id", clientIds)
-        .order("created_at", { ascending: false });
+      // Abonnements, packs et réservations ne dépendent que de clientIds :
+      // une seule vague de requêtes au lieu de trois allers-retours en série.
+      const [{ data: subRows }, { data: creditRows }, { data: rows }] =
+        await Promise.all([
+          admin
+            .from("client_subscriptions")
+            .select(
+              "id, status, current_period_end, services(name, price_cents), coaches(first_name, last_name)"
+            )
+            .in("client_id", clientIds)
+            .order("created_at", { ascending: false }),
+          admin
+            .from("pack_credits")
+            .select(
+              "id, total, used, services(name), coaches(first_name, last_name)"
+            )
+            .in("client_id", clientIds)
+            .order("created_at", { ascending: false }),
+          admin
+            .from("bookings")
+            .select(
+              "id, starts_at, ends_at, status, location, coaches(first_name, last_name, slug, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct)"
+            )
+            .in("client_id", clientIds)
+            .order("starts_at", { ascending: false })
+            .limit(100),
+        ]);
       for (const s of subRows ?? []) {
         const svc = Array.isArray(s.services) ? s.services[0] : s.services;
         const co = Array.isArray(s.coaches) ? s.coaches[0] : s.coaches;
@@ -65,13 +84,6 @@ export default async function ClientSpacePage() {
       }
 
       // Packs de séances (crédits restants chez chaque coach).
-      const { data: creditRows } = await admin
-        .from("pack_credits")
-        .select(
-          "id, total, used, services(name), coaches(first_name, last_name)"
-        )
-        .in("client_id", clientIds)
-        .order("created_at", { ascending: false });
       for (const c of creditRows ?? []) {
         const svc = Array.isArray(c.services) ? c.services[0] : c.services;
         const co = Array.isArray(c.coaches) ? c.coaches[0] : c.coaches;
@@ -84,15 +96,6 @@ export default async function ClientSpacePage() {
             [co?.first_name, co?.last_name].filter(Boolean).join(" ") || "-",
         });
       }
-
-      const { data: rows } = await admin
-        .from("bookings")
-        .select(
-          "id, starts_at, ends_at, status, location, coaches(first_name, last_name, slug, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct)"
-        )
-        .in("client_id", clientIds)
-        .order("starts_at", { ascending: false })
-        .limit(100);
 
       const ids = (rows ?? []).map((b) => b.id as string);
       const { data: pays } = ids.length

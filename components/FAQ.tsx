@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useId, useState } from "react";
 import SectionLabel from "@/components/ui/SectionLabel";
 import { faqs } from "@/components/faq-data";
 
 function Item({ q, a, isOpen, onToggle }: { q: string; a: string; isOpen: boolean; onToggle: () => void }) {
+  // Identifiant unique pour relier le bouton (aria-controls) au panneau.
+  const panelId = useId();
   return (
     <div
       style={{
@@ -14,35 +15,39 @@ function Item({ q, a, isOpen, onToggle }: { q: string; a: string; isOpen: boolea
     >
       <button
         onClick={onToggle}
+        aria-expanded={isOpen}
+        aria-controls={panelId}
         className="w-full flex items-center justify-between gap-4 py-5 text-left"
       >
         <span className="font-semibold text-white" style={{ fontSize: "clamp(14px, 1.5vw, 16px)", lineHeight: 1.4 }}>{q}</span>
-        <motion.div
-          animate={{ rotate: isOpen ? 45 : 0 }}
-          transition={{ duration: 0.22, ease: "easeInOut" }}
-          style={{ flexShrink: 0, width: 22, height: 22, borderRadius: 6, background: isOpen ? "#CBFF03" : "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}
+        <div
+          className="transition-transform duration-200 ease-in-out"
+          style={{ transform: isOpen ? "rotate(45deg)" : "none", flexShrink: 0, width: 22, height: 22, borderRadius: 6, background: isOpen ? "#CBFF03" : "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}
         >
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
             <path d="M5 1v8M1 5h8" stroke={isOpen ? "#000" : "#8A8A8A"} strokeWidth="1.5" strokeLinecap="round"/>
           </svg>
-        </motion.div>
+        </div>
       </button>
 
-      <AnimatePresence initial={false}>
-        {isOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-            style={{ overflow: "hidden" }}
-          >
-            <p className="pb-5 text-text-muted" style={{ fontSize: 15, lineHeight: 1.75, maxWidth: 680 }}>
-              {a}
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Accordéon en CSS pur : transition de grid-template-rows (0fr → 1fr),
+          le contenu reste monté et l'animation suit la hauteur réelle. */}
+      <div
+        id={panelId}
+        role="region"
+        className="grid transition-[grid-template-rows,opacity] duration-300 ease-out"
+        style={{
+          gridTemplateRows: isOpen ? "1fr" : "0fr",
+          opacity: isOpen ? 1 : 0,
+        }}
+        aria-hidden={!isOpen}
+      >
+        <div style={{ overflow: "hidden", minHeight: 0 }}>
+          <p className="pb-5 text-text-muted" style={{ fontSize: 15, lineHeight: 1.75, maxWidth: 680 }}>
+            {a}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
@@ -63,13 +68,7 @@ export default function FAQ() {
   return (
     <section className="py-20 sm:py-24 relative">
       <div className="max-w-3xl mx-auto px-5 sm:px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
-          whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.7 }}
-          className="text-center flex flex-col items-center mb-12"
-        >
+        <div className="anim-fade-up text-center flex flex-col items-center mb-12">
           <SectionLabel>FAQ</SectionLabel>
           <h2
             className="font-extrabold text-white mb-4"
@@ -83,14 +82,12 @@ export default function FAQ() {
               backgroundClip: "text",
             }}>pose le plus souvent.</span>
           </h2>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.6, delay: 0.1 }}
+        <div
+          className="anim-fade-up"
           style={{
+            animationDelay: "0.1s",
             borderRadius: 20,
             overflow: "hidden",
             background: "#141414",
@@ -107,21 +104,17 @@ export default function FAQ() {
               onToggle={() => toggle(i)}
             />
           ))}
-        </motion.div>
+        </div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.3 }}
-          className="text-center mt-8 text-sm"
-          style={{ color: "var(--text-dim)" }}
+        <p
+          className="anim-fade-in text-center mt-8 text-sm"
+          style={{ animationDelay: "0.3s", color: "var(--text-dim)" }}
         >
           Une autre question ?{" "}
           <a href="mailto:contact@madger.app" style={{ color: "#CBFF03", textDecoration: "none" }}>
             contact@madger.app
           </a>
-        </motion.p>
+        </p>
       </div>
     </section>
   );

@@ -79,10 +79,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, skipped: true });
   }
 
+  // Langue du destinataire : celle du coach s'il est notifié, le client
+  // reste en français (décision produit).
+  let recipientLocale: "fr" | "en" = "fr";
+  if (toCoach) {
+    const { data: coachPrefs } = await admin
+      .from("coaches")
+      .select("locale")
+      .eq("id", conv.coach_id as string)
+      .maybeSingle();
+    if (coachPrefs?.locale === "en") recipientLocale = "en";
+  }
+
   const tpl = newMessageNotif({
+    locale: recipientLocale,
     senderName:
       (toCoach ? (conv.client_name as string) : (conv.coach_name as string)) ||
-      (toCoach ? "Un client" : "Ton coach"),
+      (toCoach
+        ? recipientLocale === "en"
+          ? "A client"
+          : "Un client"
+        : "Ton coach"),
     preview: (lastMsg?.body as string) || "",
     threadUrl: toCoach
       ? `${APP_URL}/dashboard/messages/${conversationId}`

@@ -96,8 +96,10 @@ export async function POST(req: NextRequest) {
           client_email: String(email).slice(0, 254),
         },
       },
-      success_url: `${origin}/api/stripe/subscribe/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/${coach_slug}?payment=canceled&book=${service_id}`,
+      // Paiement EMBARQUÉ : le formulaire Stripe s'affiche dans /paiement,
+      // sur madger.app, plus de départ vers une page tierce.
+      ui_mode: "embedded_page",
+      return_url: `${origin}/api/stripe/subscribe/success?session_id={CHECKOUT_SESSION_ID}`,
       metadata: {
         kind: "client_sub",
         coach_id: coach.id,
@@ -110,7 +112,7 @@ export async function POST(req: NextRequest) {
         message: message ? String(message).slice(0, 500) : "",
       },
     });
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ client_secret: session.client_secret });
   }
 
   // ── Séance ou pack : un créneau est obligatoire ────────────────────────────
@@ -148,8 +150,9 @@ export async function POST(req: NextRequest) {
       transfer_group: `coach_${coach.id}`,
       ...(approval ? { capture_method: "manual" as const } : {}),
     },
-    success_url: `${origin}/api/stripe/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/${coach_slug}?payment=canceled&book=${service_id}`,
+    // Paiement EMBARQUÉ (cf. abonnement ci-dessus).
+    ui_mode: "embedded_page",
+    return_url: `${origin}/api/stripe/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
     metadata: {
       coach_id: coach.id,
       coach_slug: String(coach_slug),
@@ -165,5 +168,5 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  return NextResponse.json({ url: session.url });
+  return NextResponse.json({ client_secret: session.client_secret });
 }

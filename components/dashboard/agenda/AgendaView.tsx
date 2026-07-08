@@ -441,6 +441,7 @@ export default function AgendaView({
               key={v}
               type="button"
               onClick={() => setView(v)}
+              aria-pressed={view === v}
               className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
                 view === v
                   ? "bg-accent text-black"

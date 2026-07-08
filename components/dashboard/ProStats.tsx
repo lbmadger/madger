@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { LockIcon } from "@/components/ui/icons";
 

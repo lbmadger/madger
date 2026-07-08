@@ -7,7 +7,11 @@ import { computePayout } from "@/lib/stripe/escrow";
 import { refundCents, resolveRefundPolicy } from "@/lib/booking/cancellation";
 import { isPro } from "@/lib/subscription/plan";
 import { sendEmail } from "@/lib/email/resend";
-import { refundClient, bookingCancelledClient } from "@/lib/email/templates";
+import {
+  refundClient,
+  bookingCancelledClient,
+  cancellationNoRefundClient,
+} from "@/lib/email/templates";
 import { detachMeetFromBooking } from "@/lib/google/calendar";
 
 export const dynamic = "force-dynamic";
@@ -62,7 +66,7 @@ export async function POST(req: NextRequest) {
   const { data: coach } = await admin
     .from("coaches")
     .select(
-      "stripe_account_id, pro_until, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, first_name, last_name"
+      "stripe_account_id, pro_until, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, first_name, last_name, timezone"
     )
     .eq("id", user.id)
     .maybeSingle();
@@ -135,7 +139,7 @@ export async function POST(req: NextRequest) {
             month: "long",
             hour: "2-digit",
             minute: "2-digit",
-            timeZone: "Europe/Paris",
+            timeZone: coach?.timezone || "Europe/Paris",
           }),
           declined: true,
         });
@@ -174,7 +178,7 @@ export async function POST(req: NextRequest) {
               month: "long",
               hour: "2-digit",
               minute: "2-digit",
-              timeZone: "Europe/Paris",
+              timeZone: coach?.timezone || "Europe/Paris",
             }),
             declined: wasPending,
           });
@@ -298,30 +302,44 @@ export async function POST(req: NextRequest) {
         .eq("id", pack.id);
     }
 
-    // Email de remboursement au client (best-effort).
-    if (refund > 0) {
-      try {
-        const { data: client } = await admin
-          .from("clients")
-          .select("email")
-          .eq("id", payment.client_id)
-          .maybeSingle();
-        if (client?.email) {
-          const tpl = refundClient({
-            coachName:
-              [coach?.first_name, coach?.last_name].filter(Boolean).join(" ") ||
-              "Ton coach",
-            refundStr: (refund / 100).toLocaleString("fr-FR", {
-              style: "currency",
-              currency: (payment.currency || "eur").toUpperCase(),
-            }),
-            reason: "cancellation",
-          });
-          await sendEmail({ to: client.email, subject: tpl.subject, html: tpl.html });
-        }
-      } catch {
-        /* best-effort */
+    // Email au client (best-effort) : remboursement s'il y a lieu, sinon
+    // annulation actée SANS remboursement (annulation tardive, formule du
+    // coach), pour qu'il ne reste jamais sans réponse.
+    try {
+      const { data: client } = await admin
+        .from("clients")
+        .select("email")
+        .eq("id", payment.client_id)
+        .maybeSingle();
+      if (client?.email) {
+        const coachName =
+          [coach?.first_name, coach?.last_name].filter(Boolean).join(" ") ||
+          "Ton coach";
+        const tpl =
+          refund > 0
+            ? refundClient({
+                coachName,
+                refundStr: (refund / 100).toLocaleString("fr-FR", {
+                  style: "currency",
+                  currency: (payment.currency || "eur").toUpperCase(),
+                }),
+                reason: "cancellation",
+              })
+            : cancellationNoRefundClient({
+                coachName,
+                dateStr: new Date(booking.starts_at).toLocaleString("fr-FR", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  timeZone: coach?.timezone || "Europe/Paris",
+                }),
+              });
+        await sendEmail({ to: client.email, subject: tpl.subject, html: tpl.html });
       }
+    } catch {
+      /* best-effort */
     }
 
     return NextResponse.json({
