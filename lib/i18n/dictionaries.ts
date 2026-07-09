@@ -663,6 +663,8 @@ const fr = {
     instantNote: "Réservation instantanée : ton créneau est confirmé immédiatement.",
     approvalNote:
       "Aucun débit tant que le coach n'a pas accepté ta demande. Refus : rien n'est prélevé.",
+    escrowTrust:
+      "Paiement sécurisé : ton argent est protégé et versé au coach seulement après ta séance.",
     about: "À propos",
     services: "Prestations",
     onlineAvailable: "Disponible en visio",
@@ -1183,6 +1185,8 @@ const fr = {
   reviews: {
     sectionTitle: "Avis clients",
     countLabel: "avis",
+    newCoachTitle: "Nouveau sur Madger",
+    newCoachDesc: "Ce coach vient d'arriver : sois le premier à laisser un avis.",
     leaveTitle: "Comment s'est passée ta séance ?",
     oneNote:
       "Un avis par client : si tu re-notes ce coach plus tard, ton avis sera mis à jour.",
@@ -1855,6 +1859,8 @@ const en: Dictionary = {
     instantNote: "Instant booking: your slot is confirmed immediately.",
     approvalNote:
       "No charge until the coach accepts your request. Declined: nothing is taken.",
+    escrowTrust:
+      "Secure payment: your money is protected and released to the coach only after your session.",
     about: "About",
     services: "Services",
     onlineAvailable: "Available online",
@@ -2367,6 +2373,8 @@ const en: Dictionary = {
   reviews: {
     sectionTitle: "Client reviews",
     countLabel: "reviews",
+    newCoachTitle: "New on Madger",
+    newCoachDesc: "This coach just joined: be the first to leave a review.",
     leaveTitle: "How was your session?",
     oneNote:
       "One review per client: if you rate this coach again later, your review gets updated.",

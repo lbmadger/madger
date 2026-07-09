@@ -362,8 +362,27 @@ export default function CoachProfile({
           </div>
         )}
 
-        {/* Avis clients */}
-        {reviews.length > 0 && (
+        {/* Avis clients — sinon, état « nouveau » assumé (pas de vide gênant). */}
+        {reviews.length === 0 ? (
+          <div className="mt-6 border-t border-border pt-6">
+            <h2 className="text-xs font-medium uppercase tracking-wide text-text-dim">
+              {t("reviews.sectionTitle")}
+            </h2>
+            <div className="mt-3 flex items-center gap-3 rounded-xl border border-border bg-bg-elevated p-4">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
+                <StarIcon size={16} />
+              </span>
+              <div>
+                <p className="text-sm font-medium text-text-base">
+                  {t("reviews.newCoachTitle")}
+                </p>
+                <p className="mt-0.5 text-xs text-text-muted">
+                  {t("reviews.newCoachDesc")}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
           <div className="mt-6 border-t border-border pt-6">
             <h2 className="text-xs font-medium uppercase tracking-wide text-text-dim">
               {t("reviews.sectionTitle")}
@@ -461,6 +480,16 @@ export default function CoachProfile({
               ? t("coachProfile.instantNote")
               : t("coachProfile.approvalNote")}
           </p>
+          {/* Réassurance paiement séquestré : l'argent est protégé et n'est
+              versé au coach qu'après la séance. */}
+          {coach.stripe_charges_enabled && (
+            <p className="mt-2 flex items-start gap-1.5 text-xs leading-relaxed text-text-muted">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0 text-accent">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+              {t("coachProfile.escrowTrust")}
+            </p>
+          )}
           {contactError && (
             <p role="alert" className="mt-2 text-sm text-danger">{contactError}</p>
           )}
