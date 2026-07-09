@@ -43,6 +43,7 @@ const DEMO_COACH: PublicCoach = {
   specialties: ["weight_loss", "muscle_gain", "fitness"],
   venues: ["coach_gym", "home", "outdoor"],
   gym_name: "Basic-Fit Lyon Part-Dieu",
+  from_price_cents: 4500,
 };
 
 const DEMO_SERVICES: PublicService[] = [

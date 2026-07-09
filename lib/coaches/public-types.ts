@@ -28,6 +28,8 @@ export type PublicCoach = {
   specialties: string[];
   venues: string[];
   gym_name: string | null;
+  // Prix d'appel « à partir de » (min des prestations actives, migration 0042).
+  from_price_cents: number | null;
 };
 
 // Avis public (vue public_reviews) : prénom du client uniquement.

@@ -11,6 +11,7 @@ import CityAutocomplete from "@/components/ui/CityAutocomplete";
 import Stars from "@/components/reviews/Stars";
 import { geocodeCity, type City } from "@/lib/geo/cities";
 import { SPORT_KEYS, SPECIALTY_KEYS } from "@/lib/coaches/taxonomy";
+import { formatPrice } from "@/lib/services/types";
 import { interactiveCardClass } from "@/lib/ui/styles";
 import {
   type PublicCoach,
@@ -507,6 +508,14 @@ export default function MarketplaceView({
                           </span>
                         )}
                       </div>
+                      {c.from_price_cents != null && (
+                        <p className="mt-auto pt-3 border-t border-border text-xs text-text-muted">
+                          {t("marketplace.fromPrice")}{" "}
+                          <span className="font-semibold text-text-base">
+                            {formatPrice(c.from_price_cents, "eur", locale)}
+                          </span>
+                        </p>
+                      )}
                     </div>
                   </Link>
                 </li>
