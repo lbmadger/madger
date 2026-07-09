@@ -6,6 +6,10 @@ export type Conversation = {
   client_name: string | null;
   created_at: string;
   last_message_at: string;
+  // État de lecture par participant (migration 0041). Optionnels : absents
+  // tant que la migration n'est pas passée.
+  coach_last_read_at?: string | null;
+  client_last_read_at?: string | null;
 };
 
 export type Message = {

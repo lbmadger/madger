@@ -45,6 +45,13 @@ export default async function CoachThreadPage({
       .maybeSingle(),
   ]);
 
+  // Ouvrir le fil = tout marquer comme lu côté coach (best-effort, la
+  // colonne peut ne pas exister tant que 0041 n'est pas passée).
+  await supabase
+    .from("conversations")
+    .update({ coach_last_read_at: new Date().toISOString() })
+    .eq("id", params.id);
+
   return (
     <MessageThread
       conversationId={conversation.id}

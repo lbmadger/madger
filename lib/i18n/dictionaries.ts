@@ -452,6 +452,7 @@ const fr = {
   },
   messages: {
     you: "Toi :",
+    unread: "Non lu",
     title: "Messages",
     emptyTitle: "Aucune conversation",
     emptyDesc: "Tes échanges apparaîtront ici.",
@@ -1623,6 +1624,7 @@ const en: Dictionary = {
   },
   messages: {
     you: "You:",
+    unread: "Unread",
     title: "Messages",
     emptyTitle: "No conversations",
     emptyDesc: "Your conversations will show up here.",

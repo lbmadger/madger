@@ -33,6 +33,12 @@ export default async function ClientThreadPage({
     .order("created_at", { ascending: false })
     .limit(100);
 
+  // Ouvrir le fil = tout marquer comme lu côté client (best-effort).
+  await supabase
+    .from("conversations")
+    .update({ client_last_read_at: new Date().toISOString() })
+    .eq("id", params.id);
+
   return (
     <MessageThread
       conversationId={conversation.id}
