@@ -8,8 +8,6 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
-import PolicyTiers from "@/components/booking/PolicyTiers";
-import { resolveRefundPolicy } from "@/lib/booking/cancellation";
 import Stars from "@/components/reviews/Stars";
 import BookingModal from "./BookingModal";
 import { TrophyIcon, MapPinIcon, BuildingIcon, StarIcon } from "@/components/ui/icons";
@@ -416,24 +414,9 @@ export default function CoachProfile({
           </div>
         )}
 
-        {/* Politique d'annulation (paiements sécurisés) */}
-        {coach.stripe_charges_enabled && (
-          <div className="mt-6 border-t border-border pt-6">
-            <h2 className="text-xs font-medium uppercase tracking-wide text-text-dim">
-              {t("cancellation.publicLabel")}
-            </h2>
-            <div className="mt-3 rounded-xl border border-border bg-bg-elevated p-4">
-              <PolicyTiers policy={resolveRefundPolicy(coach)} />
-              <Link
-                href="/charte-paiement"
-                target="_blank"
-                className="mt-3 inline-flex items-center gap-1 text-xs text-accent hover:underline"
-              >
-                {t("cancellation.seeCharter")}
-              </Link>
-            </div>
-          </div>
-        )}
+        {/* La politique d'annulation n'est plus affichée ici : elle apparaît,
+            façon Airbnb, au moment de réserver/payer (résumé concret daté sur
+            le créneau choisi, dans la modale de réservation). */}
 
       </div>
 

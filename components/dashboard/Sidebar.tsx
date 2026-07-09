@@ -137,7 +137,7 @@ function NavLink({ item, unread = 0 }: { item: NavItem; unread?: number }) {
 export default function Sidebar() {
   const unread = useUnreadCount();
   return (
-    <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-bg-elevated p-4 md:flex">
+    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col overflow-y-auto border-r border-border bg-bg-elevated p-4 md:flex">
       <Link href="/dashboard" className="mb-8 flex items-center gap-2.5 px-2">
         <MadgerLogo size={30} />
         <span className="text-xl font-extrabold tracking-tight text-text-base">

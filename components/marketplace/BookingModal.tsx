@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
 import Dialog from "@/components/ui/Dialog";
-import PolicyTiers from "@/components/booking/PolicyTiers";
+import CancellationSummary from "@/components/booking/CancellationSummary";
 import { resolveRefundPolicy } from "@/lib/booking/cancellation";
 import { LockIcon, RepeatIcon, MapPinIcon } from "@/components/ui/icons";
 import { inputClass, labelClass } from "@/lib/ui/styles";
@@ -694,10 +694,13 @@ export default function BookingModal({
                   <p className="mt-1 text-xs text-text-muted">
                     {instant ? t("booking.escrowDesc") : t("booking.authNote")}
                   </p>
-                  <p className="mt-2 text-[11px] font-medium uppercase tracking-wide text-text-dim">
-                    {t("cancellation.publicLabel")}
-                  </p>
-                  <PolicyTiers policy={resolveRefundPolicy(coach)} className="mt-1" />
+                  <div className="mt-3 border-t border-border pt-3">
+                    <CancellationSummary
+                      policy={resolveRefundPolicy(coach)}
+                      startsAt={selectedIso ? new Date(selectedIso) : date && time ? new Date(`${date}T${time}`) : null}
+                      locale={locale}
+                    />
+                  </div>
                 </div>
               )}
 
