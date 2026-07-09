@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 import SidebarProfile from "@/components/dashboard/SidebarProfile";
+import { isNavActive } from "@/lib/ui/nav";
 
 // Élément de navigation. `soon` grise l'entrée et la rend non cliquable tant
 // que le module n'existe pas (Phase 0 : seul "Vue d'ensemble" est actif).
@@ -68,7 +69,7 @@ const SECONDARY: NavItem[] = [
 function NavLink({ item }: { item: NavItem }) {
   const pathname = usePathname();
   const { t } = useI18n();
-  const active = pathname === item.href;
+  const active = isNavActive(pathname, item.href, item.href === "/dashboard");
 
   const content = (
     <>

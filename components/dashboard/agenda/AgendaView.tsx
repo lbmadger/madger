@@ -11,6 +11,7 @@ import AddSessionModal from "./AddSessionModal";
 import WeekView from "./WeekView";
 import Button from "@/components/ui/Button";
 import Dialog from "@/components/ui/Dialog";
+import Spinner from "@/components/ui/Spinner";
 import { useConfirm } from "@/components/ui/useConfirm";
 import ClientSheet from "@/components/messaging/ClientSheet";
 import type { ClientProfile } from "@/lib/health/bmi";
@@ -394,9 +395,11 @@ export default function AgendaView({
                     onClick={() => declineBooking(b.id)}
                     className="rounded-full border border-border-strong px-3.5 py-1.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
                   >
-                    {cancelling && actionErrorId === b.id
-                      ? "…"
-                      : t("agenda.decline")}
+                    {cancelling && actionErrorId === b.id ? (
+                      <Spinner size={14} className="mx-auto" />
+                    ) : (
+                      t("agenda.decline")
+                    )}
                   </button>
                   <button
                     type="button"
@@ -404,9 +407,11 @@ export default function AgendaView({
                     onClick={() => confirmBooking(b.id)}
                     className="rounded-full bg-accent px-3.5 py-1.5 text-xs font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-50"
                   >
-                    {confirming && actionErrorId === b.id
-                      ? "…"
-                      : t("agenda.confirm")}
+                    {confirming && actionErrorId === b.id ? (
+                      <Spinner size={14} className="mx-auto" />
+                    ) : (
+                      t("agenda.confirm")
+                    )}
                   </button>
                 </div>
                 {actionError && actionErrorId === b.id && (
@@ -606,9 +611,11 @@ export default function AgendaView({
                            onClick={() => declineBooking(b.id)}
                            className="flex-1 rounded-full border border-border-strong py-1.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
                          >
-                           {cancelling && actionErrorId === b.id
-                             ? "…"
-                             : t("agenda.decline")}
+                           {cancelling && actionErrorId === b.id ? (
+                             <Spinner size={14} className="mx-auto" />
+                           ) : (
+                             t("agenda.decline")
+                           )}
                          </button>
                          <button
                            type="button"
@@ -616,9 +623,11 @@ export default function AgendaView({
                            onClick={() => confirmBooking(b.id)}
                            className="flex-1 rounded-full bg-accent py-1.5 text-xs font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-50"
                          >
-                           {confirming && actionErrorId === b.id
-                             ? "…"
-                             : t("agenda.confirm")}
+                           {confirming && actionErrorId === b.id ? (
+                             <Spinner size={14} className="mx-auto" />
+                           ) : (
+                             t("agenda.confirm")
+                           )}
                          </button>
                        </div>
                        {actionError && actionErrorId === b.id && (
@@ -786,7 +795,11 @@ export default function AgendaView({
                     onClick={() => declineBooking(selected.id)}
                     className="flex-1 rounded-full border border-border-strong py-2.5 text-sm font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
                   >
-                    {cancelling ? "…" : t("agenda.decline")}
+                    {cancelling ? (
+                      <Spinner size={16} className="mx-auto" />
+                    ) : (
+                      t("agenda.decline")
+                    )}
                   </button>
                   <button
                     type="button"
@@ -794,7 +807,11 @@ export default function AgendaView({
                     onClick={() => confirmBooking(selected.id)}
                     className="flex-1 rounded-full bg-accent py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-50"
                   >
-                    {confirming ? "…" : t("agenda.confirm")}
+                    {confirming ? (
+                      <Spinner size={16} className="mx-auto" />
+                    ) : (
+                      t("agenda.confirm")
+                    )}
                   </button>
                 </div>
                 <button
@@ -928,7 +945,11 @@ export default function AgendaView({
                   disabled={blockSaving}
                   onClick={submitBlock}
                 >
-                  {blockSaving ? "…" : t("agenda.blockCta")}
+                  {blockSaving ? (
+                    <Spinner size={16} className="mx-auto" />
+                  ) : (
+                    t("agenda.blockCta")
+                  )}
                 </Button>
               </div>
             </div>

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { isNavActive } from "@/lib/ui/nav";
 
 // Barre d'onglets mobile, fixée en bas de l'écran (façon app native).
 // Visible < md uniquement ; le sidebar prend le relais en desktop. On y met
@@ -58,7 +59,7 @@ export default function MobileNav() {
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       {TABS.map((tab) => {
-        const active = pathname === tab.href;
+        const active = isNavActive(pathname, tab.href, tab.href === "/dashboard");
         const className = `flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition-colors ${
           tab.soon
             ? "text-text-dim"

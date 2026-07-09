@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "@/lib/auth/SessionProvider";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { isNavActive } from "@/lib/ui/nav";
 
 // Pastille compte + menu déroulant (email, raccourcis mobiles, déconnexion).
 // La déconnexion passe par un POST vers /auth/signout (route serveur).
@@ -90,7 +91,7 @@ export default function AccountMenu() {
                 href={item.href}
                 onClick={() => setOpen(false)}
                 className={`flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm transition-colors hover:bg-bg-card hover:text-text-base ${
-                  pathname === item.href
+                  isNavActive(pathname, item.href)
                     ? "font-semibold text-accent"
                     : "text-text-muted"
                 }`}
