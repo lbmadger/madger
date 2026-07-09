@@ -48,8 +48,8 @@ const TIMEZONES = [
 ];
 import {
   SPORT_KEYS,
-  SPECIALTY_KEYS,
   VENUE_KEYS,
+  specialtiesForSport,
 } from "@/lib/coaches/taxonomy";
 import type { Coach } from "@/lib/coach/getCoach";
 
@@ -416,7 +416,15 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             <span className={labelClass}>{t("settings.sport")}</span>
             <select
               value={sport}
-              onChange={(e) => setSport(e.target.value)}
+              onChange={(e) => {
+                const next = e.target.value;
+                setSport(next);
+                // Retire « compétition » si le nouveau sport ne le propose pas.
+                const allowed = specialtiesForSport(next);
+                setSpecialties((prev) =>
+                  prev.filter((k) => allowed.includes(k as never))
+                );
+              }}
               className={inputClass}
             >
               <option value="">-</option>
@@ -431,7 +439,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           <div>
             <p className={labelClass}>{t("settings.specialtiesLabel")}</p>
             <div className="mt-2 flex flex-wrap gap-2">
-              {SPECIALTY_KEYS.map((s) => {
+              {specialtiesForSport(sport).map((s) => {
                 const active = specialties.includes(s);
                 return (
                   <button

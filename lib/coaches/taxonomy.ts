@@ -34,6 +34,31 @@ export const SPECIALTY_KEYS = [
 ] as const;
 export type SpecialtyKey = (typeof SPECIALTY_KEYS)[number];
 
+// Sports où « préparation compétition » a du sens. Pour un sport classique
+// (muscu, fitness, yoga, pilates, danse…) on ne propose pas cet objectif :
+// il n'a rien à faire là et alourdit le choix.
+const COMPETITIVE_SPORTS = new Set<string>([
+  "crossfit",
+  "boxe",
+  "arts_martiaux",
+  "running",
+  "natation",
+  "cyclisme",
+  "tennis",
+  "football",
+  "basket",
+]);
+
+// Objectifs proposés à un coach selon son sport : « compétition » seulement
+// pour les sports de compétition (ou tant qu'aucun sport n'est choisi, pour ne
+// pas masquer l'option d'emblée).
+export function specialtiesForSport(
+  sport: string | null | undefined
+): SpecialtyKey[] {
+  if (!sport || COMPETITIVE_SPORTS.has(sport)) return [...SPECIALTY_KEYS];
+  return SPECIALTY_KEYS.filter((k) => k !== "competition");
+}
+
 // Où se passent les séances — répond au cas « le client est à Basic Fit, le
 // coach à Fitness Park » : le coach déclare SES lieux, affichés avant la résa.
 export const VENUE_KEYS = [

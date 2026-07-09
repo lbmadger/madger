@@ -12,8 +12,8 @@ import AccountSwitchBar from "@/components/auth/AccountSwitchBar";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import {
   SPORT_KEYS,
-  SPECIALTY_KEYS,
   VENUE_KEYS,
+  specialtiesForSport,
 } from "@/lib/coaches/taxonomy";
 import { WEEK_ORDER } from "@/lib/availability/types";
 
@@ -545,7 +545,14 @@ export default function OnboardingForm({
             <span className={labelClass}>{t("settings.sport")}</span>
             <select
               value={sport}
-              onChange={(e) => setSport(e.target.value)}
+              onChange={(e) => {
+                const next = e.target.value;
+                setSport(next);
+                // Objectif « compétition » retiré si le nouveau sport ne le
+                // propose pas (évite de garder un objectif invisible coché).
+                const allowed = specialtiesForSport(next);
+                setSpecialties((prev) => prev.filter((k) => allowed.includes(k as never)));
+              }}
               className={inputClass}
             >
               <option value="">-</option>
@@ -560,7 +567,7 @@ export default function OnboardingForm({
           <div className="flex flex-col gap-1.5">
             <span className={labelClass}>{t("settings.specialtiesLabel")}</span>
             <div className="flex flex-wrap gap-2">
-              {SPECIALTY_KEYS.map((k) => (
+              {specialtiesForSport(sport).map((k) => (
                 <button
                   key={k}
                   type="button"
