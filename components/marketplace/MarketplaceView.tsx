@@ -28,6 +28,7 @@ const CoachesMap = dynamic(() => import("./CoachesMap"), {
 });
 
 type Filter = "all" | "online";
+type Sort = "relevance" | "rating" | "price";
 type Coords = { lat: number; lng: number };
 // Rayon élargi quand aucun coach n'est trouvé dans la ville exacte.
 const RADIUS_KM = 30;
@@ -44,6 +45,7 @@ export default function MarketplaceView({
   const [query, setQuery] = useState("");
   const [coords, setCoords] = useState<Coords | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
+  const [sort, setSort] = useState<Sort>("relevance");
   const [sportFilter, setSportFilter] = useState("");
   const [specialtyFilter, setSpecialtyFilter] = useState("");
   const [radiusKm, setRadiusKm] = useState(0); // 0 = ville exacte
@@ -200,11 +202,29 @@ export default function MarketplaceView({
   }
 
   // Filtres sport / accompagnement appliqués côté client sur les résultats.
-  const shown = coaches.filter(
+  const filtered = coaches.filter(
     (c) =>
       (!sportFilter || c.sport === sportFilter) &&
       (!specialtyFilter || (c.specialties ?? []).includes(specialtyFilter))
   );
+
+  // Tri côté client sur les résultats affichés. « Pertinence » conserve
+  // l'ordre renvoyé par la recherche (récence, ou distance en mode rayon).
+  const shown =
+    sort === "relevance"
+      ? filtered
+      : [...filtered].sort((a, b) => {
+          if (sort === "rating") {
+            return (
+              Number(b.rating_avg ?? 0) - Number(a.rating_avg ?? 0) ||
+              b.rating_count - a.rating_count
+            );
+          }
+          // Prix croissant : les coachs sans prix connu passent à la fin.
+          const pa = a.from_price_cents ?? Infinity;
+          const pb = b.from_price_cents ?? Infinity;
+          return pa - pb;
+        });
 
   return (
     <main className="relative mx-auto w-full max-w-5xl px-4 py-10 sm:px-6 sm:py-16">
@@ -407,7 +427,7 @@ export default function MarketplaceView({
           </div>
         ) : (
           <>
-            <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm text-text-muted">
                 <span className="font-semibold text-text-base">
                   {shown.length}
@@ -416,6 +436,18 @@ export default function MarketplaceView({
                   ? t("marketplace.resultsOne")
                   : t("marketplace.resultsMany")}
               </p>
+              <div className="flex items-center gap-2">
+              {/* Tri des résultats affichés */}
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as Sort)}
+                aria-label={t("marketplace.sortLabel")}
+                className="rounded-full border border-border-strong bg-transparent px-3 py-1 text-xs font-medium text-text-muted outline-none transition-colors focus:border-accent"
+              >
+                <option value="relevance">{t("marketplace.sortRelevance")}</option>
+                <option value="rating">{t("marketplace.sortRating")}</option>
+                <option value="price">{t("marketplace.sortPrice")}</option>
+              </select>
               <div className="inline-flex rounded-full border border-border-strong p-0.5">
                 {(["list", "map"] as const).map((v) => (
                   <button
@@ -434,6 +466,7 @@ export default function MarketplaceView({
                       : t("marketplace.viewMap")}
                   </button>
                 ))}
+              </div>
               </div>
             </div>
             {view === "map" ? (
