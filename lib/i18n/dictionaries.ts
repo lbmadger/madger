@@ -119,6 +119,8 @@ const fr = {
   account: {
     signout: "Se déconnecter",
     menuLabel: "Menu du compte",
+    loggedInAs: "Connecté en tant que",
+    switchAccount: "Changer de compte",
   },
   onboarding: {
     title: "Bienvenue sur Madger",
@@ -1299,6 +1301,8 @@ const en: Dictionary = {
   account: {
     signout: "Sign out",
     menuLabel: "Account menu",
+    loggedInAs: "Signed in as",
+    switchAccount: "Switch account",
   },
   onboarding: {
     title: "Welcome to Madger",

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
+import AccountSwitchBar from "@/components/auth/AccountSwitchBar";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import { bmi, bmiCategory, GOAL_KEYS } from "@/lib/health/bmi";
 
@@ -162,6 +163,8 @@ export default function ClientOnboarding() {
 
   return (
     <div className="mx-auto w-full max-w-md px-4 py-8 sm:py-12">
+      {/* Rappel du compte connecté + changement de compte */}
+      <AccountSwitchBar />
       {/* Barre de progression (segments + Étape X/3) */}
       <div className="mb-6">
         <div className="flex gap-1.5">

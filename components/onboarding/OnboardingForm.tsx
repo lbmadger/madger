@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import { slugify, isValidSlug } from "@/lib/utils/slug";
 import Button from "@/components/ui/Button";
 import CityAutocomplete from "@/components/ui/CityAutocomplete";
+import AccountSwitchBar from "@/components/auth/AccountSwitchBar";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import {
   SPORT_KEYS,
@@ -328,7 +329,10 @@ export default function OnboardingForm({
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-bg-card p-6">
+    <div>
+      {/* Rappel du compte connecté + changement de compte (mauvais Google) */}
+      <AccountSwitchBar />
+      <div className="rounded-2xl border border-border bg-bg-card p-6">
       {/* Progression */}
       <div className="mb-5">
         <div className="flex items-center justify-between text-xs text-text-dim">
@@ -734,6 +738,7 @@ export default function OnboardingForm({
           </button>
         </div>
       )}
+      </div>
     </div>
   );
 }
