@@ -9,6 +9,15 @@ import type { Locale } from "./config";
 // TypeScript à exiger sa traduction en EN.
 
 const fr = {
+  demoCoach: {
+    bannerTitle: "Ceci est une page d'exemple",
+    bannerDesc: "Voilà à quoi ressemblera ta page de coach sur Madger.",
+    bannerCta: "Créer ma page",
+    promptTitle: "Envie d'une page comme celle-ci ?",
+    promptDesc: "Crée ta page de coach gratuitement en quelques minutes, et commence à recevoir des réservations.",
+    promptCta: "Créer ma page gratuitement",
+    promptClose: "Continuer à explorer l'exemple",
+  },
   common: {
     appName: "Madger",
     soon: "Bientôt",
@@ -16,6 +25,7 @@ const fr = {
     save: "Enregistrer",
     cancel: "Annuler",
     loading: "Chargement…",
+    delete: "Supprimer",
   },
   nav: {
     overview: "Dashboard",
@@ -201,6 +211,7 @@ const fr = {
     to: "à",
     remove: "Supprimer ce créneau",
     removeConfirm: "Supprimer ce créneau ? Les clients ne pourront plus réserver sur cette plage.",
+    removeTitle: "Supprimer ce créneau ?",
     startTime: "Heure de début",
     endTime: "Heure de fin",
     days: {
@@ -242,6 +253,7 @@ const fr = {
     pendingBanner: "demande de réservation à confirmer",
     pendingBannerPlural: "demandes de réservation à confirmer",
     pendingSeeAll: "Voir toutes les demandes",
+    declineTitle: "Refuser cette demande ?",
     declineConfirm:
       "Refuser cette demande ? Si le client a réglé, il sera intégralement remboursé.",
     blocked: "Bloqué",
@@ -815,6 +827,7 @@ const fr = {
     googleConnect: "Connecter mon compte Google",
     googleConnected: "Compte Google connecté",
     googleDisconnect: "Déconnecter",
+    googleDisconnectTitle: "Déconnecter Google ?",
     googleDisconnectConfirm:
       "Déconnecter Google ? Les prochaines séances ne créeront plus d'événement agenda ni de lien Meet.",
     slugChangeWarning:
@@ -1078,6 +1091,7 @@ const fr = {
     renewsOn: "Se renouvelle le",
     endsOn: "S'arrête le",
     stopBtn: "Arrêter l'abonnement",
+    stopTitle: "Arrêter cet abonnement ?",
     confirmStop:
       "L'abonnement restera actif jusqu'à la fin de la période déjà payée, puis s'arrêtera sans nouveau prélèvement. Confirmer ?",
   },
@@ -1191,6 +1205,15 @@ const fr = {
 export type Dictionary = typeof fr;
 
 const en: Dictionary = {
+  demoCoach: {
+    bannerTitle: "This is an example page",
+    bannerDesc: "Here is what your coach page on Madger will look like.",
+    bannerCta: "Create my page",
+    promptTitle: "Want a page like this one?",
+    promptDesc: "Create your coach page for free in a few minutes and start taking bookings.",
+    promptCta: "Create my page for free",
+    promptClose: "Keep exploring the example",
+  },
   common: {
     appName: "Madger",
     soon: "Soon",
@@ -1198,6 +1221,7 @@ const en: Dictionary = {
     save: "Save",
     cancel: "Cancel",
     loading: "Loading…",
+    delete: "Delete",
   },
   nav: {
     overview: "Dashboard",
@@ -1379,6 +1403,7 @@ const en: Dictionary = {
     to: "to",
     remove: "Remove this slot",
     removeConfirm: "Remove this slot? Clients will no longer be able to book this range.",
+    removeTitle: "Remove this slot?",
     startTime: "Start time",
     endTime: "End time",
     days: {
@@ -1420,6 +1445,7 @@ const en: Dictionary = {
     pendingBanner: "booking request to confirm",
     pendingBannerPlural: "booking requests to confirm",
     pendingSeeAll: "See all requests",
+    declineTitle: "Decline this request?",
     declineConfirm:
       "Decline this request? If the client already paid, they will be fully refunded.",
     blocked: "Blocked",
@@ -1987,6 +2013,7 @@ const en: Dictionary = {
     googleConnect: "Connect my Google account",
     googleConnected: "Google account connected",
     googleDisconnect: "Disconnect",
+    googleDisconnectTitle: "Disconnect Google?",
     googleDisconnectConfirm:
       "Disconnect Google? Upcoming sessions will no longer create calendar events or Meet links.",
     slugChangeWarning:
@@ -2246,6 +2273,7 @@ const en: Dictionary = {
     renewsOn: "Renews on",
     endsOn: "Ends on",
     stopBtn: "Stop subscription",
+    stopTitle: "Stop this subscription?",
     confirmStop:
       "The subscription stays active until the end of the paid period, then stops with no further charge. Confirm?",
   },

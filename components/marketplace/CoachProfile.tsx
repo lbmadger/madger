@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import Dialog from "@/components/ui/Dialog";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -27,14 +28,19 @@ export default function CoachProfile({
   coach,
   services = [],
   reviews = [],
+  demo = false,
 }: {
   coach: PublicCoach;
   services?: PublicService[];
   reviews?: PublicReview[];
+  // Page VITRINE (madger.app/exemple) : mêmes visuels, mais les CTA
+  // n'ouvrent pas de vraie réservation. Ils invitent à créer sa page.
+  demo?: boolean;
 }) {
   const { t, locale } = useI18n();
   const router = useRouter();
   const [booking, setBooking] = useState(false);
+  const [demoPrompt, setDemoPrompt] = useState(false);
   const [bookingServiceId, setBookingServiceId] = useState<string | undefined>();
   const [contacting, setContacting] = useState(false);
   const [contactError, setContactError] = useState<string | null>(null);
@@ -46,6 +52,7 @@ export default function CoachProfile({
   // brouillon local restaure prestation, créneau et champs).
   const [bookingSlot, setBookingSlot] = useState<string | null>(null);
   useEffect(() => {
+    if (demo) return;
     const params = new URLSearchParams(window.location.search);
     const book = params.get("book");
     if (params.get("payment") === "canceled") setPaymentCanceled(true);
@@ -66,11 +73,17 @@ export default function CoachProfile({
         `${window.location.pathname}${qs ? `?${qs}` : ""}`
       );
     }
+    // `demo` est une constante (prop) : lecture unique au montage.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Ouvre (ou crée) la conversation avec ce coach, puis redirige vers le fil.
   // Non connecté → inscription client, avec retour sur le profil ensuite.
   async function handleContact() {
+    if (demo) {
+      setDemoPrompt(true);
+      return;
+    }
     setContactError(null);
     setContacting(true);
     try {
@@ -141,6 +154,10 @@ export default function CoachProfile({
     PublicService | null
   >((min, s) => (!min || s.price_cents < min.price_cents ? s : min), null);
   const openBooking = (serviceId?: string) => {
+    if (demo) {
+      setDemoPrompt(true);
+      return;
+    }
     setBookingServiceId(serviceId);
     setBooking(true);
   };
@@ -170,15 +187,37 @@ export default function CoachProfile({
         <div className="absolute left-1/2 top-[-220px] h-[420px] w-[720px] -translate-x-1/2 rounded-full bg-accent/[0.06] blur-[120px]" />
       </div>
 
-      <Link
-        href="/coachs"
-        className="mb-6 inline-flex items-center gap-1.5 text-sm text-text-muted transition-colors hover:text-text-base"
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M15 18l-6-6 6-6" />
-        </svg>
-        {t("coachProfile.backToSearch")}
-      </Link>
+      {/* Bandeau VITRINE : cette page est un exemple, invite à créer la sienne. */}
+      {demo && (
+        <div className="mb-6 flex flex-col items-start justify-between gap-3 rounded-2xl border border-accent/30 bg-accent/[0.06] px-5 py-4 sm:flex-row sm:items-center">
+          <div>
+            <p className="text-sm font-semibold text-text-base">
+              {t("demoCoach.bannerTitle")}
+            </p>
+            <p className="mt-0.5 text-xs text-text-muted">
+              {t("demoCoach.bannerDesc")}
+            </p>
+          </div>
+          <Link
+            href="/signup"
+            className="shrink-0 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+          >
+            {t("demoCoach.bannerCta")}
+          </Link>
+        </div>
+      )}
+
+      {!demo && (
+        <Link
+          href="/coachs"
+          className="mb-6 inline-flex items-center gap-1.5 text-sm text-text-muted transition-colors hover:text-text-base"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+          {t("coachProfile.backToSearch")}
+        </Link>
+      )}
 
       {/* Paiement interrompu : rien n'a été débité, on invite à reprendre. */}
       {paymentCanceled && (
@@ -301,10 +340,7 @@ export default function CoachProfile({
                       calendrier des créneaux, prestation présélectionnée. */}
                   <button
                     type="button"
-                    onClick={() => {
-                      setBookingServiceId(s.id);
-                      setBooking(true);
-                    }}
+                    onClick={() => openBooking(s.id)}
                     className="flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-bg-elevated p-3 text-left transition-colors hover:border-accent/40"
                   >
                     <div className="min-w-0">
@@ -473,7 +509,7 @@ export default function CoachProfile({
         </div>
       </div>
 
-      {booking && (
+      {booking && !demo && (
         <BookingModal
           coach={coach}
           services={services}
@@ -482,6 +518,40 @@ export default function CoachProfile({
           onClose={() => setBooking(false)}
           onContact={handleContact}
         />
+      )}
+
+      {/* Vitrine : tout clic « Réserver / Contacter » invite à créer sa page. */}
+      {demoPrompt && (
+        <Dialog
+          onClose={() => setDemoPrompt(false)}
+          label={t("demoCoach.promptTitle")}
+          className="w-full max-w-sm rounded-t-2xl border border-border bg-bg-card p-6 text-center sm:rounded-2xl"
+        >
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-accent/10 text-accent">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 20h9M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z" />
+            </svg>
+          </div>
+          <h2 className="text-lg font-bold text-text-base">
+            {t("demoCoach.promptTitle")}
+          </h2>
+          <p className="mt-2 text-sm text-text-muted">
+            {t("demoCoach.promptDesc")}
+          </p>
+          <Link
+            href="/signup"
+            className="mt-5 block w-full rounded-full bg-accent py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+          >
+            {t("demoCoach.promptCta")}
+          </Link>
+          <button
+            type="button"
+            onClick={() => setDemoPrompt(false)}
+            className="mt-3 text-xs text-text-dim underline transition-colors hover:text-text-muted"
+          >
+            {t("demoCoach.promptClose")}
+          </button>
+        </Dialog>
       )}
     </main>
   );
