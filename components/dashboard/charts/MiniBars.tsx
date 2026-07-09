@@ -61,12 +61,18 @@ export default function MiniBars({
                 </span>
               )}
               <span
-                className={`w-full max-w-[26px] rounded-t transition-[height,background-color] duration-700 ease-out ${
-                  isActive ? "bg-accent" : "bg-accent/70"
-                }`}
+                className="w-full max-w-[26px] rounded-t transition-[height] duration-700 ease-out"
                 style={{
                   height: mounted ? `max(${hPct}%, 3px)` : "3px",
                   transitionDelay: `${i * 45}ms`,
+                  // Dégradé vertical (vif en tête, atténué en pied) + halo
+                  // lumineux accentué sur la barre survolée.
+                  background: isActive
+                    ? "linear-gradient(180deg, #CBFF03, #9DCC00)"
+                    : "linear-gradient(180deg, rgba(203,255,3,0.85), rgba(203,255,3,0.35))",
+                  boxShadow: isActive
+                    ? "0 0 10px rgba(203,255,3,0.55)"
+                    : "none",
                 }}
               />
             </button>

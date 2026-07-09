@@ -210,6 +210,31 @@ a {
   animation: glow-pulse 2.4s ease-in-out infinite;
 }
 
+/* ── Graphiques : tracé de la ligne + fondu de l'aire ──── */
+/* La ligne se dessine de gauche à droite (pathLength normalisé à 1 dans le
+   SVG), l'aire remontée ensuite en fondu. En motricité réduite, la règle
+   globale ci-dessous fige l'état final instantanément. */
+@keyframes chart-draw {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes chart-fill-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.chart-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: chart-draw 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.chart-fill {
+  opacity: 0;
+  animation: chart-fill-in 0.8s ease-out 0.35s forwards;
+}
+.chart-dot {
+  opacity: 0;
+  animation: chart-fill-in 0.4s ease-out 1s forwards;
+}
+
 /* ── Phone dashboard thin scrollbar ────────────────────── */
 .phone-scroll::-webkit-scrollbar { width: 2px; }
 .phone-scroll::-webkit-scrollbar-track { background: transparent; }

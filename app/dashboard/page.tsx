@@ -10,6 +10,7 @@ import { SunIcon, MoonIcon } from "@/components/ui/icons";
 import ProStats, { type ProStatItem } from "@/components/dashboard/ProStats";
 import { computeLeiaTips, dailyTipIndex } from "@/lib/leia/tips";
 import ChartCard from "@/components/dashboard/charts/ChartCard";
+import AreaChartCard from "@/components/dashboard/charts/AreaChartCard";
 import { type BarDatum } from "@/components/dashboard/charts/MiniBars";
 import { invoiceNumber } from "@/lib/invoices/utils";
 import { createClient } from "@/lib/supabase/server";
@@ -702,6 +703,20 @@ export default async function OverviewPage() {
           })}
         </div>
 
+        {/* Héros revenus : grand chiffre du mois + graphique en aire animé.
+            La pièce maîtresse visuelle de la vue d'ensemble. */}
+        <div className="mt-4 sm:mt-5">
+          <AreaChartCard
+            title={o.chartRevenue}
+            headline={euros(monthRevenue)}
+            trend={revenueTrend}
+            data={revenueByMonth}
+            unit="currency"
+            locale={loc}
+            mode="months"
+          />
+        </div>
+
         <div className="mt-4 grid grid-cols-1 gap-4 sm:mt-5 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <section className="rounded-2xl border border-border bg-bg-card p-5">
@@ -889,16 +904,9 @@ export default async function OverviewPage() {
             Pro. */}
         <ProStats items={proItems} locked={!pro} />
 
-        {/* Graphiques : revenus par mois + séances par semaine, avec sélecteur
-            de période (la plage s'adapte à l'historique réel du coach). */}
-        <div className="mt-4 grid grid-cols-1 gap-3 sm:mt-5 sm:grid-cols-2 sm:gap-4">
-          <ChartCard
-            title={o.chartRevenue}
-            data={revenueByMonth}
-            unit="currency"
-            locale={loc}
-            mode="months"
-          />
+        {/* Séances par semaine (le revenu a désormais son héros en aire plus
+            haut) : les barres conviennent bien à un décompte. */}
+        <div className="mt-4 sm:mt-5">
           <ChartCard
             title={o.chartSessions}
             data={sessionsByWeek}
