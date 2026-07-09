@@ -4,6 +4,7 @@ import { unstable_cache } from "next/cache";
 import { createClient as createAnon } from "@supabase/supabase-js";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { getServerDictionary } from "@/lib/i18n/server";
+import { createClient } from "@/lib/supabase/server";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/supabase/config";
 import PublicHeader from "@/components/marketplace/PublicHeader";
 import CoachProfile from "@/components/marketplace/CoachProfile";
@@ -90,6 +91,70 @@ export async function generateMetadata({
   };
 }
 
+// Le visiteur est-il le COACH propriétaire de ce slug, avec un profil pas
+// encore publié ? Renvoie l'état des critères de publication, ou null (le
+// visiteur n'est pas ce coach → vrai 404).
+async function getOwnPublishState(slug: string): Promise<{
+  firstName: string | null;
+  checks: { done: boolean; label: string; href: string }[];
+} | null> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  // RLS : un coach ne lit que sa propre ligne.
+  const { data: me } = await supabase
+    .from("coaches")
+    .select("id, first_name, avatar_url, bio, listed, stripe_charges_enabled")
+    .eq("id", user.id)
+    .eq("slug", slug)
+    .maybeSingle();
+  if (!me) return null;
+
+  const [{ count: services }, { count: avails }] = await Promise.all([
+    supabase
+      .from("services")
+      .select("id", { count: "exact", head: true })
+      .eq("coach_id", user.id)
+      .eq("active", true),
+    supabase
+      .from("availabilities")
+      .select("id", { count: "exact", head: true })
+      .eq("coach_id", user.id),
+  ]);
+
+  const checks = [
+    {
+      done: Boolean(me.avatar_url && (me.bio ?? "").trim()),
+      label: "Ajouter ta photo et ta présentation",
+      href: "/dashboard/reglages",
+    },
+    {
+      done: Boolean(me.stripe_charges_enabled),
+      label: "Activer les paiements (Stripe)",
+      href: "/dashboard/paiements",
+    },
+    {
+      done: (services ?? 0) > 0,
+      label: "Créer au moins une prestation",
+      href: "/dashboard/prestations",
+    },
+    {
+      done: (avails ?? 0) > 0,
+      label: "Définir au moins une disponibilité",
+      href: "/dashboard/disponibilites",
+    },
+    {
+      done: Boolean(me.listed),
+      label: "Rendre ton profil visible dans l'annuaire",
+      href: "/dashboard/reglages",
+    },
+  ];
+  return { firstName: (me.first_name as string | null) ?? null, checks };
+}
+
 export default async function CoachPublicPage({
   params,
   searchParams,
@@ -101,6 +166,20 @@ export default async function CoachPublicPage({
   const { coach, services, reviews } = await getCoachPageData(params.slug);
 
   if (!coach) {
+    // Page publique absente : si c'est le COACH lui-même qui ouvre son propre
+    // profil non encore publié, on lui explique ce qui manque au lieu d'un
+    // 404 muet. Sinon, vrai 404.
+    const owner = await getOwnPublishState(params.slug);
+    if (owner) {
+      const { default: CoachNotPublished } = await import(
+        "@/components/marketplace/CoachNotPublished"
+      );
+      return (
+        <div className="min-h-screen bg-bg">
+          <CoachNotPublished firstName={owner.firstName} checks={owner.checks} />
+        </div>
+      );
+    }
     notFound();
   }
 
