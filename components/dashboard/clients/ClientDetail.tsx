@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Client } from "@/lib/clients/types";
 import Button from "@/components/ui/Button";
+import { useConfirm } from "@/components/ui/useConfirm";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 
 // Fiche client : lecture, modification inline et suppression. Les écritures
@@ -15,6 +16,7 @@ import { inputClass, labelClass } from "@/lib/ui/styles";
 export default function ClientDetail({ client }: { client: Client }) {
   const { t, locale } = useI18n();
   const router = useRouter();
+  const { confirm, dialog } = useConfirm();
 
   const [editing, setEditing] = useState(false);
   const [firstName, setFirstName] = useState(client.first_name);
@@ -63,7 +65,14 @@ export default function ClientDetail({ client }: { client: Client }) {
   }
 
   async function handleDelete() {
-    if (!window.confirm(t("clients.detail.deleteConfirm"))) return;
+    const ok = await confirm({
+      title: t("clients.detail.deleteTitle"),
+      message: t("clients.detail.deleteConfirm"),
+      confirmLabel: t("common.delete"),
+      cancelLabel: t("common.cancel"),
+      danger: true,
+    });
+    if (!ok) return;
     setLoading(true);
     try {
       const supabase = createClient();
@@ -86,6 +95,7 @@ export default function ClientDetail({ client }: { client: Client }) {
 
   return (
     <>
+      {dialog}
       <Link
         href="/dashboard/clients"
         className="mb-5 inline-flex items-center gap-1.5 text-sm text-text-muted transition-colors hover:text-text-base"

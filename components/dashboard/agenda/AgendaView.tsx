@@ -11,6 +11,7 @@ import AddSessionModal from "./AddSessionModal";
 import WeekView from "./WeekView";
 import Button from "@/components/ui/Button";
 import Dialog from "@/components/ui/Dialog";
+import { useConfirm } from "@/components/ui/useConfirm";
 import ClientSheet from "@/components/messaging/ClientSheet";
 import type { ClientProfile } from "@/lib/health/bmi";
 import { PencilIcon } from "@/components/ui/icons";
@@ -39,6 +40,7 @@ export default function AgendaView({
 }) {
   const { t, locale } = useI18n();
   const router = useRouter();
+  const { confirm, dialog } = useConfirm();
   // Copie locale des séances : chaque action (confirmer, refuser, bloquer…)
   // met l'écran à jour IMMÉDIATEMENT, le router.refresh() en arrière-plan ne
   // sert plus qu'à réconcilier avec le serveur. Zéro latence perçue.
@@ -282,6 +284,20 @@ export default function AgendaView({
     }
   }
 
+  // Refus d'une demande : confirmation stylée avant l'annulation effective
+  // (rembourse le client à 100 % si la séance était payée).
+  async function declineBooking(id: string) {
+    const ok = await confirm({
+      title: t("agenda.declineTitle"),
+      message: t("agenda.declineConfirm"),
+      confirmLabel: t("agenda.decline"),
+      cancelLabel: t("common.cancel"),
+      danger: true,
+    });
+    if (!ok) return;
+    cancelBooking(id, "coach");
+  }
+
   // Séances à venir uniquement (>= maintenant), regroupées par jour.
   const groups = useMemo(() => {
     const now = Date.now();
@@ -341,6 +357,7 @@ export default function AgendaView({
 
   return (
     <>
+      {dialog}
       {/* Demandes à confirmer : LE geste critique, affiché avant tout le
           reste avec confirmation/refus en un clic. */}
       {pendingRequests.length > 0 && (
@@ -374,10 +391,7 @@ export default function AgendaView({
                   <button
                     type="button"
                     disabled={cancelling || confirming}
-                    onClick={() => {
-                      if (window.confirm(t("agenda.declineConfirm")))
-                        cancelBooking(b.id, "coach");
-                    }}
+                    onClick={() => declineBooking(b.id)}
                     className="rounded-full border border-border-strong px-3.5 py-1.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
                   >
                     {cancelling && actionErrorId === b.id
@@ -589,10 +603,7 @@ export default function AgendaView({
                          <button
                            type="button"
                            disabled={cancelling || confirming}
-                           onClick={() => {
-                             if (window.confirm(t("agenda.declineConfirm")))
-                               cancelBooking(b.id, "coach");
-                           }}
+                           onClick={() => declineBooking(b.id)}
                            className="flex-1 rounded-full border border-border-strong py-1.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
                          >
                            {cancelling && actionErrorId === b.id
@@ -772,10 +783,7 @@ export default function AgendaView({
                   <button
                     type="button"
                     disabled={cancelling || confirming}
-                    onClick={() => {
-                      if (window.confirm(t("agenda.declineConfirm")))
-                        cancelBooking(selected.id, "coach");
-                    }}
+                    onClick={() => declineBooking(selected.id)}
                     className="flex-1 rounded-full border border-border-strong py-2.5 text-sm font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
                   >
                     {cancelling ? "…" : t("agenda.decline")}

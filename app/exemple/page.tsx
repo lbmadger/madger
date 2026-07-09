@@ -24,7 +24,7 @@ const DEMO_COACH: PublicCoach = {
   first_name: "Emma",
   last_name: "Laurent",
   specialty: "Coach musculation & remise en forme",
-  bio: "Coach sportive diplômée d'État depuis 8 ans, je t'accompagne vers tes objectifs avec un programme sur mesure, en salle ou à domicile. Perte de poids, prise de masse, préparation physique ou simple remise en forme : on avance ensemble, à ton rythme, sans jamais te juger. Premier échange offert pour définir ton plan.",
+  bio: "Coach sportive diplômée d'État depuis 8 ans, je t'accompagne vers tes objectifs avec un programme sur mesure, en salle ou à domicile. Perte de poids, prise de masse ou simple remise en forme : on avance ensemble, à ton rythme, sans jamais te juger. Premier échange offert pour définir ton plan.",
   avatar_url:
     "https://images.unsplash.com/photo-1594381898411-846e7d193883?auto=format&fit=crop&w=400&q=80",
   city: "Lyon",
@@ -111,7 +111,7 @@ const DEMO_REVIEWS: PublicReview[] = [
     coach_id: "demo",
     rating: 4,
     comment:
-      "Super accompagnement pour ma prépa. Rien à redire, je recommande les yeux fermés.",
+      "Super accompagnement pour reprendre le sport après des années sans rien faire. Rien à redire, je recommande les yeux fermés.",
     created_at: "2025-03-30T10:00:00.000Z",
     client_first_name: "Thomas",
   },

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
+import { useConfirm } from "@/components/ui/useConfirm";
 import { TicketIcon, RepeatIcon, StarIcon } from "@/components/ui/icons";
 import {
   refundCents,
@@ -62,6 +63,7 @@ export default function ClientSpace({
 }) {
   const { t, locale } = useI18n();
   const router = useRouter();
+  const { confirm, dialog } = useConfirm();
   const loc = locale === "fr" ? "fr-FR" : "en-GB";
   const [cancelId, setCancelId] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
@@ -72,7 +74,14 @@ export default function ClientSpace({
   // Arrêt d'un abonnement mensuel : reste actif jusqu'à la fin de la période
   // payée, puis plus aucun prélèvement.
   async function cancelSub(id: string) {
-    if (!window.confirm(t("clientSubs.confirmStop"))) return;
+    const ok = await confirm({
+      title: t("clientSubs.stopTitle"),
+      message: t("clientSubs.confirmStop"),
+      confirmLabel: t("clientSubs.stopBtn"),
+      cancelLabel: t("common.cancel"),
+      danger: true,
+    });
+    if (!ok) return;
     setSubCancelling(id);
     setSubError(null);
     try {
@@ -182,6 +191,7 @@ export default function ClientSpace({
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
+      {dialog}
       <h1 className="text-2xl font-extrabold tracking-tight text-text-base sm:text-3xl">
         {t("clientSpace.title")}
       </h1>

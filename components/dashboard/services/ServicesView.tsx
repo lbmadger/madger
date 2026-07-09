@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
+import { useConfirm } from "@/components/ui/useConfirm";
 import { type Service, formatPrice } from "@/lib/services/types";
 import AddServiceModal from "./AddServiceModal";
 
@@ -18,12 +19,19 @@ export default function ServicesView({
 }) {
   const { t, locale } = useI18n();
   const router = useRouter();
+  const { confirm, dialog } = useConfirm();
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<Service | null>(null);
   const [deleteError, setDeleteError] = useState(false);
 
   async function handleDelete(id: string) {
-    if (!window.confirm(t("services.deleteConfirm"))) return;
+    const ok = await confirm({
+      title: t("services.deleteConfirm"),
+      confirmLabel: t("common.delete"),
+      cancelLabel: t("common.cancel"),
+      danger: true,
+    });
+    if (!ok) return;
     setDeleteError(false);
     const supabase = createClient();
     const { error } = await supabase.from("services").delete().eq("id", id);
@@ -50,6 +58,7 @@ export default function ServicesView({
 
   return (
     <>
+      {dialog}
       <div className="mb-5 flex items-center justify-between gap-3">
         <p className="text-sm text-text-muted">
           <span className="font-semibold text-text-base">

@@ -9,6 +9,7 @@ import {
   WEEK_ORDER,
   hhmm,
 } from "@/lib/availability/types";
+import { useConfirm } from "@/components/ui/useConfirm";
 
 export default function AvailabilityEditor({
   initial,
@@ -17,6 +18,7 @@ export default function AvailabilityEditor({
 }) {
   const { t } = useI18n();
   const router = useRouter();
+  const { confirm, dialog } = useConfirm();
   const [busy, setBusy] = useState(false);
   const [saveError, setSaveError] = useState(false);
 
@@ -28,6 +30,14 @@ export default function AvailabilityEditor({
   }
 
   async function remove(id: string) {
+    const ok = await confirm({
+      title: t("availability.removeTitle"),
+      message: t("availability.removeConfirm"),
+      confirmLabel: t("availability.remove"),
+      cancelLabel: t("common.cancel"),
+      danger: true,
+    });
+    if (!ok) return;
     setBusy(true);
     setSaveError(false);
     const supabase = createClient();
@@ -64,6 +74,7 @@ export default function AvailabilityEditor({
 
   return (
     <div className="flex flex-col gap-2">
+      {dialog}
       {saveError && (
         <p role="alert" className="rounded-xl border border-danger/25 bg-danger/10 px-3 py-2 text-sm text-danger">
           {t("availability.errors.saveFailed")}
@@ -143,13 +154,9 @@ function DayRow({
             <button
               type="button"
               disabled={busy}
-              // Confirmation avant suppression : évite de perdre une plage
-              // d'un tap accidentel (action non annulable).
-              onClick={() => {
-                if (window.confirm(t("availability.removeConfirm"))) {
-                  onRemove(r.id);
-                }
-              }}
+              // Confirmation gérée par le parent (dialogue stylé) avant
+              // la suppression effective.
+              onClick={() => onRemove(r.id)}
               className="text-text-dim transition-colors hover:text-danger"
               aria-label={`${t("availability.remove")} : ${label} ${hhmm(r.start_time)} ${t("availability.to")} ${hhmm(r.end_time)}`}
             >

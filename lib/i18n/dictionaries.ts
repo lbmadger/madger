@@ -551,7 +551,8 @@ const fr = {
       save: "Enregistrer",
       saving: "Enregistrement…",
       delete: "Supprimer",
-      deleteConfirm: "Supprimer ce client ? Cette action est définitive.",
+      deleteTitle: "Supprimer ce client ?",
+      deleteConfirm: "Cette action est définitive et effacera sa fiche.",
     },
     errors: {
       generic: "Une erreur est survenue. Réessaie.",
@@ -1093,7 +1094,7 @@ const fr = {
     stopBtn: "Arrêter l'abonnement",
     stopTitle: "Arrêter cet abonnement ?",
     confirmStop:
-      "L'abonnement restera actif jusqu'à la fin de la période déjà payée, puis s'arrêtera sans nouveau prélèvement. Confirmer ?",
+      "L'abonnement restera actif jusqu'à la fin de la période déjà payée, puis s'arrêtera sans nouveau prélèvement.",
   },
   packs: {
     title: "Packs de séances",
@@ -1741,7 +1742,8 @@ const en: Dictionary = {
       save: "Save",
       saving: "Saving…",
       delete: "Delete",
-      deleteConfirm: "Delete this client? This cannot be undone.",
+      deleteTitle: "Delete this client?",
+      deleteConfirm: "This is permanent and will erase their record.",
     },
     errors: {
       generic: "Something went wrong. Please try again.",
@@ -2275,7 +2277,7 @@ const en: Dictionary = {
     stopBtn: "Stop subscription",
     stopTitle: "Stop this subscription?",
     confirmStop:
-      "The subscription stays active until the end of the paid period, then stops with no further charge. Confirm?",
+      "The subscription stays active until the end of the paid period, then stops with no further charge.",
   },
   packs: {
     title: "Session packs",

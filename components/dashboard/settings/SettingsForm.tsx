@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { slugify, isValidSlug } from "@/lib/utils/slug";
 import Button from "@/components/ui/Button";
+import { useConfirm } from "@/components/ui/useConfirm";
 import CityAutocomplete from "@/components/ui/CityAutocomplete";
 import GymAutocomplete, { type GymPlace } from "@/components/ui/GymAutocomplete";
 import LanguagePicker from "@/components/settings/LanguagePicker";
@@ -56,6 +57,7 @@ import type { Coach } from "@/lib/coach/getCoach";
 export default function SettingsForm({ coach }: { coach: Coach }) {
   const { t } = useI18n();
   const router = useRouter();
+  const { confirm, dialog } = useConfirm();
 
   const [firstName, setFirstName] = useState(coach.first_name ?? "");
   const [lastName, setLastName] = useState(coach.last_name ?? "");
@@ -244,6 +246,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
 
   return (
     <div className="flex flex-col gap-5">
+      {dialog}
       {/* Lien public : ouvrir + copier en un clic */}
       {coach.slug && (
         <div className="flex items-center gap-2 rounded-2xl border border-accent/20 bg-accent/[0.04] px-4 py-3">
@@ -744,8 +747,14 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
               <button
                 type="button"
                 onClick={async () => {
-                  if (!window.confirm(t("settings.googleDisconnectConfirm")))
-                    return;
+                  const ok = await confirm({
+                    title: t("settings.googleDisconnectTitle"),
+                    message: t("settings.googleDisconnectConfirm"),
+                    confirmLabel: t("settings.googleDisconnect"),
+                    cancelLabel: t("common.cancel"),
+                    danger: true,
+                  });
+                  if (!ok) return;
                   await fetch("/api/google/disconnect", { method: "POST" });
                   router.refresh();
                 }}
