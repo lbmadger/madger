@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, type FormEvent } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -18,6 +19,13 @@ import {
   isSuperCoach,
 } from "@/lib/coaches/public-types";
 
+const CoachesMap = dynamic(() => import("./CoachesMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[520px] w-full animate-pulse rounded-2xl border border-border bg-bg-card" />
+  ),
+});
+
 type Filter = "all" | "online";
 type Coords = { lat: number; lng: number };
 // Rayon élargi quand aucun coach n'est trouvé dans la ville exacte.
@@ -28,7 +36,10 @@ export default function MarketplaceView({
 }: {
   initialCoaches: PublicCoach[];
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  // Vue Liste / Carte. La carte (Leaflet) est chargée uniquement à la
+  // demande et jamais côté serveur : zéro impact sur le rendu initial.
+  const [view, setView] = useState<"list" | "map">("list");
   const [query, setQuery] = useState("");
   const [coords, setCoords] = useState<Coords | null>(null);
   const [filter, setFilter] = useState<Filter>("all");
@@ -395,14 +406,38 @@ export default function MarketplaceView({
           </div>
         ) : (
           <>
-            <p className="mb-3 text-sm text-text-muted">
-              <span className="font-semibold text-text-base">
-                {shown.length}
-              </span>{" "}
-              {shown.length === 1
-                ? t("marketplace.resultsOne")
-                : t("marketplace.resultsMany")}
-            </p>
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="text-sm text-text-muted">
+                <span className="font-semibold text-text-base">
+                  {shown.length}
+                </span>{" "}
+                {shown.length === 1
+                  ? t("marketplace.resultsOne")
+                  : t("marketplace.resultsMany")}
+              </p>
+              <div className="inline-flex rounded-full border border-border-strong p-0.5">
+                {(["list", "map"] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    aria-pressed={view === v}
+                    onClick={() => setView(v)}
+                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                      view === v
+                        ? "bg-accent text-black"
+                        : "text-text-muted hover:text-text-base"
+                    }`}
+                  >
+                    {v === "list"
+                      ? t("marketplace.viewList")
+                      : t("marketplace.viewMap")}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {view === "map" ? (
+              <CoachesMap coaches={shown} locale={locale === "en" ? "en" : "fr"} />
+            ) : (
             <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {shown.map((c, i) => (
                 <li
@@ -477,9 +512,10 @@ export default function MarketplaceView({
                 </li>
               ))}
             </ul>
+            )}
 
-            {/* Page suivante (parcours par défaut uniquement) */}
-            {hasMore && activeCount === 0 && (
+            {/* Page suivante (parcours par défaut uniquement, vue liste) */}
+            {view === "list" && hasMore && activeCount === 0 && (
               <div className="mt-6 text-center">
                 <button
                   type="button"
