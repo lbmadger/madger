@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { isNavActive } from "@/lib/ui/nav";
+import { useUnreadCount } from "@/lib/messaging/useUnreadCount";
 
 // Barre d'onglets mobile, fixée en bas de l'écran (façon app native).
 // Visible < md uniquement ; le sidebar prend le relais en desktop. On y met
@@ -48,6 +49,7 @@ const TABS: Tab[] = [
 export default function MobileNav() {
   const pathname = usePathname();
   const { t } = useI18n();
+  const unread = useUnreadCount();
 
   // Dans un fil de discussion, la barre du bas disparaît : le champ de
   // saisie prend sa place et la conversation occupe tout l'écran.
@@ -68,20 +70,31 @@ export default function MobileNav() {
             : "text-text-muted"
         }`;
 
+        const showBadge = tab.href === "/dashboard/messages" && unread > 0;
         const inner = (
           <>
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              {tab.icon}
-            </svg>
+            <span className="relative">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                {tab.icon}
+              </svg>
+              {showBadge && (
+                <span
+                  className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[9px] font-bold text-black"
+                  aria-label={`${unread} ${t("messages.unread")}`}
+                >
+                  {unread > 9 ? "9+" : unread}
+                </span>
+              )}
+            </span>
             <span className="truncate">{t(tab.labelKey)}</span>
           </>
         );

@@ -138,7 +138,10 @@ export default function MessageThread({
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col">
+    // 100dvh (dynamic viewport) et non 100vh : sur mobile, la barre d'URL et
+    // le clavier réduisent la hauteur visible. dvh suit cette hauteur réelle,
+    // donc le champ de saisie reste toujours visible, jamais masqué.
+    <div className="flex h-[calc(100dvh-4rem)] flex-col">
       {/* En-tête du fil */}
       <div className="flex items-center gap-3 border-b border-border px-4 py-3">
         <Link

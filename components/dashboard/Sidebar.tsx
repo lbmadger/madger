@@ -6,6 +6,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 import SidebarProfile from "@/components/dashboard/SidebarProfile";
 import { isNavActive } from "@/lib/ui/nav";
+import { useUnreadCount } from "@/lib/messaging/useUnreadCount";
 
 // Élément de navigation. `soon` grise l'entrée et la rend non cliquable tant
 // que le module n'existe pas (Phase 0 : seul "Vue d'ensemble" est actif).
@@ -66,10 +67,11 @@ const SECONDARY: NavItem[] = [
 
 ];
 
-function NavLink({ item }: { item: NavItem }) {
+function NavLink({ item, unread = 0 }: { item: NavItem; unread?: number }) {
   const pathname = usePathname();
   const { t } = useI18n();
   const active = isNavActive(pathname, item.href, item.href === "/dashboard");
+  const showBadge = item.href === "/dashboard/messages" && unread > 0;
 
   const content = (
     <>
@@ -87,6 +89,14 @@ function NavLink({ item }: { item: NavItem }) {
         {item.icon}
       </svg>
       <span className="truncate">{t(item.labelKey)}</span>
+      {showBadge && (
+        <span
+          className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[10px] font-bold text-black"
+          aria-label={`${unread} ${t("messages.unread")}`}
+        >
+          {unread > 9 ? "9+" : unread}
+        </span>
+      )}
       {item.soon && (
         <span className="ml-auto rounded-full border border-border-strong px-2 py-0.5 text-[10px] uppercase tracking-wide text-text-dim">
           {t("common.soon")}
@@ -125,6 +135,7 @@ function NavLink({ item }: { item: NavItem }) {
 }
 
 export default function Sidebar() {
+  const unread = useUnreadCount();
   return (
     <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-bg-elevated p-4 md:flex">
       <Link href="/dashboard" className="mb-8 flex items-center gap-2.5 px-2">
@@ -136,7 +147,7 @@ export default function Sidebar() {
 
       <nav className="flex flex-1 flex-col gap-1">
         {NAV.map((item) => (
-          <NavLink key={item.href} item={item} />
+          <NavLink key={item.href} item={item} unread={unread} />
         ))}
 
         <div className="my-4 h-px bg-border" />
