@@ -16,6 +16,7 @@ export default function MessageThread({
   backPath,
   initialMessages,
   headerExtra,
+  sessionsHref,
 }: {
   conversationId: string;
   currentUserId: string;
@@ -24,6 +25,8 @@ export default function MessageThread({
   initialMessages: Message[];
   // Bloc optionnel affiché sous l'en-tête (ex. fiche client côté coach).
   headerExtra?: React.ReactNode;
+  // Lien « Voir les séances » dans l'en-tête (agenda coach / espace client).
+  sessionsHref?: string;
 }) {
   const { t } = useI18n();
   const [messages, setMessages] = useState<Message[]>(initialMessages);
@@ -157,6 +160,17 @@ export default function MessageThread({
           {otherName.charAt(0).toUpperCase() || "?"}
         </span>
         <span className="font-semibold text-text-base">{otherName}</span>
+        {sessionsHref && (
+          <Link
+            href={sessionsHref}
+            className="ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border-strong px-3 py-1.5 text-xs font-medium text-text-muted transition-colors hover:border-accent hover:text-accent"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 2v4m8-4v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
+            </svg>
+            {t("messages.viewSessions")}
+          </Link>
+        )}
       </div>
 
       {headerExtra}

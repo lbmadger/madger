@@ -45,6 +45,7 @@ export default async function ClientThreadPage({
       currentUserId={user.id}
       otherName={conversation.coach_name || "-"}
       backPath="/messages"
+      sessionsHref="/espace"
       initialMessages={((msgs ?? []) as Message[]).slice().reverse()}
     />
   );

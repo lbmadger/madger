@@ -104,6 +104,11 @@ export async function POST(req: NextRequest) {
     threadUrl: toCoach
       ? `${APP_URL}/dashboard/messages/${conversationId}`
       : `${APP_URL}/messages/${conversationId}`,
+    // Lien secondaire « Voir mes séances » : agenda côté coach, espace côté
+    // client, pour revenir sur le site depuis l'email.
+    sessionsUrl: toCoach
+      ? `${APP_URL}/dashboard/agenda`
+      : `${APP_URL}/espace`,
   });
   // reply-to : répondre à l'email écrit à l'expéditeur, pas à Madger.
   let replyTo: string | undefined;

@@ -58,6 +58,7 @@ export default async function CoachThreadPage({
       currentUserId={user.id}
       otherName={conversation.client_name || "-"}
       backPath="/dashboard/messages"
+      sessionsHref="/dashboard/agenda"
       initialMessages={((msgs ?? []) as Message[]).slice().reverse()}
       headerExtra={
         profile ? <ClientSheet profile={profile as ClientProfile} /> : undefined

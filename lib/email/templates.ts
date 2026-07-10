@@ -424,6 +424,8 @@ export function newMessageNotif(p: {
   senderName: string;
   preview: string;
   threadUrl: string;
+  // Lien secondaire vers les séances (agenda côté coach, espace côté client).
+  sessionsUrl?: string;
   locale?: EmailLocale;
 }): Email {
   const locale = p.locale ?? "fr";
@@ -441,6 +443,7 @@ export function newMessageNotif(p: {
           intro: `<b style="color:${C.text};">${p.senderName}</b> wrote to you:`,
           boxTitle: "Message",
           cta: "Reply",
+          sessions: "View my sessions",
           outro:
             "Replying quickly makes all the difference: most clients pick the coach who answers first.",
         }
@@ -451,6 +454,7 @@ export function newMessageNotif(p: {
           intro: `<b style="color:${C.text};">${p.senderName}</b> t'a écrit :`,
           boxTitle: "Message",
           cta: "Répondre",
+          sessions: "Voir mes séances",
           outro:
             "Répondre vite fait toute la différence : la plupart des clients choisissent le coach qui répond en premier.",
         };
@@ -462,7 +466,12 @@ export function newMessageNotif(p: {
       eyebrow: L.eyebrow,
       title: L.title,
       intro: L.intro,
-      blocks: [infoBox(L.boxTitle, `« ${safe} »`)],
+      blocks: [
+        infoBox(L.boxTitle, `« ${safe} »`),
+        ...(p.sessionsUrl
+          ? [linksBlock([{ label: L.sessions, url: p.sessionsUrl }])]
+          : []),
+      ],
       cta: { label: L.cta, url: p.threadUrl },
       outro: L.outro,
     }),
