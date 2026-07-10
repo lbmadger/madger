@@ -44,6 +44,7 @@ const DEMO_COACH: PublicCoach = {
   venues: ["coach_gym", "home", "outdoor"],
   gym_name: "Basic-Fit Lyon Part-Dieu",
   from_price_cents: 4500,
+  verified: true,
 };
 
 const DEMO_SERVICES: PublicService[] = [

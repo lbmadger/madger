@@ -13,6 +13,7 @@ import CityAutocomplete from "@/components/ui/CityAutocomplete";
 import GymAutocomplete, { type GymPlace } from "@/components/ui/GymAutocomplete";
 import LanguagePicker from "@/components/settings/LanguagePicker";
 import SettingsSection from "./SettingsSection";
+import VerificationSection from "./VerificationSection";
 import {
   UserIcon,
   ActivityIcon,
@@ -514,6 +515,19 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             {saved && feedbackFor === "activity" && <p role="status" className="text-sm text-accent">{t("settings.saved")}</p>}
           </div>
         </div>
+      </SettingsSection>
+
+      {/* Coach vérifié : dépôt du diplôme */}
+      <SettingsSection
+        icon={<ShieldIcon size={18} />}
+        title={t("verification.title")}
+        desc={t("verification.desc")}
+      >
+        <VerificationSection
+          coachId={coach.id}
+          status={coach.verification_status ?? "none"}
+          note={coach.verification_note ?? null}
+        />
       </SettingsSection>
 
       {/* Mode de réservation */}

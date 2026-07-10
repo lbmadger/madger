@@ -30,6 +30,8 @@ export type PublicCoach = {
   gym_name: string | null;
   // Prix d'appel « à partir de » (min des prestations actives, migration 0042).
   from_price_cents: number | null;
+  // Diplôme vérifié par l'équipe Madger (migration 0044).
+  verified: boolean;
 };
 
 // Avis public (vue public_reviews) : prénom du client uniquement.

@@ -66,6 +66,10 @@ export type Coach = {
   siret: string | null;
   vat_number: string | null;
   billing_address: string | null;
+  // Coach vérifié (migration 0044) : dépôt de diplôme + validation équipe.
+  verification_status: "none" | "pending" | "verified" | "rejected";
+  verification_doc_path: string | null;
+  verification_note: string | null;
 };
 
 // Récupère le profil coach de l'utilisateur connecté. Renvoie:
