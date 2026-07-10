@@ -8,6 +8,7 @@ import Button from "@/components/ui/Button";
 import AccountSwitchBar from "@/components/auth/AccountSwitchBar";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import { bmi, bmiCategory, GOAL_KEYS } from "@/lib/health/bmi";
+import { nameFromMetadata } from "@/lib/auth/nameFromUser";
 
 // Création du profil sportif client en 3 étapes, avec barre de progression
 // (style HelloFresh) : 1. identité → 2. mesures (IMC en direct) → 3. objectifs.
@@ -62,9 +63,13 @@ export default function ClientOnboarding() {
         setLevel(p.level ?? "");
         setNote(p.note ?? "");
       } else {
-        // Prénom depuis les métadonnées du compte si dispo.
-        const meta = user.user_metadata?.full_name as string | undefined;
-        if (meta) setFirstName(meta.split(" ")[0] ?? "");
+        // Prénom + nom repris des métadonnées du compte (Google) si dispo,
+        // pour ne pas les faire retaper.
+        const { firstName: fn, lastName: ln } = nameFromMetadata(
+          user.user_metadata
+        );
+        if (fn) setFirstName(fn);
+        if (ln) setLastName(ln);
       }
     });
   }, []);
