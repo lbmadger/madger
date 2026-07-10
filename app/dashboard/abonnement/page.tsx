@@ -1,6 +1,7 @@
 import Topbar from "@/components/dashboard/Topbar";
 import PricingPlans from "@/components/subscription/PricingPlans";
 import ManageSubscription from "@/components/subscription/ManageSubscription";
+import ReferralCard from "@/components/subscription/ReferralCard";
 import { getCoach } from "@/lib/coach/getCoach";
 import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
@@ -54,6 +55,30 @@ export default async function SubscriptionPage({
           currency: "EUR",
         })
       : null;
+  // Parrainage : lien du coach + compteurs (filleuls inscrits, récompenses).
+  let referred = 0;
+  let rewarded = 0;
+  if (coach?.id) {
+    const supabase = createClient();
+    const [{ count: refCount }, { count: rewCount }] = await Promise.all([
+      supabase
+        .from("coaches")
+        .select("id", { count: "exact", head: true })
+        .eq("referred_by", coach.id),
+      supabase
+        .from("coaches")
+        .select("id", { count: "exact", head: true })
+        .eq("referred_by", coach.id)
+        .not("referral_rewarded_at", "is", null),
+    ]);
+    referred = refCount ?? 0;
+    rewarded = rewCount ?? 0;
+  }
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
+  const referralLink = coach?.referral_code
+    ? `${appUrl}/signup?ref=${coach.referral_code}`
+    : null;
+
   const untilStr = coach?.pro_until
     ? new Date(coach.pro_until).toLocaleDateString(
         locale === "fr" ? "fr-FR" : "en-GB",
@@ -115,6 +140,16 @@ export default async function SubscriptionPage({
           currentPlan={pro ? "pro" : "free"}
           commission90dCents={commission90d}
         />
+
+        {/* Parrainage : 1 mois de Pro offert pour chaque coach parrainé qui
+            passe Pro. */}
+        {referralLink && (
+          <ReferralCard
+            link={referralLink}
+            referred={referred}
+            rewarded={rewarded}
+          />
+        )}
       </main>
     </>
   );

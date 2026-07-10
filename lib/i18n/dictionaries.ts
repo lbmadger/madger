@@ -312,6 +312,15 @@ const fr = {
         "Trop tard pour accepter : ton délai minimum avant séance est dépassé. La demande sera annulée automatiquement, sans débit du client.",
     },
   },
+  referral: {
+    title: "Parraine un coach",
+    subtitle:
+      "Quand un coach que tu parraines passe Pro, vous gagnez chacun 1 mois de Pro offert.",
+    copy: "Copier",
+    copied: "Copié",
+    referredLabel: "Coachs parrainés",
+    monthsLabel: "Mois offerts",
+  },
   plans: {
     title: "Abonnement",
     currentPlan: "Ton offre",
@@ -1519,6 +1528,15 @@ const en: Dictionary = {
       tooLate:
         "Too late to accept: your minimum notice before the session has passed. The request will be cancelled automatically, without charging the client.",
     },
+  },
+  referral: {
+    title: "Refer a coach",
+    subtitle:
+      "When a coach you refer goes Pro, you each earn 1 free month of Pro.",
+    copy: "Copy",
+    copied: "Copied",
+    referredLabel: "Coaches referred",
+    monthsLabel: "Free months",
   },
   plans: {
     title: "Subscription",

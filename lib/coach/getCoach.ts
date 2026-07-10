@@ -24,8 +24,14 @@ export type Coach = {
   // Géolocalisation (migration 0009)
   lat: number | null;
   lng: number | null;
-  // Abonnement (migration 0010) — Pro tant que pro_until est dans le futur
+  // Abonnement (migration 0010) — Pro tant que pro_until est dans le futur.
+  // NB : getCoach renvoie ici le pro_until EFFECTIF, c.-à-d. max(pro_until réel,
+  // pro_bonus_until). Tous les appels isPro(coach.pro_until) restent donc justes.
   pro_until: string | null;
+  // Accès Pro offert (parrainage / gestes co.), indépendant de Stripe (0043).
+  pro_bonus_until: string | null;
+  referral_code: string | null;
+  referred_by: string | null;
   // Abonnement Pro Stripe (migration 0015) — le coach paie Madger
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
@@ -90,5 +96,16 @@ export const getCoach = cache(async function getCoachInner(): Promise<{
     return { coach: null };
   }
 
-  return { coach: data as Coach | null };
+  // Pro effectif = max(pro_until réel, accès offert). On surcharge pro_until
+  // pour que tous les consommateurs (isPro, dashboard, commission…) prennent
+  // en compte le bonus de parrainage sans changer leur code.
+  const coach = data as Coach | null;
+  if (coach) {
+    const real = coach.pro_until ? new Date(coach.pro_until).getTime() : 0;
+    const bonus = coach.pro_bonus_until
+      ? new Date(coach.pro_bonus_until).getTime()
+      : 0;
+    if (bonus > real) coach.pro_until = coach.pro_bonus_until;
+  }
+  return { coach };
 });

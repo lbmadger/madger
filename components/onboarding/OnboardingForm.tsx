@@ -122,6 +122,21 @@ export default function OnboardingForm({
         );
         return;
       }
+      // Parrainage : rattache le filleul à son parrain (best-effort). Le code
+      // vient du lien /signup?ref=CODE mémorisé à l'inscription.
+      try {
+        const ref = localStorage.getItem("madger_ref");
+        if (ref) {
+          await fetch("/api/referral/claim", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code: ref }),
+          });
+          localStorage.removeItem("madger_ref");
+        }
+      } catch {
+        /* best-effort : le parrainage ne doit jamais bloquer l'onboarding */
+      }
       setStep(2);
     } catch {
       setError(t("onboarding.errors.generic"));

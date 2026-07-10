@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -36,6 +36,20 @@ export default function AuthForm({ mode }: { mode: Mode }) {
       : fallback;
 
   const isSignup = mode === "signup";
+
+  // Parrainage : un lien /signup?ref=CODE mémorise le code localement. Il
+  // survit au détour Google (même origine) et sera rattaché au compte à la
+  // fin de l'onboarding coach.
+  useEffect(() => {
+    const ref = searchParams.get("ref");
+    if (ref && role === "coach") {
+      try {
+        localStorage.setItem("madger_ref", ref.trim().toUpperCase());
+      } catch {
+        /* stockage indisponible */
+      }
+    }
+  }, [searchParams, role]);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

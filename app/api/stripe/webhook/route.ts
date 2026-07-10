@@ -67,6 +67,54 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  // Récompense un coach d'un mois de Pro : crédit de 49 € sur son solde Stripe
+  // s'il a un compte client (sa prochaine facture est réduite d'autant), sinon
+  // un mois d'accès Pro gratuit (pro_bonus_until). 49 € = tarif mensuel.
+  async function rewardOneMonth(coachId: string) {
+    const { data: c } = await supabase
+      .from("coaches")
+      .select("stripe_customer_id, subscription_status")
+      .eq("id", coachId)
+      .maybeSingle();
+    const active =
+      c?.subscription_status === "active" ||
+      c?.subscription_status === "trialing";
+    if (c?.stripe_customer_id && active && stripe) {
+      try {
+        await stripe.customers.createBalanceTransaction(c.stripe_customer_id, {
+          amount: -4900,
+          currency: "eur",
+          description: "Parrainage Madger : 1 mois de Pro offert",
+        });
+        return;
+      } catch {
+        /* repli sur l'accès offert si le crédit Stripe échoue */
+      }
+    }
+    await supabase.rpc("grant_pro_bonus_month", { p_coach_id: coachId });
+  }
+
+  // Première souscription Pro d'un filleul → 1 mois offert au filleul ET au
+  // parrain, une seule fois (verrou idempotent via referral_rewarded_at).
+  async function maybeRewardReferral(coachId: string) {
+    const { data: f } = await supabase
+      .from("coaches")
+      .select("referred_by, referral_rewarded_at")
+      .eq("id", coachId)
+      .maybeSingle();
+    if (!f?.referred_by || f.referral_rewarded_at) return;
+    // Pose le verrou : une seule livraison de webhook remporte la mise.
+    const { data: claimed } = await supabase
+      .from("coaches")
+      .update({ referral_rewarded_at: new Date().toISOString() })
+      .eq("id", coachId)
+      .is("referral_rewarded_at", null)
+      .select("id");
+    if (!claimed || claimed.length === 0) return;
+    await rewardOneMonth(coachId);
+    await rewardOneMonth(f.referred_by as string);
+  }
+
   try {
     switch (event.type) {
       // Paiement d'une séance (séquestre) : enregistre la réservation même si
@@ -88,8 +136,11 @@ export async function POST(req: NextRequest) {
           );
           await fulfillSubscriptionSession(s.id);
         } else if (s.mode === "subscription" && s.metadata?.coach_id) {
-          // Souscription initiale au plan Pro : email de bienvenue au coach
-          // (les renouvellements passent par invoice.paid, sans re-email).
+          // Souscription initiale au plan Pro : récompense de parrainage
+          // éventuelle (filleul + parrain, une seule fois).
+          await maybeRewardReferral(s.metadata.coach_id);
+          // Puis email de bienvenue au coach (les renouvellements passent par
+          // invoice.paid, sans re-email).
           try {
             const { data: coachAuth } = await supabase.auth.admin.getUserById(
               s.metadata.coach_id
