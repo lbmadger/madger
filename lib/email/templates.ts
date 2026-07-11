@@ -419,6 +419,37 @@ export function sessionReminderClient(p: {
   };
 }
 
+// ── Client : rappel « ~1 h avant » la séance ────────────────────────────────
+export function sessionReminderSoonClient(p: {
+  coachName: string;
+  timeStr: string; // heure de la séance (ex. « 14:00 »)
+  online: boolean;
+  reservationUrl: string;
+  meetUrl?: string;
+  address?: string; // adresse de la salle (présentiel)
+}): Email {
+  return {
+    subject: `Dans 1h : séance avec ${p.coachName} 🏃`,
+    html: layout({
+      preheader: `Ta séance commence bientôt (${p.timeStr}).`,
+      eyebrow: "Rappel de séance",
+      title: "C'est bientôt l'heure",
+      intro: `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> commence dans environ <b style="color:${C.text};">1 heure</b> (à ${p.timeStr}).`,
+      blocks: [
+        ...(p.online
+          ? meetCalLinks(p.meetUrl)
+          : p.address
+            ? [detailsTable([{ label: "Adresse", value: p.address }])]
+            : []),
+      ],
+      cta: { label: "Voir ma réservation", url: p.reservationUrl },
+      outro: p.online
+        ? "Installe-toi au calme et teste ton micro. À tout de suite ! 💪"
+        : "En route ! Pense à ta tenue et à de quoi t'hydrater. À tout de suite ! 💪",
+    }),
+  };
+}
+
 // ── Nouveau message reçu (coach ou client) ──────────────────────────────────
 export function newMessageNotif(p: {
   senderName: string;
