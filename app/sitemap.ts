@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { ALL_POSTS } from "@/lib/blog/posts";
 
 // Regénéré au plus une fois par heure : les crawlers ne déclenchent pas une
 // requête base à chaque passage.
@@ -20,6 +21,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: "https://madger.app", lastModified: now, changeFrequency: "weekly", priority: 1 },
     // Page vitrine (exemple de page coach) : publique avant même le lancement.
     { url: "https://madger.app/exemple", lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+    // Blog : index + articles, publics et crawlables avant le lancement.
+    { url: "https://madger.app/blog", lastModified: now, changeFrequency: "weekly", priority: 0.6 },
+    ...ALL_POSTS.map((p) => ({
+      url: `https://madger.app/blog/${p.slug}`,
+      lastModified: new Date(p.date),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })),
     ...(launched
       ? [
           {

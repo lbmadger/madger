@@ -20,6 +20,7 @@ export default function Footer() {
             <a href="#fonctionnement" className="text-text-muted hover:text-white transition-colors duration-200">Fonctionnement</a>
             <a href="#dashboard" className="text-text-muted hover:text-white transition-colors duration-200">Dashboard</a>
             <a href="#tarifs" className="text-text-muted hover:text-white transition-colors duration-200">Tarifs</a>
+            <Link href="/blog" className="text-text-muted hover:text-white transition-colors duration-200">Blog</Link>
             <a href="#early-access" className="text-text-muted hover:text-white transition-colors duration-200">Accès anticipé</a>
             <a href="mailto:contact@madger.app" className="text-text-muted hover:text-white transition-colors duration-200">Contact</a>
           </div>

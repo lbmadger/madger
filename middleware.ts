@@ -20,6 +20,9 @@ const PUBLIC_EXACT = new Set([
   "/sitemap.xml",
 ]);
 const PUBLIC_PREFIXES = [
+  // Blog : public même avant le lancement (référencement / contenu), pour
+  // construire de l'autorité SEO en amont de l'ouverture.
+  "/blog",
   "/cgu",
   "/cgv",
   "/charte-paiement",

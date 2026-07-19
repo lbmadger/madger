@@ -19,12 +19,20 @@ export default function PublicHeader() {
           </span>
         </Link>
 
-        <Link
-          href="/espace"
-          className="rounded-full border border-border-strong px-3.5 py-1.5 text-sm font-medium text-text-muted transition-colors hover:border-accent hover:text-text-base"
-        >
-          {t("clientSpace.title")}
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/blog"
+            className="hidden rounded-full px-3.5 py-1.5 text-sm font-medium text-text-muted transition-colors hover:text-text-base sm:inline-block"
+          >
+            Blog
+          </Link>
+          <Link
+            href="/espace"
+            className="rounded-full border border-border-strong px-3.5 py-1.5 text-sm font-medium text-text-muted transition-colors hover:border-accent hover:text-text-base"
+          >
+            {t("clientSpace.title")}
+          </Link>
+        </div>
       </div>
     </header>
   );
