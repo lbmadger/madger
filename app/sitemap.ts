@@ -18,6 +18,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const legalDate = new Date("2026-07-07");
   const fixed: MetadataRoute.Sitemap = [
     { url: "https://madger.app", lastModified: now, changeFrequency: "weekly", priority: 1 },
+    // Page vitrine (exemple de page coach) : publique avant même le lancement.
+    { url: "https://madger.app/exemple", lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     ...(launched
       ? [
           {

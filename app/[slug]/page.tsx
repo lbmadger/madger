@@ -193,9 +193,29 @@ export default async function CoachPublicPage({
     url: `https://madger.app/${coach.slug}`,
     ...(coach.avatar_url ? { image: coach.avatar_url } : {}),
     ...(coach.city
-      ? { address: { "@type": "PostalAddress", addressLocality: coach.city } }
+      ? {
+          address: {
+            "@type": "PostalAddress",
+            addressLocality: coach.city,
+            addressCountry: "FR",
+          },
+        }
       : {}),
   };
+  // Zone desservie : un Place géolocalisé quand on a les coordonnées (signal
+  // local plus fort qu'un simple nom de ville).
+  const areaServed =
+    coach.lat != null && coach.lng != null
+      ? {
+          "@type": "Place",
+          ...(coach.city ? { name: coach.city } : {}),
+          geo: {
+            "@type": "GeoCoordinates",
+            latitude: coach.lat,
+            longitude: coach.lng,
+          },
+        }
+      : coach.city || undefined;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Service",
@@ -203,7 +223,7 @@ export default async function CoachPublicPage({
     name: `Coaching avec ${coachFullName(coach)}`,
     url: `https://madger.app/${coach.slug}`,
     provider: person,
-    ...(coach.city ? { areaServed: coach.city } : {}),
+    ...(areaServed ? { areaServed } : {}),
     ...(services.length > 0
       ? {
           offers: services
@@ -232,12 +252,38 @@ export default async function CoachPublicPage({
       : {}),
   };
 
+  // Fil d'Ariane (breadcrumb affiché sous le titre dans Google) :
+  // Accueil › Trouve ton coach › {Coach}.
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Madger", item: "https://madger.app" },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Trouve ton coach",
+        item: "https://madger.app/coachs",
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: coachFullName(coach),
+        item: `https://madger.app/${coach.slug}`,
+      },
+    ],
+  };
+
   return (
     <I18nProvider locale={locale} dict={dict}>
       <div className="min-h-screen bg-bg">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
         />
         <PublicHeader />
         {/* Retour de paiement sans réservation retrouvée : on rassure. */}
