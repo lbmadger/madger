@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { motion } from "framer-motion";
 import SectionLabel from "@/components/ui/SectionLabel";
 
@@ -130,17 +129,6 @@ export default function CoachPagePreview() {
                 Paiement sécurisé, versé au coach après la séance
               </p>
             </div>
-          </div>
-
-          {/* CTA vers la vraie page vitrine */}
-          <div className="mt-8 text-center">
-            <Link
-              href="/exemple"
-              className="inline-flex items-center gap-2 rounded-full border border-border-strong px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-accent hover:text-accent"
-            >
-              Voir une vraie page coach
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
-            </Link>
           </div>
         </motion.div>
       </div>
