@@ -9,6 +9,7 @@ import {
 } from "@/lib/invoices/utils";
 import { MADGER_LEGAL } from "@/lib/invoices/madger";
 import PrintButton from "@/components/invoices/PrintButton";
+import MadgerLogo from "@/components/ui/MadgerLogo";
 
 export const dynamic = "force-dynamic";
 
@@ -93,9 +94,14 @@ export default async function MadgerInvoicePage({
       </div>
 
       <div className="invoice-print rounded-2xl border border-border bg-bg-card p-6 sm:p-10">
+        {/* Liseré accent : en SVG (fill d'attribut), il survit à l'impression
+            noir sur blanc contrairement à un fond CSS. */}
+        <svg aria-hidden width="100%" height="4" className="mb-8 block">
+          <rect width="100%" height="4" rx="2" fill="#CBFF03" />
+        </svg>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xl font-extrabold tracking-tight text-text-base">
+            <p className="text-2xl font-extrabold tracking-tight text-text-base">
               {inv.title.slice(0, -1)}
             </p>
             <p className="mt-1 text-sm font-semibold text-text-muted">{number}</p>
@@ -103,11 +109,15 @@ export default async function MadgerInvoicePage({
               {inv.issuedOn} {dateStr(issuedAt)}
             </p>
           </div>
-          <div className="text-right">
-            <p className="text-lg font-extrabold tracking-tight text-accent">
-              {MADGER_LEGAL.brand}
-            </p>
-            <p className="text-xs text-text-dim">{MADGER_LEGAL.site}</p>
+          {/* Marque : icône de l'app (imprime bien, fills SVG) + nom */}
+          <div className="flex flex-col items-end gap-2 text-right">
+            <MadgerLogo size={38} />
+            <div>
+              <p className="text-base font-extrabold tracking-tight text-accent">
+                {MADGER_LEGAL.brand}
+              </p>
+              <p className="text-xs text-text-dim">{MADGER_LEGAL.site}</p>
+            </div>
           </div>
         </div>
 
