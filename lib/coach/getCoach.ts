@@ -70,6 +70,10 @@ export type Coach = {
   verification_status: "none" | "pending" | "verified" | "rejected";
   verification_doc_path: string | null;
   verification_note: string | null;
+  // Objectif mensuel (migration 0046) : revenus et séances visés, affichés
+  // en jauges sur le dashboard.
+  monthly_revenue_goal_cents: number | null;
+  monthly_sessions_goal: number | null;
 };
 
 // Récupère le profil coach de l'utilisateur connecté. Renvoie:

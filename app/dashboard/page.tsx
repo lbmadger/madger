@@ -5,6 +5,7 @@ import AnimatedStat, {
   type StatTrend,
 } from "@/components/dashboard/AnimatedStat";
 import SetupChecklist from "@/components/dashboard/SetupChecklist";
+import GoalCard from "@/components/dashboard/GoalCard";
 import LeiaTips from "@/components/dashboard/LeiaTips";
 import { SunIcon, MoonIcon } from "@/components/ui/icons";
 import ProStats, { type ProStatItem } from "@/components/dashboard/ProStats";
@@ -98,10 +99,22 @@ export default async function OverviewPage() {
     supabase.rpc("coach_weekly_sessions", { p_weeks: 52 }),
   ]);
 
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
   // Dernières factures, avis, demandes à confirmer, derniers messages reçus,
-  // séances à venir sur 30 jours (revenus prévisionnels, stats Pro).
-  const [{ data: latestInvoices }, reviewsRes, pendingRes, msgsRes, next30Res] =
-    await Promise.all([
+  // séances à venir sur 30 jours (revenus prévisionnels, stats Pro),
+  // séances du mois (objectif) et encaissements du mois par prestation
+  // (répartition).
+  const [
+    { data: latestInvoices },
+    reviewsRes,
+    pendingRes,
+    msgsRes,
+    next30Res,
+    monthSessionsRes,
+    breakdownRes,
+  ] = await Promise.all([
       supabase
         .from("payments")
         .select(
@@ -133,6 +146,21 @@ export default async function OverviewPage() {
         )
         .neq("status", "cancelled")
         .eq("is_block", false),
+      // Séances du mois (réalisées + planifiées) : la jauge d'objectif.
+      supabase
+        .from("bookings")
+        .select("*", { count: "exact", head: true })
+        .gte("starts_at", monthStart.toISOString())
+        .lt("starts_at", nextMonthStart.toISOString())
+        .neq("status", "cancelled")
+        .eq("is_block", false),
+      // Encaissements du mois par prestation (répartition).
+      supabase
+        .from("payments")
+        .select("amount_cents, paid_at, services(name)")
+        .eq("status", "paid")
+        .gte("paid_at", monthStart.toISOString())
+        .limit(1000),
     ]);
 
   const clientsCount = clientsRes.count ?? 0;
@@ -173,6 +201,44 @@ export default async function OverviewPage() {
 
   const { coach } = await getCoach();
   const pro = isPro(coach?.pro_until);
+
+  // ── Objectif du mois + répartition par prestation ─────────────────────────
+  const monthSessionsCount = monthSessionsRes.count ?? 0;
+  const byService = new Map<string, number>();
+  for (const p of breakdownRes.data ?? []) {
+    const sv = Array.isArray(p.services) ? p.services[0] : p.services;
+    const name = (sv?.name as string | undefined) || o.breakdownOther;
+    byService.set(
+      name,
+      (byService.get(name) ?? 0) + ((p.amount_cents as number) || 0)
+    );
+  }
+  const breakdownTotal = Array.from(byService.values()).reduce(
+    (s, v) => s + v,
+    0
+  );
+  const breakdown = Array.from(byService.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([name, cents]) => ({
+      name,
+      pct: Math.round((cents / breakdownTotal) * 100),
+    }));
+  {
+    const rest =
+      breakdownTotal -
+      Array.from(byService.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .reduce((s, [, c]) => s + c, 0);
+    if (rest > 0) {
+      breakdown.push({
+        name: o.breakdownOther,
+        pct: Math.round((rest / breakdownTotal) * 100),
+      });
+    }
+  }
+  const monthLabel = now.toLocaleDateString(loc, { month: "long" });
 
   // Checklist de démarrage : reflète l'état réel (photo + bio, dispos,
   // prestations, paiements Stripe).
@@ -829,6 +895,54 @@ export default async function OverviewPage() {
                 </ul>
               )}
             </section>
+
+            {/* Objectif du mois : jauges revenus / séances, fixé par le coach */}
+            {coach && (
+              <GoalCard
+                coachId={coach.id}
+                monthLabel={monthLabel}
+                revenueCents={monthRevenue}
+                sessionsCount={monthSessionsCount}
+                revenueGoalCents={coach.monthly_revenue_goal_cents}
+                sessionsGoal={coach.monthly_sessions_goal}
+                locale={loc}
+              />
+            )}
+
+            {/* Répartition des encaissements du mois par prestation */}
+            {breakdown.length > 0 && breakdownTotal > 0 && (
+              <section className="rounded-2xl border border-border bg-bg-card p-5">
+                <h3 className="text-base font-semibold text-text-base">
+                  {o.breakdownTitle}
+                </h3>
+                <div className="mt-3 flex flex-col gap-2.5">
+                  {breakdown.map((b, i) => (
+                    <div key={b.name}>
+                      <div className="mb-1 flex items-center justify-between gap-2 text-xs">
+                        <span className="truncate text-text-muted">{b.name}</span>
+                        <span className="shrink-0 font-semibold text-text-base">
+                          {b.pct}%
+                        </span>
+                      </div>
+                      <div className="h-1 overflow-hidden rounded-full bg-white/[0.06]">
+                        <div
+                          className="h-full rounded-full"
+                          style={{
+                            width: `${b.pct}%`,
+                            background:
+                              i === 0
+                                ? "#CBFF03"
+                                : i === 1
+                                ? "rgba(203,255,3,0.55)"
+                                : "rgba(203,255,3,0.3)",
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {showChecklist && (
               <SetupChecklist

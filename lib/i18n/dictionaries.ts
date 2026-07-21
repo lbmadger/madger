@@ -312,6 +312,20 @@ const fr = {
         "Trop tard pour accepter : ton délai minimum avant séance est dépassé. La demande sera annulée automatiquement, sans débit du client.",
     },
   },
+  goal: {
+    title: "Objectif",
+    edit: "Modifier l'objectif",
+    emptyDesc:
+      "Fixe-toi un objectif du mois (revenus, séances) et suis ta progression ici.",
+    revenueLabel: "Revenus",
+    sessionsLabel: "Séances",
+    save: "Enregistrer",
+    saving: "Enregistrement…",
+    error: "Valeurs invalides. Réessaie.",
+    reached: "atteint",
+    remaining: "Reste",
+    done: "Objectif atteint 🎉",
+  },
   referral: {
     title: "Parraine un coach",
     subtitle:
@@ -602,6 +616,8 @@ const fr = {
     newThisMonth: "ce mois-ci",
     chartRevenue: "Revenus",
     chartSessions: "Séances par semaine",
+    breakdownTitle: "Répartition du mois",
+    breakdownOther: "Autres",
     chartWeekSessions: "Cette semaine · séances par jour",
     chartWeekRevenue: "Cette semaine · revenus par jour",
     latestInvoices: "Dernières factures",
@@ -1548,6 +1564,20 @@ const en: Dictionary = {
         "Too late to accept: your minimum notice before the session has passed. The request will be cancelled automatically, without charging the client.",
     },
   },
+  goal: {
+    title: "Goal",
+    edit: "Edit goal",
+    emptyDesc:
+      "Set a monthly goal (revenue, sessions) and track your progress here.",
+    revenueLabel: "Revenue",
+    sessionsLabel: "Sessions",
+    save: "Save",
+    saving: "Saving…",
+    error: "Invalid values. Try again.",
+    reached: "reached",
+    remaining: "Left:",
+    done: "Goal reached 🎉",
+  },
   referral: {
     title: "Refer a coach",
     subtitle:
@@ -1837,6 +1867,8 @@ const en: Dictionary = {
     newThisMonth: "this month",
     chartRevenue: "Revenue",
     chartSessions: "Sessions per week",
+    breakdownTitle: "This month's breakdown",
+    breakdownOther: "Other",
     chartWeekSessions: "This week · sessions per day",
     chartWeekRevenue: "This week · revenue per day",
     latestInvoices: "Latest invoices",
