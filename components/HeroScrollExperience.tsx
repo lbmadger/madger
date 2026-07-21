@@ -137,14 +137,20 @@ export default function HeroScrollExperience() {
     // Chorégraphie du téléphone en "unités timeline" (mêmes repères que
     // l'ancienne timeline : desktop 0-22, mobile 0-15.5).
     const TOTAL = isMobile ? 15.5 : 22;
+    // Échelle mobile adaptée à la hauteur RÉELLE du viewport : dans les
+    // navigateurs intégrés (Instagram, TikTok), la barre de l'app réduit la
+    // hauteur et le bas du téléphone (580 px × échelle, centré) recouvrait le
+    // numéro d'étape du bloc texte du bas (~150 px). On borne l'échelle pour
+    // que le téléphone s'arrête au-dessus du texte, marge comprise.
+    const mobileScale = Math.min(0.66, Math.max(0.42, (vh - 300) / 580));
     const phoneTracks = isMobile
       ? {
           x: piecewise([[0, 0]]),
           // Moins de remontée (-6/-8 au lieu de -8/-17) et moins de
-          // rétrécissement final (0.58 au lieu de 0.56) : le téléphone reste
-          // bien centré, sans grand vide noir avant le texte final sur mobile.
+          // rétrécissement final : le téléphone reste bien centré, sans grand
+          // vide noir avant le texte final sur mobile.
           y: piecewise([[0, 0], [14, 0], [15.2, -2]]),
-          scale: piecewise([[0, 0.66], [14, 0.66], [15.2, 0.58]]),
+          scale: piecewise([[0, mobileScale], [14, mobileScale], [15.2, mobileScale * 0.88]]),
           rotY: piecewise([[0, 0]]),
           rotZ: piecewise([[0, 0]]),
           opacity: piecewise([[0, 1]]),
@@ -550,6 +556,9 @@ export default function HeroScrollExperience() {
               paddingBottom: 32,
               paddingLeft: 20,
               paddingRight: 20,
+              // Au-dessus du téléphone (zIndex 2) : sur les très petits
+              // viewports, le texte reste lisible plutôt que caché derrière.
+              zIndex: 3,
             }}
           >
             <div style={{ position: "relative", width: "100%", maxWidth: 320, height: 110, textAlign: "center" }}>
