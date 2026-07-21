@@ -15,12 +15,12 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL("https://madger.app"),
   alternates: { canonical: "/" },
-  title: "Madger · L'app tout-en-un des coachs sportifs",
-  description: "Réservations en ligne, paiements sécurisés et factures automatiques pour coachs sportifs indépendants. Un seul lien : vos clients réservent et paient tout seuls.",
-  keywords: ["coach sportif", "application coach sportif", "logiciel coach sportif", "réservation séances", "facturation coach", "paiement en ligne coach", "gestion clients coach"],
+  title: "Madger · Réservation en ligne pour coachs sportifs",
+  description: "Un lien à partager : vos clients réservent leur séance et paient en ligne. Agenda, rappels et factures automatiques. Pensé pour les coachs sportifs indépendants.",
+  keywords: ["réservation coach sportif", "coach sportif", "logiciel réservation sport", "prise de rendez-vous coach", "application coach sportif", "paiement en ligne coach", "facturation coach"],
   openGraph: {
-    title: "Madger · L'app tout-en-un des coachs sportifs",
-    description: "Réservations, paiements et factures automatiques. Un seul lien : vos clients réservent et paient tout seuls.",
+    title: "Madger · Réservation en ligne pour coachs sportifs",
+    description: "Un lien : vos clients réservent leur séance et paient en ligne. Agenda, rappels et factures automatiques.",
     url: "https://madger.app",
     siteName: "Madger",
     locale: "fr_FR",
@@ -28,8 +28,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Madger · L'app tout-en-un des coachs sportifs",
-    description: "Réservations, paiements et factures automatiques. Un seul lien : vos clients réservent et paient tout seuls.",
+    title: "Madger · Réservation en ligne pour coachs sportifs",
+    description: "Un lien : vos clients réservent leur séance et paient en ligne. Agenda, rappels et factures automatiques.",
   },
 };
 
