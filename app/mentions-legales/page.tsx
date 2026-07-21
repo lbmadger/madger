@@ -36,7 +36,7 @@ export default function MentionsLegales() {
             <p>
               <strong className="text-white">Léonard Bondeau</strong>, Madger<br />
               SIRET : 933 449 365 00016<br />
-              Adresse : Boulevard de la Fontaine des Suisses, 21000 Dijon<br />
+              Adresse : Résidence du Bois de Sapin, 71400 Autun<br />
               Directeur de la publication : Léonard Bondeau<br />
               Email : <a href="mailto:contact@madger.app" style={{ color: "#CBFF03" }}>contact@madger.app</a>
             </p>
