@@ -172,9 +172,15 @@ export async function POST(req: NextRequest) {
       defi: escapeHtml(defi),
     };
 
-    // Email de notification à toi (fondateur)
-    await sendEmail({
-      to: process.env.FOUNDER_EMAIL!,
+    // Email de notification à toi (fondateur). Échec rendu VISIBLE dans les
+    // logs Vercel : FOUNDER_EMAIL absente ou envoi Resend refusé ne doivent
+    // pas passer inaperçus (l'inscription, elle, est déjà enregistrée).
+    if (!process.env.FOUNDER_EMAIL) {
+      console.error("early-access: FOUNDER_EMAIL non configurée, notification fondateur non envoyée");
+    }
+    const founderNotified = await sendEmail({
+      to: process.env.FOUNDER_EMAIL ?? "",
+      replyTo: normalizedEmail,
       subject: `🟢 Nouvelle inscription${waitlist ? " (liste d'attente)" : ""} : ${prenom} ${nom || ""}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
@@ -193,6 +199,9 @@ export async function POST(req: NextRequest) {
         </div>
       `,
     });
+    if (!founderNotified) {
+      console.error("early-access: notification fondateur NON envoyée (voir sendEmail failed ci-dessus)");
+    }
 
     // 3. Email de confirmation au coach (texte adapté fondateur / liste d'attente)
     const greetingLabel = waitlist ? "Liste d'attente confirmée" : "Accès anticipé confirmé";
