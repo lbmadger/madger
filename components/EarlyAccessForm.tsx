@@ -53,6 +53,8 @@ export default function EarlyAccessForm() {
   // État "complet" partagé avec le hero (aucun nombre exposé).
   const full = useEarlyAccessFull();
   const [joinedWaitlist, setJoinedWaitlist] = useState(false);
+  // Adresse déjà inscrite : on le dit franchement au lieu d'un faux succès.
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false);
 
   const [fields, setFields] = useState({
     prenom: "",
@@ -108,6 +110,7 @@ export default function EarlyAccessForm() {
       if (!res.ok) throw new Error("Erreur serveur");
       const data = await res.json().catch(() => ({}));
       setJoinedWaitlist(Boolean(data?.waitlist));
+      setAlreadyRegistered(Boolean(data?.already));
       setSubmitted(true);
     } catch {
       setError("Une erreur est survenue. Écris-nous à contact@madger.app");
@@ -241,10 +244,20 @@ export default function EarlyAccessForm() {
                   <path d="M20 6L9 17L4 12" stroke="#CBFF03" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 <p className="font-bold text-white mb-2" style={{ fontSize: 18 }}>
-                  {joinedWaitlist ? "Vous êtes sur la liste." : "Demande reçue."}
+                  {alreadyRegistered
+                    ? "Vous êtes déjà inscrit."
+                    : joinedWaitlist
+                    ? "Vous êtes sur la liste."
+                    : "Demande reçue."}
                 </p>
                 <p style={{ color: "#8A8A8A", fontSize: 14, lineHeight: 1.7 }}>
-                  {joinedWaitlist ? (
+                  {alreadyRegistered ? (
+                    <>
+                      Cette adresse email fait déjà partie de la liste,
+                      votre place est bien réservée.<br />
+                      On vous contacte dès que Madger est disponible.
+                    </>
+                  ) : joinedWaitlist ? (
                     <>
                       Les places fondateurs sont parties, mais vous êtes prioritaire
                       sur la prochaine vague.<br />

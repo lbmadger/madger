@@ -136,16 +136,16 @@ export async function POST(req: NextRequest) {
     // (basé sur l'ordre d'arrivée : pas besoin de colonne dédiée)
     const waitlist = (await getSignupCount()) >= FOUNDER_CAP;
 
-    // Déduplication : si l'email est déjà inscrit, on répond "succès" sans
-    // ré-insérer ni renvoyer d'emails (idempotent, et le compteur du cap
-    // fondateur reste juste).
+    // Déduplication : si l'email est déjà inscrit, on ne ré-insère pas et on
+    // ne renvoie pas d'emails, mais on le DIT au formulaire (already) pour
+    // afficher « déjà inscrit » plutôt qu'un faux « demande reçue ».
     const { data: existing } = await getSupabase()
       .from("early_access")
       .select("id")
       .eq("email", normalizedEmail)
       .limit(1);
     if (existing && existing.length > 0) {
-      return NextResponse.json({ success: true, waitlist });
+      return NextResponse.json({ success: true, waitlist, already: true });
     }
 
     // Sauvegarde en base Supabase. Si elle échoue, on s'arrête : envoyer
