@@ -365,8 +365,8 @@ const fr = {
     freeDesc: "Pour démarrer.",
     proDesc: "Pour aller plus loin.",
     priceFree: "0 €",
-    pricePro: "49 € / mois",
-    priceProAnnual: "490 € / an",
+    pricePro: "49 € HT / mois",
+    priceProAnnual: "490 € HT / an",
     proNote: "Sans engagement, résiliable à tout moment.",
     billingMonthly: "Mensuel",
     billingAnnual: "Annuel",
@@ -375,7 +375,7 @@ const fr = {
     savingsIntro: "Sur les 90 derniers jours, la commission Madger t'a coûté",
     savingsOutro: "En Pro, elle serait tombée à 0 €.",
     savingsProj1: "À ce rythme, environ",
-    savingsProj2: "de commission par an, contre 490 € en Pro annuel.",
+    savingsProj2: "de commission par an, contre 490 € HT en Pro annuel.",
     upgrading: "Ouverture du paiement sécurisé…",
     featuresFree: [
       "Lien public personnalisé",
@@ -410,14 +410,14 @@ const fr = {
       lossBadge:
         "Tu perds la priorité d'affichage et les stats avancées de Madger Pro.",
       stay: "Je reste en Pro",
-      switchAnnual: "Passer à l'annuel : 490 €/an, 2 mois offerts",
+      switchAnnual: "Passer à l'annuel : 490 € HT/an, 2 mois offerts",
       switching: "Bascule en cours…",
       talk: "Un souci ? Écris-nous, on répond vite",
       proceedCancel: "Continuer vers la résiliation quand même",
       error: "Ça n'a pas fonctionné. Réessaie ou écris-nous.",
       switchedTitle: "Bien joué, tu passes à l'annuel",
       switchedDesc:
-        "Ton abonnement est maintenant à 490 €/an, soit 2 mois offerts. Le mois en cours déjà payé est déduit automatiquement.",
+        "Ton abonnement est maintenant à 490 € HT/an, soit 2 mois offerts. Le mois en cours déjà payé est déduit automatiquement.",
       switchedCta: "Parfait",
     },
     currentBadge: "Ton offre actuelle",
@@ -426,7 +426,7 @@ const fr = {
     upsellComputedTitle: "Sur 30 jours, la commission t'a coûté",
     upsellComputedDesc:
       "En Pro : 0 % de commission. Il se rembourse souvent tout seul.",
-    upsellNetIntro: "En Pro (49 € par mois), tu aurais gardé",
+    upsellNetIntro: "En Pro (49 € HT par mois), tu aurais gardé",
     upsellCta: "Découvrir Pro",
   },
   promo: {
@@ -1617,8 +1617,8 @@ const en: Dictionary = {
     freeDesc: "To get started.",
     proDesc: "To go further.",
     priceFree: "€0",
-    pricePro: "€49 / month",
-    priceProAnnual: "€490 / year",
+    pricePro: "€49 / month excl. VAT",
+    priceProAnnual: "€490 / year excl. VAT",
     proNote: "No commitment, cancel anytime.",
     billingMonthly: "Monthly",
     billingAnnual: "Annual",
@@ -1627,7 +1627,7 @@ const en: Dictionary = {
     savingsIntro: "Over the last 90 days, the Madger commission cost you",
     savingsOutro: "On Pro, it would have been €0.",
     savingsProj1: "At this pace, about",
-    savingsProj2: "in commission per year, versus €490 on annual Pro.",
+    savingsProj2: "in commission per year, versus €490 excl. VAT on annual Pro.",
     upgrading: "Opening secure payment…",
     featuresFree: [
       "Personalized public link",
@@ -1662,14 +1662,14 @@ const en: Dictionary = {
       lossBadge:
         "You lose priority placement and the advanced stats of Madger Pro.",
       stay: "I'm staying on Pro",
-      switchAnnual: "Switch to annual: €490/year, 2 months free",
+      switchAnnual: "Switch to annual: €490/year excl. VAT, 2 months free",
       switching: "Switching…",
       talk: "Something wrong? Write to us, we answer fast",
       proceedCancel: "Continue to cancellation anyway",
       error: "That did not work. Try again or write to us.",
       switchedTitle: "Nice move, you are on annual now",
       switchedDesc:
-        "Your subscription is now €490/year, which means 2 months free. The month you already paid is deducted automatically.",
+        "Your subscription is now €490/year excl. VAT, which means 2 months free. The month you already paid is deducted automatically.",
       switchedCta: "Perfect",
     },
     currentBadge: "Your current plan",
@@ -1678,7 +1678,7 @@ const en: Dictionary = {
     upsellComputedTitle: "Over 30 days, the commission cost you",
     upsellComputedDesc:
       "On Pro: 0% commission. It often pays for itself.",
-    upsellNetIntro: "On Pro (€49 per month), you would have kept",
+    upsellNetIntro: "On Pro (€49 excl. VAT per month), you would have kept",
     upsellCta: "Discover Pro",
   },
   promo: {

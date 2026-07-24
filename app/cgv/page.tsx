@@ -46,10 +46,13 @@ export default function CGV() {
             <p>Madger propose deux formules :</p>
             <ul className="mt-3 flex flex-col gap-2" style={{ paddingLeft: 20, listStyleType: "disc" }}>
               <li><strong className="text-white">Madger Basic</strong> : 0 €, 5 % de commission par séance encaissée</li>
-              <li><strong className="text-white">Madger Pro</strong> : 49 € / mois ou 490 € / an, 0 % de commission</li>
+              <li><strong className="text-white">Madger Pro</strong> : 49 € HT / mois ou 490 € HT / an, 0 % de commission</li>
             </ul>
             <p className="mt-3">
-              Tous les prix sont affichés toutes taxes comprises (TVA non applicable, art. 293 B du CGI).
+              Les tarifs Madger sont exprimés hors taxes. TVA non applicable à ce jour,
+              art. 293 B du CGI : tant que cette franchise s&apos;applique, aucun montant de TVA
+              n&apos;est ajouté et le prix hors taxes correspond au prix payé. Si Madger devient
+              redevable de la TVA, celle-ci s&apos;ajoutera au tarif hors taxes en vigueur.
               Les prestations des coachs sont affichées au prix fixé par chaque coach, toutes taxes comprises.
               Les membres inscrits en accès anticipé bénéficient de Madger Pro offert pendant 3 mois au lancement.
               Madger se réserve le droit de modifier ses tarifs avec un préavis de 30 jours.
