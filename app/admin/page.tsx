@@ -20,10 +20,19 @@ export default async function AdminOverview() {
   let commission = 0;
   let proCount = 0;
   let points: AdminMapPoint[] = [];
+  // Finances entreprise.
+  let mrrCents = 0;
+  let subsMonthly = 0;
+  let subsAnnual = 0;
+  let commissionMonthCents = 0;
+  let gmv30Cents = 0;
+
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
   if (admin) {
     const head = { count: "exact" as const, head: true };
-    const [c1, c2, c3, c4, c5, c6, comm, geo] = await Promise.all([
+    const [c1, c2, c3, c4, c5, c6, comm, geo, subs, pays] = await Promise.all([
       admin.from("coaches").select("id", head),
       admin.from("clients").select("id", head),
       admin.from("early_access").select("id", head),
@@ -39,6 +48,20 @@ export default async function AdminOverview() {
         .not("lat", "is", null)
         .not("lng", "is", null)
         .limit(1000),
+      // Abonnements Pro actifs → MRR (mensuel 49 €, annuel 490/12).
+      admin
+        .from("coaches")
+        .select("subscription_status, subscription_plan")
+        .in("subscription_status", ["active", "trialing"])
+        .limit(2000),
+      // Paiements récents : commissions du mois (datées du versement) et
+      // volume encaissé 30 jours. Fenêtre large, filtrage précis en JS.
+      admin
+        .from("payments")
+        .select("amount_cents, commission_cents, paid_at, released_at, resolved_at, status")
+        .eq("status", "paid")
+        .gte("paid_at", new Date(now.getTime() - 210 * 86400000).toISOString())
+        .limit(2000),
     ]);
     coaches = c1.count ?? 0;
     clients = c2.count ?? 0;
@@ -47,6 +70,34 @@ export default async function AdminOverview() {
     disputes = c5.count ?? 0;
     released = c6.count ?? 0;
     commission = Number(comm.data ?? 0) || 0;
+
+    for (const s of subs.data ?? []) {
+      if (s.subscription_plan === "annual") {
+        subsAnnual++;
+        mrrCents += Math.round(49000 / 12);
+      } else {
+        subsMonthly++;
+        mrrCents += 4900;
+      }
+    }
+    const d30 = now.getTime() - 30 * 86400000;
+    for (const p of pays.data ?? []) {
+      const paidTs = p.paid_at ? new Date(p.paid_at as string).getTime() : 0;
+      if (paidTs >= d30) gmv30Cents += (p.amount_cents as number) || 0;
+      // Commission rattachée au mois de son versement au coach (même règle
+      // que la page factures) : released_at, sinon résolution, sinon paiement.
+      const at =
+        (p.released_at as string | null) ??
+        (p.resolved_at as string | null) ??
+        (p.paid_at as string | null);
+      if (
+        at &&
+        new Date(at).getTime() >= monthStart.getTime() &&
+        ((p.commission_cents as number) || 0) > 0
+      ) {
+        commissionMonthCents += (p.commission_cents as number) || 0;
+      }
+    }
 
     points = (geo.data ?? []).map((c) => {
       const pro = isPro(c.pro_until as string | null);
@@ -104,12 +155,72 @@ export default async function AdminOverview() {
         <AnimatedStat label="Séances" value={bookings} index={3} />
         <AnimatedStat label="Séances réglées" value={released} index={4} />
         <AnimatedStat
-          label="Commissions Madger"
-          value={commission}
-          kind="currency"
+          label="Abonnés Pro actifs"
+          value={subsMonthly + subsAnnual}
           index={5}
+          hint={
+            subsMonthly + subsAnnual > 0
+              ? `${subsMonthly} mensuel${subsMonthly > 1 ? "s" : ""} · ${subsAnnual} annuel${subsAnnual > 1 ? "s" : ""}`
+              : undefined
+          }
         />
       </div>
+
+      {/* Finances de l'entreprise : ce que Madger gagne, pas ce qui transite. */}
+      <section className="mt-8">
+        <h2 className="flex items-center gap-2 text-base font-semibold text-text-base">
+          <span className="glow-dot h-2 w-2 rounded-full bg-accent" />
+          Finances
+        </h2>
+        <p className="mt-0.5 text-xs text-text-muted">
+          Revenus Madger (HT) : abonnements + commissions. Le volume traité
+          transite par les coachs, seule la commission est à toi.
+        </p>
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+          <AnimatedStat
+            label="MRR abonnements"
+            value={mrrCents}
+            kind="currency"
+            index={0}
+            hint="Revenu mensuel récurrent des Pro actifs"
+          />
+          <AnimatedStat
+            label="CA du mois (estimé)"
+            value={mrrCents + commissionMonthCents}
+            kind="currency"
+            index={1}
+            hint="MRR + commissions du mois"
+          />
+          <AnimatedStat
+            label="Run-rate annuel"
+            value={(mrrCents + commissionMonthCents) * 12}
+            kind="currency"
+            index={2}
+            hint="CA du mois × 12"
+          />
+          <AnimatedStat
+            label="Commissions ce mois-ci"
+            value={commissionMonthCents}
+            kind="currency"
+            index={3}
+            hint="Datées du versement au coach"
+          />
+          <AnimatedStat
+            label="Volume traité (30 j)"
+            value={gmv30Cents}
+            kind="currency"
+            index={4}
+            hint="Encaissements des coachs via Madger"
+          />
+          <AnimatedStat
+            label="Commissions totales"
+            value={commission}
+            kind="currency"
+            index={5}
+            hint="Depuis le lancement"
+          />
+        </div>
+      </section>
 
       {/* Répartition géographique des coachs (mood control room). */}
       <section className="mt-8">
