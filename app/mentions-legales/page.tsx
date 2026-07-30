@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/mentions-legales" },
-  title: "Mentions légales · Madger",
+  title: "Madger · Mentions légales",
   description: "Mentions légales de Madger.",
 };
 

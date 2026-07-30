@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Page introuvable · Madger",
+  title: "Madger · Page introuvable",
 };
 
 // 404 qui ne laisse jamais l'utilisateur bloqué : deux sorties claires

@@ -6,7 +6,7 @@ import PublicHeader from "@/components/marketplace/PublicHeader";
 import { ALL_POSTS } from "@/lib/blog/posts";
 
 export const metadata: Metadata = {
-  title: "Blog Madger · Conseils pour coachs et sportifs",
+  title: "Madger · Blog, conseils pour coachs et sportifs",
   description:
     "Se lancer comme coach sportif, fixer ses tarifs, trouver un bon coach : nos guides pour les coachs indépendants et ceux qui veulent se (re)mettre au sport.",
   alternates: { canonical: "/blog" },

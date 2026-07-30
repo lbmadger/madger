@@ -16,7 +16,7 @@ import type { PublicService } from "@/lib/services/types";
 // réservation, ils invitent à créer sa page. Publique et partageable.
 
 export const metadata: Metadata = {
-  title: "Exemple de page coach · Madger",
+  title: "Madger · Exemple de page coach",
   description:
     "Découvre à quoi ressemble une page de coach sur Madger : présentation, prestations, avis, réservation en ligne. Crée la tienne gratuitement.",
   alternates: { canonical: "/exemple" },

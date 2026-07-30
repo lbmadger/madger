@@ -19,10 +19,10 @@ export function generateMetadata({
   params: { slug: string };
 }): Metadata {
   const post = getPost(params.slug);
-  if (!post) return { title: "Blog · Madger" };
+  if (!post) return { title: "Madger · Blog" };
   const url = `${BASE}/blog/${post.slug}`;
   return {
-    title: `${post.title} · Madger`,
+    title: `Madger · ${post.title}`,
     description: post.description,
     alternates: { canonical: url },
     openGraph: {

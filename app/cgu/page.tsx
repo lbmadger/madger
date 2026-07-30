@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/cgu" },
-  title: "CGU · Madger",
+  title: "Madger · CGU",
   description: "Conditions Générales d'Utilisation de Madger.",
 };
 

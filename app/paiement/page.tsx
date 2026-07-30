@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const { locale } = getServerDictionary();
   return {
     title:
-      locale === "en" ? "Secure payment · Madger" : "Paiement sécurisé · Madger",
+      locale === "en" ? "Madger · Secure payment" : "Madger · Paiement sécurisé",
     robots: { index: false, follow: false },
   };
 }

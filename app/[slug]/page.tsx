@@ -83,7 +83,7 @@ export async function generateMetadata({
   const coach = await getCoachBySlug(params.slug);
   if (!coach) return { title: "Madger" };
   const name = coachFullName(coach);
-  const title = `${name}, coach sportif${coach.city ? ` à ${coach.city}` : ""} · Madger`;
+  const title = `Madger · ${name}, coach sportif${coach.city ? ` à ${coach.city}` : ""}`;
   const description = coach.specialty
     ? `${name}, ${coach.specialty}${coach.city ? ` à ${coach.city}` : ""}. Réserve ta séance en ligne, paiement sécurisé, annulation flexible.`
     : `Réserve une séance avec ${name} sur Madger. Paiement sécurisé, annulation flexible.`;

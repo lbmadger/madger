@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/politique-de-confidentialite" },
-  title: "Politique de confidentialité · Madger",
+  title: "Madger · Politique de confidentialité",
   description: "Politique de confidentialité de Madger. Comment nous collectons et utilisons vos données personnelles.",
 };
 

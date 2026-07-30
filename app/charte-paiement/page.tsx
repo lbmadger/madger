@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/charte-paiement" },
-  title: "Charte de paiement & annulation · Madger",
+  title: "Madger · Charte de paiement & annulation",
   description:
     "Comment Madger sécurise les paiements : séquestre, délais de versement, formules d'annulation et résolution des litiges.",
 };
