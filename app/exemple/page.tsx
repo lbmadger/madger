@@ -3,7 +3,11 @@ import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { getServerDictionary } from "@/lib/i18n/server";
 import PublicHeader from "@/components/marketplace/PublicHeader";
 import CoachProfile from "@/components/marketplace/CoachProfile";
-import type { PublicCoach, PublicReview } from "@/lib/coaches/public-types";
+import type {
+  PublicCoach,
+  PublicReview,
+  CoachPhoto,
+} from "@/lib/coaches/public-types";
 import type { PublicService } from "@/lib/services/types";
 
 // Page VITRINE : une page coach d'exemple, remplie à fond, à montrer aux
@@ -89,6 +93,29 @@ const DEMO_SERVICES: PublicService[] = [
   },
 ];
 
+// Galerie Résultats de démonstration : des personnes en train de
+// s'entraîner (pas du matériel), légendes cohérentes avec les avis.
+const DEMO_PHOTOS: CoachPhoto[] = [
+  {
+    id: "p1",
+    url: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=600&h=750&q=80",
+    url_after: null,
+    caption: "Julie · -6 kg en 3 mois",
+  },
+  {
+    id: "p2",
+    url: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=600&h=750&q=80",
+    url_after: null,
+    caption: "Karim · +5 kg de masse en 6 mois",
+  },
+  {
+    id: "p3",
+    url: "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&w=600&h=750&q=80",
+    url_after: null,
+    caption: "Thomas · reprise après 10 ans d'arrêt",
+  },
+];
+
 const DEMO_REVIEWS: PublicReview[] = [
   {
     id: "r1",
@@ -129,6 +156,7 @@ export default function ExampleCoachPage() {
           coach={DEMO_COACH}
           services={DEMO_SERVICES}
           reviews={DEMO_REVIEWS}
+          photos={DEMO_PHOTOS}
           demo
         />
       </div>
