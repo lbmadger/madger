@@ -52,7 +52,7 @@ const getCoachPageData = unstable_cache(
         // Galerie Résultats (migration 0047) : table absente = galerie vide.
         supabase
           .from("coach_photos")
-          .select("id, url, caption")
+          .select("id, url, url_after, caption")
           .eq("coach_id", coach.id)
           .order("created_at", { ascending: true })
           .limit(6),

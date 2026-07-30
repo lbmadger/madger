@@ -724,6 +724,8 @@ const fr = {
       "Paiement sécurisé : ton argent est protégé et versé au coach seulement après ta séance.",
     about: "À propos",
     results: "Résultats",
+    before: "Avant",
+    after: "Après",
     services: "Prestations",
     onlineAvailable: "Disponible en visio",
     book: "Réserver une séance",
@@ -849,6 +851,8 @@ const fr = {
     galleryEmpty:
       "Aucune photo pour l'instant. Les pages qui montrent des résultats réels convainquent bien plus.",
     galleryDelete: "Supprimer la photo",
+    galleryAddAfter: "+ photo après",
+    galleryRemoveAfter: "Retirer la photo après",
     activitySection: "Mon activité",
     activityDesc:
       "Ton sport, tes accompagnements et tes lieux de séance, utilisés par les filtres de la marketplace.",
@@ -1997,6 +2001,8 @@ const en: Dictionary = {
       "Secure payment: your money is protected and released to the coach only after your session.",
     about: "About",
     results: "Results",
+    before: "Before",
+    after: "After",
     services: "Services",
     onlineAvailable: "Available online",
     book: "Book a session",
@@ -2121,6 +2127,8 @@ const en: Dictionary = {
     galleryEmpty:
       "No photos yet. Pages that show real results convert far better.",
     galleryDelete: "Delete photo",
+    galleryAddAfter: "+ after photo",
+    galleryRemoveAfter: "Remove the after photo",
     activitySection: "My activity",
     activityDesc:
       "Your sport, coaching types and session venues, used by marketplace filters.",

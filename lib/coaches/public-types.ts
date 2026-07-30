@@ -34,10 +34,12 @@ export type PublicCoach = {
   verified: boolean;
 };
 
-// Photo de la galerie Résultats (table coach_photos, migration 0047).
+// Photo de la galerie Résultats (table coach_photos, migrations 0047/0048).
+// url_after remplie = paire avant/après affichée côte à côte.
 export type CoachPhoto = {
   id: string;
   url: string;
+  url_after: string | null;
   caption: string | null;
 };
 

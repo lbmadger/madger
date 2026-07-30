@@ -248,14 +248,17 @@ export default function CoachProfile({
           <div className="mt-4 sm:ml-6 sm:mt-1">
             <h1 className="flex flex-wrap items-center justify-center gap-2 text-2xl font-extrabold tracking-tight text-text-base sm:justify-start">
               {coachFullName(coach)}
+              {/* Badges fins et discrets : ils qualifient le nom, ils ne
+                  crient pas plus fort que lui. */}
               {isSuperCoach(coach) && (
-                <span className="rounded-full bg-accent px-2.5 py-1 text-[11px] font-semibold text-black">
-                  <TrophyIcon size={12} className="mr-1 inline-block align-[-2px]" />{t("marketplace.superCoach")}
+                <span className="inline-flex items-center gap-1 rounded-full bg-accent px-2 py-[3px] align-middle text-[10px] font-semibold leading-none text-black">
+                  <TrophyIcon size={10} />
+                  {t("marketplace.superCoach")}
                 </span>
               )}
               {coach.verified && (
-                <span className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent/10 px-2.5 py-1 text-[11px] font-semibold text-accent">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <span className="inline-flex items-center gap-1 rounded-full border border-accent/30 px-2 py-[3px] align-middle text-[10px] font-medium leading-none text-accent">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                     <path d="M9 12l2 2 4-4" />
                   </svg>
@@ -374,36 +377,117 @@ export default function CoachProfile({
         )}
 
         {/* Résultats (avant/après) : la preuve par l'image, juste avant les
-            avis. Légende par-dessus un dégradé pour rester lisible. */}
-        {photos.length > 0 && (
+            avis. Une paire avant/après s'affiche côte à côte. Sur la page
+            vitrine (demo), des cartes chiffrées cohérentes avec les avis
+            remplacent les photos (pas de vraies transformations à montrer). */}
+        {demo ? (
           <div className="mt-6 border-t border-border pt-6">
             <h2 className="text-xs font-medium uppercase tracking-wide text-text-dim">
               {t("coachProfile.results")}
             </h2>
-            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {photos.map((p) => (
-                <figure
-                  key={p.id}
-                  className="relative overflow-hidden rounded-xl border border-border bg-bg-elevated"
+            <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+              {[
+                { name: "Julie", goal: "Perte de poids", before: "73 kg", after: "67 kg", note: "-6 kg en 3 mois" },
+                { name: "Karim", goal: "Prise de masse", before: "64 kg", after: "69 kg", note: "+5 kg en 6 mois" },
+                { name: "Thomas", goal: "Reprise du sport", before: "0 séance", after: "3 séances/sem", note: "après 10 ans d'arrêt" },
+              ].map((r) => (
+                <div
+                  key={r.name}
+                  className="overflow-hidden rounded-xl border border-border bg-bg-elevated"
                 >
-                  <div className="relative aspect-[4/5]">
-                    <Image
-                      src={p.url}
-                      alt={p.caption ?? ""}
-                      fill
-                      sizes="(max-width: 640px) 50vw, 220px"
-                      className="object-cover"
-                    />
+                  <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
+                    <span className="text-xs font-semibold text-text-base">
+                      {r.name}
+                    </span>
+                    <span className="truncate text-[10px] text-text-dim">
+                      {r.goal}
+                    </span>
                   </div>
-                  {p.caption && (
-                    <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-2.5 pb-2 pt-8 text-[11px] font-semibold leading-snug text-white">
-                      {p.caption}
-                    </figcaption>
-                  )}
-                </figure>
+                  <div className="grid grid-cols-2">
+                    <div className="flex flex-col items-center gap-1.5 px-2 py-4">
+                      <span className="rounded-full border border-border-strong px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-text-dim">
+                        {t("coachProfile.before")}
+                      </span>
+                      <span className="text-lg font-extrabold text-text-muted">
+                        {r.before}
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-center gap-1.5 border-l border-border bg-accent/[0.05] px-2 py-4">
+                      <span className="rounded-full bg-accent px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-black">
+                        {t("coachProfile.after")}
+                      </span>
+                      <span className="text-lg font-extrabold text-accent">
+                        {r.after}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="border-t border-border px-3 py-2 text-center text-[11px] font-semibold text-text-base">
+                    {r.note}
+                  </p>
+                </div>
               ))}
             </div>
           </div>
+        ) : (
+          photos.length > 0 && (
+            <div className="mt-6 border-t border-border pt-6">
+              <h2 className="text-xs font-medium uppercase tracking-wide text-text-dim">
+                {t("coachProfile.results")}
+              </h2>
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {photos.map((p) => (
+                  <figure
+                    key={p.id}
+                    className="relative overflow-hidden rounded-xl border border-border bg-bg-elevated"
+                  >
+                    {p.url_after ? (
+                      <div className="grid grid-cols-2">
+                        <div className="relative aspect-[2/2.5]">
+                          <Image
+                            src={p.url}
+                            alt={p.caption ?? ""}
+                            fill
+                            sizes="(max-width: 640px) 25vw, 110px"
+                            className="object-cover"
+                          />
+                          <span className="absolute left-1.5 top-1.5 rounded-full bg-black/60 px-1.5 py-0.5 text-[9px] font-medium uppercase text-white backdrop-blur">
+                            {t("coachProfile.before")}
+                          </span>
+                        </div>
+                        <div className="relative aspect-[2/2.5]">
+                          <Image
+                            src={p.url_after}
+                            alt={p.caption ?? ""}
+                            fill
+                            sizes="(max-width: 640px) 25vw, 110px"
+                            className="object-cover"
+                          />
+                          <span className="absolute left-1.5 top-1.5 rounded-full bg-accent px-1.5 py-0.5 text-[9px] font-semibold uppercase text-black">
+                            {t("coachProfile.after")}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="relative aspect-[4/5]">
+                        <Image
+                          src={p.url}
+                          alt={p.caption ?? ""}
+                          fill
+                          sizes="(max-width: 640px) 50vw, 220px"
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
+                    {p.caption && (
+                      <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-2.5 pb-2 pt-8 text-[11px] font-semibold leading-snug text-white">
+                        {p.caption}
+                      </figcaption>
+                    )}
+                  </figure>
+                ))}
+              </div>
+            </div>
+          )
         )}
 
         {/* Avis clients — sinon, état « nouveau » assumé (pas de vide gênant). */}
@@ -470,15 +554,14 @@ export default function CoachProfile({
       <aside className="hidden lg:sticky lg:top-24 lg:block">
         <div className="rounded-2xl border border-border bg-bg-card p-5 shadow-[0_24px_70px_rgba(0,0,0,0.35)]">
           {fromService && (
-            <p className="text-text-base">
+            <p className="flex flex-wrap items-baseline gap-x-2 text-text-base">
               <span className="text-xs text-text-muted">
-                {t("coachProfile.from")}{" "}
+                {t("coachProfile.from")}
               </span>
               <span className="text-2xl font-extrabold tracking-tight">
                 {formatPrice(fromService.price_cents, fromService.currency, locale)}
               </span>
               <span className="text-xs text-text-muted">
-                {" "}
                 {t("coachProfile.perSession")}
               </span>
             </p>
