@@ -566,15 +566,8 @@ export default function CoachProfile({
               </span>
             </p>
           )}
-          {coach.rating_avg != null && coach.rating_count > 0 && (
-            <p className="mt-1.5 flex items-center gap-1.5">
-              <Stars value={Number(coach.rating_avg)} size={12} />
-              <span className="text-xs text-text-muted">
-                {Number(coach.rating_avg)} ({coach.rating_count})
-              </span>
-            </p>
-          )}
-
+          {/* Pas de note ici : elle est déjà en haut de page, la carte reste
+              concentrée sur l'action. */}
           <Button className="mt-4 w-full" onClick={() => openBooking()}>
             {t("coachProfile.book")}
           </Button>
