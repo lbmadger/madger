@@ -106,7 +106,6 @@ export default async function PaymentsPage() {
               </h2>
             </div>
             <p className="text-sm text-text-muted">{pay.connectedDesc}</p>
-            <p className="mt-4 text-xs text-text-dim">{feesNote}</p>
           </section>
         ) : state === "pending" ? (
           <section className="rounded-2xl border border-border bg-bg-card p-6">
@@ -127,7 +126,6 @@ export default async function PaymentsPage() {
             <div className="mt-5">
               <StripeConnectButton label={pay.connect} />
             </div>
-            <p className="mt-4 text-xs text-text-dim">{feesNote}</p>
           </section>
         ) : (
           <section className="rounded-2xl border border-border bg-bg-card p-10 text-center">
@@ -204,6 +202,14 @@ export default async function PaymentsPage() {
             </ul>
           )}
         </section>
+
+        {/* Note de frais : en tout petit, en pied de page, hors des cartes
+            (l'info reste accessible sans plomber le message principal). */}
+        {state !== "not_configured" && (
+          <p className="mt-8 text-center text-[11px] leading-relaxed text-text-dim/80">
+            {feesNote}
+          </p>
+        )}
       </main>
     </>
   );

@@ -7,7 +7,7 @@ import AnimatedStat, {
 import SetupChecklist from "@/components/dashboard/SetupChecklist";
 import GoalCard from "@/components/dashboard/GoalCard";
 import LeiaTips from "@/components/dashboard/LeiaTips";
-import { SunIcon, MoonIcon } from "@/components/ui/icons";
+import { SunIcon, MoonIcon, StarIcon } from "@/components/ui/icons";
 import ProStats, { type ProStatItem } from "@/components/dashboard/ProStats";
 import { computeLeiaTips, dailyTipIndex } from "@/lib/leia/tips";
 import ChartCard from "@/components/dashboard/charts/ChartCard";
@@ -421,6 +421,31 @@ export default async function OverviewPage() {
     const t = new Date(b.starts_at as string).getTime();
     return t >= todayStart.getTime() && t < todayEnd.getTime();
   }).length;
+
+  // Mini-widgets de la colonne droite : séances par jour (semaine courante)
+  // et encaissements de la semaine.
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(weekStart);
+    d.setDate(weekStart.getDate() + i);
+    const dEnd = new Date(d);
+    dEnd.setDate(d.getDate() + 1);
+    const count = weekBookings.filter((b) => {
+      const t = new Date(b.starts_at as string).getTime();
+      return t >= d.getTime() && t < dEnd.getTime();
+    }).length;
+    return {
+      label: d.toLocaleDateString(loc, { weekday: "narrow" }),
+      count,
+      isToday: i === dow,
+    };
+  });
+  const weekDayMax = Math.max(...weekDays.map((d) => d.count), 1);
+  const weekRevenueCents = payments.reduce((s, p) => {
+    const t = p.paid_at ? new Date(p.paid_at as string).getTime() : 0;
+    return t >= weekStart.getTime()
+      ? s + ((p.amount_cents as number) || 0)
+      : s;
+  }, 0);
 
   const toMin = (t: string) => {
     const [h, m] = t.split(":").map(Number);
@@ -847,9 +872,12 @@ export default async function OverviewPage() {
 
             {/* Objectif du mois + répartition par prestation : côte à côte
                 sous les séances, pour que la colonne gauche vive autant que
-                la droite. L'édition de l'objectif vit dans Réglages. */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {coach && (
+                la droite. L'édition de l'objectif vit dans Réglages ; sans
+                objectif fixé (et sans encaissement), rien ne s'affiche. */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 empty:hidden">
+              {coach &&
+                ((coach.monthly_revenue_goal_cents ?? 0) > 0 ||
+                  (coach.monthly_sessions_goal ?? 0) > 0) && (
                 <GoalCard
                   monthLabel={monthLabel}
                   revenueCents={monthRevenue}
@@ -887,6 +915,19 @@ export default async function OverviewPage() {
                 </section>
               )}
             </div>
+
+            {/* Checklist de démarrage : dans la colonne large, elle occupe
+                l'espace tant que la configuration n'est pas terminée. */}
+            {showChecklist && (
+              <SetupChecklist
+                profileDone={profileDone}
+                availabilityDone={availabilityDone}
+                servicesDone={servicesDone}
+                stripeDone={stripeDone}
+                clientDone={firstClientDone}
+                bookingDone={firstBookingDone}
+              />
+            )}
           </div>
 
           <div className="flex flex-col gap-4 lg:col-span-1">
@@ -939,16 +980,86 @@ export default async function OverviewPage() {
               )}
             </section>
 
-            {showChecklist && (
-              <SetupChecklist
-                profileDone={profileDone}
-                availabilityDone={availabilityDone}
-                servicesDone={servicesDone}
-                stripeDone={stripeDone}
-                clientDone={firstClientDone}
-                bookingDone={firstBookingDone}
-              />
-            )}
+            {/* Ta semaine : séances jour par jour (lun → dim) */}
+            <section className="rounded-2xl border border-border bg-bg-card p-5">
+              <div className="flex items-baseline justify-between gap-2">
+                <h3 className="text-base font-semibold text-text-base">
+                  {o.weekLoad}
+                </h3>
+                <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">
+                  {weekCount}
+                </span>
+              </div>
+              <div className="mt-3 flex h-20 items-end gap-1.5">
+                {weekDays.map((d, i) => (
+                  <div
+                    key={i}
+                    className="flex h-full flex-1 flex-col items-center gap-1.5"
+                  >
+                    <div className="flex w-full flex-1 items-end">
+                      <div
+                        className={`w-full rounded-t ${
+                          d.count > 0
+                            ? "bg-gradient-to-t from-[#9DCC00] to-accent"
+                            : "bg-white/[0.06]"
+                        }`}
+                        style={{
+                          height:
+                            d.count > 0
+                              ? `${Math.max(12, (d.count / weekDayMax) * 100)}%`
+                              : "5px",
+                        }}
+                      />
+                    </div>
+                    <span
+                      className={`text-[10px] uppercase ${
+                        d.isToday
+                          ? "font-bold text-accent"
+                          : "text-text-dim"
+                      }`}
+                    >
+                      {d.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Encaissé cette semaine + note moyenne */}
+            <div className="grid grid-cols-2 gap-4">
+              <section className="rounded-2xl border border-border bg-bg-card p-4">
+                <h3 className="text-xs font-medium text-text-muted">
+                  {o.weekRevenue}
+                </h3>
+                <p className="mt-2 text-xl font-extrabold text-text-base">
+                  {euros(weekRevenueCents)}
+                </p>
+                <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-[#9DCC00] to-accent"
+                    style={{
+                      width: `${monthRevenue > 0 ? Math.min(100, Math.round((weekRevenueCents / monthRevenue) * 100)) : 0}%`,
+                    }}
+                  />
+                </div>
+              </section>
+              <section className="rounded-2xl border border-border bg-bg-card p-4">
+                <h3 className="text-xs font-medium text-text-muted">
+                  {o.rating}
+                </h3>
+                <p className="mt-2 flex items-center gap-1.5 text-xl font-extrabold text-text-base">
+                  <StarIcon size={16} className="shrink-0 text-accent" />
+                  {ratingCount > 0
+                    ? ratingAvg.toLocaleString(loc, {
+                        maximumFractionDigits: 1,
+                      })
+                    : "-"}
+                </p>
+                <p className="mt-2 text-[11px] text-text-dim">
+                  {ratingCount} {dict.reviews.countLabel}
+                </p>
+              </section>
+            </div>
 
             {/* Dernières factures + téléchargement */}
             <section className="rounded-2xl border border-border bg-bg-card p-5">

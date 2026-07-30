@@ -52,28 +52,9 @@ export default function GoalCard({
       ? Math.round((revenueCents / revenueGoalCents) * 100)
       : 0;
 
-  // Pas d'objectif : une ligne discrète, pas un formulaire au milieu du
-  // dashboard.
-  if (!hasGoal) {
-    return (
-      <Link
-        href="/dashboard/reglages"
-        className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-bg-card p-4 transition-colors hover:border-accent/40"
-      >
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-text-base">
-            {t("goal.title")} {monthLabel}
-          </p>
-          <p className="mt-0.5 truncate text-xs text-text-muted">
-            {t("goal.emptyDesc")}
-          </p>
-        </div>
-        <span className="shrink-0 rounded-full border border-border-strong px-3 py-1.5 text-xs font-medium text-text-muted">
-          {t("goal.cta")}
-        </span>
-      </Link>
-    );
-  }
+  // Pas d'objectif : rien du tout. La jauge n'existe que si le coach a
+  // fixé un objectif dans Réglages → Objectif du mois.
+  if (!hasGoal) return null;
 
   return (
     <section className="rounded-2xl border border-border bg-bg-card p-5">

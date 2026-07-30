@@ -9,6 +9,7 @@ import type { Client } from "@/lib/clients/types";
 import Button from "@/components/ui/Button";
 import { useConfirm } from "@/components/ui/useConfirm";
 import { inputClass, labelClass } from "@/lib/ui/styles";
+import { MailIcon, PhoneIcon } from "@/components/ui/icons";
 
 // Fiche client : lecture, modification inline et suppression. Les écritures
 // passent par le client navigateur (RLS borne au coach propriétaire).
@@ -138,9 +139,33 @@ export default function ClientDetail({ client }: { client: Client }) {
                   <p className="text-xs font-medium uppercase tracking-wide text-text-dim">
                     {t("clients.detail.contact")}
                   </p>
-                  <div className="mt-1 space-y-0.5 text-sm text-text-base">
-                    {client.email && <p>{client.email}</p>}
-                    {client.phone && <p>{client.phone}</p>}
+                  <div className="mt-1.5 flex flex-col items-start gap-1.5 text-sm text-text-base">
+                    {client.email && (
+                      <a
+                        href={`mailto:${client.email}`}
+                        className="group inline-flex items-center gap-2 transition-colors hover:text-accent"
+                      >
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
+                          <MailIcon size={12} />
+                        </span>
+                        <span className="truncate group-hover:underline">
+                          {client.email}
+                        </span>
+                      </a>
+                    )}
+                    {client.phone && (
+                      <a
+                        href={`tel:${client.phone.replace(/\s/g, "")}`}
+                        className="group inline-flex items-center gap-2 transition-colors hover:text-accent"
+                      >
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
+                          <PhoneIcon size={12} />
+                        </span>
+                        <span className="group-hover:underline">
+                          {client.phone}
+                        </span>
+                      </a>
+                    )}
                   </div>
                 </div>
               )}
