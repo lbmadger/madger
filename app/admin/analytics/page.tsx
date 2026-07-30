@@ -2,6 +2,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe/server";
 import MiniBars, { type BarDatum } from "@/components/dashboard/charts/MiniBars";
 import InfoTip from "@/components/ui/InfoTip";
+import { phQuery, posthogServerConfigured } from "@/lib/analytics/posthogServer";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,38 @@ export const dynamic = "force-dynamic";
 // par champ) vit dans PostHog, lié en bas de page.
 
 type Stage = { label: string; count: number; hint?: string };
+
+// Petite liste de pages avec barres proportionnelles (top pages, sorties).
+function PageList({ rows }: { rows: { path: string; count: number }[] }) {
+  const max = Math.max(...rows.map((r) => r.count), 1);
+  if (rows.length === 0) {
+    return (
+      <p className="mt-4 text-center text-sm text-text-dim">
+        Pas encore de données.
+      </p>
+    );
+  }
+  return (
+    <ul className="mt-3 flex flex-col gap-2">
+      {rows.map((r) => (
+        <li key={r.path}>
+          <div className="mb-0.5 flex items-baseline justify-between gap-2 text-xs">
+            <span className="truncate font-mono text-text-muted">{r.path}</span>
+            <span className="shrink-0 font-semibold tabular-nums text-text-base">
+              {r.count}
+            </span>
+          </div>
+          <div className="h-1 overflow-hidden rounded-full bg-white/[0.05]">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-[#9DCC00] to-accent"
+              style={{ width: `${(r.count / max) * 100}%` }}
+            />
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 function FunnelRow({
   stage,
@@ -170,6 +203,85 @@ export default async function AdminAnalytics() {
     }
   }
 
+  // ── Trafic du site (PostHog, requêtes HogQL côté serveur) ────────────────
+  // Sessions, pages vues, durée, rebond, pages d'entrée/sortie et conversion
+  // du formulaire early access : directement ici, sans ouvrir PostHog.
+  const phConfigured = posthogServerConfigured();
+  let traffic: {
+    sessions: number;
+    pageviews: number;
+    avgSeconds: number | null;
+    bouncePct: number | null;
+    daily: BarDatum[];
+    topPages: { path: string; count: number }[];
+    exitPages: { path: string; count: number }[];
+    formOpened: number;
+    formSubmitted: number;
+  } | null = null;
+  if (phConfigured) {
+    const [totals, sess, daily, top, exits, form] = await Promise.all([
+      phQuery(
+        "select count(distinct properties.$session_id), count() from events where event = '$pageview' and timestamp > now() - interval 30 day"
+      ),
+      phQuery(
+        "select avg(dur), countIf(views = 1) * 100.0 / count() from (select properties.$session_id as sid, dateDiff('second', min(timestamp), max(timestamp)) as dur, countIf(event = '$pageview') as views from events where timestamp > now() - interval 30 day and properties.$session_id is not null group by sid)"
+      ),
+      phQuery(
+        "select toDate(timestamp) as d, count() from events where event = '$pageview' and timestamp > now() - interval 14 day group by d order by d"
+      ),
+      phQuery(
+        "select properties.$pathname as p, count() as c from events where event = '$pageview' and timestamp > now() - interval 30 day group by p order by c desc limit 6"
+      ),
+      phQuery(
+        "select exit_p, count() as c from (select properties.$session_id as sid, argMax(properties.$pathname, timestamp) as exit_p from events where event = '$pageview' and timestamp > now() - interval 30 day group by sid) group by exit_p order by c desc limit 6"
+      ),
+      phQuery(
+        "select event, count(distinct properties.$session_id) from events where event in ('early_access_step2', 'early_access_submitted') and timestamp > now() - interval 30 day group by event"
+      ),
+    ]);
+    if (totals) {
+      // 14 jours calendaires complets, y compris les jours à zéro.
+      const dayMap = new Map(
+        (daily ?? []).map((r) => [String(r[0]), Number(r[1]) || 0])
+      );
+      const days: BarDatum[] = [];
+      for (let i = 13; i >= 0; i--) {
+        const d = new Date(Date.now() - i * 86400000);
+        const key = d.toISOString().slice(0, 10);
+        days.push({
+          label: d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" }),
+          value: dayMap.get(key) ?? 0,
+        });
+      }
+      const formMap = new Map(
+        (form ?? []).map((r) => [String(r[0]), Number(r[1]) || 0])
+      );
+      traffic = {
+        sessions: Number(totals[0]?.[0]) || 0,
+        pageviews: Number(totals[0]?.[1]) || 0,
+        avgSeconds: sess?.[0]?.[0] != null ? Number(sess[0][0]) : null,
+        bouncePct: sess?.[0]?.[1] != null ? Number(sess[0][1]) : null,
+        daily: days,
+        topPages: (top ?? []).map((r) => ({
+          path: String(r[0] ?? "?"),
+          count: Number(r[1]) || 0,
+        })),
+        exitPages: (exits ?? []).map((r) => ({
+          path: String(r[0] ?? "?"),
+          count: Number(r[1]) || 0,
+        })),
+        formOpened: formMap.get("early_access_step2") ?? 0,
+        formSubmitted: formMap.get("early_access_submitted") ?? 0,
+      };
+    }
+  }
+  const fmtDuration = (s: number | null) => {
+    if (s == null || !Number.isFinite(s)) return "-";
+    const m = Math.floor(s / 60);
+    const sec = Math.round(s % 60);
+    return m > 0 ? `${m} min ${String(sec).padStart(2, "0")} s` : `${sec} s`;
+  };
+
   const stages: Stage[] = [
     { label: "Inscrits accès anticipé", count: early, hint: "Formulaire de la landing" },
     { label: "Comptes coach créés", count: accounts, hint: "Y compris onboardings abandonnés" },
@@ -198,8 +310,141 @@ export default async function AdminAnalytics() {
         est un endroit à améliorer.
       </p>
 
+      {/* ── Trafic du site (PostHog, affiché ici sans quitter l'admin) ── */}
+      <h2 className="mt-8 text-xs font-semibold uppercase tracking-wide text-text-dim">
+        Trafic du site · 30 derniers jours
+      </h2>
+      {!phConfigured ? (
+        <div className="mt-3 rounded-2xl border border-warning/30 bg-warning/[0.06] p-4">
+          <p className="text-sm font-semibold text-text-base">
+            Pour afficher le trafic ici, ajoute 2 variables dans Vercel
+          </p>
+          <ol className="mt-2 list-inside list-decimal space-y-1 text-xs leading-relaxed text-text-muted">
+            <li>
+              POSTHOG_PROJECT_ID : le numéro « Project ID » sur
+              eu.posthog.com/settings/project
+            </li>
+            <li>
+              POSTHOG_API_KEY : une clé secrète (phs_...) créée dans « Project
+              secret API keys » sur la même page. Côté serveur uniquement,
+              elle n'est jamais visible des visiteurs.
+            </li>
+          </ol>
+          <p className="mt-2 text-xs text-text-dim">
+            Puis redéploie. Les visites, durées, pages vues et abandons
+            s'afficheront directement ici.
+          </p>
+        </div>
+      ) : traffic == null ? (
+        <p className="mt-3 rounded-2xl border border-danger/25 bg-danger/[0.06] px-4 py-3 text-xs text-danger">
+          Impossible d'interroger PostHog : vérifie POSTHOG_PROJECT_ID et
+          POSTHOG_API_KEY dans Vercel (la clé doit être une clé secrète du
+          projet, phs_...).
+        </p>
+      ) : (
+        <>
+          <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div className="rounded-2xl border border-border bg-bg-card p-4">
+              <p className="flex items-center gap-1.5 text-xs font-medium text-text-dim">
+                Visites
+                <InfoTip text="Sessions de navigation sur 30 jours (un même visiteur qui revient le lendemain compte pour 2 visites). Source : PostHog, sans cookies." />
+              </p>
+              <p className="mt-1.5 text-2xl font-extrabold tabular-nums text-text-base">
+                {traffic.sessions}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border bg-bg-card p-4">
+              <p className="text-xs font-medium text-text-dim">Pages vues</p>
+              <p className="mt-1.5 text-2xl font-extrabold tabular-nums text-text-base">
+                {traffic.pageviews}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border bg-bg-card p-4">
+              <p className="flex items-center gap-1.5 text-xs font-medium text-text-dim">
+                Durée moyenne
+                <InfoTip text="Temps moyen passé sur le site par visite (première à dernière action de la session). Les visites d'une seule page sans interaction comptent près de 0 s et tirent la moyenne vers le bas : c'est normal." />
+              </p>
+              <p className="mt-1.5 text-2xl font-extrabold tabular-nums text-text-base">
+                {fmtDuration(traffic.avgSeconds)}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border bg-bg-card p-4">
+              <p className="flex items-center gap-1.5 text-xs font-medium text-text-dim">
+                Rebond
+                <InfoTip text="Part des visites qui repartent après une seule page vue. Sur une landing en une page, un rebond élevé n'est pas forcément mauvais : regarde plutôt la durée moyenne et les inscriptions." />
+              </p>
+              <p className="mt-1.5 text-2xl font-extrabold tabular-nums text-text-base">
+                {traffic.bouncePct != null
+                  ? `${Math.round(traffic.bouncePct)}%`
+                  : "-"}
+              </p>
+            </div>
+          </div>
+
+          {/* Formulaire early access : où ça abandonne */}
+          {traffic.formOpened > 0 && (
+            <div className="mt-3 rounded-2xl border border-border bg-bg-card px-4 py-3">
+              <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-text-base">
+                <span className="font-semibold">Formulaire accès anticipé :</span>
+                <span>
+                  {traffic.formOpened} arrivé{traffic.formOpened > 1 ? "s" : ""} à
+                  l'étape 2
+                </span>
+                <span className="text-text-dim">→</span>
+                <span>
+                  {traffic.formSubmitted} envoyé
+                  {traffic.formSubmitted > 1 ? "s" : ""}
+                </span>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                    traffic.formSubmitted / traffic.formOpened >= 0.5
+                      ? "bg-accent/10 text-accent"
+                      : "bg-warning/10 text-warning"
+                  }`}
+                >
+                  {Math.round(
+                    (traffic.formSubmitted / traffic.formOpened) * 100
+                  )}
+                  % de conversion
+                </span>
+                <InfoTip text="Visites arrivées à la 2e étape du formulaire de la landing vs celles qui l'ont envoyé, sur 30 jours. Si le taux est bas, c'est la 2e étape qui fait fuir." />
+              </p>
+            </div>
+          )}
+
+          <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <section className="rounded-2xl border border-border bg-bg-card p-4 sm:p-5">
+              <h3 className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-text-dim">
+                Pages vues / jour
+                <InfoTip text="Volume quotidien sur 14 jours. Chaque story, DM ou post doit créer une bosse : si rien ne bouge, le message n'a pas fait cliquer." />
+              </h3>
+              <div className="mt-4">
+                <MiniBars data={traffic.daily} locale="fr-FR" />
+              </div>
+            </section>
+            <section className="rounded-2xl border border-border bg-bg-card p-4 sm:p-5">
+              <h3 className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-text-dim">
+                Pages les plus vues
+                <InfoTip text="Les pages qui reçoivent le plus de vues sur 30 jours. / = la landing." />
+              </h3>
+              <PageList rows={traffic.topPages} />
+            </section>
+            <section className="rounded-2xl border border-border bg-bg-card p-4 sm:p-5">
+              <h3 className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-text-dim">
+                Pages de sortie
+                <InfoTip text="La dernière page vue avant de quitter le site : c'est là que les visiteurs décrochent. Si une page revient beaucoup ici sans être la fin naturelle du parcours, elle a un problème." />
+              </h3>
+              <PageList rows={traffic.exitPages} />
+            </section>
+          </div>
+        </>
+      )}
+
       {/* ── Entonnoir ── */}
-      <div className="mt-6 flex flex-col gap-2.5">
+      <h2 className="mt-8 text-xs font-semibold uppercase tracking-wide text-text-dim">
+        Entonnoir coach
+      </h2>
+      <div className="mt-3 flex flex-col gap-2.5">
         {stages.map((s, i) => (
           <FunnelRow
             key={s.label}
