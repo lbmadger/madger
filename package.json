@@ -16,6 +16,7 @@
     "clsx": "^2.1.1",
     "framer-motion": "^12.38.0",
     "leaflet": "^1.9.4",
+    "maplibre-gl": "^6.0.0",
     "next": "14.2.35",
     "posthog-js": "^1.408.1",
     "react": "^18",
