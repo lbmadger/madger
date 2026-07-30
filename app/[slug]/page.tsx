@@ -11,6 +11,7 @@ import CoachProfile from "@/components/marketplace/CoachProfile";
 import {
   type PublicCoach,
   type PublicReview,
+  type CoachPhoto,
   coachFullName,
 } from "@/lib/coaches/public-types";
 import type { PublicService } from "@/lib/services/types";
@@ -38,20 +39,29 @@ const getCoachPageData = unstable_cache(
     if (error) {
       console.error("[slug] public_coaches query failed:", error.message);
     }
-    if (!coach) return { coach: null, services: [], reviews: [] };
-    const [{ data: services }, { data: reviews }] = await Promise.all([
-      supabase.from("public_services").select("*").eq("coach_id", coach.id),
-      supabase
-        .from("public_reviews")
-        .select("*")
-        .eq("coach_id", coach.id)
-        .order("created_at", { ascending: false })
-        .limit(10),
-    ]);
+    if (!coach) return { coach: null, services: [], reviews: [], photos: [] };
+    const [{ data: services }, { data: reviews }, { data: photos }] =
+      await Promise.all([
+        supabase.from("public_services").select("*").eq("coach_id", coach.id),
+        supabase
+          .from("public_reviews")
+          .select("*")
+          .eq("coach_id", coach.id)
+          .order("created_at", { ascending: false })
+          .limit(10),
+        // Galerie Résultats (migration 0047) : table absente = galerie vide.
+        supabase
+          .from("coach_photos")
+          .select("id, url, caption")
+          .eq("coach_id", coach.id)
+          .order("created_at", { ascending: true })
+          .limit(6),
+      ]);
     return {
       coach: coach as PublicCoach,
       services: (services ?? []) as PublicService[],
       reviews: (reviews ?? []) as PublicReview[],
+      photos: (photos ?? []) as CoachPhoto[],
     };
   },
   ["coach-page"],
@@ -163,7 +173,9 @@ export default async function CoachPublicPage({
   searchParams: { paid?: string; conflict?: string; sub?: string };
 }) {
   const { locale, dict } = getServerDictionary();
-  const { coach, services, reviews } = await getCoachPageData(params.slug);
+  const { coach, services, reviews, photos } = await getCoachPageData(
+    params.slug
+  );
 
   if (!coach) {
     // Page publique absente : si c'est le COACH lui-même qui ouvre son propre
@@ -306,6 +318,7 @@ export default async function CoachPublicPage({
           coach={coach}
           services={services}
           reviews={reviews}
+          photos={photos}
         />
       </div>
     </I18nProvider>

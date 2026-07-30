@@ -14,6 +14,7 @@ import { TrophyIcon, MapPinIcon, BuildingIcon, StarIcon } from "@/components/ui/
 import {
   type PublicCoach,
   type PublicReview,
+  type CoachPhoto,
   coachFullName,
   coachInitials,
   isSuperCoach,
@@ -26,11 +27,14 @@ export default function CoachProfile({
   coach,
   services = [],
   reviews = [],
+  photos = [],
   demo = false,
 }: {
   coach: PublicCoach;
   services?: PublicService[];
   reviews?: PublicReview[];
+  // Galerie Résultats (avant/après), affichée entre prestations et avis.
+  photos?: CoachPhoto[];
   // Page VITRINE (madger.app/exemple) : mêmes visuels, mais les CTA
   // n'ouvrent pas de vraie réservation. Ils invitent à créer sa page.
   demo?: boolean;
@@ -366,6 +370,39 @@ export default function CoachProfile({
                 </li>
               ))}
             </ul>
+          </div>
+        )}
+
+        {/* Résultats (avant/après) : la preuve par l'image, juste avant les
+            avis. Légende par-dessus un dégradé pour rester lisible. */}
+        {photos.length > 0 && (
+          <div className="mt-6 border-t border-border pt-6">
+            <h2 className="text-xs font-medium uppercase tracking-wide text-text-dim">
+              {t("coachProfile.results")}
+            </h2>
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {photos.map((p) => (
+                <figure
+                  key={p.id}
+                  className="relative overflow-hidden rounded-xl border border-border bg-bg-elevated"
+                >
+                  <div className="relative aspect-[4/5]">
+                    <Image
+                      src={p.url}
+                      alt={p.caption ?? ""}
+                      fill
+                      sizes="(max-width: 640px) 50vw, 220px"
+                      className="object-cover"
+                    />
+                  </div>
+                  {p.caption && (
+                    <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent px-2.5 pb-2 pt-8 text-[11px] font-semibold leading-snug text-white">
+                      {p.caption}
+                    </figcaption>
+                  )}
+                </figure>
+              ))}
+            </div>
           </div>
         )}
 

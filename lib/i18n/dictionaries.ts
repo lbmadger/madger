@@ -723,6 +723,7 @@ const fr = {
     escrowTrust:
       "Paiement sécurisé : ton argent est protégé et versé au coach seulement après ta séance.",
     about: "À propos",
+    results: "Résultats",
     services: "Prestations",
     onlineAvailable: "Disponible en visio",
     book: "Réserver une séance",
@@ -838,6 +839,16 @@ const fr = {
     photoChange: "Changer la photo",
     photoUploading: "Envoi…",
     photoErr: "Impossible d'envoyer la photo (image, 5 Mo max).",
+    galleryTitle: "Résultats (avant/après)",
+    galleryDesc:
+      "Jusqu'à 6 photos des résultats de tes clients, affichées sur ta page publique. Toujours avec leur accord écrit.",
+    galleryAdd: "Ajouter une photo",
+    galleryUploading: "Envoi…",
+    galleryCaption: "Légende (ex : -8 kg en 4 mois)",
+    galleryLimit: "6 photos maximum.",
+    galleryEmpty:
+      "Aucune photo pour l'instant. Les pages qui montrent des résultats réels convainquent bien plus.",
+    galleryDelete: "Supprimer la photo",
     activitySection: "Mon activité",
     activityDesc:
       "Ton sport, tes accompagnements et tes lieux de séance, utilisés par les filtres de la marketplace.",
@@ -1985,6 +1996,7 @@ const en: Dictionary = {
     escrowTrust:
       "Secure payment: your money is protected and released to the coach only after your session.",
     about: "About",
+    results: "Results",
     services: "Services",
     onlineAvailable: "Available online",
     book: "Book a session",
@@ -2099,6 +2111,16 @@ const en: Dictionary = {
     photoChange: "Change photo",
     photoUploading: "Uploading…",
     photoErr: "Could not upload the photo (image, 5 MB max).",
+    galleryTitle: "Results (before/after)",
+    galleryDesc:
+      "Up to 6 photos of your clients' results, shown on your public page. Always with their written consent.",
+    galleryAdd: "Add a photo",
+    galleryUploading: "Uploading…",
+    galleryCaption: "Caption (e.g. -8 kg in 4 months)",
+    galleryLimit: "6 photos max.",
+    galleryEmpty:
+      "No photos yet. Pages that show real results convert far better.",
+    galleryDelete: "Delete photo",
     activitySection: "My activity",
     activityDesc:
       "Your sport, coaching types and session venues, used by marketplace filters.",

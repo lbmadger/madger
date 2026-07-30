@@ -15,6 +15,7 @@ import LanguagePicker from "@/components/settings/LanguagePicker";
 import SettingsSection from "./SettingsSection";
 import VerificationSection from "./VerificationSection";
 import GoalSettings from "./GoalSettings";
+import GallerySettings from "./GallerySettings";
 import {
   UserIcon,
   ActivityIcon,
@@ -23,6 +24,7 @@ import {
   SlidersIcon,
   FileTextIcon,
   TrophyIcon,
+  SparklesIcon,
 } from "@/components/ui/icons";
 import PolicyTiers from "@/components/booking/PolicyTiers";
 import { inputClass, labelClass } from "@/lib/ui/styles";
@@ -544,6 +546,15 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           initialRevenueCents={coach.monthly_revenue_goal_cents}
           initialSessions={coach.monthly_sessions_goal}
         />
+      </SettingsSection>
+
+      {/* Galerie Résultats (avant/après) */}
+      <SettingsSection
+        icon={<SparklesIcon size={18} />}
+        title={t("settings.galleryTitle")}
+        desc={t("settings.galleryDesc")}
+      >
+        <GallerySettings coachId={coach.id} />
       </SettingsSection>
 
       {/* Mode de réservation */}

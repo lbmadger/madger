@@ -34,6 +34,13 @@ export type PublicCoach = {
   verified: boolean;
 };
 
+// Photo de la galerie Résultats (table coach_photos, migration 0047).
+export type CoachPhoto = {
+  id: string;
+  url: string;
+  caption: string | null;
+};
+
 // Avis public (vue public_reviews) : prénom du client uniquement.
 export type PublicReview = {
   id: string;
