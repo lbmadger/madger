@@ -243,6 +243,11 @@ export default async function AdminOverview() {
               <span className="h-2.5 w-2.5 rounded-full bg-accent/50" />
               Basic ({Math.max(0, points.length - proCount)})
             </span>
+            {coaches - points.length > 0 && (
+              <span className="text-text-dim">
+                {coaches - points.length} sans position (ville non renseignée)
+              </span>
+            )}
           </div>
         </div>
         {points.length === 0 ? (
