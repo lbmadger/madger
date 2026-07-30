@@ -207,6 +207,7 @@ export default async function AdminAnalytics() {
   // Sessions, pages vues, durée, rebond, pages d'entrée/sortie et conversion
   // du formulaire early access : directement ici, sans ouvrir PostHog.
   const phConfigured = posthogServerConfigured();
+  let phError: string | null = null;
   let traffic: {
     sessions: number;
     pageviews: number;
@@ -219,7 +220,7 @@ export default async function AdminAnalytics() {
     formSubmitted: number;
   } | null = null;
   if (phConfigured) {
-    const [totals, sess, daily, top, exits, form] = await Promise.all([
+    const results = await Promise.all([
       phQuery(
         "select count(distinct properties.$session_id), count() from events where event = '$pageview' and timestamp > now() - interval 30 day"
       ),
@@ -239,6 +240,11 @@ export default async function AdminAnalytics() {
         "select event, count(distinct properties.$session_id) from events where event in ('early_access_step2', 'early_access_submitted') and timestamp > now() - interval 30 day group by event"
       ),
     ]);
+    phError =
+      results.map((r) => ("error" in r ? r.error : null)).find(Boolean) ?? null;
+    const [totals, sess, daily, top, exits, form] = results.map((r) =>
+      "rows" in r ? r.rows : null
+    );
     if (totals) {
       // 14 jours calendaires complets, y compris les jours à zéro.
       const dayMap = new Map(
@@ -336,11 +342,23 @@ export default async function AdminAnalytics() {
           </p>
         </div>
       ) : traffic == null ? (
-        <p className="mt-3 rounded-2xl border border-danger/25 bg-danger/[0.06] px-4 py-3 text-xs text-danger">
-          Impossible d'interroger PostHog : vérifie POSTHOG_PROJECT_ID et
-          POSTHOG_API_KEY dans Vercel (la clé doit être une clé secrète du
-          projet, phs_...).
-        </p>
+        <div className="mt-3 rounded-2xl border border-danger/25 bg-danger/[0.06] px-4 py-3">
+          <p className="text-xs font-semibold text-danger">
+            Impossible d'interroger PostHog.
+          </p>
+          {phError && (
+            <p className="mt-1 break-all font-mono text-[11px] leading-relaxed text-danger/90">
+              {phError}
+            </p>
+          )}
+          <p className="mt-2 text-[11px] leading-relaxed text-text-dim">
+            401 = clé invalide ou au mauvais format · 403 = clé sans le droit
+            « query read » (recrée-la avec ce scope) · 404 = POSTHOG_PROJECT_ID
+            faux (c'est le NOMBRE « Project ID » sur
+            eu.posthog.com/settings/project, pas la clé). Après toute
+            modification dans Vercel, redéploie.
+          </p>
+        </div>
       ) : (
         <>
           <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
