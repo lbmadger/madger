@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import MadgerLogo from "@/components/ui/MadgerLogo";
+import { track } from "@/lib/analytics/posthog";
 import { useEarlyAccessFull } from "@/components/ui/useEarlyAccessFull";
 
 const inputBase = {
@@ -85,6 +86,7 @@ export default function EarlyAccessForm() {
       return;
     }
     setError(null);
+    track("early_access_step2");
     setStep(2);
     window.scrollTo({ top: document.getElementById("early-access")?.offsetTop ?? 0, behavior: "smooth" });
   }
@@ -111,6 +113,10 @@ export default function EarlyAccessForm() {
       const data = await res.json().catch(() => ({}));
       setJoinedWaitlist(Boolean(data?.waitlist));
       setAlreadyRegistered(Boolean(data?.already));
+      track(
+        data?.already ? "early_access_duplicate" : "early_access_submitted",
+        { waitlist: Boolean(data?.waitlist) }
+      );
       setSubmitted(true);
     } catch {
       setError("Une erreur est survenue. Écris-nous à contact@madger.app");

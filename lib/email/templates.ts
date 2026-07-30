@@ -189,7 +189,7 @@ export function bookingConfirmationClient(p: {
         ]),
         infoBox(
           "Paiement sécurisé",
-          `Ton argent est conservé par Madger et n'est versé au coach que <b style="color:${C.text};">24 h après la séance</b>. Un imprévu ? Tu peux signaler un problème depuis ta réservation, les fonds restent bloqués le temps qu'on tranche.`
+          `Ton paiement est sécurisé : il n'est versé au coach que <b style="color:${C.text};">24 h après la séance</b>. Un imprévu ? Tu peux signaler un problème depuis ta réservation, les fonds restent bloqués le temps qu'on tranche.`
         ),
         ...meetCalLinks(p.meetUrl, p.calendarUrl),
       ],
@@ -227,7 +227,7 @@ export function bookingNotificationCoach(p: {
           inPerson: "In person",
           amount: "Session amount",
           payoutTitle: "Payout",
-          payoutBody: `The payment is held securely by Madger and will be <b style="color:${C.text};">transferred to your Stripe account 24 hours after the session</b>, minus the Madger commission and bank fees. The exact breakdown will arrive with your payout email.`,
+          payoutBody: `Your money is released <b style="color:${C.text};">24 hours after the session</b> and lands automatically on your Stripe account, minus the Madger commission and bank fees. The exact breakdown will arrive with your payout email.`,
           cta: "Open my calendar",
         }
       : {
@@ -244,7 +244,7 @@ export function bookingNotificationCoach(p: {
           inPerson: "En présentiel",
           amount: "Montant de la séance",
           payoutTitle: "Versement",
-          payoutBody: `Le paiement est sécurisé par Madger et te sera <b style="color:${C.text};">transféré 24 h après la séance</b> sur ton compte Stripe, déduction faite de la commission Madger et des frais bancaires. Le détail exact arrive avec l'email de versement.`,
+          payoutBody: `Ton argent est débloqué <b style="color:${C.text};">24 h après la séance</b> et arrive automatiquement sur ton compte Stripe, déduction faite de la commission Madger et des frais bancaires. Le détail exact arrive avec l'email de versement.`,
           cta: "Ouvrir mon agenda",
         };
   return {

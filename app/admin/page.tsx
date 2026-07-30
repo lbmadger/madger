@@ -25,14 +25,21 @@ export default async function AdminOverview() {
   let subsMonthly = 0;
   let subsAnnual = 0;
   let commissionMonthCents = 0;
+  let commissionPrevMonthCents = 0;
   let gmv30Cents = 0;
+  let gmvPrev30Cents = 0;
+  let coachesThisMonth = 0;
+  let coachesPrevMonth = 0;
+  let earlyThisMonth = 0;
+  let earlyPrevMonth = 0;
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
   if (admin) {
     const head = { count: "exact" as const, head: true };
-    const [c1, c2, c3, c4, c5, c6, comm, geo, subs, pays] = await Promise.all([
+    const [c1, c2, c3, c4, c5, c6, comm, geo, subs, pays, cm, cpm, em, epm] = await Promise.all([
       admin.from("coaches").select("id", head),
       admin.from("clients").select("id", head),
       admin.from("early_access").select("id", head),
@@ -62,6 +69,10 @@ export default async function AdminOverview() {
         .eq("status", "paid")
         .gte("paid_at", new Date(now.getTime() - 210 * 86400000).toISOString())
         .limit(2000),
+      admin.from("coaches").select("id", head).gte("created_at", monthStart.toISOString()),
+      admin.from("coaches").select("id", head).gte("created_at", prevMonthStart.toISOString()).lt("created_at", monthStart.toISOString()),
+      admin.from("early_access").select("id", head).gte("created_at", monthStart.toISOString()),
+      admin.from("early_access").select("id", head).gte("created_at", prevMonthStart.toISOString()).lt("created_at", monthStart.toISOString()),
     ]);
     coaches = c1.count ?? 0;
     clients = c2.count ?? 0;
@@ -70,6 +81,10 @@ export default async function AdminOverview() {
     disputes = c5.count ?? 0;
     released = c6.count ?? 0;
     commission = Number(comm.data ?? 0) || 0;
+    coachesThisMonth = cm.count ?? 0;
+    coachesPrevMonth = cpm.count ?? 0;
+    earlyThisMonth = em.count ?? 0;
+    earlyPrevMonth = epm.count ?? 0;
 
     for (const s of subs.data ?? []) {
       if (s.subscription_plan === "annual") {
@@ -81,21 +96,23 @@ export default async function AdminOverview() {
       }
     }
     const d30 = now.getTime() - 30 * 86400000;
+    const d60 = now.getTime() - 60 * 86400000;
     for (const p of pays.data ?? []) {
       const paidTs = p.paid_at ? new Date(p.paid_at as string).getTime() : 0;
       if (paidTs >= d30) gmv30Cents += (p.amount_cents as number) || 0;
+      else if (paidTs >= d60) gmvPrev30Cents += (p.amount_cents as number) || 0;
       // Commission rattachée au mois de son versement au coach (même règle
       // que la page factures) : released_at, sinon résolution, sinon paiement.
       const at =
         (p.released_at as string | null) ??
         (p.resolved_at as string | null) ??
         (p.paid_at as string | null);
-      if (
-        at &&
-        new Date(at).getTime() >= monthStart.getTime() &&
-        ((p.commission_cents as number) || 0) > 0
-      ) {
-        commissionMonthCents += (p.commission_cents as number) || 0;
+      const atTs = at ? new Date(at).getTime() : 0;
+      const commCents = (p.commission_cents as number) || 0;
+      if (atTs >= monthStart.getTime() && commCents > 0) {
+        commissionMonthCents += commCents;
+      } else if (atTs >= prevMonthStart.getTime() && atTs < monthStart.getTime() && commCents > 0) {
+        commissionPrevMonthCents += commCents;
       }
     }
 
@@ -116,6 +133,15 @@ export default async function AdminOverview() {
       };
     });
   }
+
+  // Tendance vs période précédente (null si pas de base de comparaison).
+  const pctTrend = (cur: number, prev: number, vsLabel: string) =>
+    prev > 0
+      ? {
+          text: `${cur >= prev ? "+" : ""}${Math.round(((cur - prev) / prev) * 100)}% ${vsLabel}`,
+          positive: cur >= prev,
+        }
+      : null;
 
   return (
     <>
@@ -142,7 +168,13 @@ export default async function AdminOverview() {
       {/* Compteurs héros : les deux populations, en grand. */}
       <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4">
         <Link href="/admin/coachs" className="block transition-transform hover:-translate-y-0.5">
-          <AnimatedStat label="Coachs" value={coaches} index={0} />
+          <AnimatedStat
+            label="Coachs"
+            value={coaches}
+            index={0}
+            trend={pctTrend(coachesThisMonth, coachesPrevMonth, "vs mois dernier")}
+            hint={`+${coachesThisMonth} ce mois · ${coachesPrevMonth} le mois dernier`}
+          />
         </Link>
         <Link href="/admin/clients" className="block transition-transform hover:-translate-y-0.5">
           <AnimatedStat label="Clients" value={clients} index={1} />
@@ -151,7 +183,13 @@ export default async function AdminOverview() {
 
       {/* Second rang : le reste de l'activité. */}
       <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-        <AnimatedStat label="Inscrits accès anticipé" value={early} index={2} />
+        <AnimatedStat
+          label="Inscrits accès anticipé"
+          value={early}
+          index={2}
+          trend={pctTrend(earlyThisMonth, earlyPrevMonth, "vs mois dernier")}
+          hint={`+${earlyThisMonth} ce mois · ${earlyPrevMonth} le mois dernier`}
+        />
         <AnimatedStat label="Séances" value={bookings} index={3} />
         <AnimatedStat label="Séances réglées" value={released} index={4} />
         <AnimatedStat
@@ -182,35 +220,42 @@ export default async function AdminOverview() {
             value={mrrCents}
             kind="currency"
             index={0}
-            hint="Revenu mensuel récurrent des Pro actifs"
+            info="Revenu mensuel récurrent : la somme des abonnements Pro actifs ramenés au mois. Un mensuel compte 49 €, un annuel 490 € ÷ 12 = 40,83 € (ses 2 mois offerts sont lissés). Tarifs HT, aucune TVA retranchée."
           />
           <AnimatedStat
             label="CA du mois (estimé)"
             value={mrrCents + commissionMonthCents}
             kind="currency"
             index={1}
-            hint="MRR + commissions du mois"
+            trend={pctTrend(
+              mrrCents + commissionMonthCents,
+              mrrCents + commissionPrevMonthCents,
+              "vs mois dernier"
+            )}
+            info="MRR + commissions rattachées à ce mois. C'est un chiffre de pilotage, pas de la comptabilité : la compta officielle vit dans Stripe et tes factures."
           />
           <AnimatedStat
             label="Run-rate annuel"
             value={(mrrCents + commissionMonthCents) * 12}
             kind="currency"
             index={2}
-            hint="CA du mois × 12"
+            info="Projection : ce que ferait l'année si ce mois se répétait 12 fois à l'identique. Utile pour la trajectoire, à ne jamais présenter comme un CA réel."
           />
           <AnimatedStat
             label="Commissions ce mois-ci"
             value={commissionMonthCents}
             kind="currency"
             index={3}
-            hint="Datées du versement au coach"
+            trend={pctTrend(commissionMonthCents, commissionPrevMonthCents, "vs mois dernier")}
+            info="Les 5 % prélevés sur les coachs Basic, comptés le jour du versement au coach (pas le jour du paiement client) : c'est à ce moment que la commission naît, même règle que tes factures."
           />
           <AnimatedStat
             label="Volume traité (30 j)"
             value={gmv30Cents}
             kind="currency"
             index={4}
-            hint="Encaissements des coachs via Madger"
+            trend={pctTrend(gmv30Cents, gmvPrev30Cents, "vs 30 j précédents")}
+            info="Le GMV : tout ce que les clients ont payé aux coachs via Madger sur 30 jours. Cet argent transite, il ne t'appartient pas. Ton revenu = commissions + abonnements."
           />
           <AnimatedStat
             label="Commissions totales"

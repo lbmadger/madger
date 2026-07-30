@@ -117,22 +117,22 @@ export default function AreaChart({
           />
         ))}
 
-        {/* Aire dégradée */}
-        <path d={area} fill={`url(#fill-${gid})`} className="chart-fill" />
-
-        {/* Ligne lissée, halo lumineux + tracé animé */}
-        <path
-          d={line}
-          fill="none"
-          stroke="#CBFF03"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          vectorEffect="non-scaling-stroke"
-          pathLength={1}
-          className="chart-line"
-          style={{ filter: "drop-shadow(0 0 6px rgba(203,255,3,0.45))" }}
-        />
+        {/* Aire + ligne révélées gauche → droite par clip-path (le tracé
+            pathLength/dasharray laissait un bout non dessiné à droite avec
+            non-scaling-stroke). */}
+        <g className="chart-reveal">
+          <path d={area} fill={`url(#fill-${gid})`} />
+          <path
+            d={line}
+            fill="none"
+            stroke="#CBFF03"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            vectorEffect="non-scaling-stroke"
+            style={{ filter: "drop-shadow(0 0 6px rgba(203,255,3,0.45))" }}
+          />
+        </g>
 
         {/* Repère vertical au survol */}
         <line

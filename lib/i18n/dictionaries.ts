@@ -314,7 +314,11 @@ const fr = {
   },
   goal: {
     title: "Objectif",
-    edit: "Modifier l'objectif",
+    settingsTitle: "Objectif du mois",
+    settingsDesc: "Revenus et séances visés, affichés en jauges sur ton dashboard.",
+    cta: "Définir dans les réglages",
+    saved: "Objectif enregistré",
+    edit: "Modifier l'objectif (dans les réglages)",
     emptyDesc:
       "Fixe-toi un objectif du mois (revenus, séances) et suis ta progression ici.",
     revenueLabel: "Revenus",
@@ -753,7 +757,7 @@ const fr = {
     serviceNone: "Demande simple (sans paiement)",
     escrowTitle: "Paiement sécurisé",
     escrowDesc:
-      "Ton argent est retenu par Madger et versé au coach 24 h après la séance. En cas de souci, tu peux signaler un problème et les fonds restent bloqués.",
+      "Ton paiement est sécurisé : il est versé au coach 24 h après la séance. En cas de souci, tu peux signaler un problème et les fonds restent bloqués.",
     pay: "Payer",
     redirecting: "Ouverture du paiement sécurisé…",
     submit: "Envoyer la demande",
@@ -1566,7 +1570,11 @@ const en: Dictionary = {
   },
   goal: {
     title: "Goal",
-    edit: "Edit goal",
+    settingsTitle: "Monthly goal",
+    settingsDesc: "Target revenue and sessions, shown as gauges on your dashboard.",
+    cta: "Set it in settings",
+    saved: "Goal saved",
+    edit: "Edit goal (in settings)",
     emptyDesc:
       "Set a monthly goal (revenue, sessions) and track your progress here.",
     revenueLabel: "Revenue",
@@ -2003,7 +2011,7 @@ const en: Dictionary = {
     serviceNone: "Simple request (no payment)",
     escrowTitle: "Secure payment",
     escrowDesc:
-      "Your money is held by Madger and paid to the coach 24h after the session. If anything goes wrong, you can report a problem and the funds stay frozen.",
+      "Your payment is secured: it is paid to the coach 24h after the session. If anything goes wrong, you can report a problem and the funds stay frozen.",
     pay: "Pay",
     redirecting: "Opening secure payment…",
     submit: "Send request",

@@ -784,7 +784,7 @@ export default async function OverviewPage() {
         </div>
 
         <div className="mt-4 grid grid-cols-1 gap-4 sm:mt-5 lg:grid-cols-3">
-          <div className="lg:col-span-2">
+          <div className="flex flex-col gap-4 lg:col-span-2">
             <section className="rounded-2xl border border-border bg-bg-card p-5">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold text-text-base">
@@ -844,6 +844,49 @@ export default async function OverviewPage() {
                 </ul>
               )}
             </section>
+
+            {/* Objectif du mois + répartition par prestation : côte à côte
+                sous les séances, pour que la colonne gauche vive autant que
+                la droite. L'édition de l'objectif vit dans Réglages. */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {coach && (
+                <GoalCard
+                  monthLabel={monthLabel}
+                  revenueCents={monthRevenue}
+                  sessionsCount={monthSessionsCount}
+                  revenueGoalCents={coach.monthly_revenue_goal_cents}
+                  sessionsGoal={coach.monthly_sessions_goal}
+                  locale={loc}
+                />
+              )}
+              {breakdown.length > 0 && breakdownTotal > 0 && (
+                <section className="rounded-2xl border border-border bg-bg-card p-5">
+                  <h3 className="text-base font-semibold capitalize text-text-base">
+                    {o.breakdownTitle} {monthLabel}
+                  </h3>
+                  <ul className="mt-3 flex flex-col gap-3">
+                    {breakdown.map((b) => (
+                      <li key={b.name}>
+                        <div className="mb-1 flex items-baseline justify-between gap-2">
+                          <span className="truncate text-xs text-text-muted">
+                            {b.name}
+                          </span>
+                          <span className="shrink-0 text-sm font-semibold text-text-base">
+                            {b.pct}%
+                          </span>
+                        </div>
+                        <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+                          <div
+                            className="h-full rounded-full bg-gradient-to-r from-[#9DCC00] to-accent"
+                            style={{ width: `${Math.min(100, b.pct)}%` }}
+                          />
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+            </div>
           </div>
 
           <div className="flex flex-col gap-4 lg:col-span-1">
@@ -895,54 +938,6 @@ export default async function OverviewPage() {
                 </ul>
               )}
             </section>
-
-            {/* Objectif du mois : jauges revenus / séances, fixé par le coach */}
-            {coach && (
-              <GoalCard
-                coachId={coach.id}
-                monthLabel={monthLabel}
-                revenueCents={monthRevenue}
-                sessionsCount={monthSessionsCount}
-                revenueGoalCents={coach.monthly_revenue_goal_cents}
-                sessionsGoal={coach.monthly_sessions_goal}
-                locale={loc}
-              />
-            )}
-
-            {/* Répartition des encaissements du mois par prestation */}
-            {breakdown.length > 0 && breakdownTotal > 0 && (
-              <section className="rounded-2xl border border-border bg-bg-card p-5">
-                <h3 className="text-base font-semibold text-text-base">
-                  {o.breakdownTitle}
-                </h3>
-                <div className="mt-3 flex flex-col gap-2.5">
-                  {breakdown.map((b, i) => (
-                    <div key={b.name}>
-                      <div className="mb-1 flex items-center justify-between gap-2 text-xs">
-                        <span className="truncate text-text-muted">{b.name}</span>
-                        <span className="shrink-0 font-semibold text-text-base">
-                          {b.pct}%
-                        </span>
-                      </div>
-                      <div className="h-1 overflow-hidden rounded-full bg-white/[0.06]">
-                        <div
-                          className="h-full rounded-full"
-                          style={{
-                            width: `${b.pct}%`,
-                            background:
-                              i === 0
-                                ? "#CBFF03"
-                                : i === 1
-                                ? "rgba(203,255,3,0.55)"
-                                : "rgba(203,255,3,0.3)",
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
 
             {showChecklist && (
               <SetupChecklist

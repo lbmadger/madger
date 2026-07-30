@@ -9,6 +9,7 @@ import AccountSwitchBar from "@/components/auth/AccountSwitchBar";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import { bmi, bmiCategory, GOAL_KEYS } from "@/lib/health/bmi";
 import { nameFromMetadata } from "@/lib/auth/nameFromUser";
+import { track } from "@/lib/analytics/posthog";
 
 // Création du profil sportif client en 3 étapes, avec barre de progression
 // (style HelloFresh) : 1. identité → 2. mesures (IMC en direct) → 3. objectifs.
@@ -86,6 +87,7 @@ export default function ClientOnboarding() {
     setError(null);
     if (step === 0 && !firstName.trim())
       return setError(t("clientOnboarding.errors.nameRequired"));
+    track("client_onboarding_step_done", { step: step + 1 });
     setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
   }
 
@@ -120,6 +122,7 @@ export default function ClientOnboarding() {
         setError(t("clientOnboarding.errors.generic"));
         return;
       }
+      track("client_onboarding_completed");
       setDone(true);
     } catch {
       setError(t("clientOnboarding.errors.generic"));

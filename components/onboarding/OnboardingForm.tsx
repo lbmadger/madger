@@ -16,6 +16,7 @@ import {
   specialtiesForSport,
 } from "@/lib/coaches/taxonomy";
 import { WEEK_ORDER } from "@/lib/availability/types";
+import { track } from "@/lib/analytics/posthog";
 
 // Onboarding guidé en 5 étapes (identité → photo et bio → activité →
 // première prestation → disponibilités), avec barre de progression. À la fin,
@@ -137,6 +138,7 @@ export default function OnboardingForm({
       } catch {
         /* best-effort : le parrainage ne doit jamais bloquer l'onboarding */
       }
+      track("onboarding_step_done", { step: 1 });
       setStep(2);
     } catch {
       setError(t("onboarding.errors.generic"));
@@ -184,6 +186,7 @@ export default function OnboardingForm({
         .from("coaches")
         .update({ bio: bio.trim() || null })
         .eq("id", userId);
+      track("onboarding_step_done", { step: 2 });
       setStep(3);
     } finally {
       setLoading(false);
@@ -205,6 +208,7 @@ export default function OnboardingForm({
           gym_name: gymName.trim() || null,
         })
         .eq("id", userId);
+      track("onboarding_step_done", { step: 3 });
       setStep(4);
     } finally {
       setLoading(false);
@@ -238,6 +242,7 @@ export default function OnboardingForm({
         setError(t("onboarding.errors.generic"));
         return;
       }
+      track("onboarding_step_done", { step: 4 });
       setStep(5);
     } finally {
       setLoading(false);
@@ -266,6 +271,8 @@ export default function OnboardingForm({
         setError(t("onboarding.errors.generic"));
         return;
       }
+      track("onboarding_step_done", { step: 5 });
+      track("onboarding_completed");
       setStep(6);
     } finally {
       setLoading(false);

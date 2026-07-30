@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import InfoTip from "@/components/ui/InfoTip";
 
 // Tuile de statistique animée (comme le mockup de la landing) : entrée en
 // fondu + compteur qui monte jusqu'à la valeur. Types de format gérés :
@@ -38,6 +39,7 @@ export default function AnimatedStat({
   locale = "fr-FR",
   trend = null,
   hint,
+  info,
   prefix = "",
   index = 0,
 }: {
@@ -47,6 +49,8 @@ export default function AnimatedStat({
   locale?: string;
   trend?: StatTrend;
   hint?: string;
+  // Bulle « i » : explication d'une donnée qui n'est pas évidente.
+  info?: string;
   prefix?: string;
   index?: number;
 }) {
@@ -103,8 +107,9 @@ export default function AnimatedStat({
         transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
       }}
     >
-      <p className="text-xs font-medium uppercase tracking-wide text-text-dim">
+      <p className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-text-dim">
         {label}
+        {info && <InfoTip text={info} />}
       </p>
       <div className="mt-2 flex items-baseline gap-2">
         <span className="text-2xl font-extrabold tracking-tight text-text-base sm:text-3xl">

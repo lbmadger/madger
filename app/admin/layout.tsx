@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isAdminEmail } from "@/lib/admin";
 import AdminNav from "@/components/admin/AdminNav";
+import MadgerLogo from "@/components/ui/MadgerLogo";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,7 @@ export default async function AdminLayout({
       <header className="border-b border-border bg-bg-card/60 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
           <Link href="/admin" className="flex items-center gap-2">
-            <span className="text-sm font-extrabold tracking-tight">Madger</span>
+            <MadgerLogo size={26} />
             <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-black">
               admin
             </span>

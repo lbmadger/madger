@@ -14,6 +14,7 @@ import GymAutocomplete, { type GymPlace } from "@/components/ui/GymAutocomplete"
 import LanguagePicker from "@/components/settings/LanguagePicker";
 import SettingsSection from "./SettingsSection";
 import VerificationSection from "./VerificationSection";
+import GoalSettings from "./GoalSettings";
 import {
   UserIcon,
   ActivityIcon,
@@ -21,6 +22,7 @@ import {
   ShieldIcon,
   SlidersIcon,
   FileTextIcon,
+  TrophyIcon,
 } from "@/components/ui/icons";
 import PolicyTiers from "@/components/booking/PolicyTiers";
 import { inputClass, labelClass } from "@/lib/ui/styles";
@@ -527,6 +529,20 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           coachId={coach.id}
           status={coach.verification_status ?? "none"}
           note={coach.verification_note ?? null}
+        />
+      </SettingsSection>
+
+      {/* Objectif du mois : le formulaire vit ICI, le dashboard n'affiche
+          que les jauges. */}
+      <SettingsSection
+        icon={<TrophyIcon size={18} />}
+        title={t("goal.settingsTitle")}
+        desc={t("goal.settingsDesc")}
+      >
+        <GoalSettings
+          coachId={coach.id}
+          initialRevenueCents={coach.monthly_revenue_goal_cents}
+          initialSessions={coach.monthly_sessions_goal}
         />
       </SettingsSection>
 
