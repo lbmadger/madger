@@ -16,6 +16,9 @@ function PageviewTracker() {
   }, []);
 
   useEffect(() => {
+    // Le back-office ne compte pas : seules les visites du fondateur y
+    // passent, elles pollueraient les stats de trafic réelles.
+    if (pathname?.startsWith("/admin")) return;
     trackPageview();
     // searchParams inclus : /coachs?ville=lyon compte comme une vue distincte.
   }, [pathname, searchParams]);
