@@ -34,7 +34,14 @@ export default async function AdminLayout({
               admin
             </span>
           </Link>
-          <span className="truncate text-xs text-text-dim">{user.email}</span>
+          {/* Pastille de connexion sobre : l'email complet alourdissait le
+              header, l'initiale suffit (l'accès est déjà réservé admin). */}
+          <span
+            title={user.email ?? undefined}
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border-strong bg-bg-elevated text-[11px] font-semibold uppercase text-text-muted"
+          >
+            {(user.email ?? "?").charAt(0)}
+          </span>
         </div>
         <AdminNav />
       </header>
