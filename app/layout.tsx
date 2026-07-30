@@ -16,11 +16,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL("https://madger.app"),
   alternates: { canonical: "/" },
-  title: "Madger · Le 1er site qui remplit ton planning de coach sportif",
+  title: "Madger · L'app de réservation n°1 des coachs sportifs",
   description: "Ton lien de réservation, tes paiements sécurisés, tes factures automatiques. Tes clients réservent seuls, ton planning se remplit. Fait pour les coachs sportifs indépendants.",
   keywords: ["réservation coach sportif", "coach sportif", "logiciel réservation sport", "prise de rendez-vous coach", "application coach sportif", "paiement en ligne coach", "facturation coach"],
   openGraph: {
-    title: "Madger · Le 1er site qui remplit ton planning de coach sportif",
+    title: "Madger · L'app de réservation n°1 des coachs sportifs",
     description: "Ton lien de réservation, tes paiements sécurisés, tes factures automatiques. Tes clients réservent seuls, ton planning se remplit.",
     url: "https://madger.app",
     siteName: "Madger",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Madger · Le 1er site qui remplit ton planning de coach sportif",
+    title: "Madger · L'app de réservation n°1 des coachs sportifs",
     description: "Ton lien de réservation, tes paiements sécurisés, tes factures automatiques. Tes clients réservent seuls, ton planning se remplit.",
   },
 };
