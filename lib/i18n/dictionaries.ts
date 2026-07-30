@@ -1237,7 +1237,7 @@ const fr = {
     },
     daily: {
       d1: "Réponds aux messages en moins d'une heure : la plupart des clients réservent chez le premier coach qui répond.",
-      d2: "Publie des photos avant/après de tes clients (avec leur accord) : rien ne convainc plus que des résultats réels.",
+      d2: "Publie des photos avant/après de tes clients sur ton Instagram (avec leur accord), avec ton lien Madger en bio : rien ne convainc plus que des résultats réels.",
       d3: "Relance les clients que tu n'as pas vus depuis 30 jours avec un message personnalisé. Un client fidèle vaut 10 prospects.",
       d4: "Propose un bilan découverte de 15 minutes offert : c'est le meilleur moyen de transformer un curieux en client régulier.",
       d5: "Ajoute le lien de ta page Madger dans ta bio Instagram et TikTok, et rappelle-le en story chaque semaine.",
@@ -2491,7 +2491,7 @@ const en: Dictionary = {
     },
     daily: {
       d1: "Reply to messages within the hour: most clients book with the first coach who answers.",
-      d2: "Post before/after photos of your clients (with their consent): nothing convinces like real results.",
+      d2: "Post before/after photos of your clients on your Instagram (with their consent), with your Madger link in bio: nothing convinces like real results.",
       d3: "Reach out to clients you haven't seen in 30 days with a personal message. A loyal client is worth 10 prospects.",
       d4: "Offer a free 15 minute discovery check-in: it's the best way to turn a curious visitor into a regular client.",
       d5: "Add your Madger page link to your Instagram and TikTok bio, and remind people in a story every week.",
