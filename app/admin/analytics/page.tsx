@@ -331,9 +331,10 @@ export default async function AdminAnalytics() {
               eu.posthog.com/settings/project
             </li>
             <li>
-              POSTHOG_API_KEY : une clé secrète (phs_...) créée dans « Project
-              secret API keys » sur la même page. Côté serveur uniquement,
-              elle n'est jamais visible des visiteurs.
+              POSTHOG_API_KEY : une clé personnelle (phx_...) créée dans
+              Settings → User → Personal API keys, avec le scope Query :
+              Read et l'accès au projet Madger. Côté serveur uniquement,
+              jamais visible des visiteurs.
             </li>
           </ol>
           <p className="mt-2 text-xs text-text-dim">
@@ -352,11 +353,12 @@ export default async function AdminAnalytics() {
             </p>
           )}
           <p className="mt-2 text-[11px] leading-relaxed text-text-dim">
-            401 = clé invalide ou au mauvais format · 403 = clé sans le droit
-            « query read » (recrée-la avec ce scope) · 404 = POSTHOG_PROJECT_ID
+            La clé doit être une clé PERSONNELLE (phx_..., Settings → User →
+            Personal API keys) avec le scope Query : Read, pas une clé de
+            projet phc_ ni une clé secrète phs_. 404 = POSTHOG_PROJECT_ID
             faux (c'est le NOMBRE « Project ID » sur
-            eu.posthog.com/settings/project, pas la clé). Après toute
-            modification dans Vercel, redéploie.
+            eu.posthog.com/settings/project). Après toute modification dans
+            Vercel, redéploie.
           </p>
         </div>
       ) : (
