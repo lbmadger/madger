@@ -276,9 +276,18 @@ export default function CoachProfile({
                 <span className="text-sm font-semibold text-text-base">
                   {Number(coach.rating_avg).toLocaleString(locale === "fr" ? "fr-FR" : "en-GB")}
                 </span>
-                <span className="text-xs text-text-dim">
+                {/* Cliquer le compteur descend à la section Avis. */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    document
+                      .getElementById("avis")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                  }
+                  className="text-xs text-text-dim underline-offset-2 transition-colors hover:text-accent hover:underline"
+                >
                   ({coach.rating_count} {t("reviews.countLabel")})
-                </span>
+                </button>
               </p>
             )}
             <div className="mt-3 flex flex-wrap justify-center gap-1.5 sm:justify-start">
@@ -441,7 +450,7 @@ export default function CoachProfile({
 
         {/* Avis clients — sinon, état « nouveau » assumé (pas de vide gênant). */}
         {reviews.length === 0 ? (
-          <div className="mt-6 border-t border-border pt-6">
+          <div id="avis" className="mt-6 scroll-mt-24 border-t border-border pt-6">
             <h2 className="text-xs font-medium uppercase tracking-wide text-text-dim">
               {t("reviews.sectionTitle")}
             </h2>
@@ -460,7 +469,7 @@ export default function CoachProfile({
             </div>
           </div>
         ) : (
-          <div className="mt-6 border-t border-border pt-6">
+          <div id="avis" className="mt-6 scroll-mt-24 border-t border-border pt-6">
             <h2 className="text-xs font-medium uppercase tracking-wide text-text-dim">
               {t("reviews.sectionTitle")}
             </h2>
