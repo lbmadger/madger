@@ -93,29 +93,34 @@ const DEMO_SERVICES: PublicService[] = [
   },
 ];
 
-// Galerie Résultats de démonstration : des personnes en train de
-// s'entraîner (pas du matériel), légendes cohérentes avec les avis.
+// Galerie Résultats de démonstration : paires avant/après illustrées
+// (silhouettes stylisées maison, même personnage qui se transforme),
+// légendes cohérentes avec les avis. De vraies photos de banque d'images
+// montreraient deux personnes différentes : pire que l'illustration.
 const DEMO_PHOTOS: CoachPhoto[] = [
   {
     id: "p1",
-    url: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=600&h=750&q=80",
-    url_after: null,
+    url: "/exemple/julie-avant.png",
+    url_after: "/exemple/julie-apres.png",
     caption: "Julie · -6 kg en 3 mois",
   },
   {
     id: "p2",
-    url: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=600&h=750&q=80",
-    url_after: null,
+    url: "/exemple/karim-avant.png",
+    url_after: "/exemple/karim-apres.png",
     caption: "Karim · +5 kg de masse en 6 mois",
   },
   {
     id: "p3",
-    url: "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&w=600&h=750&q=80",
-    url_after: null,
+    url: "/exemple/thomas-avant.png",
+    url_after: "/exemple/thomas-apres.png",
     caption: "Thomas · reprise après 10 ans d'arrêt",
   },
 ];
 
+// 27 avis (le compteur affiché) : moyenne 4,9 (25 cinq étoiles, 2 quatre).
+// Les 3 premiers portent les vraies histoires, le reste varie entre
+// commentaires courts et notes sans commentaire, comme dans la vraie vie.
 const DEMO_REVIEWS: PublicReview[] = [
   {
     id: "r1",
@@ -144,6 +149,41 @@ const DEMO_REVIEWS: PublicReview[] = [
     created_at: "2025-03-30T10:00:00.000Z",
     client_first_name: "Thomas",
   },
+  ...(
+    [
+      [5, "Séance d'essai transformée en abonnement direct. Emma sait motiver sans mettre la pression.", "Sarah", "2025-03-18"],
+      [5, "Programme béton et suivi sérieux entre les séances. Je sens enfin des progrès durables.", "Mehdi", "2025-03-02"],
+      [5, null, "Laura", "2025-02-20"],
+      [5, "Les séances en extérieur au parc sont géniales, ça change de la salle.", "Antoine", "2025-02-11"],
+      [5, "Après ma grossesse je voulais reprendre en douceur, Emma a tout adapté. Merci !", "Camille", "2025-01-28"],
+      [4, "Très pro. Juste parfois un peu de retard sur le créneau du soir.", "Nicolas", "2025-01-15"],
+      [5, null, "Emma R.", "2025-01-06"],
+      [5, "On rigole autant qu'on transpire, et les résultats sont là : -4 kg.", "Sophie", "2024-12-19"],
+      [5, "Le paiement en ligne et les rappels automatiques, ça change tout niveau orga.", "Hugo", "2024-12-05"],
+      [5, "Coach exigeante mais bienveillante. Exactement ce qu'il me fallait.", "Inès", "2024-11-22"],
+      [5, null, "Bastien", "2024-11-10"],
+      [5, "Mon dos ne me fait plus souffrir depuis qu'on bosse le gainage ensemble.", "Nathalie", "2024-10-30"],
+      [5, "Séances duo avec ma copine, super formule et prix correct.", "Maxime", "2024-10-17"],
+      [5, null, "Chloé", "2024-10-02"],
+      [5, "Un an de suivi, jamais une séance ratée. La régularité paye !", "Romain", "2024-09-20"],
+      [5, "Emma m'a préparé pour mon premier 10 km, objectif atteint en 52 min.", "Élodie", "2024-09-08"],
+      [5, null, "Kevin", "2024-08-25"],
+      [5, "La visio quand je suis en déplacement, c'est vraiment pratique.", "Marine", "2024-08-12"],
+      [5, "Très bons conseils nutrition en plus des séances.", "Yanis", "2024-07-28"],
+      [5, null, "Aurélie", "2024-07-14"],
+      [5, "Je détestais le sport. Maintenant j'y vais 3 fois par semaine. CQFD.", "Damien", "2024-06-30"],
+      [5, "Accueil top à la salle, matériel nickel, séances variées.", "Lucie", "2024-06-15"],
+      [5, null, "Farid", "2024-05-31"],
+      [5, "Remise en forme après blessure, en lien avec mon kiné. Très pro.", "Céline", "2024-05-18"],
+    ] as const
+  ).map(([rating, comment, name, date], i) => ({
+    id: `r${i + 4}`,
+    coach_id: "demo",
+    rating,
+    comment,
+    created_at: `${date}T10:00:00.000Z`,
+    client_first_name: name,
+  })),
 ];
 
 export default function ExampleCoachPage() {

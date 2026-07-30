@@ -48,6 +48,9 @@ export default function CoachProfile({
   const [contactError, setContactError] = useState<string | null>(null);
   // Paiement Stripe interrompu (retour via cancel_url) : on l'explique.
   const [paymentCanceled, setPaymentCanceled] = useState(false);
+  // Modale « tous les avis », filtrable par note (via les barres du résumé).
+  const [reviewsOpen, setReviewsOpen] = useState(false);
+  const [starFilter, setStarFilter] = useState<number | null>(null);
 
   // Retour de connexion/inscription ou de Stripe avec ?book=<serviceId|1> :
   // rouvre le modal de réservation là où le client s'était arrêté (le
@@ -473,32 +476,71 @@ export default function CoachProfile({
             <h2 className="text-xs font-medium uppercase tracking-wide text-text-dim">
               {t("reviews.sectionTitle")}
             </h2>
-            <ul className="mt-3 flex flex-col gap-2">
-              {reviews.map((r) => (
-                <li
-                  key={r.id}
-                  className="rounded-xl border border-border bg-bg-elevated p-3"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm font-medium text-text-base">
-                      {r.client_first_name}
-                    </span>
-                    <Stars value={r.rating} size={12} />
-                  </div>
-                  {r.comment && (
-                    <p className="mt-1.5 text-sm leading-relaxed text-text-muted">
-                      {r.comment}
-                    </p>
+
+            {/* Résumé : moyenne à gauche, répartition par étoiles à droite.
+                Cliquer une barre ouvre la modale filtrée sur cette note. */}
+            <div className="mt-3 flex items-center gap-5 rounded-xl border border-border bg-bg-elevated p-4">
+              <div className="flex shrink-0 flex-col items-center">
+                <span className="text-3xl font-extrabold text-text-base">
+                  {Number(coach.rating_avg ?? 0).toLocaleString(
+                    locale === "fr" ? "fr-FR" : "en-GB"
                   )}
-                  <p className="mt-1.5 text-[11px] text-text-dim">
-                    {new Date(r.created_at).toLocaleDateString(
-                      locale === "fr" ? "fr-FR" : "en-GB",
-                      { month: "long", year: "numeric" }
-                    )}
-                  </p>
-                </li>
+                </span>
+                <Stars value={Number(coach.rating_avg ?? 0)} size={12} />
+                <span className="mt-1 text-[11px] text-text-dim">
+                  {coach.rating_count} {t("reviews.countLabel")}
+                </span>
+              </div>
+              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                {[5, 4, 3, 2, 1].map((star) => {
+                  const n = reviews.filter((r) => r.rating === star).length;
+                  const pct = reviews.length > 0 ? (n / reviews.length) * 100 : 0;
+                  return (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => {
+                        setStarFilter(n > 0 ? star : null);
+                        setReviewsOpen(true);
+                      }}
+                      className="group flex w-full items-center gap-2"
+                    >
+                      <span className="w-2.5 shrink-0 text-right text-[11px] tabular-nums text-text-dim">
+                        {star}
+                      </span>
+                      <StarIcon size={9} className="shrink-0 text-accent" />
+                      <span className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-white/[0.06]">
+                        <span
+                          className="block h-full rounded-full bg-gradient-to-r from-[#9DCC00] to-accent transition-opacity group-hover:opacity-80"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </span>
+                      <span className="w-6 shrink-0 text-right text-[10px] tabular-nums text-text-dim">
+                        {n}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <ul className="mt-3 flex flex-col gap-2">
+              {reviews.slice(0, 3).map((r) => (
+                <ReviewItem key={r.id} review={r} locale={locale} />
               ))}
             </ul>
+            {reviews.length > 3 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setStarFilter(null);
+                  setReviewsOpen(true);
+                }}
+                className="mt-3 w-full rounded-full border border-border-strong py-2.5 text-sm font-medium text-text-base transition-colors hover:border-accent"
+              >
+                {t("reviews.seeAll")} ({reviews.length})
+              </button>
+            )}
           </div>
         )}
 
@@ -652,6 +694,103 @@ export default function CoachProfile({
           </button>
         </Dialog>
       )}
+
+      {/* Tous les avis : liste complète, filtrable par note. */}
+      {reviewsOpen && (
+        <Dialog
+          onClose={() => setReviewsOpen(false)}
+          label={t("reviews.sectionTitle")}
+          className="flex max-h-[85vh] w-full flex-col overflow-hidden rounded-t-2xl border border-border bg-bg-card sm:max-w-lg sm:rounded-2xl"
+        >
+          <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
+            <h2 className="text-base font-semibold text-text-base">
+              {t("reviews.sectionTitle")}{" "}
+              <span className="text-text-dim">({reviews.length})</span>
+            </h2>
+            <button
+              type="button"
+              onClick={() => setReviewsOpen(false)}
+              aria-label={t("common.cancel")}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-border-strong text-text-muted transition-colors hover:border-accent hover:text-accent"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div className="flex gap-1.5 overflow-x-auto border-b border-border px-5 py-3">
+            <button
+              type="button"
+              onClick={() => setStarFilter(null)}
+              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                starFilter === null
+                  ? "bg-accent text-black"
+                  : "border border-border-strong text-text-muted hover:border-accent"
+              }`}
+            >
+              {t("reviews.filterAll")}
+            </button>
+            {[5, 4, 3, 2, 1].map((star) => {
+              const n = reviews.filter((r) => r.rating === star).length;
+              if (n === 0) return null;
+              return (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setStarFilter(star)}
+                  className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                    starFilter === star
+                      ? "bg-accent text-black"
+                      : "border border-border-strong text-text-muted hover:border-accent"
+                  }`}
+                >
+                  {star}
+                  <StarIcon size={10} />
+                  <span className="opacity-70">({n})</span>
+                </button>
+              );
+            })}
+          </div>
+          <ul className="flex flex-col gap-2 overflow-y-auto p-5">
+            {reviews
+              .filter((r) => starFilter === null || r.rating === starFilter)
+              .map((r) => (
+                <ReviewItem key={r.id} review={r} locale={locale} />
+              ))}
+          </ul>
+        </Dialog>
+      )}
     </main>
+  );
+}
+
+// Carte d'un avis, partagée entre l'aperçu (3 premiers) et la modale.
+function ReviewItem({
+  review,
+  locale,
+}: {
+  review: PublicReview;
+  locale: string;
+}) {
+  return (
+    <li className="rounded-xl border border-border bg-bg-elevated p-3">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-sm font-medium text-text-base">
+          {review.client_first_name}
+        </span>
+        <Stars value={review.rating} size={12} />
+      </div>
+      {review.comment && (
+        <p className="mt-1.5 text-sm leading-relaxed text-text-muted">
+          {review.comment}
+        </p>
+      )}
+      <p className="mt-1.5 text-[11px] text-text-dim">
+        {new Date(review.created_at).toLocaleDateString(
+          locale === "fr" ? "fr-FR" : "en-GB",
+          { month: "long", year: "numeric" }
+        )}
+      </p>
+    </li>
   );
 }

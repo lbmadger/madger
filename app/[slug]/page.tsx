@@ -43,12 +43,14 @@ const getCoachPageData = unstable_cache(
     const [{ data: services }, { data: reviews }, { data: photos }] =
       await Promise.all([
         supabase.from("public_services").select("*").eq("coach_id", coach.id),
+        // Tous les avis (borné large) : la modale « Voir tous les avis »
+        // et la répartition par étoiles en ont besoin au complet.
         supabase
           .from("public_reviews")
           .select("*")
           .eq("coach_id", coach.id)
           .order("created_at", { ascending: false })
-          .limit(10),
+          .limit(200),
         // Galerie Résultats (migration 0047) : table absente = galerie vide.
         supabase
           .from("coach_photos")

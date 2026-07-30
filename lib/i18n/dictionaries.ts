@@ -1266,6 +1266,8 @@ const fr = {
   reviews: {
     sectionTitle: "Avis clients",
     countLabel: "avis",
+    seeAll: "Voir tous les avis",
+    filterAll: "Tous",
     newCoachTitle: "Nouveau sur Madger",
     newCoachDesc: "Ce coach vient d'arriver : sois le premier à laisser un avis.",
     leaveTitle: "Comment s'est passée ta séance ?",
@@ -2535,6 +2537,8 @@ const en: Dictionary = {
   reviews: {
     sectionTitle: "Client reviews",
     countLabel: "reviews",
+    seeAll: "See all reviews",
+    filterAll: "All",
     newCoachTitle: "New on Madger",
     newCoachDesc: "This coach just joined: be the first to leave a review.",
     leaveTitle: "How was your session?",
