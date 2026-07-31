@@ -52,13 +52,25 @@ function sendPromoCode(to: string, code: string): Promise<boolean> {
 }
 
 export async function POST(req: NextRequest) {
-  // Secret lu dans l'en-tête Authorization (une query string finirait dans
-  // les logs et les referrers). La query reste acceptée en secours.
+  // Deux voies d'accès : le secret serveur (usage script), OU une session
+  // admin connectée (bouton de /admin/emails au jour du lancement).
   const auth = req.headers.get("authorization");
   const bearer = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
   const secret = bearer ?? new URL(req.url).searchParams.get("secret");
-  if (!process.env.PROMO_SEND_SECRET || secret !== process.env.PROMO_SEND_SECRET) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const secretOk = Boolean(
+    process.env.PROMO_SEND_SECRET && secret === process.env.PROMO_SEND_SECRET
+  );
+  if (!secretOk) {
+    const { createClient: createSession } = await import(
+      "@/lib/supabase/server"
+    );
+    const { isAdminEmail } = await import("@/lib/admin");
+    const {
+      data: { user },
+    } = await createSession().auth.getUser();
+    if (!user || !isAdminEmail(user.email)) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    }
   }
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!serviceKey) {

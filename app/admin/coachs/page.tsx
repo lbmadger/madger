@@ -16,6 +16,37 @@ export default async function AdminCoaches() {
         .limit(200)
     : { data: [] };
 
+  // Séances passées vs séances payées en ligne, par coach : LE détecteur de
+  // contournement (le coach qui garde l'agenda mais encaisse en cash). Un
+  // ratio bas sur du volume = à surveiller, puis à convertir (acompte, Pro).
+  const pastByCoach = new Map<string, number>();
+  const paidByCoach = new Map<string, number>();
+  if (admin) {
+    const nowIso = new Date().toISOString();
+    const [bk, pay] = await Promise.all([
+      admin
+        .from("bookings")
+        .select("coach_id")
+        .eq("is_block", false)
+        .neq("status", "cancelled")
+        .lt("starts_at", nowIso)
+        .limit(5000),
+      admin
+        .from("payments")
+        .select("coach_id")
+        .eq("status", "paid")
+        .limit(5000),
+    ]);
+    for (const b of bk.data ?? []) {
+      const id = b.coach_id as string;
+      pastByCoach.set(id, (pastByCoach.get(id) ?? 0) + 1);
+    }
+    for (const p of pay.data ?? []) {
+      const id = p.coach_id as string;
+      paidByCoach.set(id, (paidByCoach.get(id) ?? 0) + 1);
+    }
+  }
+
   // Emails : ils vivent dans Supabase Auth (pas dupliqués dans coaches).
   // On les joint ici via l'API admin, pour contacter/relancer un coach
   // directement depuis cette page (ex. inscription Google abandonnée).
@@ -50,6 +81,7 @@ export default async function AdminCoaches() {
               <th className="px-4 py-3">Ville</th>
               <th className="px-4 py-3">Offre</th>
               <th className="px-4 py-3">Encaisse</th>
+              <th className="px-4 py-3">En ligne</th>
               <th className="px-4 py-3">Public</th>
             </tr>
           </thead>
@@ -96,6 +128,23 @@ export default async function AdminCoaches() {
                   <td className="px-4 py-3 text-text-muted">
                     {c.stripe_charges_enabled ? "✅" : "-"}
                   </td>
+                  {(() => {
+                    // Payées en ligne / séances passées : ratio bas sur du
+                    // volume = le coach encaisse probablement hors Madger.
+                    const past = pastByCoach.get(c.id as string) ?? 0;
+                    const paid = paidByCoach.get(c.id as string) ?? 0;
+                    const suspicious = past >= 5 && paid / past < 0.5;
+                    return (
+                      <td
+                        className={`px-4 py-3 tabular-nums ${
+                          suspicious ? "font-semibold text-warning" : "text-text-muted"
+                        }`}
+                        title="Séances payées en ligne / séances passées (hors annulées)"
+                      >
+                        {past > 0 ? `${paid}/${past}` : "-"}
+                      </td>
+                    );
+                  })()}
                   <td className="px-4 py-3 text-text-muted">
                     {c.listed ? "✅" : "-"}
                   </td>

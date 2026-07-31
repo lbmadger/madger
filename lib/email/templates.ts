@@ -1393,3 +1393,45 @@ export function onboardingNudgeCoach(p: {
     }),
   };
 }
+
+// ── Liste d'attente : email 1, « voilà ce qu'on te prépare » ────────────────
+export function waitlistIntro(): { subject: string; html: string } {
+  return {
+    subject: "Ta place est réservée. Voilà ce qu'on te prépare.",
+    html: layout({
+      preheader:
+        "Un lien à ton nom, tes clients réservent et paient seuls. Démo en ligne.",
+      eyebrow: "Accès anticipé",
+      title: "Voilà ce qu'on te prépare",
+      intro:
+        "Tu t'es inscrit à l'accès anticipé de Madger, et pendant que tu attends, on construit. Concrètement, voilà ce qui t'attend : un lien à ton nom (madger.app/tonprenom) que tu partages en bio Insta. Tes clients y réservent leur séance, paient en ligne, reçoivent leur facture. Toi, tu ne fais rien : ton planning se remplit et ton argent arrive tout seul sur ton compte, 24 h après chaque séance.",
+      cta: {
+        label: "Voir la démo de ta future page",
+        url: `${APP_URL}/exemple`,
+      },
+      outro:
+        "Une question ? Réponds à cet email, je lis tout. Léonard, fondateur de Madger.",
+    }),
+  };
+}
+
+// ── Liste d'attente : email 2, « les coulisses » ────────────────────────────
+export function waitlistStory(): { subject: string; html: string } {
+  return {
+    subject: "Pourquoi j'ai construit Madger (et pas un agenda de plus)",
+    html: layout({
+      preheader:
+        "Le vrai problème, ce n'est pas le calendrier. Ce sont les coutures.",
+      eyebrow: "Les coulisses",
+      title: "Ce n'est pas un outil de plus, c'est trois outils en moins",
+      intro:
+        "Tout le monde voit le même problème : les coachs perdent des heures en administratif. La plupart en concluent qu'il faut un meilleur agenda. Ils se trompent de problème.",
+      blocks: [
+        `<p style="${FONT}margin:14px 0 0;font-size:14px;line-height:1.7;color:${C.muted};">Le vrai sujet, c'est que la réservation, le paiement et la facture sont trois moments séparés, gérés par trois outils qui ne se parlent pas. Chaque couture entre ces outils, c'est un message WhatsApp, une relance gênante, une facture refaite à minuit.</p>`,
+        `<p style="${FONT}margin:14px 0 0;font-size:14px;line-height:1.7;color:${C.muted};">Madger supprime les coutures. Un seul lien, et les trois moments n'en font plus qu'un : le client réserve, il a payé, la facture est partie.</p>`,
+        `<p style="${FONT}margin:14px 0 0;font-size:14px;line-height:1.7;color:${C.muted};">On ouvre très bientôt, et les premiers membres auront une vraie voix : vos retours décideront de ce qu'on code chaque semaine. Tiens-toi prêt.</p>`,
+      ],
+      outro: "Léonard, fondateur de Madger.",
+    }),
+  };
+}
