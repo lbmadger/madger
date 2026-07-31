@@ -50,19 +50,26 @@ export default function Testimonials() {
         >
           <div className="flex flex-col gap-5" style={{ fontSize: 15, lineHeight: 1.75, color: "var(--text-soft)" }}>
             <p>
-              Je n'ai pas créé Madger après une étude de marché. Je l'ai créé en voyant des
-              coachs passionnés perdre leurs soirées sur WhatsApp, Excel et des relances de
-              paiement, au lieu de faire ce pour quoi ils sont doués&nbsp;: coacher.
+              Tout le monde voit le même problème&nbsp;: les coachs perdent des heures en
+              administratif. La plupart en concluent qu'il faut un meilleur agenda. Ils se
+              trompent de problème.
             </p>
             <p>
-              Madger, c'est l'outil que j'aurais voulu leur mettre entre les mains&nbsp;: un seul
-              lien où le client réserve, paie et reçoit sa facture. Le reste tourne tout seul,
-              en arrière-plan.
+              Le vrai sujet, ce n'est pas le calendrier. C'est que la réservation, le paiement
+              et la facture sont trois moments séparés, gérés par trois outils qui ne se
+              parlent pas. Chaque couture entre ces outils, c'est un message WhatsApp, une
+              relance gênante, une facture refaite à minuit.
             </p>
             <p>
-              On le construit en ce moment, et pas dans notre coin. Les premiers membres ont une
-              vraie voix&nbsp;: leurs retours décident des prochaines fonctionnalités. Le produit
-              se façonne <span className="text-white font-semibold">avec</span> les coachs, pas pour eux.
+              Madger supprime les coutures. Un seul lien, et les trois moments n'en font plus
+              qu'un&nbsp;: le client réserve, il a payé, la facture est partie. Ce n'est pas un
+              outil de plus, c'est <span className="text-white font-semibold">trois outils en moins</span>.
+            </p>
+            <p>
+              Et on le construit <span className="text-white font-semibold">avec</span> les
+              coachs, pas pour eux. Chaque retour des premiers membres décide de ce qu'on code
+              la semaine suivante. C'est comme ça qu'on fait un produit juste&nbsp;: en écoutant
+              le terrain plus fort que ses propres idées.
             </p>
           </div>
 
