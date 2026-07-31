@@ -43,20 +43,30 @@ export default function AdminMap({ points }: { points: AdminMapPoint[] }) {
       );
 
       m.on("style.load", () => {
-        // Le globe : dézoomer montre la Terre entière en 3D.
-        m.setProjection({ type: "globe" });
+        // Le globe : dézoomer montre la Terre entière en 3D. En cas de
+        // pépin (API, style), la carte plate reste fonctionnelle : jamais
+        // de carte cassée pour une histoire de projection.
+        try {
+          m.setProjection({ type: "globe" });
+        } catch {
+          /* projection plate conservée */
+        }
         // Libellés en français partout où la tuile propose name_fr,
         // sinon nom local (jamais l'anglais forcé).
-        for (const layer of m.getStyle().layers ?? []) {
-          if (layer.type !== "symbol") continue;
-          const tf = m.getLayoutProperty(layer.id, "text-field");
-          if (!tf) continue;
-          m.setLayoutProperty(layer.id, "text-field", [
-            "coalesce",
-            ["get", "name_fr"],
-            ["get", "name:fr"],
-            ["get", "name"],
-          ]);
+        try {
+          for (const layer of m.getStyle().layers ?? []) {
+            if (layer.type !== "symbol") continue;
+            const tf = m.getLayoutProperty(layer.id, "text-field");
+            if (!tf) continue;
+            m.setLayoutProperty(layer.id, "text-field", [
+              "coalesce",
+              ["get", "name_fr"],
+              ["get", "name:fr"],
+              ["get", "name"],
+            ]);
+          }
+        } catch {
+          /* libellés d'origine conservés */
         }
       });
 
