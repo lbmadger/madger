@@ -16,11 +16,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL("https://madger.app"),
   alternates: { canonical: "/" },
-  title: "Madger · L'app de réservation n°1 des coachs sportifs",
+  title: "Madger · L'app préférée des coachs sportifs",
   description: "Ton lien de réservation, tes paiements sécurisés, tes factures automatiques. Tes clients réservent seuls, ton planning se remplit. Fait pour les coachs sportifs indépendants.",
   keywords: ["réservation coach sportif", "coach sportif", "logiciel réservation sport", "prise de rendez-vous coach", "application coach sportif", "paiement en ligne coach", "facturation coach"],
   openGraph: {
-    title: "Madger · L'app de réservation n°1 des coachs sportifs",
+    title: "Madger · L'app préférée des coachs sportifs",
     description: "Ton lien de réservation, tes paiements sécurisés, tes factures automatiques. Tes clients réservent seuls, ton planning se remplit.",
     url: "https://madger.app",
     siteName: "Madger",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Madger · L'app de réservation n°1 des coachs sportifs",
+    title: "Madger · L'app préférée des coachs sportifs",
     description: "Ton lien de réservation, tes paiements sécurisés, tes factures automatiques. Tes clients réservent seuls, ton planning se remplit.",
   },
 };
@@ -41,7 +41,7 @@ const organizationJsonLd = {
   url: "https://madger.app",
   logo: "https://madger.app/logo.png",
   description:
-    "Réservations, paiements et facturation automatique en un seul lien, pour les coachs indépendants en France.",
+    "Réservations, paiements et facturation automatique en un seul lien, pour les coachs sportifs en France.",
   email: "contact@madger.app",
   founder: { "@type": "Person", name: "Léonard Bondeau" },
 };

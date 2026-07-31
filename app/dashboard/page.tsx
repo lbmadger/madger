@@ -17,7 +17,7 @@ import { invoiceNumber } from "@/lib/invoices/utils";
 import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getCoach } from "@/lib/coach/getCoach";
-import { isPro } from "@/lib/subscription/plan";
+import { isPro, proDaysLeft } from "@/lib/subscription/plan";
 import type { Booking } from "@/lib/bookings/types";
 
 // Vue d'ensemble — premier écran après connexion. KPI réels (revenus issus des
@@ -762,6 +762,29 @@ export default async function OverviewPage() {
             </span>
           </Link>
         )}
+
+        {/* Essai Pro offert en cours (Pro actif SANS abonnement payant) :
+            rappel doux du temps restant, vers la page Abonnement. */}
+        {pro &&
+          !["active", "trialing"].includes(coach?.subscription_status ?? "") && (
+            <Link
+              href="/dashboard/abonnement"
+              className="mb-6 flex items-center justify-between gap-3 rounded-2xl border border-accent/25 bg-accent/[0.05] px-4 py-3 transition-colors hover:border-accent/40"
+            >
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-text-base">
+                  {dict.plans.trialTitle}
+                </p>
+                <p className="truncate text-xs text-text-muted">
+                  {proDaysLeft(coach?.pro_until)} {dict.plans.daysLeft} ·{" "}
+                  {dict.plans.trialDesc}
+                </p>
+              </div>
+              <span className="shrink-0 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-black">
+                {dict.plans.trialCta}
+              </span>
+            </Link>
+          )}
 
         {/* KPI animés (compteurs) : 2 colonnes mobile, 4 desktop */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">

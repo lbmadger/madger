@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
-import { sessionReminderClient } from "@/lib/email/templates";
+import {
+  sessionReminderClient,
+  onboardingNudgeCoach,
+} from "@/lib/email/templates";
 import { cronAuthorized } from "@/lib/cron/auth";
 
 export const dynamic = "force-dynamic";
@@ -97,5 +100,36 @@ export async function GET(req: NextRequest) {
   }
   }
 
-  return NextResponse.json({ sent, scanned });
+  // ── Relance onboarding abandonné ──────────────────────────────────────────
+  // Comptes coach créés il y a 2 à 3 jours sans onboarding terminé. Le cron
+  // passe une fois par jour : la fenêtre [J-3, J-2) garantit une relance
+  // unique par compte, sans colonne de suivi supplémentaire.
+  let nudged = 0;
+  try {
+    const from = new Date(now - 3 * 86400000).toISOString();
+    const to = new Date(now - 2 * 86400000).toISOString();
+    const { data: stale } = await supabase
+      .from("coaches")
+      .select("id, first_name")
+      .eq("onboarding_completed", false)
+      .gte("created_at", from)
+      .lt("created_at", to)
+      .limit(100);
+    for (const c of stale ?? []) {
+      // L'email vit dans Auth, pas dans coaches : lecture via l'API admin.
+      const { data: u } = await supabase.auth.admin.getUserById(c.id as string);
+      const email = u?.user?.email;
+      if (!email) continue;
+      const tpl = onboardingNudgeCoach({
+        firstName: (c.first_name as string | null) || null,
+        dashboardUrl: `${APP_URL}/dashboard`,
+      });
+      if (await sendEmail({ to: email, subject: tpl.subject, html: tpl.html }))
+        nudged++;
+    }
+  } catch {
+    /* la relance ne doit jamais faire échouer les rappels de séance */
+  }
+
+  return NextResponse.json({ sent, scanned, nudged });
 }

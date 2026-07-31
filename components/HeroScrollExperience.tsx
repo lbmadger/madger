@@ -10,23 +10,23 @@ import { useEarlyAccessFull } from "@/components/ui/useEarlyAccessFull";
 const STEPS = [
   {
     num: "01",
-    title: "Votre page coach",
-    desc: "Un lien unique à partager partout. Votre profil, vos prestations, votre image professionnelle.",
+    title: "Ta page coach",
+    desc: "Un lien unique à partager partout. Ton profil, tes prestations, ton image professionnelle.",
   },
   {
     num: "02",
     title: "Le client choisit sa séance",
-    desc: "Il voit vos disponibilités, choisit son créneau et réserve en quelques secondes.",
+    desc: "Il voit tes disponibilités, choisit son créneau et réserve en quelques secondes.",
   },
   {
     num: "03",
     title: "Paiement et confirmation",
-    desc: "Le client règle en réservant, paiement sécurisé par Stripe. Confirmation et facture partent seules, les fonds vous sont versés après la séance.",
+    desc: "Le client règle en réservant, paiement sécurisé par Stripe. Confirmation et facture partent seules, ton argent est versé après la séance.",
   },
   {
     num: "04",
     title: "Son espace client",
-    desc: "Votre client retrouve ses séances, sa facture et peut vous contacter depuis son dashboard.",
+    desc: "Ton client retrouve ses séances, sa facture et peut te contacter depuis son dashboard.",
   },
 ];
 
@@ -325,7 +325,7 @@ export default function HeroScrollExperience() {
             transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
             L'app <span className="text-shimmer">tout-en-un</span><br />
-            des coachs indépendants.
+            des coachs sportifs.
           </motion.h1>
 
           {/* Subtitle */}
@@ -338,7 +338,7 @@ export default function HeroScrollExperience() {
           >
             Réservation, paiement et facture réunis dans un seul lien à partager.{" "}
             <br className="hidden sm:block" />
-            Vous coachez, Madger gère l'administratif.
+            Tu coaches, Madger gère l'administratif.
           </motion.p>
 
           {/* CTAs */}
@@ -446,7 +446,7 @@ export default function HeroScrollExperience() {
               <div ref={dHeroRef} style={{ position: "absolute", top: 0, left: 0, right: 0 }}>
                 <SectionLabel>Comment ça marche</SectionLabel>
                 <p style={{ fontSize: 17, color: "#8A8A8A", lineHeight: 1.6, marginTop: 4 }}>
-                  Suivez le scroll pour découvrir comment Madger automatise votre quotidien.
+                  Suis le scroll pour découvrir comment Madger automatise ton quotidien.
                 </p>
               </div>
 
@@ -769,7 +769,7 @@ function ScreenSeance() {
           ))}
         </div>
         <div style={{ fontSize: 9, color: "#8A8A8A", lineHeight: 1.5, marginBottom: 6 }}>
-          Séance personnalisée en salle ou en plein air selon vos objectifs.
+          Séance personnalisée en salle ou en plein air selon tes objectifs.
         </div>
         <div style={{ fontSize: 16, fontWeight: 800, color: "#CBFF03" }}>50 €</div>
       </div>
@@ -1002,7 +1002,7 @@ function ScreenDashboard() {
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 9, fontWeight: 600, color: "#fff" }}>Marie Laurent</div>
-            <div style={{ fontSize: 7, color: "#8A8A8A" }}>Votre coach</div>
+            <div style={{ fontSize: 7, color: "#8A8A8A" }}>Ton coach</div>
           </div>
           <div style={{ display: "flex", gap: 5 }}>
             <div style={{ width: 22, height: 22, borderRadius: 6, background: "rgba(203,255,3,0.1)", border: "1px solid rgba(203,255,3,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>

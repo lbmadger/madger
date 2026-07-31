@@ -381,6 +381,9 @@ const fr = {
     savingsProj1: "À ce rythme, environ",
     savingsProj2: "de commission par an, contre 490 € HT en Pro annuel.",
     upgrading: "Ouverture du paiement sécurisé…",
+    trialTitle: "Ton accès Pro offert est actif",
+    trialDesc: "0 % de commission Madger pendant l'essai.",
+    trialCta: "Voir mon abonnement",
     featuresFree: [
       "Lien public personnalisé",
       "Réservations et paiements illimités",
@@ -391,7 +394,6 @@ const fr = {
     featuresPro: [
       "Tout le plan Free",
       "0 % de commission Madger",
-      "Page coach personnalisable",
       "Statistiques avancées",
       "Support prioritaire",
     ],
@@ -1661,6 +1663,9 @@ const en: Dictionary = {
     savingsProj1: "At this pace, about",
     savingsProj2: "in commission per year, versus €490 excl. VAT on annual Pro.",
     upgrading: "Opening secure payment…",
+    trialTitle: "Your free Pro access is active",
+    trialDesc: "0% Madger commission during the trial.",
+    trialCta: "View my subscription",
     featuresFree: [
       "Personalized public link",
       "Unlimited bookings and payments",
@@ -1671,7 +1676,6 @@ const en: Dictionary = {
     featuresPro: [
       "Everything in Free",
       "0% Madger commission",
-      "Customizable coach page",
       "Advanced statistics",
       "Priority support",
     ],

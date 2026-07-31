@@ -149,7 +149,7 @@ export default function CoachDashboard() {
             className="font-extrabold text-white mb-4"
             style={{ fontSize: "clamp(28px, 4.5vw, 52px)", letterSpacing: "-0.035em", lineHeight: 1.06 }}
           >
-            Toute votre activité,<br />
+            Toute ton activité,<br />
             <span style={{
               background: "linear-gradient(90deg, #CBFF03, #a8e600)",
               WebkitBackgroundClip: "text",
@@ -300,7 +300,7 @@ export default function CoachDashboard() {
                 </div>
                 {/* URL */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 8, color: "#757575", marginBottom: 1 }}>Votre lien de réservation</div>
+                  <div style={{ fontSize: 8, color: "#757575", marginBottom: 1 }}>Ton lien de réservation</div>
                   <div style={{ fontSize: 10, fontWeight: 600, color: "#CBFF03", letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     madger.app/marie-laurent
                   </div>

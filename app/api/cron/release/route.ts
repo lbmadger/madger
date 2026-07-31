@@ -10,6 +10,7 @@ import {
   bookingCancelledClient,
   payoutReleasedCoach,
   refundClient,
+  founderAlert,
 } from "@/lib/email/templates";
 import { cronAuthorized } from "@/lib/cron/auth";
 import { detachMeetFromBooking } from "@/lib/google/calendar";
@@ -624,6 +625,24 @@ export async function GET(req: NextRequest) {
 
   // Les débits du lot sont faits : on envoie les emails en parallèle.
   await Promise.allSettled(emailJobs.map((job) => job()));
+  }
+
+  // Des versements ou remboursements ont raté : le fondateur est prévenu
+  // AVANT le coach concerné. Best-effort, l'alerte ne casse jamais le cron.
+  if (errors.length > 0 && process.env.FOUNDER_EMAIL) {
+    try {
+      const tpl = founderAlert({
+        context: `${errors.length} paiement(s) en échec dans le cron de versement`,
+        details: errors.slice(0, 20),
+      });
+      await sendEmail({
+        to: process.env.FOUNDER_EMAIL,
+        subject: tpl.subject,
+        html: tpl.html,
+      });
+    } catch {
+      /* l'alerte reste best-effort */
+    }
   }
 
   return NextResponse.json({ released, refunded, expired, errors });

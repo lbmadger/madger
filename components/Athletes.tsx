@@ -8,19 +8,19 @@ const CARDS = [
     photo: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=1000&fit=crop&auto=format&q=85",
     tag: "Gain de temps",
     title: "Récupérez 5h\npar semaine",
-    desc: "Réservations, paiements et factures générées automatiquement à chaque séance. Vous faites ce pour quoi vous êtes payé : coacher.",
+    desc: "Réservations, paiements et factures générées automatiquement à chaque séance. Tu fais ce pour quoi tu es payé : coacher.",
   },
   {
     photo: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&h=1000&fit=crop&auto=format&q=85",
     tag: "Revenus sécurisés",
     title: "Payé avant\nla séance",
-    desc: "Réglé dès la réservation, sécurisé jusqu'à la séance. Vous ne courez plus jamais après un paiement.",
+    desc: "Réglé dès la réservation, sécurisé jusqu'à la séance. Tu ne cours plus jamais après un paiement.",
   },
   {
     photo: "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=800&h=1000&fit=crop&auto=format&q=85",
     tag: "Image pro",
     title: "Un lien\nqui vend",
-    desc: "Votre page coach premium à partager en bio Instagram, en signature, partout.",
+    desc: "Ta page coach premium à partager en bio Instagram, en signature, partout.",
   },
 ];
 
@@ -42,7 +42,7 @@ export default function Athletes() {
             className="font-extrabold text-white max-w-2xl"
             style={{ fontSize: "clamp(32px, 4.5vw, 58px)", letterSpacing: "-0.035em", lineHeight: 1.04 }}
           >
-            Coacher, c'est votre métier.{" "}
+            Coacher, c'est ton métier.{" "}
             <span style={{
               background: "linear-gradient(90deg, #CBFF03, #a8e600)",
               WebkitBackgroundClip: "text",

@@ -169,11 +169,11 @@ export default function EarlyAccessForm() {
             className="font-extrabold text-white mb-3"
             style={{ fontSize: "clamp(28px, 4vw, 44px)", letterSpacing: "-0.03em", lineHeight: 1.1 }}
           >
-            {full ? "L'accès fondateur est complet." : "Rejoignez les premiers coachs Madger."}
+            {full ? "L'accès fondateur est complet." : "Rejoins les premiers coachs Madger."}
           </h2>
           <p className="text-text-muted leading-relaxed mb-4" style={{ fontSize: 16 }}>
             {full
-              ? "Les places fondateurs sont parties. Inscrivez-vous pour être prévenu en priorité de la prochaine vague."
+              ? "Les places fondateurs sont parties. Inscris-toi pour être prévenu en priorité de la prochaine vague."
               : "Les premiers membres accèdent au plan Pro offert 3 mois."}
           </p>
 
@@ -212,7 +212,7 @@ export default function EarlyAccessForm() {
                 )}
               </div>
               <span style={{ fontSize: 11, color: step === 1 ? "#fff" : "var(--text-dim)", fontWeight: step === 1 ? 600 : 400 }}>
-                Votre profil
+                Ton profil
               </span>
               {/* Connector */}
               <div style={{ width: 28, height: 1, background: step > 1 ? "#CBFF03" : "rgba(255,255,255,0.1)", margin: "0 4px" }} />
@@ -228,7 +228,7 @@ export default function EarlyAccessForm() {
                 <span style={{ fontSize: 10, fontWeight: 700, color: step >= 2 ? "#000" : "var(--text-dim)" }}>2</span>
               </div>
               <span style={{ fontSize: 11, color: step === 2 ? "#fff" : "var(--text-dim)", fontWeight: step === 2 ? 600 : 400 }}>
-                Votre activité
+                Ton activité
               </span>
             </div>
           )}
@@ -251,28 +251,28 @@ export default function EarlyAccessForm() {
                 </svg>
                 <p className="font-bold text-white mb-2" style={{ fontSize: 18 }}>
                   {alreadyRegistered
-                    ? "Vous êtes déjà inscrit."
+                    ? "Tu es déjà inscrit."
                     : joinedWaitlist
-                    ? "Vous êtes sur la liste."
+                    ? "Tu es sur la liste."
                     : "Demande reçue."}
                 </p>
                 <p style={{ color: "#8A8A8A", fontSize: 14, lineHeight: 1.7 }}>
                   {alreadyRegistered ? (
                     <>
                       Cette adresse email fait déjà partie de la liste,
-                      votre place est bien réservée.<br />
-                      On vous contacte dès que Madger est disponible.
+                      ta place est bien réservée.<br />
+                      On te contacte dès que Madger est disponible.
                     </>
                   ) : joinedWaitlist ? (
                     <>
-                      Les places fondateurs sont parties, mais vous êtes prioritaire
+                      Les places fondateurs sont parties, mais tu es prioritaire
                       sur la prochaine vague.<br />
-                      On vous contacte dès qu'une place se libère.
+                      On te contacte dès qu'une place se libère.
                     </>
                   ) : (
                     <>
-                      On vous contacte dès que Madger est disponible.<br />
-                      Gardez un œil sur votre boîte mail.
+                      On te contacte dès que Madger est disponible.<br />
+                      Garde un œil sur ta boîte mail.
                     </>
                   )}
                 </p>
@@ -321,7 +321,7 @@ export default function EarlyAccessForm() {
                   <Label>Adresse email<Required /></Label>
                   <input
                     type="email"
-                    placeholder="vous@exemple.com"
+                    placeholder="toi@exemple.com"
                     value={fields.email}
                     onChange={set("email")}
                     className={cls}
@@ -448,7 +448,7 @@ export default function EarlyAccessForm() {
                 </label>
 
                 <label className="flex flex-col gap-1.5">
-                  <Label>Qu'est-ce que vous souhaitez arrêter de gérer manuellement ?<Required /></Label>
+                  <Label>Qu'est-ce que tu veux arrêter de gérer manuellement ?<Required /></Label>
                   <textarea
                     placeholder="Ex : les relances de paiement, les factures en fin de mois…"
                     value={fields.defi}

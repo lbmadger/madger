@@ -167,7 +167,7 @@ export default function Problem() {
           </h2>
           <p className="text-text-muted max-w-xl mx-auto" style={{ fontSize: 16, lineHeight: 1.65 }}>
             C'est ce que nous disent les coachs qu'on a rencontrés.
-            Vous êtes coach, pas secrétaire.
+            Tu es coach, pas secrétaire.
           </p>
         </motion.div>
 
@@ -184,7 +184,7 @@ export default function Problem() {
             className="text-center font-semibold mb-8"
             style={{ fontSize: 13, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)" }}
           >
-            Vous jonglez entre tout ça en ce moment
+            Tu jongles entre tout ça en ce moment
           </p>
 
           {/* Logos grid - grille 4 colonnes sur mobile (rangées équilibrées),

@@ -76,7 +76,7 @@ export default function Comparison() {
             }}>les autres outils ?</span>
           </h2>
           <p className="text-text-muted text-base max-w-md mx-auto" style={{ lineHeight: 1.6 }}>
-            Calendly gère vos RDV. Madger gère votre activité : réservation, paiement et facture conforme.
+            Calendly gère tes RDV. Madger gère ton activité : réservation, paiement et facture conforme.
           </p>
         </motion.div>
 

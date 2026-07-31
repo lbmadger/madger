@@ -83,7 +83,7 @@ function layout(opts: {
             "You are receiving this email because of activity linked to your Madger account or booking.",
         }
       : {
-          tagline: "Madger · l'app tout-en-un des coachs indépendants.",
+          tagline: "Madger · l'app tout-en-un des coachs sportifs.",
           charter: "Charte de paiement",
           legal:
             "Tu reçois cet email car une activité est liée à ton compte ou ta réservation Madger.",
@@ -1338,6 +1338,58 @@ export function cancellationNoRefundClient(p: {
       cta: { label: "Choisir un autre créneau", url: `${APP_URL}/coachs` },
       outro:
         "Une question ? Réponds simplement à cet email, on est là pour aider.",
+    }),
+  };
+}
+
+// ── Fondateur : alerte technique (échec de traitement monétaire) ────────────
+// Envoyée à FOUNDER_EMAIL quand un versement, remboursement ou webhook
+// Stripe échoue : mieux vaut le savoir avant le coach concerné.
+export function founderAlert(p: {
+  context: string;
+  details: string[];
+}): { subject: string; html: string } {
+  const esc = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return {
+    subject: `⚠️ Madger : ${p.context}`,
+    html: layout({
+      preheader: p.context,
+      eyebrow: "Alerte technique",
+      title: p.context,
+      intro:
+        "Un traitement lié à l'argent a échoué. À vérifier dans Stripe et dans les logs Vercel. Les lignes en échec sont retentées automatiquement au prochain passage.",
+      blocks: [
+        `<div style="margin:18px 0 0;padding:14px 16px;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:12px;">${p.details
+          .map(
+            (d) =>
+              `<p style="${FONT}margin:0 0 6px;font-size:12px;line-height:1.6;color:#c0c0c0;font-family:ui-monospace,Menlo,monospace;">${esc(d)}</p>`
+          )
+          .join("")}</div>`,
+      ],
+    }),
+  };
+}
+
+// ── Coach : relance onboarding abandonné (J+2) ──────────────────────────────
+export function onboardingNudgeCoach(p: {
+  firstName: string | null;
+  dashboardUrl: string;
+}): { subject: string; html: string } {
+  return {
+    subject: "Ta page coach est presque prête",
+    html: layout({
+      preheader:
+        "Encore quelques minutes de configuration et tes clients réservent seuls.",
+      eyebrow: "Ton compte Madger",
+      title: p.firstName
+        ? `${p.firstName}, ta page coach est presque prête`
+        : "Ta page coach est presque prête",
+      intro:
+        "Tu as créé ton compte il y a deux jours, mais ta page n'est pas encore publiée. Il reste quelques étapes rapides (photo, prestations, disponibilités, paiements) et ensuite tout roule tout seul : tes clients réservent, paient en ligne et reçoivent leur facture sans que tu lèves le petit doigt.",
+      cta: { label: "Terminer ma configuration", url: p.dashboardUrl },
+      outro:
+        "Un blocage quelque part ? Réponds simplement à cet email en décrivant où tu coinces : je lis tout et je réponds vite. Léonard, fondateur de Madger.",
     }),
   };
 }

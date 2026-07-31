@@ -10,19 +10,19 @@ import SectionLabel from "@/components/ui/SectionLabel";
 const items = [
   {
     title: "Factures conformes, générées seules",
-    desc: "Chaque séance encaissée produit une facture numérotée avec vos mentions légales : SIRET, adresse, mention TVA. Zéro saisie.",
+    desc: "Chaque séance encaissée produit une facture numérotée avec tes mentions légales : SIRET, adresse, mention TVA. Zéro saisie.",
   },
   {
     title: "Une facture de commission par mois",
-    desc: "Madger vous adresse chaque mois une facture claire pour sa commission. Votre comptabilité est carrée, des deux côtés.",
+    desc: "Madger t'adresse chaque mois une facture claire pour sa commission. Ta comptabilité est carrée, des deux côtés.",
   },
   {
     title: "Export comptable en un clic",
-    desc: "Toute votre année (encaissements, remboursements, commissions, net versé) au format CSV, prête pour votre expert-comptable.",
+    desc: "Toute ton année (encaissements, remboursements, commissions, net versé) au format CSV, prête pour ton expert-comptable.",
   },
   {
     title: "Factur-X automatique",
-    desc: "Le format électronique prévu par la réforme sera activé pour vous au moment voulu. Vous ne changez rien à vos habitudes.",
+    desc: "Le format électronique prévu par la réforme sera activé pour toi au moment voulu. Tu ne changes rien à tes habitudes.",
   },
 ];
 
@@ -56,13 +56,13 @@ export default function Compliance2026() {
                 backgroundClip: "text",
               }}
             >
-              Vous êtes déjà prêt.
+              Tu es déjà prêt.
             </span>
           </h2>
           <p className="text-text-muted text-base max-w-xl mx-auto" style={{ lineHeight: 1.6 }}>
             La réforme française impose la facture électronique à toutes les
             entreprises, micro-entrepreneurs compris. Pendant que d&apos;autres
-            chercheront un logiciel, vos factures seront déjà en règle.
+            chercheront un logiciel, tes factures seront déjà en règle.
           </p>
         </motion.div>
 

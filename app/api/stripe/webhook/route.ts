@@ -611,7 +611,7 @@ export async function POST(req: NextRequest) {
         break;
       }
     }
-  } catch {
+  } catch (err) {
     // Événements MONÉTAIRES : une erreur de traitement laisserait la base
     // désynchronisée pour toujours (ex. refunded_cents jamais posé → le cron
     // verserait au coach de l'argent déjà rendu au client). On renvoie 500
@@ -626,6 +626,29 @@ export async function POST(req: NextRequest) {
       "invoice.paid",
     ]);
     if (monetary.has(event.type)) {
+      // Le fondateur est alerté (best-effort) : un webhook monétaire qui
+      // échoue en boucle, c'est un client débité sans suite visible.
+      if (process.env.FOUNDER_EMAIL) {
+        try {
+          const { founderAlert } = await import("@/lib/email/templates");
+          const { sendEmail } = await import("@/lib/email/resend");
+          const tpl = founderAlert({
+            context: `Webhook Stripe en échec : ${event.type}`,
+            details: [
+              `event: ${event.id}`,
+              err instanceof Error ? err.message : String(err),
+              "Stripe va rejouer l'événement automatiquement.",
+            ],
+          });
+          await sendEmail({
+            to: process.env.FOUNDER_EMAIL,
+            subject: tpl.subject,
+            html: tpl.html,
+          });
+        } catch {
+          /* l'alerte reste best-effort */
+        }
+      }
       return NextResponse.json({ error: "processing_failed" }, { status: 500 });
     }
     // Les autres types restent en 200 : ils sont rattrapés au renouvellement
