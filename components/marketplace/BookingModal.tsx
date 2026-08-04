@@ -177,7 +177,12 @@ export default function BookingModal({
     let alive = true;
     setSlotState({ mode: "loading" });
     setSelectedIso(null);
-    fetch(`/api/slots?coach=${coach.slug}&duration=${effectiveDuration}&locale=${locale}`)
+    // no-store : un blocage posé à l'instant par le coach doit disparaître
+    // des créneaux dès la prochaine ouverture, sans cache navigateur.
+    fetch(
+      `/api/slots?coach=${coach.slug}&duration=${effectiveDuration}&locale=${locale}`,
+      { cache: "no-store" }
+    )
       .then((r) => {
         if (!r.ok) throw new Error("slots_failed");
         return r.json();
@@ -293,6 +298,8 @@ export default function BookingModal({
           return;
         }
         if (data.error === "too_soon") setError(t("booking.errors.tooSoon"));
+        else if (data.error === "slot_taken")
+          setError(t("booking.errors.slotTaken"));
         else setError(t("booking.errors.generic"));
         return;
       }

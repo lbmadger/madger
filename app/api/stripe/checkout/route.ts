@@ -126,6 +126,29 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "too_soon" }, { status: 400 });
   }
 
+  // Créneau déjà pris OU bloqué à la main par le coach (is_block) : refusé
+  // AVANT d'ouvrir le paiement. Jusqu'ici le conflit n'était détecté qu'au
+  // retour de Stripe (remboursement automatique) : correct mais pénible ;
+  // indispensable surtout en saisie libre, où le client tape n'importe
+  // quelle heure. Le contrôle du fulfillment reste en double sécurité.
+  {
+    const starts = new Date(String(starts_at));
+    const ends = new Date(
+      starts.getTime() + (Number(duration_min) || 60) * 60000
+    );
+    const { data: overlapping } = await supabase
+      .from("bookings")
+      .select("id")
+      .eq("coach_id", coach.id)
+      .in("status", ["pending", "confirmed"])
+      .lt("starts_at", ends.toISOString())
+      .gt("ends_at", starts.toISOString())
+      .limit(1);
+    if ((overlapping ?? []).length > 0) {
+      return NextResponse.json({ error: "slot_taken" }, { status: 409 });
+    }
+  }
+
   // Modèle Airbnb : en mode approbation, la carte est seulement AUTORISÉE
   // (empreinte bancaire). Le débit ne part que si le coach accepte ; refus ou
   // non-réponse → l'autorisation est simplement libérée, rien n'est prélevé.
