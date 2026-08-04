@@ -38,6 +38,12 @@ export default async function OverviewPage() {
   weekEnd.setDate(weekStart.getDate() + 7);
 
   const monthStartForClients = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+  // TOUTES les requêtes de la page partent en UNE seule vague parallèle
+  // (dont le profil coach) : trois vagues séquentielles coûtaient trois
+  // allers-retours vers Supabase au lieu d'un.
   const [
     clientsRes,
     newClientsRes,
@@ -49,6 +55,14 @@ export default async function OverviewPage() {
     weeksRes,
     rpcMonthlyRes,
     rpcWeeklyRes,
+    { data: latestInvoices },
+    reviewsRes,
+    pendingRes,
+    msgsRes,
+    next30Res,
+    monthSessionsRes,
+    breakdownRes,
+    { coach },
   ] = await Promise.all([
     supabase.from("clients").select("*", { count: "exact", head: true }),
     supabase
@@ -97,24 +111,9 @@ export default async function OverviewPage() {
     // Agrégats SQL (migration 0040) : exacts quel que soit le volume.
     supabase.rpc("coach_monthly_revenue", { p_months: 24 }),
     supabase.rpc("coach_weekly_sessions", { p_weeks: 52 }),
-  ]);
-
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-
-  // Dernières factures, avis, demandes à confirmer, derniers messages reçus,
-  // séances à venir sur 30 jours (revenus prévisionnels, stats Pro),
-  // séances du mois (objectif) et encaissements du mois par prestation
-  // (répartition).
-  const [
-    { data: latestInvoices },
-    reviewsRes,
-    pendingRes,
-    msgsRes,
-    next30Res,
-    monthSessionsRes,
-    breakdownRes,
-  ] = await Promise.all([
+    // Dernières factures, avis, demandes à confirmer, derniers messages
+    // reçus, séances à venir sur 30 jours, séances du mois (objectif) et
+    // encaissements du mois par prestation (répartition).
       supabase
         .from("payments")
         .select(
@@ -161,6 +160,8 @@ export default async function OverviewPage() {
         .eq("status", "paid")
         .gte("paid_at", monthStart.toISOString())
         .limit(1000),
+      // Profil du coach (objectifs, checklist, salutation, plan).
+      getCoach(),
     ]);
 
   const clientsCount = clientsRes.count ?? 0;
@@ -199,7 +200,6 @@ export default async function OverviewPage() {
   const servicesDone = serviceRows.length > 0;
   const pendingCount = pendingRes.count ?? 0;
 
-  const { coach } = await getCoach();
   const pro = isPro(coach?.pro_until);
 
   // ── Objectif du mois + répartition par prestation ─────────────────────────
