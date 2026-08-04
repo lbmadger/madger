@@ -196,17 +196,47 @@ export default function WeekView({
             );
           })}
 
-        {/* Disponibilités (fond) */}
-        {dayAvail.map((a) => (
-          <span
-            key={a.id}
-            className="pointer-events-none absolute inset-x-0.5 rounded-md border border-accent/20 bg-accent/[0.07]"
-            style={{
-              top: top(toMinutes(a.start_time)),
-              height: top(toMinutes(a.end_time)) - top(toMinutes(a.start_time)),
-            }}
-          />
-        ))}
+        {/* Disponibilités (fond), AMPUTÉES des créneaux occupés ou bloqués :
+            le vert « disponible » ne doit jamais apparaître sous une séance
+            ni sous un blocage manuel. */}
+        {(() => {
+          const busyMin = dayBookings
+            .filter((b) => b.status !== "cancelled")
+            .map((b) => {
+              const s = new Date(b.starts_at);
+              const e = new Date(b.ends_at);
+              return [
+                s.getHours() * 60 + s.getMinutes(),
+                e.getHours() * 60 + e.getMinutes(),
+              ] as const;
+            });
+          return dayAvail.flatMap((a) => {
+            let segs: [number, number][] = [
+              [toMinutes(a.start_time), toMinutes(a.end_time)],
+            ];
+            for (const [bs, be] of busyMin) {
+              const next: [number, number][] = [];
+              for (const [s, e] of segs) {
+                if (be <= s || bs >= e) {
+                  next.push([s, e]);
+                  continue;
+                }
+                if (bs > s) next.push([s, bs]);
+                if (be < e) next.push([be, e]);
+              }
+              segs = next;
+            }
+            return segs
+              .filter(([s, e]) => e - s >= 5)
+              .map(([s, e]) => (
+                <span
+                  key={`${a.id}-${s}`}
+                  className="pointer-events-none absolute inset-x-0.5 rounded-md border border-accent/20 bg-accent/[0.07]"
+                  style={{ top: top(s), height: top(e) - top(s) }}
+                />
+              ));
+          });
+        })()}
 
         {/* Séances (dessus). Cliquables si un gestionnaire est fourni
             (confirmer/refuser une demande, modifier). */}
