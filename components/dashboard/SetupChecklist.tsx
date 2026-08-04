@@ -64,14 +64,30 @@ export default function SetupChecklist({
       : []),
   ];
 
+  const doneCount = steps.filter((s) => s.done).length;
+  const pct = Math.round((doneCount / steps.length) * 100);
+
   return (
     <section className="rounded-2xl border border-accent/20 bg-accent/[0.04] p-5">
-      <h3 className="text-base font-semibold text-text-base">
-        {t("overview.setupTitle")}
-      </h3>
+      <div className="flex items-baseline justify-between gap-3">
+        <h3 className="text-base font-semibold text-text-base">
+          {t("overview.setupTitle")}
+        </h3>
+        <span className="shrink-0 text-sm font-bold tabular-nums text-accent">
+          {doneCount}/{steps.length}
+        </span>
+      </div>
       <p className="mt-1 text-sm text-text-muted">
         {t("overview.setupSubtitle")}
       </p>
+
+      {/* Progression : la barre qui donne envie de finir. */}
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/[0.07]">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-[#9DCC00] to-accent transition-[width] duration-700 ease-out"
+          style={{ width: `${Math.max(4, pct)}%` }}
+        />
+      </div>
 
       <ul className="mt-4 flex flex-col gap-2">
         {steps.map((step) => {
