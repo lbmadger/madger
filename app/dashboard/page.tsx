@@ -132,10 +132,10 @@ export default async function OverviewPage() {
       supabase
         .from("messages")
         .select(
-          "id, body, created_at, sender_id, conversations(client_name, coach_id)"
+          "id, body, created_at, sender_id, conversation_id, conversations(client_name, coach_id, coach_last_read_at)"
         )
         .order("created_at", { ascending: false })
-        .limit(12),
+        .limit(30),
       supabase
         .from("bookings")
         .select("*", { count: "exact", head: true })
@@ -260,23 +260,41 @@ export default async function OverviewPage() {
   const ratingAvg =
     ratingCount > 0 ? ratings.reduce((s, r) => s + r, 0) / ratingCount : 0;
 
-  // Derniers messages REÇUS (envoyés par les clients, pas par le coach).
+  // Derniers messages REÇUS (envoyés par les clients, pas par le coach),
+  // avec l'état non-lu (plus récent que la dernière lecture du coach) et le
+  // lien direct vers la conversation.
   const receivedMsgs = (msgsRes.data ?? [])
     .filter((m) => m.sender_id !== coach?.id)
-    .map((m) => ({
-      id: m.id as string,
-      body: m.body as string,
-      created_at: m.created_at as string,
-      from:
-        ((Array.isArray(m.conversations)
-          ? m.conversations[0]
-          : m.conversations
-        )?.client_name as string) || "-",
-    }));
-  const msgs24h = receivedMsgs.filter(
-    (m) => Date.now() - new Date(m.created_at).getTime() < 24 * 3600 * 1000
-  ).length;
-  const msgPreview = receivedMsgs.slice(0, 3);
+    .map((m) => {
+      const conv = Array.isArray(m.conversations)
+        ? m.conversations[0]
+        : m.conversations;
+      const lastRead = conv?.coach_last_read_at as string | null | undefined;
+      return {
+        id: m.id as string,
+        body: m.body as string,
+        created_at: m.created_at as string,
+        convId: (m.conversation_id as string | null) ?? null,
+        from: (conv?.client_name as string) || "-",
+        unread: lastRead
+          ? new Date(m.created_at as string).getTime() >
+            new Date(lastRead).getTime()
+          : true,
+      };
+    });
+  // Une ligne par conversation (le message le plus récent, la liste arrive
+  // triée du plus récent au plus ancien) : non-lus d'abord, sinon les 3
+  // derniers échanges.
+  const byConv = new Map<string, (typeof receivedMsgs)[number]>();
+  for (const m of receivedMsgs) {
+    const key = m.convId ?? m.id;
+    if (!byConv.has(key)) byConv.set(key, m);
+  }
+  const convMsgs = Array.from(byConv.values());
+  const unreadMsgs = convMsgs.filter((m) => m.unread);
+  const msgPreview =
+    unreadMsgs.length > 0 ? unreadMsgs.slice(0, 5) : convMsgs.slice(0, 3);
+  const unreadCount = unreadMsgs.length;
 
   const euros = (cents: number) =>
     (cents / 100).toLocaleString(loc, {
@@ -959,9 +977,9 @@ export default async function OverviewPage() {
               <div className="flex items-center justify-between">
                 <h3 className="flex items-center gap-2 text-base font-semibold text-text-base">
                   {dict.nav.messages}
-                  {msgs24h > 0 && (
+                  {unreadCount > 0 && (
                     <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[10px] font-semibold text-black">
-                      {msgs24h}
+                      {unreadCount}
                     </span>
                   )}
                 </h3>
@@ -979,24 +997,43 @@ export default async function OverviewPage() {
               ) : (
                 <ul className="mt-3 flex flex-col gap-2">
                   {msgPreview.map((m) => (
-                    <li
-                      key={m.id}
-                      className="rounded-lg border border-border bg-bg-elevated p-2.5"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="truncate text-xs font-semibold text-text-base">
-                          {m.from}
-                        </span>
-                        <span className="shrink-0 text-[10px] text-text-dim">
-                          {new Date(m.created_at).toLocaleTimeString(loc, {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                      </div>
-                      <p className="mt-0.5 truncate text-xs text-text-muted">
-                        {m.body}
-                      </p>
+                    <li key={m.id}>
+                      {/* Toute la carte est cliquable : direction la
+                          conversation. Non-lu = liseré accent + point. */}
+                      <Link
+                        href={
+                          m.convId
+                            ? `/dashboard/messages/${m.convId}`
+                            : "/dashboard/messages"
+                        }
+                        className={`block rounded-lg border p-2.5 transition-colors ${
+                          m.unread
+                            ? "border-accent/30 bg-accent/[0.05] hover:border-accent/60"
+                            : "border-border bg-bg-elevated hover:border-accent/40"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="flex min-w-0 items-center gap-1.5 text-xs font-semibold text-text-base">
+                            {m.unread && (
+                              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                            )}
+                            <span className="truncate">{m.from}</span>
+                          </span>
+                          <span className="shrink-0 text-[10px] text-text-dim">
+                            {new Date(m.created_at).toLocaleTimeString(loc, {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
+                        <p
+                          className={`mt-0.5 truncate text-xs ${
+                            m.unread ? "text-text-base" : "text-text-muted"
+                          }`}
+                        >
+                          {m.body}
+                        </p>
+                      </Link>
                     </li>
                   ))}
                 </ul>
