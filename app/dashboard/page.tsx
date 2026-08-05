@@ -648,15 +648,11 @@ export default async function OverviewPage() {
         hint: o.fillRateHint,
       },
       {
-        label: o.rating,
-        value:
-          ratingCount > 0
-            ? `${ratingAvg.toLocaleString(loc, { maximumFractionDigits: 1 })} / 5`
-            : "-",
-        hint:
-          ratingCount > 0
-            ? `${ratingCount} ${dict.reviews.countLabel}`
-            : undefined,
+        // La note moyenne vit déjà dans la colonne droite (widget) : ici,
+        // une stat qui n'existe nulle part ailleurs.
+        label: ps.sessions30,
+        value: String(bookings30d),
+        hint: ps.sessions30Hint,
       },
       {
         label: ps.avgBasket,
@@ -1145,30 +1141,28 @@ export default async function OverviewPage() {
                       ? p.clients[0]
                       : p.clients;
                     return (
-                      <li
-                        key={p.id as string}
-                        className="flex items-center gap-2.5 rounded-lg border border-border bg-bg-elevated p-2.5"
-                      >
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-xs font-semibold text-text-base">
-                            {invoiceNumber(p.id as string, p.paid_at as string)}
-                          </p>
-                          <p className="truncate text-[11px] text-text-dim">
-                            {[cl?.first_name, cl?.last_name]
-                              .filter(Boolean)
-                              .join(" ") || "-"}
-                          </p>
-                        </div>
-                        <span className="shrink-0 text-xs font-bold text-text-base">
-                          {euros((p.amount_cents as number) || 0)}
-                        </span>
+                      <li key={p.id as string}>
+                        {/* Toute la carte est cliquable, comme les
+                            messages : direction la facture. */}
                         <Link
                           href={`/dashboard/factures/${p.id}`}
-                          aria-label={dict.invoices.download}
-                          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border-strong text-text-muted transition-colors hover:border-accent hover:text-accent"
+                          className="flex items-center gap-2.5 rounded-lg border border-border bg-bg-elevated p-2.5 transition-colors hover:border-accent/40"
                         >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-xs font-semibold text-text-base">
+                              {invoiceNumber(p.id as string, p.paid_at as string)}
+                            </p>
+                            <p className="truncate text-[11px] text-text-dim">
+                              {[cl?.first_name, cl?.last_name]
+                                .filter(Boolean)
+                                .join(" ") || "-"}
+                            </p>
+                          </div>
+                          <span className="shrink-0 text-xs font-bold text-text-base">
+                            {euros((p.amount_cents as number) || 0)}
+                          </span>
+                          <svg className="shrink-0 text-text-dim" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M9 18l6-6-6-6" />
                           </svg>
                         </Link>
                       </li>
