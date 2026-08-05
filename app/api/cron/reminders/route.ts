@@ -5,6 +5,7 @@ import { sendEmail } from "@/lib/email/resend";
 import {
   sessionReminderClient,
   onboardingNudgeCoach,
+  onboardingNudgeCoachLater,
 } from "@/lib/email/templates";
 import { cronAuthorized } from "@/lib/cron/auth";
 
@@ -100,32 +101,42 @@ export async function GET(req: NextRequest) {
   }
   }
 
-  // ── Relance onboarding abandonné ──────────────────────────────────────────
-  // Comptes coach créés il y a 2 à 3 jours sans onboarding terminé. Le cron
-  // passe une fois par jour : la fenêtre [J-3, J-2) garantit une relance
-  // unique par compte, sans colonne de suivi supplémentaire.
+  // ── Relances onboarding abandonné : 24 h puis 7 jours ─────────────────────
+  // Le cron passe une fois par jour : chaque fenêtre d'une journée garantit
+  // une relance unique par compte, sans colonne de suivi supplémentaire.
+  // 24 h → comptes créés il y a 1 à 2 jours ; 7 j → il y a 7 à 8 jours.
   let nudged = 0;
+  const nudgeWindows = [
+    { daysFrom: 2, daysTo: 1, template: onboardingNudgeCoach },
+    { daysFrom: 8, daysTo: 7, template: onboardingNudgeCoachLater },
+  ];
   try {
-    const from = new Date(now - 3 * 86400000).toISOString();
-    const to = new Date(now - 2 * 86400000).toISOString();
-    const { data: stale } = await supabase
-      .from("coaches")
-      .select("id, first_name")
-      .eq("onboarding_completed", false)
-      .gte("created_at", from)
-      .lt("created_at", to)
-      .limit(100);
-    for (const c of stale ?? []) {
-      // L'email vit dans Auth, pas dans coaches : lecture via l'API admin.
-      const { data: u } = await supabase.auth.admin.getUserById(c.id as string);
-      const email = u?.user?.email;
-      if (!email) continue;
-      const tpl = onboardingNudgeCoach({
-        firstName: (c.first_name as string | null) || null,
-        dashboardUrl: `${APP_URL}/dashboard`,
-      });
-      if (await sendEmail({ to: email, subject: tpl.subject, html: tpl.html }))
-        nudged++;
+    for (const w of nudgeWindows) {
+      const from = new Date(now - w.daysFrom * 86400000).toISOString();
+      const to = new Date(now - w.daysTo * 86400000).toISOString();
+      const { data: stale } = await supabase
+        .from("coaches")
+        .select("id, first_name")
+        .eq("onboarding_completed", false)
+        .gte("created_at", from)
+        .lt("created_at", to)
+        .limit(100);
+      for (const c of stale ?? []) {
+        // L'email vit dans Auth, pas dans coaches : lecture via l'API admin.
+        const { data: u } = await supabase.auth.admin.getUserById(
+          c.id as string
+        );
+        const email = u?.user?.email;
+        if (!email) continue;
+        const tpl = w.template({
+          firstName: (c.first_name as string | null) || null,
+          dashboardUrl: `${APP_URL}/dashboard`,
+        });
+        if (
+          await sendEmail({ to: email, subject: tpl.subject, html: tpl.html })
+        )
+          nudged++;
+      }
     }
   } catch {
     /* la relance ne doit jamais faire échouer les rappels de séance */

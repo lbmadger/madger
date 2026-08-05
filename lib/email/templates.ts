@@ -1371,7 +1371,7 @@ export function founderAlert(p: {
   };
 }
 
-// ── Coach : relance onboarding abandonné (J+2) ──────────────────────────────
+// ── Coach : relance onboarding abandonné, 24 h après l'inscription ──────────
 export function onboardingNudgeCoach(p: {
   firstName: string | null;
   dashboardUrl: string;
@@ -1386,10 +1386,31 @@ export function onboardingNudgeCoach(p: {
         ? `${p.firstName}, ta page coach est presque prête`
         : "Ta page coach est presque prête",
       intro:
-        "Tu as créé ton compte il y a deux jours, mais ta page n'est pas encore publiée. Il reste quelques étapes rapides (photo, prestations, disponibilités, paiements) et ensuite tout roule tout seul : tes clients réservent, paient en ligne et reçoivent leur facture sans que tu lèves le petit doigt.",
+        "Tu as créé ton compte hier, mais ta page n'est pas encore publiée. Il reste quelques étapes rapides (photo, prestations, disponibilités, paiements) et ensuite tout roule tout seul : tes clients réservent, paient en ligne et reçoivent leur facture sans que tu lèves le petit doigt.",
       cta: { label: "Terminer ma configuration", url: p.dashboardUrl },
       outro:
         "Un blocage quelque part ? Réponds simplement à cet email en décrivant où tu coinces : je lis tout et je réponds vite. Léonard, fondateur de Madger.",
+    }),
+  };
+}
+
+// ── Coach : dernière relance onboarding, 7 jours après l'inscription ────────
+export function onboardingNudgeCoachLater(p: {
+  firstName: string | null;
+  dashboardUrl: string;
+}): { subject: string; html: string } {
+  return {
+    subject: "On garde ta place ?",
+    html: layout({
+      preheader:
+        "Ta page coach n'est toujours pas en ligne. Dis-moi ce qui bloque.",
+      eyebrow: "Ton compte Madger",
+      title: p.firstName ? `${p.firstName}, on garde ta place ?` : "On garde ta place ?",
+      intro:
+        "Ça fait une semaine que tu as créé ton compte, et ta page n'est toujours pas en ligne. Pendant ce temps, tes clients continuent de te réserver par messages et de te payer en retard. Si quelque chose t'a arrêté (une étape pas claire, Stripe, un doute sur le produit), réponds à cet email en une phrase : je te débloque personnellement.",
+      cta: { label: "Reprendre ma configuration", url: p.dashboardUrl },
+      outro:
+        "Et si Madger ne te correspond finalement pas, dis-le-moi aussi : savoir pourquoi m'aide plus qu'un silence. Léonard, fondateur de Madger.",
     }),
   };
 }
