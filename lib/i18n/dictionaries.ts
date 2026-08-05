@@ -260,6 +260,9 @@ const fr = {
     blockBtn: "Bloquer un créneau",
     blockDesc: "Les clients ne pourront pas réserver sur cette plage.",
     blockCta: "Bloquer",
+    blockConfirmTitle: "Bloquer ce créneau ?",
+    blockConfirmDesc:
+      "Tes clients ne pourront plus réserver ce créneau. Tu pourras le débloquer d'un simple clic dessus.",
     tapToBlock: "Toucher une case libre la bloque",
     quickBlockError:
       "Le blocage n'a pas pu être enregistré. La case est de nouveau libre, réessaie.",
@@ -1545,6 +1548,9 @@ const en: Dictionary = {
     blockBtn: "Block a slot",
     blockDesc: "Clients will not be able to book during this window.",
     blockCta: "Block",
+    blockConfirmTitle: "Block this slot?",
+    blockConfirmDesc:
+      "Your clients will no longer be able to book this slot. You can unblock it with a single click.",
     tapToBlock: "Tap a free cell to block it",
     quickBlockError:
       "The block could not be saved. The cell is free again, please retry.",

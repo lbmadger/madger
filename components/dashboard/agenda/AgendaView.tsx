@@ -159,6 +159,21 @@ export default function AgendaView({
         new Date(b.ends_at).getTime() > start.getTime()
     );
     if (overlap) return;
+    // Confirmation AVANT d'agir : un clic dans la grille ne doit jamais
+    // bloquer un créneau par accident.
+    const ok = await confirm({
+      title: t("agenda.blockConfirmTitle"),
+      message: `${start.toLocaleString(loc, {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        hour: "2-digit",
+        minute: "2-digit",
+      })} · ${t("agenda.blockConfirmDesc")}`,
+      confirmLabel: t("agenda.blockCta"),
+      cancelLabel: t("common.cancel"),
+    });
+    if (!ok) return;
     pendingSlots.current.add(iso);
     setQuickBlockError(false);
     // Optimiste : la case se grise tout de suite, remplacée par la vraie
