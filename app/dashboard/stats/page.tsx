@@ -1,5 +1,8 @@
 import Topbar from "@/components/dashboard/Topbar";
 import StatCard, { type Trend } from "@/components/dashboard/StatCard";
+import AreaChartCard from "@/components/dashboard/charts/AreaChartCard";
+import ChartCard from "@/components/dashboard/charts/ChartCard";
+import { type BarDatum } from "@/components/dashboard/charts/MiniBars";
 import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
 
@@ -7,6 +10,10 @@ type Status = "pending" | "confirmed" | "completed" | "cancelled";
 type Booking = { starts_at: string; ends_at: string; status: Status };
 type ClientRow = { created_at: string };
 
+// Page Statistiques : les KPI comparés au mois dernier, puis les graphiques
+// (revenus 12 mois en aire, séances par semaine, donut des statuts, jours de
+// la semaine, revenus par prestation). Les composants de graphes sont ceux
+// du dashboard : même langage visuel partout.
 export default async function StatsPage() {
   const { dict, locale } = getServerDictionary();
   const loc = locale === "fr" ? "fr-FR" : "en-GB";
@@ -21,19 +28,30 @@ export default async function StatsPage() {
   // Historique borné à 1 an : suffisant pour toutes les stats affichées.
   const yearAgo = new Date(nowMs - 366 * 86400000).toISOString();
 
-  const [clientsRes, bookingsRes, paymentsRes] = await Promise.all([
-    supabase.from("clients").select("created_at"),
-    supabase
-      .from("bookings")
-      .select("starts_at, ends_at, status")
-      .eq("is_block", false)
-      .gte("starts_at", yearAgo),
-    supabase
-      .from("payments")
-      .select("amount_cents, paid_at")
-      .eq("status", "paid")
-      .gte("paid_at", lastMonthStart.toISOString()),
-  ]);
+  const [clientsRes, bookingsRes, paymentsRes, rpcMonthlyRes, rpcWeeklyRes, svcRes] =
+    await Promise.all([
+      supabase.from("clients").select("created_at"),
+      supabase
+        .from("bookings")
+        .select("starts_at, ends_at, status")
+        .eq("is_block", false)
+        .gte("starts_at", yearAgo),
+      supabase
+        .from("payments")
+        .select("amount_cents, paid_at")
+        .eq("status", "paid")
+        .gte("paid_at", lastMonthStart.toISOString()),
+      // Agrégats SQL (migration 0040) : exacts à tout volume.
+      supabase.rpc("coach_monthly_revenue", { p_months: 12 }),
+      supabase.rpc("coach_weekly_sessions", { p_weeks: 12 }),
+      // Revenus par prestation sur 12 mois.
+      supabase
+        .from("payments")
+        .select("amount_cents, services(name)")
+        .eq("status", "paid")
+        .gte("paid_at", yearAgo)
+        .limit(2000),
+    ]);
 
   const clients = (clientsRes.data ?? []) as ClientRow[];
   const bookings = (bookingsRes.data ?? []) as Booking[];
@@ -103,29 +121,114 @@ export default async function StatsPage() {
     : 0;
   const cancelRate = total ? Math.round((cancelled / total) * 100) : 0;
 
-  // ── Séances par semaine (8 dernières) ───────────────────────────────────
+  // ── Revenus par mois (12 derniers), agrégat SQL prioritaire ──────────────
+  const rpcMonths = !rpcMonthlyRes.error
+    ? ((rpcMonthlyRes.data ?? []) as { month: string; total_cents: number }[])
+    : [];
+  const monthKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}`;
+  const rpcMonthMap = new Map(
+    rpcMonths.map((r) => {
+      const d = new Date(r.month);
+      return [monthKey(d), Number(r.total_cents) || 0];
+    })
+  );
+  const revenueByMonth: BarDatum[] = Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
+    return {
+      label: d.toLocaleDateString(loc, { month: "short" }),
+      value: rpcMonthMap.get(monthKey(d)) ?? 0,
+    };
+  });
+  // Le mois courant vient des paiements frais (le RPC peut dater du cache).
+  revenueByMonth[revenueByMonth.length - 1].value = Math.max(
+    revenueByMonth[revenueByMonth.length - 1].value,
+    revenueMonth
+  );
+
+  // ── Séances par semaine (12 dernières), agrégat SQL prioritaire ──────────
   const dow = (now.getDay() + 6) % 7;
   const curWeekStart = new Date(now);
   curWeekStart.setHours(0, 0, 0, 0);
   curWeekStart.setDate(now.getDate() - dow);
-  const firstWeek = new Date(curWeekStart);
-  firstWeek.setDate(curWeekStart.getDate() - 7 * 7);
-  const weekMs = 7 * 24 * 60 * 60 * 1000;
-  const weekCounts = Array(8).fill(0) as number[];
-  for (const b of active) {
-    const idx = Math.floor(
-      (new Date(b.starts_at).getTime() - firstWeek.getTime()) / weekMs
-    );
-    if (idx >= 0 && idx < 8) weekCounts[idx] += 1;
-  }
-  const weekMax = Math.max(...weekCounts, 1);
+  const weekKey = (d: Date) => {
+    const k = new Date(d);
+    k.setHours(0, 0, 0, 0);
+    k.setDate(k.getDate() - ((k.getDay() + 6) % 7));
+    return `${k.getFullYear()}-${k.getMonth()}-${k.getDate()}`;
+  };
+  const rpcWeeks = !rpcWeeklyRes.error
+    ? ((rpcWeeklyRes.data ?? []) as { week: string; sessions: number }[])
+    : null;
+  const rpcWeekMap = new Map(
+    (rpcWeeks ?? []).map((r) => [weekKey(new Date(r.week)), Number(r.sessions) || 0])
+  );
+  const sessionsByWeek: BarDatum[] = Array.from({ length: 12 }, (_, i) => {
+    const start = new Date(curWeekStart);
+    start.setDate(curWeekStart.getDate() - 7 * (11 - i));
+    const end = new Date(start);
+    end.setDate(start.getDate() + 7);
+    const count = rpcWeeks
+      ? rpcWeekMap.get(weekKey(start)) ?? 0
+      : active.filter((b) => {
+          const t = new Date(b.starts_at).getTime();
+          return t >= start.getTime() && t < end.getTime();
+        }).length;
+    return {
+      label: start.toLocaleDateString(loc, { day: "2-digit", month: "2-digit" }),
+      value: count,
+    };
+  });
 
-  const statusRows: { key: Status; label: string; count: number }[] = [
-    { key: "pending", label: s.status.pending, count: pending },
-    { key: "confirmed", label: s.status.confirmed, count: confirmedUpcoming },
-    { key: "completed", label: s.status.completed, count: realized },
-    { key: "cancelled", label: s.status.cancelled, count: cancelled },
+  // ── Séances par jour de la semaine (12 mois) ─────────────────────────────
+  const weekdayCounts = Array.from({ length: 7 }, () => 0);
+  for (const b of active) {
+    weekdayCounts[(new Date(b.starts_at).getDay() + 6) % 7] += 1;
+  }
+  const weekdayMax = Math.max(...weekdayCounts, 1);
+  // Le 1er janvier 2024 était un lundi : référence pour les initiales.
+  const weekdayLabels = Array.from({ length: 7 }, (_, i) =>
+    new Date(Date.UTC(2024, 0, 1 + i)).toLocaleDateString(loc, {
+      weekday: "narrow",
+    })
+  );
+
+  // ── Revenus par prestation (12 mois) : top 4 + Autres ────────────────────
+  const byService = new Map<string, number>();
+  for (const p of svcRes.data ?? []) {
+    const sv = Array.isArray(p.services) ? p.services[0] : p.services;
+    const name =
+      ((sv as { name?: string } | null)?.name as string) ||
+      dict.overview.breakdownOther;
+    byService.set(name, (byService.get(name) ?? 0) + ((p.amount_cents as number) || 0));
+  }
+  const svcTotal = Array.from(byService.values()).reduce((a, b) => a + b, 0);
+  const svcSorted = Array.from(byService.entries()).sort((a, b) => b[1] - a[1]);
+  const svcRows = svcSorted.slice(0, 4).map(([name, cents]) => ({ name, cents }));
+  const svcRest = svcTotal - svcRows.reduce((a, r) => a + r.cents, 0);
+  if (svcRest > 0)
+    svcRows.push({ name: dict.overview.breakdownOther, cents: svcRest });
+  const euros = (cents: number) =>
+    (cents / 100).toLocaleString(loc, {
+      style: "currency",
+      currency: "EUR",
+      maximumFractionDigits: 0,
+    });
+
+  // ── Donut des statuts ────────────────────────────────────────────────────
+  const donut = [
+    { label: s.status.completed, count: realized, color: "#CBFF03" },
+    { label: s.status.confirmed, count: confirmedUpcoming, color: "#8FB300" },
+    { label: s.status.pending, count: pending, color: "#FFB020" },
+    { label: s.status.cancelled, count: cancelled, color: "#4a4a4a" },
   ];
+  const C = 2 * Math.PI * 34;
+  let acc = 0;
+  const donutSegs = donut.map((d) => {
+    const frac = total > 0 ? d.count / total : 0;
+    const seg = { ...d, dash: frac * C, offset: acc * C };
+    acc += frac;
+    return seg;
+  });
 
   return (
     <>
@@ -166,60 +269,143 @@ export default async function StatsPage() {
           <StatCard label={s.cancelRate} value={`${cancelRate}%`} />
         </div>
 
-        {/* Séances par semaine */}
-        <section className="mt-6 rounded-2xl border border-border bg-bg-card p-5">
-          <h2 className="text-base font-semibold text-text-base">
-            {s.perWeek}
-          </h2>
-          <div className="mt-5 flex h-32 items-end gap-2">
-            {weekCounts.map((c, i) => (
-              <div key={i} className="flex flex-1 flex-col items-center gap-1.5">
-                <div className="flex w-full flex-1 items-end">
-                  <div
-                    className="w-full rounded-t-md bg-accent/80"
-                    style={{ height: `${(c / weekMax) * 100}%`, minHeight: c > 0 ? 4 : 0 }}
-                    title={String(c)}
-                  />
-                </div>
-                <span className="text-[10px] text-text-dim">
-                  {i === 7 ? "·" : `S-${7 - i}`}
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
+        {/* Héros : revenus 12 mois en aire */}
+        <div className="mt-4 sm:mt-5">
+          <AreaChartCard
+            title={`${dict.overview.chartRevenue} · ${s.last12Months}`}
+            headline={euros(revenueMonth)}
+            trend={trend(revenueMonth, revenueLastMonth)}
+            data={revenueByMonth}
+            unit="currency"
+            locale={loc}
+            mode="months"
+          />
+        </div>
 
-        {/* Répartition par statut */}
-        <section className="mt-4 rounded-2xl border border-border bg-bg-card p-5">
-          <h2 className="text-base font-semibold text-text-base">
-            {s.byStatus}
-          </h2>
-          {total === 0 ? (
-            <p className="mt-4 text-sm text-text-dim">{s.none}</p>
-          ) : (
-            <ul className="mt-4 flex flex-col gap-3">
-              {statusRows.map((row) => {
-                const pct = total ? Math.round((row.count / total) * 100) : 0;
-                return (
-                  <li key={row.key}>
-                    <div className="mb-1 flex items-center justify-between text-xs">
-                      <span className="text-text-muted">{row.label}</span>
-                      <span className="font-medium text-text-base">
-                        {row.count}
+        {/* Séances par semaine + donut des statuts */}
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:mt-5 lg:grid-cols-2">
+          <ChartCard
+            title={s.perWeek}
+            data={sessionsByWeek}
+            locale={loc}
+            mode="weeks"
+          />
+          <section className="rounded-2xl border border-border bg-bg-card p-5">
+            <h2 className="text-base font-semibold text-text-base">
+              {s.byStatus}
+            </h2>
+            {total === 0 ? (
+              <p className="mt-4 text-sm text-text-dim">{s.none}</p>
+            ) : (
+              <div className="mt-4 flex items-center gap-6">
+                <svg width="96" height="96" viewBox="0 0 96 96" className="shrink-0">
+                  <circle cx="48" cy="48" r="34" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="11" />
+                  {donutSegs.map(
+                    (d) =>
+                      d.dash > 0 && (
+                        <circle
+                          key={d.label}
+                          cx="48"
+                          cy="48"
+                          r="34"
+                          fill="none"
+                          stroke={d.color}
+                          strokeWidth="11"
+                          strokeDasharray={`${d.dash} ${C - d.dash}`}
+                          strokeDashoffset={-d.offset}
+                          transform="rotate(-90 48 48)"
+                        />
+                      )
+                  )}
+                  <text x="48" y="53" textAnchor="middle" fill="#F2F2F0" fontSize="17" fontWeight="800">
+                    {total}
+                  </text>
+                </svg>
+                <ul className="flex min-w-0 flex-1 flex-col gap-2">
+                  {donut.map((d) => (
+                    <li key={d.label} className="flex items-center justify-between gap-2 text-sm">
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span
+                          className="h-2.5 w-2.5 shrink-0 rounded-full"
+                          style={{ background: d.color }}
+                        />
+                        <span className="truncate text-text-muted">{d.label}</span>
                       </span>
-                    </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-bg-elevated">
-                      <div
-                        className="h-full rounded-full bg-accent"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
+                      <span className="shrink-0 font-semibold tabular-nums text-text-base">
+                        {d.count}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </section>
+        </div>
+
+        {/* Jours de la semaine + revenus par prestation */}
+        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <section className="rounded-2xl border border-border bg-bg-card p-5">
+            <h2 className="text-base font-semibold text-text-base">
+              {s.byWeekday}
+            </h2>
+            <div className="mt-5 flex h-32 items-end gap-2">
+              {weekdayCounts.map((c, i) => (
+                <div key={i} className="flex h-full flex-1 flex-col items-center gap-1.5">
+                  <div className="flex w-full flex-1 items-end">
+                    <div
+                      className={`w-full rounded-t-md ${
+                        c > 0
+                          ? "bg-gradient-to-t from-[#9DCC00] to-accent"
+                          : "bg-white/[0.06]"
+                      }`}
+                      style={{
+                        height: c > 0 ? `${Math.max(8, (c / weekdayMax) * 100)}%` : "4px",
+                      }}
+                      title={String(c)}
+                    />
+                  </div>
+                  <span className="text-[10px] uppercase text-text-dim">
+                    {weekdayLabels[i]}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-border bg-bg-card p-5">
+            <h2 className="text-base font-semibold text-text-base">
+              {s.byService}
+            </h2>
+            {svcTotal === 0 ? (
+              <p className="mt-4 text-sm text-text-dim">{s.none}</p>
+            ) : (
+              <ul className="mt-4 flex flex-col gap-3">
+                {svcRows.map((r) => {
+                  const pct = Math.round((r.cents / svcTotal) * 100);
+                  return (
+                    <li key={r.name}>
+                      <div className="mb-1 flex items-baseline justify-between gap-2 text-xs">
+                        <span className="truncate text-text-muted">{r.name}</span>
+                        <span className="shrink-0 font-semibold text-text-base">
+                          {euros(r.cents)}{" "}
+                          <span className="font-normal text-text-dim">
+                            · {pct}%
+                          </span>
+                        </span>
+                      </div>
+                      <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-[#9DCC00] to-accent"
+                          style={{ width: `${Math.max(2, pct)}%` }}
+                        />
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
+        </div>
       </main>
     </>
   );

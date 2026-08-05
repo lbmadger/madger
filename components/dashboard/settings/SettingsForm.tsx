@@ -548,6 +548,24 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         />
       </SettingsSection>
 
+      {/* Disponibilités : la page dédiée reste, l'entrée vit ici (c'est de
+          la configuration, plus un onglet de la barre latérale). */}
+      <SettingsSection
+        icon={<ZapIcon size={18} />}
+        title={t("settings.availabilityTitle")}
+        desc={t("settings.availabilityDesc")}
+      >
+        <Link
+          href="/dashboard/disponibilites"
+          className="inline-flex items-center gap-2 rounded-full border border-border-strong px-4 py-2 text-sm font-medium text-text-base transition-colors hover:border-accent"
+        >
+          {t("settings.availabilityCta")}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </Link>
+      </SettingsSection>
+
       {/* Galerie Résultats (avant/après) */}
       <SettingsSection
         icon={<SparklesIcon size={18} />}

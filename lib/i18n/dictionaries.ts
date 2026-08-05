@@ -505,6 +505,9 @@ const fr = {
     newThisMonth: "ce mois-ci",
     badgeNew: "Nouveau",
     byStatus: "Répartition des séances",
+    byWeekday: "Séances par jour de la semaine",
+    byService: "Revenus par prestation",
+    last12Months: "12 derniers mois",
     none: "Pas encore de données à afficher.",
     status: {
       pending: "En attente",
@@ -848,6 +851,10 @@ const fr = {
     photoChange: "Changer la photo",
     photoUploading: "Envoi…",
     photoErr: "Impossible d'envoyer la photo (image, 5 Mo max).",
+    availabilityTitle: "Disponibilités",
+    availabilityDesc:
+      "Tes horaires d'ouverture récurrents, jour par jour : c'est là-dedans que tes clients réservent.",
+    availabilityCta: "Gérer mes disponibilités",
     galleryTitle: "Résultats (avant/après)",
     galleryDesc:
       "Jusqu'à 6 photos des résultats de tes clients, affichées sur ta page publique. Toujours avec leur accord écrit.",
@@ -1245,7 +1252,7 @@ const fr = {
       },
       reviews: {
         title: "Vise le badge Super coach",
-        body: "À partir de 5 avis avec une moyenne de 4.8, tu décroches le badge Super coach, très visible dans la recherche. Demande un avis après chaque séance réussie.",
+        body: "À partir de 10 avis avec une moyenne de 4.8, tu décroches le badge Super coach, très visible dans la recherche. Demande un avis après chaque séance réussie.",
       },
       quality: {
         title: "Soigne chaque séance",
@@ -1791,6 +1798,9 @@ const en: Dictionary = {
     newThisMonth: "this month",
     badgeNew: "New",
     byStatus: "Sessions breakdown",
+    byWeekday: "Sessions by day of week",
+    byService: "Revenue by service",
+    last12Months: "last 12 months",
     none: "No data to show yet.",
     status: {
       pending: "To confirm",
@@ -2133,6 +2143,10 @@ const en: Dictionary = {
     photoChange: "Change photo",
     photoUploading: "Uploading…",
     photoErr: "Could not upload the photo (image, 5 MB max).",
+    availabilityTitle: "Availability",
+    availabilityDesc:
+      "Your recurring opening hours, day by day: this is what your clients book into.",
+    availabilityCta: "Manage my availability",
     galleryTitle: "Results (before/after)",
     galleryDesc:
       "Up to 6 photos of your clients' results, shown on your public page. Always with their written consent.",
@@ -2523,7 +2537,7 @@ const en: Dictionary = {
       },
       reviews: {
         title: "Aim for the Super coach badge",
-        body: "From 5 reviews with a 4.8 average, you earn the Super coach badge, highly visible in search. Ask for a review after every great session.",
+        body: "From 10 reviews with a 4.8 average, you earn the Super coach badge, highly visible in search. Ask for a review after every great session.",
       },
       quality: {
         title: "Nail every session",

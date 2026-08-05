@@ -61,12 +61,12 @@ export function coachFullName(c: {
 }
 
 // Badge « Super coach » : gagné par les avis, pas acheté. Seuil volontairement
-// exigeant : au moins 5 avis ET une moyenne ≥ 4,8/5.
+// exigeant : au moins 10 avis ET une moyenne ≥ 4,8/5.
 export function isSuperCoach(c: {
   rating_avg: number | null;
   rating_count: number;
 }): boolean {
-  return c.rating_count >= 5 && Number(c.rating_avg ?? 0) >= 4.8;
+  return c.rating_count >= 10 && Number(c.rating_avg ?? 0) >= 4.8;
 }
 
 export function coachInitials(c: {

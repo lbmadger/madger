@@ -60,7 +60,7 @@ export function computeLeiaTips(i: LeiaInput): LeiaTip[] {
   if (i.servicesCount > 0 && !i.hasPack) {
     tips.push({ id: "pack", href: "/dashboard/prestations" });
   }
-  if (i.reviewsCount < 5) {
+  if (i.reviewsCount < 10) {
     tips.push({ id: "reviews" });
   } else if (i.ratingAvg > 0 && i.ratingAvg < 4.8) {
     tips.push({ id: "quality" });

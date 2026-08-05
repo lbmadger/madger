@@ -62,10 +62,9 @@ const NAV: NavItem[] = [
   { href: "/dashboard/stats", labelKey: "nav.stats", icon: I.stats },
 ];
 
-const SECONDARY: NavItem[] = [
-  { href: "/dashboard/disponibilites", labelKey: "nav.availability", icon: I.availability },
-
-];
+// Les disponibilités ne vivent plus dans la barre : l'Agenda y renvoie déjà,
+// et les Réglages portent l'entrée dédiée (c'est de la configuration).
+const SECONDARY: NavItem[] = [];
 
 function NavLink({ item, unread = 0 }: { item: NavItem; unread?: number }) {
   const pathname = usePathname();
@@ -150,7 +149,7 @@ export default function Sidebar() {
           <NavLink key={item.href} item={item} unread={unread} />
         ))}
 
-        <div className="my-4 h-px bg-border" />
+        {SECONDARY.length > 0 && <div className="my-4 h-px bg-border" />}
 
         {SECONDARY.map((item) => (
           <NavLink key={item.href} item={item} />
