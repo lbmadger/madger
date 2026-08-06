@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Booking, ClientOption } from "@/lib/bookings/types";
@@ -70,6 +70,16 @@ export default function AgendaView({
   );
   // Séance sélectionnée depuis la grille semaine (confirmer/refuser/modifier).
   const [selected, setSelected] = useState<Booking | null>(null);
+  // Lien profond ?b=<id> (ex. depuis les « Prochaines séances » du
+  // dashboard) : la fiche de la séance s'ouvre directement.
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const id = searchParams.get("b");
+    if (!id) return;
+    const b = initialBookings.find((x) => x.id === id);
+    if (b) setSelected(b);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
   // Blocage d'un créneau (façon Airbnb) : aucune réservation possible dessus.
   const [blocking, setBlocking] = useState(false);
   const [blockDate, setBlockDate] = useState("");
@@ -226,8 +236,16 @@ export default function AgendaView({
     }
   }
 
-  // Supprime un blocage (le créneau redevient réservable).
+  // Supprime un blocage (le créneau redevient réservable), avec
+  // confirmation : symétrique du blocage, qui en demande une aussi.
   async function unblock(id: string) {
+    const ok = await confirm({
+      title: t("agenda.unblock"),
+      message: t("agenda.unblockConfirmDesc"),
+      confirmLabel: t("agenda.unblock"),
+      cancelLabel: t("common.cancel"),
+    });
+    if (!ok) return;
     // Optimiste : la plage disparaît tout de suite, le serveur suit.
     setBookings((bs) => bs.filter((b) => b.id !== id));
     setSelected(null);
@@ -557,6 +575,10 @@ export default function AgendaView({
           <p className="mx-auto mt-1 max-w-sm text-sm text-text-muted">
             {t("agenda.emptyDesc")}
           </p>
+          {/* L'état vide porte son action, comme Clients et Prestations. */}
+          <Button onClick={() => setAdding(true)} className="mt-4">
+            + {t("agenda.add")}
+          </Button>
         </div>
       ) : (
         <div className="flex flex-col gap-6">

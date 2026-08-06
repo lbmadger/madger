@@ -42,6 +42,60 @@ export default function ClientOnboarding() {
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
+  // Brouillon local : la saisie survit à une session expirée, un
+  // rechargement ou une déconnexion accidentelle. Restauré au montage,
+  // purgé quand le profil est enregistré.
+  const DRAFT_KEY = "madger_client_onboarding_draft";
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw) as Record<string, unknown>;
+      if (typeof d.step === "number") setStep(d.step);
+      if (typeof d.firstName === "string") setFirstName(d.firstName);
+      if (typeof d.lastName === "string") setLastName(d.lastName);
+      if (typeof d.phone === "string") setPhone(d.phone);
+      if (typeof d.birthDate === "string") setBirthDate(d.birthDate);
+      if (d.sex === "male" || d.sex === "female" || d.sex === "other")
+        setSex(d.sex);
+      if (typeof d.heightCm === "string") setHeightCm(d.heightCm);
+      if (typeof d.weightKg === "string") setWeightKg(d.weightKg);
+      if (Array.isArray(d.goals)) setGoals(d.goals as string[]);
+      if (
+        d.level === "beginner" ||
+        d.level === "intermediate" ||
+        d.level === "advanced"
+      )
+        setLevel(d.level);
+      if (typeof d.note === "string") setNote(d.note);
+    } catch {
+      /* brouillon illisible : on repart de zéro */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        DRAFT_KEY,
+        JSON.stringify({
+          step,
+          firstName,
+          lastName,
+          phone,
+          birthDate,
+          sex,
+          heightCm,
+          weightKg,
+          goals,
+          level,
+          note,
+        })
+      );
+    } catch {
+      /* stockage indisponible */
+    }
+  }, [step, firstName, lastName, phone, birthDate, sex, heightCm, weightKg, goals, level, note]);
+
   // Pré-remplit si le profil existe déjà (édition).
   useEffect(() => {
     const supabase = createClient();
@@ -123,6 +177,11 @@ export default function ClientOnboarding() {
         return;
       }
       track("client_onboarding_completed");
+      try {
+        localStorage.removeItem(DRAFT_KEY);
+      } catch {
+        /* ignore */
+      }
       setDone(true);
     } catch {
       setError(t("clientOnboarding.errors.generic"));

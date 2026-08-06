@@ -68,6 +68,7 @@ export default function ClientSpace({
   const [cancelId, setCancelId] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cancelDone, setCancelDone] = useState(false);
   const [subCancelling, setSubCancelling] = useState<string | null>(null);
   const [subError, setSubError] = useState<string | null>(null);
 
@@ -162,6 +163,9 @@ export default function ClientSpace({
         return;
       }
       setCancelId(null);
+      // Confirmation visible : sans elle, la carte changeait d'état sans
+      // dire que l'annulation (et le remboursement éventuel) est actée.
+      setCancelDone(true);
       router.refresh();
     } catch {
       setError(t("clientSpace.cancelError"));
@@ -355,13 +359,27 @@ export default function ClientSpace({
 
       <div className="min-w-0 lg:order-1">
       {/* À venir */}
+      {cancelDone && (
+        <p
+          role="status"
+          className="mt-6 rounded-2xl border border-accent/25 bg-accent/[0.06] px-4 py-3 text-center text-sm text-text-base"
+        >
+          {t("clientSpace.cancelDone")}
+        </p>
+      )}
       <h2 className="mt-8 text-xs font-semibold uppercase tracking-wide text-text-dim">
         {t("clientSpace.upcoming")}
       </h2>
       {upcoming.length === 0 ? (
-        <p className="mt-3 rounded-2xl border border-border bg-bg-card p-6 text-center text-sm text-text-muted">
-          {t("clientSpace.noUpcoming")}
-        </p>
+        <div className="mt-3 rounded-2xl border border-border bg-bg-card p-6 text-center">
+          <p className="text-sm text-text-muted">{t("clientSpace.noUpcoming")}</p>
+          <Link
+            href="/coachs"
+            className="mt-3 inline-block rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+          >
+            {t("clientSpace.findCoach")}
+          </Link>
+        </div>
       ) : (
         <ul className="mt-3 flex flex-col gap-2">
           {upcoming.map((b) => (
@@ -462,7 +480,17 @@ export default function ClientSpace({
                     {dateStr(b.starts_at)}
                   </p>
                   <p className="text-xs text-text-muted">
-                    {t("clientSpace.with")} {b.coach_name}
+                    {t("clientSpace.with")}{" "}
+                    {b.coach_slug ? (
+                      <Link
+                        href={`/${b.coach_slug}`}
+                        className="text-accent hover:underline"
+                      >
+                        {b.coach_name}
+                      </Link>
+                    ) : (
+                      b.coach_name
+                    )}
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">

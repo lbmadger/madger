@@ -172,8 +172,13 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
     setError(null);
     setSaved(false);
     setFeedbackFor(section);
-    if (!firstName.trim()) return setError(t("settings.errors.nameRequired"));
-    if (!isValidSlug(slug)) return setError(t("settings.errors.slugInvalid"));
+    // La validation prénom/slug ne concerne QUE la section profil : sinon
+    // « lien invalide » s'affichait sous Facturation ou Préférences, sections
+    // qui ne contiennent pas ces champs.
+    if (section === "profile") {
+      if (!firstName.trim()) return setError(t("settings.errors.nameRequired"));
+      if (!isValidSlug(slug)) return setError(t("settings.errors.slugInvalid"));
+    }
 
     // Chaque section n'envoie QUE ses colonnes : un souci sur une colonne
     // (migration pas encore passée, droit manquant) ne casse plus
@@ -190,10 +195,14 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         accepts_online: acceptsOnline,
         slug,
         listed,
+      },
+      activity: {
         sport: sport || null,
         specialties,
         venues,
         gym_name: gymName.trim() || null,
+      },
+      prefs: {
         timezone,
       },
       booking: {
@@ -211,7 +220,10 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         billing_address: billingAddress.trim() || null,
       },
     };
-    const payload = payloads[section] ?? payloads.profile;
+    // Section inconnue : on n'enregistre RIEN (retomber sur le payload
+    // profil complet contredisait l'isolement par section).
+    const payload = payloads[section];
+    if (!payload) return;
 
     setLoading(true);
     try {
@@ -537,6 +549,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
       {/* Objectif du mois : le formulaire vit ICI, le dashboard n'affiche
           que les jauges. */}
       <SettingsSection
+        id="objectif"
         icon={<TrophyIcon size={18} />}
         title={t("goal.settingsTitle")}
         desc={t("goal.settingsDesc")}
@@ -546,24 +559,6 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           initialRevenueCents={coach.monthly_revenue_goal_cents}
           initialSessions={coach.monthly_sessions_goal}
         />
-      </SettingsSection>
-
-      {/* Disponibilités : la page dédiée reste, l'entrée vit ici (c'est de
-          la configuration, plus un onglet de la barre latérale). */}
-      <SettingsSection
-        icon={<ZapIcon size={18} />}
-        title={t("settings.availabilityTitle")}
-        desc={t("settings.availabilityDesc")}
-      >
-        <Link
-          href="/dashboard/disponibilites"
-          className="inline-flex items-center gap-2 rounded-full border border-border-strong px-4 py-2 text-sm font-medium text-text-base transition-colors hover:border-accent"
-        >
-          {t("settings.availabilityCta")}
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 18l6-6-6-6" />
-          </svg>
-        </Link>
       </SettingsSection>
 
       {/* Galerie Résultats (avant/après) */}

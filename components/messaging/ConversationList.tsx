@@ -42,6 +42,16 @@ export default function ConversationList({
         <p className="mx-auto mt-1 max-w-sm text-sm text-text-muted">
           {t("messages.emptyDesc")}
         </p>
+        {/* Côté client, une conversation naît depuis une page coach : on y
+            emmène au lieu de laisser un cul-de-sac. */}
+        {perspective === "client" && (
+          <Link
+            href="/coachs"
+            className="mt-4 inline-block rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+          >
+            {t("clientSpace.findCoach")}
+          </Link>
+        )}
       </div>
     );
   }

@@ -273,8 +273,6 @@ export default async function StatsPage() {
         <div className="mt-4 sm:mt-5">
           <AreaChartCard
             title={`${dict.overview.chartRevenue} · ${s.last12Months}`}
-            headline={euros(revenueMonth)}
-            trend={trend(revenueMonth, revenueLastMonth)}
             data={revenueByMonth}
             unit="currency"
             locale={loc}

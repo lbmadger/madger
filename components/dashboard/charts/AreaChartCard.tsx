@@ -33,7 +33,9 @@ export default function AreaChartCard({
   mode,
 }: {
   title: string;
-  headline: string;
+  // Facultatif : le chiffre vit déjà dans les tuiles KPI juste au-dessus,
+  // le répéter ici faisait doublon.
+  headline?: string;
   trend?: StatTrend;
   data: BarDatum[];
   unit?: "currency" | "count";
@@ -94,20 +96,24 @@ export default function AreaChartCard({
           <h3 className="text-xs font-medium uppercase tracking-wide text-text-dim">
             {title}
           </h3>
-          <p className="mt-1 flex items-baseline gap-2">
-            <span className="text-3xl font-extrabold tracking-tight text-text-base sm:text-4xl">
-              {headline}
-            </span>
-            {trend && (
-              <span
-                className={`text-xs font-semibold ${
-                  trend.positive ? "text-success" : "text-danger"
-                }`}
-              >
-                {trend.positive ? "↑" : "↓"} {trend.text}
-              </span>
-            )}
-          </p>
+          {(headline || trend) && (
+            <p className="mt-1 flex items-baseline gap-2">
+              {headline && (
+                <span className="text-3xl font-extrabold tracking-tight text-text-base sm:text-4xl">
+                  {headline}
+                </span>
+              )}
+              {trend && (
+                <span
+                  className={`text-xs font-semibold ${
+                    trend.positive ? "text-success" : "text-danger"
+                  }`}
+                >
+                  {trend.positive ? "↑" : "↓"} {trend.text}
+                </span>
+              )}
+            </p>
+          )}
         </div>
         <div className="flex shrink-0 gap-1">
           {presets.map((p, i) => (

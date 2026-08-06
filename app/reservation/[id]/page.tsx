@@ -182,6 +182,22 @@ export default async function ReservationPage({
                   </div>
                 )}
 
+              {/* Sortie vers l'espace client : c'est là que vivent
+                  l'annulation et toutes les autres séances. Cette page est
+                  celle du lien reçu par email, elle ne doit pas être un
+                  cul-de-sac. */}
+              <p className="mt-5">
+                <Link
+                  href="/espace"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:underline"
+                >
+                  {r.manageInSpace}
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
+                </Link>
+              </p>
+
               {booking.escrow_status === "held" && (
                 <div className="mt-6 border-t border-border pt-6">
                   <ReportProblem bookingId={params.id} />

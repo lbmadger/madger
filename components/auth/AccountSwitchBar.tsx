@@ -27,7 +27,16 @@ export default function AccountSwitchBar() {
         {t("account.loggedInAs")}{" "}
         <span className="font-medium text-text-base">{email}</span>
       </span>
-      <form action="/auth/signout" method="post" className="shrink-0">
+      {/* Confirmation avant déconnexion : un clic accidentel en plein
+          onboarding effacerait la saisie en cours. */}
+      <form
+        action="/auth/signout"
+        method="post"
+        className="shrink-0"
+        onSubmit={(e) => {
+          if (!window.confirm(t("account.switchConfirm"))) e.preventDefault();
+        }}
+      >
         <button
           type="submit"
           className="text-xs font-medium text-text-dim underline transition-colors hover:text-accent"

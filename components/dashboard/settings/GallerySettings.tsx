@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
+import { useConfirm } from "@/components/ui/useConfirm";
 import { inputClass } from "@/lib/ui/styles";
 import type { CoachPhoto } from "@/lib/coaches/public-types";
 
@@ -17,6 +18,7 @@ const MAX_PHOTOS = 6;
 export default function GallerySettings({ coachId }: { coachId: string }) {
   const { t } = useI18n();
   const router = useRouter();
+  const { confirm, dialog } = useConfirm();
   const fileRef = useRef<HTMLInputElement>(null);
   const afterRef = useRef<HTMLInputElement>(null);
   // Photo « après » : l'input caché est partagé, cette ref dit pour quelle
@@ -132,6 +134,15 @@ export default function GallerySettings({ coachId }: { coachId: string }) {
   }
 
   async function remove(photo: CoachPhoto) {
+    // Suppression définitive (base + fichiers) : confirmation obligatoire.
+    const ok = await confirm({
+      title: t("settings.galleryDelete"),
+      message: t("settings.galleryDeleteConfirm"),
+      confirmLabel: t("common.delete"),
+      cancelLabel: t("common.cancel"),
+      danger: true,
+    });
+    if (!ok) return;
     const supabase = createClient();
     await supabase.from("coach_photos").delete().eq("id", photo.id);
     // Nettoie les fichiers du Storage (chemins extraits des URLs publiques).
@@ -146,6 +157,7 @@ export default function GallerySettings({ coachId }: { coachId: string }) {
 
   return (
     <div className="flex flex-col gap-4">
+      {dialog}
       {photos.length === 0 ? (
         <p className="text-sm text-text-dim">{t("settings.galleryEmpty")}</p>
       ) : (

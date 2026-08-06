@@ -70,8 +70,12 @@ export default function CancellationSummary({
         </>
       ) : (
         <p className="mt-1.5 text-xs text-text-muted">
-          {t("cancellation.moreThan24")} : {policy.overPct} %.{" "}
-          {t("cancellation.lessThan24")} : {policy.underPct} %.
+          {/* « 80 % » tout seul était ambigu au moment de payer : on dit
+              explicitement que c'est la part remboursée. */}
+          {t("cancellation.moreThan24")} : {policy.overPct} %{" "}
+          {t("cancellation.refundedSuffix")}.{" "}
+          {t("cancellation.lessThan24")} : {policy.underPct} %{" "}
+          {t("cancellation.refundedSuffix")}.
         </p>
       )}
     </div>

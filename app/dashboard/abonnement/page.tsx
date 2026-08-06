@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { isPro, proDaysLeft } from "@/lib/subscription/plan";
 import { madgerInvoiceNumber, commissionPeriod } from "@/lib/invoices/utils";
-import { DownloadIcon, FileTextIcon } from "@/components/ui/icons";
+import { FileTextIcon } from "@/components/ui/icons";
 
 // Page Abonnement : statut du coach + offres Free/Pro + code promo.
 export default async function SubscriptionPage({
@@ -211,30 +211,29 @@ export default async function SubscriptionPage({
           ) : (
             <ul className="mt-3 flex flex-col gap-2">
               {madgerRows.map((r) => (
-                <li
-                  key={r.period}
-                  className="flex items-center gap-3 rounded-2xl border border-border bg-bg-card p-4"
-                >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
-                    <FileTextIcon size={16} />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold capitalize text-text-base">
-                      {r.label}
-                    </p>
-                    <p className="mt-0.5 text-xs text-text-muted">
-                      {r.number} · {r.count} {inv.sessionsCount}
-                    </p>
-                  </div>
-                  <span className="shrink-0 text-sm font-bold text-text-base">
-                    {r.total}
-                  </span>
+                <li key={r.period}>
+                  {/* Toute la ligne ouvre la facture Madger du mois. */}
                   <Link
                     href={`/dashboard/factures/madger/${r.period}`}
-                    className="flex shrink-0 items-center gap-1.5 rounded-full border border-border-strong px-3 py-1.5 text-xs font-medium text-text-base transition-colors hover:border-accent"
+                    className="flex items-center gap-3 rounded-2xl border border-border bg-bg-card p-4 transition-colors hover:border-accent/40"
                   >
-                    <DownloadIcon size={12} />
-                    {inv.download}
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
+                      <FileTextIcon size={16} />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold capitalize text-text-base">
+                        {r.label}
+                      </p>
+                      <p className="mt-0.5 text-xs text-text-muted">
+                        {r.number} · {r.count} {inv.sessionsCount}
+                      </p>
+                    </div>
+                    <span className="shrink-0 text-sm font-bold text-text-base">
+                      {r.total}
+                    </span>
+                    <svg className="shrink-0 text-text-dim" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 18l6-6-6-6" />
+                    </svg>
                   </Link>
                 </li>
               ))}

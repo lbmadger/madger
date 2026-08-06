@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Topbar from "@/components/dashboard/Topbar";
 import StripeConnectButton from "@/components/dashboard/payments/StripeConnectButton";
 import { getServerDictionary } from "@/lib/i18n/server";
@@ -149,10 +150,12 @@ export default async function PaymentsPage() {
                 const chip = escrowChip[p.escrow_status as string];
                 const refundedCents = (p.refunded_cents as number | null) ?? 0;
                 return (
-                  <li
-                    key={p.id as string}
-                    className="rounded-2xl border border-border bg-bg-card p-4"
-                  >
+                  <li key={p.id as string}>
+                    {/* Toute la carte ouvre la facture liée à ce paiement. */}
+                    <Link
+                      href={`/dashboard/factures/${p.id}`}
+                      className="block rounded-2xl border border-border bg-bg-card p-4 transition-colors hover:border-accent/40"
+                    >
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-text-base">
@@ -196,6 +199,7 @@ export default async function PaymentsPage() {
                         ? pay.escrowDisputedNote
                         : ""}
                     </p>
+                    </Link>
                   </li>
                 );
               })}

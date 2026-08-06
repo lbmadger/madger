@@ -134,6 +134,8 @@ const fr = {
     menuLabel: "Menu du compte",
     loggedInAs: "Connecté en tant que",
     switchAccount: "Changer de compte",
+    switchConfirm:
+      "Te déconnecter maintenant ? La saisie en cours sur cette page sera perdue.",
   },
   onboarding: {
     title: "Bienvenue sur Madger",
@@ -274,6 +276,8 @@ const fr = {
     quickBlockError:
       "Le blocage n'a pas pu être enregistré. La case est de nouveau libre, réessaie.",
     unblock: "Débloquer",
+    unblockConfirmDesc:
+      "Le créneau redevient immédiatement réservable par tes clients.",
     legendAvailable: "Disponible",
     legendBooked: "Séance",
     setAvailability: "Définir mes disponibilités",
@@ -724,6 +728,7 @@ const fr = {
     viewMap: "Carte",
     emptyTitle: "Aucun coach trouvé",
     emptyDesc: "Essaie une autre ville, ou regarde les coachs en ligne.",
+    emptyOnlineCta: "Voir les coachs en visio",
     radiusA: "Aucun coach à",
     radiusB: ", voici les coachs dans un rayon de",
     km: "km",
@@ -873,6 +878,8 @@ const fr = {
     galleryEmpty:
       "Aucune photo pour l'instant. Les pages qui montrent des résultats réels convainquent bien plus.",
     galleryDelete: "Supprimer la photo",
+    galleryDeleteConfirm:
+      "La photo (et sa version après, le cas échéant) sera supprimée définitivement de ta page.",
     galleryAddAfter: "+ photo après",
     galleryRemoveAfter: "Retirer la photo après",
     activitySection: "Mon activité",
@@ -946,6 +953,7 @@ const fr = {
     },
   },
   reservation: {
+    manageInSpace: "Gérer ou annuler dans Mes séances",
     title: "Ta réservation",
     paidBanner: "Paiement confirmé",
     withCoach: "avec",
@@ -994,7 +1002,7 @@ const fr = {
     underLabel: "Annulation moins de 24 h avant la séance",
     underDesc:
       "Le client annule au dernier moment (le jour même). Quelle part du prix gardes-tu ?",
-    refundedSuffix: "remboursé au client",
+    refundedSuffix: "remboursé",
     youKeep: "Tu gardes",
     flexible: "Flexible",
     moderate: "Modérée",
@@ -1167,6 +1175,8 @@ const fr = {
   clientSpace: {
     title: "Mes séances",
     findCoach: "Trouver un coach",
+    cancelDone:
+      "Séance annulée. Si un remboursement s'applique, il repart automatiquement vers ta carte sous quelques jours.",
     messages: "Messages",
     myProfile: "Mon profil",
     upcoming: "À venir",
@@ -1441,6 +1451,8 @@ const en: Dictionary = {
     menuLabel: "Account menu",
     loggedInAs: "Signed in as",
     switchAccount: "Switch account",
+    switchConfirm:
+      "Log out now? Anything you typed on this page will be lost.",
   },
   onboarding: {
     title: "Welcome to Madger",
@@ -1577,6 +1589,8 @@ const en: Dictionary = {
     quickBlockError:
       "The block could not be saved. The cell is free again, please retry.",
     unblock: "Unblock",
+    unblockConfirmDesc:
+      "The slot immediately becomes bookable by your clients again.",
     legendAvailable: "Available",
     legendBooked: "Session",
     setAvailability: "Set my availability",
@@ -2025,6 +2039,7 @@ const en: Dictionary = {
     viewMap: "Map",
     emptyTitle: "No coach found",
     emptyDesc: "Try another city, or check out online coaches.",
+    emptyOnlineCta: "See online coaches",
     radiusA: "No coach in",
     radiusB: ", here are coaches within",
     km: "km",
@@ -2173,6 +2188,8 @@ const en: Dictionary = {
     galleryEmpty:
       "No photos yet. Pages that show real results convert far better.",
     galleryDelete: "Delete photo",
+    galleryDeleteConfirm:
+      "The photo (and its after version, if any) will be permanently removed from your page.",
     galleryAddAfter: "+ after photo",
     galleryRemoveAfter: "Remove the after photo",
     activitySection: "My activity",
@@ -2243,6 +2260,7 @@ const en: Dictionary = {
     },
   },
   reservation: {
+    manageInSpace: "Manage or cancel in My sessions",
     title: "Your booking",
     paidBanner: "Payment confirmed",
     withCoach: "with",
@@ -2290,7 +2308,7 @@ const en: Dictionary = {
     underLabel: "Cancellation less than 24h before the session",
     underDesc:
       "The client cancels last minute (same day). What share of the price do you keep?",
-    refundedSuffix: "refunded to the client",
+    refundedSuffix: "refunded",
     youKeep: "You keep",
     flexible: "Flexible",
     moderate: "Moderate",
@@ -2459,6 +2477,8 @@ const en: Dictionary = {
   },
   clientSpace: {
     title: "My sessions",
+    cancelDone:
+      "Session cancelled. If a refund applies, it is automatically sent back to your card within a few days.",
     findCoach: "Find a coach",
     messages: "Messages",
     myProfile: "My profile",

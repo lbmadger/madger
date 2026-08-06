@@ -98,38 +98,39 @@ export default async function InvoicesPage() {
         ) : (
           <ul className="mt-3 flex flex-col gap-2">
             {rows.map((r) => (
-              <li
-                key={r.id}
-                className="flex items-center gap-3 rounded-2xl border border-border bg-bg-card p-4"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="flex flex-wrap items-center gap-2">
-                    <span className="text-sm font-semibold text-text-base">
-                      {r.number}
-                    </span>
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                        r.refunded
-                          ? "bg-danger/10 text-danger"
-                          : "bg-accent/10 text-accent"
-                      }`}
-                    >
-                      {r.refunded ? inv.statusRefunded : inv.statusPaid}
-                    </span>
-                  </p>
-                  <p className="mt-0.5 truncate text-xs text-text-muted">
-                    {r.date} · {r.client} · {r.service}
-                  </p>
-                </div>
-                <span className="shrink-0 text-sm font-bold text-text-base">
-                  {r.amount}
-                </span>
+              <li key={r.id}>
+                {/* Toute la ligne ouvre la facture (téléchargement dedans) :
+                    le petit bouton « Télécharger » laissait croire à un
+                    téléchargement direct. */}
                 <Link
                   href={`/dashboard/factures/${r.id}`}
-                  className="flex shrink-0 items-center gap-1.5 rounded-full border border-border-strong px-3 py-1.5 text-xs font-medium text-text-base transition-colors hover:border-accent"
+                  className="flex items-center gap-3 rounded-2xl border border-border bg-bg-card p-4 transition-colors hover:border-accent/40"
                 >
-                  <DownloadIcon size={12} />
-                  {inv.download}
+                  <div className="min-w-0 flex-1">
+                    <p className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm font-semibold text-text-base">
+                        {r.number}
+                      </span>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                          r.refunded
+                            ? "bg-danger/10 text-danger"
+                            : "bg-accent/10 text-accent"
+                        }`}
+                      >
+                        {r.refunded ? inv.statusRefunded : inv.statusPaid}
+                      </span>
+                    </p>
+                    <p className="mt-0.5 truncate text-xs text-text-muted">
+                      {r.date} · {r.client} · {r.service}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-sm font-bold text-text-base">
+                    {r.amount}
+                  </span>
+                  <svg className="shrink-0 text-text-dim" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 18l6-6-6-6" />
+                  </svg>
                 </Link>
               </li>
             ))}

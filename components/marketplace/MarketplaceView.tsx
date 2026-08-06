@@ -429,6 +429,30 @@ export default function MarketplaceView({
             <p className="mx-auto mt-1 max-w-sm text-sm text-text-muted">
               {radius ? t("marketplace.emptyRadiusDesc") : t("marketplace.emptyDesc")}
             </p>
+            {/* L'état vide porte les actions qu'il suggère. */}
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setFilter("online");
+                  setQuery("");
+                  setCoords(null);
+                  runSearch("", null);
+                }}
+                className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+              >
+                {t("marketplace.emptyOnlineCta")}
+              </button>
+              {activeCount > 0 && (
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="rounded-full border border-border-strong px-5 py-2.5 text-sm font-medium text-text-muted transition-colors hover:border-accent hover:text-text-base"
+                >
+                  ✕ {t("marketplace.clearFilters")}
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           <>

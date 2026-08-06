@@ -63,7 +63,7 @@ export default function GoalCard({
           {t("goal.title")} {monthLabel}
         </h3>
         <Link
-          href="/dashboard/reglages"
+          href="/dashboard/reglages#objectif"
           aria-label={t("goal.edit")}
           className="flex h-7 w-7 items-center justify-center rounded-full border border-border-strong text-text-muted transition-colors hover:border-accent hover:text-accent"
         >

@@ -1,16 +1,20 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 // Section de réglages repliable, façon menu Réglages d'Apple : une rangée
 // avec icône, titre, sous-titre et chevron ; le contenu se déplie dessous.
+// Avec un `id`, la section s'ouvre et se cadre toute seule quand l'URL
+// porte l'ancre correspondante (ex. /dashboard/reglages#objectif).
 export default function SettingsSection({
+  id,
   icon,
   title,
   desc,
   defaultOpen = false,
   children,
 }: {
+  id?: string;
   icon: ReactNode;
   title: string;
   desc?: string;
@@ -19,8 +23,22 @@ export default function SettingsSection({
 }) {
   const [open, setOpen] = useState(defaultOpen);
 
+  useEffect(() => {
+    if (!id || window.location.hash !== `#${id}`) return;
+    setOpen(true);
+    const timer = setTimeout(() => {
+      document
+        .getElementById(id)
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
+    return () => clearTimeout(timer);
+  }, [id]);
+
   return (
-    <section className="overflow-hidden rounded-2xl border border-border bg-bg-card">
+    <section
+      id={id}
+      className="scroll-mt-24 overflow-hidden rounded-2xl border border-border bg-bg-card"
+    >
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

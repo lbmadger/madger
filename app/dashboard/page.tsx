@@ -546,7 +546,6 @@ export default async function OverviewPage() {
       value: weekCount,
       kind: "int",
       trend: sessionsTrend,
-      hint: `${todayCount} ${o.sessionsToday}`,
       href: "/dashboard/agenda",
     },
     {
@@ -836,8 +835,6 @@ export default async function OverviewPage() {
         <div className="mt-4 sm:mt-5">
           <AreaChartCard
             title={o.chartRevenue}
-            headline={euros(monthRevenue)}
-            trend={revenueTrend}
             data={revenueByMonth}
             unit="currency"
             locale={loc}
@@ -867,40 +864,44 @@ export default async function OverviewPage() {
               ) : (
                 <ul className="mt-4 flex flex-col gap-2">
                   {upcoming.map((b) => (
-                    <li
-                      key={b.id}
-                      className="flex items-center gap-3 rounded-lg border border-border bg-bg-elevated p-3"
-                    >
-                      <div className="flex w-14 shrink-0 flex-col">
-                        <span className="text-xs font-medium text-text-base">
-                          {new Date(b.starts_at).toLocaleDateString(loc, {
-                            day: "2-digit",
-                            month: "short",
-                          })}
-                        </span>
-                        <span className="text-[11px] text-text-dim">
-                          {new Date(b.starts_at).toLocaleTimeString(loc, {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                      </div>
-                      <span className="min-w-0 flex-1 truncate text-sm font-medium text-text-base">
-                        {b.clients
-                          ? [b.clients.first_name, b.clients.last_name]
-                              .filter(Boolean)
-                              .join(" ")
-                          : "-"}
-                      </span>
-                      <span
-                        className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                          b.location === "online"
-                            ? "bg-accent/10 text-accent"
-                            : "border border-border-strong text-text-muted"
-                        }`}
+                    <li key={b.id}>
+                      {/* Carte cliquable : ouvre la fiche de la séance dans
+                          l'agenda (lien profond ?b=). */}
+                      <Link
+                        href={`/dashboard/agenda?b=${b.id}`}
+                        className="flex items-center gap-3 rounded-lg border border-border bg-bg-elevated p-3 transition-colors hover:border-accent/40"
                       >
-                        {dict.agenda.badge[b.location]}
-                      </span>
+                        <div className="flex w-14 shrink-0 flex-col">
+                          <span className="text-xs font-medium text-text-base">
+                            {new Date(b.starts_at).toLocaleDateString(loc, {
+                              day: "2-digit",
+                              month: "short",
+                            })}
+                          </span>
+                          <span className="text-[11px] text-text-dim">
+                            {new Date(b.starts_at).toLocaleTimeString(loc, {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
+                        <span className="min-w-0 flex-1 truncate text-sm font-medium text-text-base">
+                          {b.clients
+                            ? [b.clients.first_name, b.clients.last_name]
+                                .filter(Boolean)
+                                .join(" ")
+                            : "-"}
+                        </span>
+                        <span
+                          className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                            b.location === "online"
+                              ? "bg-accent/10 text-accent"
+                              : "border border-border-strong text-text-muted"
+                          }`}
+                        >
+                          {dict.agenda.badge[b.location]}
+                        </span>
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -1042,9 +1043,7 @@ export default async function OverviewPage() {
                 <h3 className="text-base font-semibold text-text-base">
                   {o.weekLoad}
                 </h3>
-                <span className="rounded-full bg-accent/10 px-2 py-0.5 text-xs font-semibold text-accent">
-                  {weekCount}
-                </span>
+
               </div>
               <div className="mt-3 flex h-20 items-end gap-1.5">
                 {weekDays.map((d, i) => (
