@@ -59,6 +59,11 @@ export async function POST(req: NextRequest) {
     .select("id, coach_id, client_id, starts_at, status")
     .eq("id", bookingId)
     .maybeSingle();
+  // Déjà annulée : refusé net. Un second appel retombait dans la branche
+  // « aucun paiement retenu » et envoyait au client un email contradictoire.
+  if (booking?.status === "cancelled") {
+    return NextResponse.json({ error: "already_cancelled" }, { status: 409 });
+  }
   if (!booking || booking.coach_id !== user.id) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }

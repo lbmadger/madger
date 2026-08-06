@@ -38,7 +38,7 @@ function MobileStatValue({ value, inView }: { value: string; inView: boolean }) 
 }
 
 /* ── Mini bar chart ─────────────────────────────────────── */
-const barData = [38, 52, 45, 70, 60, 88, 95];
+const barData = [70, 85, 95, 110, 60, 90, 130];
 const barDays = ["L", "M", "M", "J", "V", "S", "D"];
 
 function RevenueChart() {
@@ -166,7 +166,7 @@ export default function CoachDashboard() {
         <div className="md:hidden mb-4">
           <div ref={mobileStatsRef} className="grid grid-cols-2 gap-3 mb-4">
             {[
-              { label: "Revenus ce mois", value: "1 240 €", delta: "+18 %", color: "#CBFF03" },
+              { label: "Revenus ce mois", value: "2 380 €", delta: "+18 %", color: "#CBFF03" },
               { label: "Séances ce mois", value: "24",      delta: "+4",    color: "#CBFF03" },
               { label: "Clients actifs",  value: "12",      delta: "+2",    color: "#4ADE80" },
               { label: "Taux de remplissage",value: "87 %",    delta: "+5 %",color: "#4ADE80" },
@@ -265,7 +265,7 @@ export default function CoachDashboard() {
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
                 <div>
                   <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>Bonjour, Marie</div>
-                  <div style={{ fontSize: 10, color: "#757575", marginTop: 1 }}>Lundi 25 mai 2026 · 6 séances aujourd'hui</div>
+                  <div style={{ fontSize: 10, color: "#757575", marginTop: 1 }}>Lundi 25 mai 2026 · 4 séances aujourd'hui</div>
                 </div>
                 <div style={{ display: "flex", gap: 7, alignItems: "center" }}>
                   <div style={{ padding: "6px 12px", borderRadius: 8, background: "#CBFF03", fontSize: 10, fontWeight: 700, color: "#000", cursor: "pointer" }}>
@@ -332,7 +332,7 @@ export default function CoachDashboard() {
 
               {/* Stats cards */}
               <div ref={statsRef} style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 14 }}>
-                <StatCard label="Revenus ce mois"    value="1 240 €" delta="+18 %" inView={statsInView} icon="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <StatCard label="Revenus ce mois"    value="2 380 €" delta="+18 %" inView={statsInView} icon="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 <StatCard label="Séances ce mois"    value="24"      delta="+4"    inView={statsInView} icon="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 <StatCard label="Clients actifs"     value="12"      delta="+2"    inView={statsInView} icon="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                 <StatCard label="Taux de remplissage" value="87 %"   delta="+5 %" inView={statsInView} icon="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -455,8 +455,8 @@ export default function CoachDashboard() {
                   {/* Revenue this week */}
                   <div style={{ padding: "11px", borderRadius: 10, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-                      <span style={{ fontSize: 9, fontWeight: 700, color: "#fff" }}>Cette semaine</span>
-                      <span style={{ fontSize: 10, fontWeight: 800, color: "#CBFF03" }}>428 €</span>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: "#fff" }}>7 derniers jours</span>
+                      <span style={{ fontSize: 10, fontWeight: 800, color: "#CBFF03" }}>640 €</span>
                     </div>
                     <RevenueChart />
                   </div>
@@ -465,7 +465,7 @@ export default function CoachDashboard() {
                   <div style={{ padding: "11px", borderRadius: 10, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                       <span style={{ fontSize: 9, fontWeight: 700, color: "#fff" }}>Objectif mai</span>
-                      <span style={{ fontSize: 8, color: "#757575" }}>1 240 / 1 500 €</span>
+                      <span style={{ fontSize: 8, color: "#757575" }}>2 380 / 3 000 €</span>
                     </div>
                     {/* Progress bar */}
                     <div style={{ height: 5, borderRadius: 10, background: "rgba(255,255,255,0.06)", marginBottom: 6, overflow: "hidden" }}>

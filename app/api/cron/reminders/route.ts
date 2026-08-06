@@ -108,24 +108,25 @@ export async function GET(req: NextRequest) {
   }
 
   // ── Relances onboarding abandonné : 24 h puis 7 jours ─────────────────────
-  // Le cron passe une fois par jour : chaque fenêtre d'une journée garantit
-  // une relance unique par compte, sans colonne de suivi supplémentaire.
-  // 24 h → comptes créés il y a 1 à 2 jours ; 7 j → il y a 7 à 8 jours.
+  // Suivi EN BASE (migration 0051) : un cron sauté rattrape les comptes au
+  // passage suivant, un cron rejoué ne double jamais. Borne basse 30 jours :
+  // on ne réveille pas les comptes dormants antérieurs au dispositif.
   let nudged = 0;
-  const nudgeWindows = [
-    { daysFrom: 2, daysTo: 1, template: onboardingNudgeCoach },
-    { daysFrom: 8, daysTo: 7, template: onboardingNudgeCoachLater },
-  ];
+  const nudgeSteps = [
+    { minAgeMs: 1 * 86400000, column: "onboarding_nudge1_at", template: onboardingNudgeCoach },
+    { minAgeMs: 7 * 86400000, column: "onboarding_nudge2_at", template: onboardingNudgeCoachLater },
+  ] as const;
   try {
-    for (const w of nudgeWindows) {
-      const from = new Date(now - w.daysFrom * 86400000).toISOString();
-      const to = new Date(now - w.daysTo * 86400000).toISOString();
+    for (const w of nudgeSteps) {
+      const cutoff = new Date(now - w.minAgeMs).toISOString();
+      const floor = new Date(now - 30 * 86400000).toISOString();
       const { data: stale } = await supabase
         .from("coaches")
         .select("id, first_name")
         .eq("onboarding_completed", false)
-        .gte("created_at", from)
-        .lt("created_at", to)
+        .is(w.column, null)
+        .lte("created_at", cutoff)
+        .gte("created_at", floor)
         .limit(100);
       for (const c of stale ?? []) {
         // L'email vit dans Auth, pas dans coaches : lecture via l'API admin.
@@ -133,15 +134,27 @@ export async function GET(req: NextRequest) {
           c.id as string
         );
         const email = u?.user?.email;
-        if (!email) continue;
+        if (!email) {
+          // Pas d'adresse : marqué quand même, inutile de rescanner.
+          await supabase
+            .from("coaches")
+            .update({ [w.column]: nowIso })
+            .eq("id", c.id);
+          continue;
+        }
         const tpl = w.template({
           firstName: (c.first_name as string | null) || null,
           dashboardUrl: `${APP_URL}/dashboard`,
         });
         if (
           await sendEmail({ to: email, subject: tpl.subject, html: tpl.html })
-        )
+        ) {
           nudged++;
+          await supabase
+            .from("coaches")
+            .update({ [w.column]: nowIso })
+            .eq("id", c.id);
+        }
       }
     }
   } catch {

@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
 
   const { data: service } = await supabase
     .from("services")
-    .select("name, price_cents, currency, type")
+    .select("name, price_cents, currency, type, duration_min")
     .eq("id", service_id)
     .eq("coach_id", coach.id)
     .eq("active", true)
@@ -134,7 +134,11 @@ export async function POST(req: NextRequest) {
   {
     const starts = new Date(String(starts_at));
     const ends = new Date(
-      starts.getTime() + (Number(duration_min) || 60) * 60000
+      // Durée RELUE depuis la prestation : celle du corps de requête est
+      // forgeable (fenêtre de chevauchement réduite, séance à durée libre).
+      starts.getTime() +
+        ((service.duration_min as number | null) ?? (Number(duration_min) || 60)) *
+          60000
     );
     const { data: overlapping } = await supabase
       .from("bookings")
@@ -185,7 +189,7 @@ export async function POST(req: NextRequest) {
       email: String(email).slice(0, 254),
       phone: phone ? String(phone).slice(0, 30) : "",
       starts_at: String(starts_at),
-      duration_min: String(Number(duration_min) || 60),
+      duration_min: String((service.duration_min as number | null) ?? (Number(duration_min) || 60)),
       online: online ? "1" : "0",
       message: message ? String(message).slice(0, 500) : "",
     },

@@ -47,6 +47,13 @@ export async function POST(req: NextRequest) {
   if (!serviceKey) return NextResponse.json({ ok: true });
   const admin = createAdmin(SUPABASE_URL, serviceKey);
 
+  // Les rappels repartent pour le NOUVEL horaire : sans ça, un rappel déjà
+  // envoyé pour l'ancien créneau privait le client de tout rappel.
+  await admin
+    .from("bookings")
+    .update({ reminder_sent_at: null, reminder_soon_sent_at: null })
+    .eq("id", bookingId);
+
   // Événement Google recréé au nouvel horaire (best-effort).
   try {
     const { data: client } = await admin

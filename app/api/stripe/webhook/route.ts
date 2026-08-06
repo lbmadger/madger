@@ -111,8 +111,18 @@ export async function POST(req: NextRequest) {
       .is("referral_rewarded_at", null)
       .select("id");
     if (!claimed || claimed.length === 0) return;
-    await rewardOneMonth(coachId);
-    await rewardOneMonth(f.referred_by as string);
+    try {
+      await rewardOneMonth(coachId);
+      await rewardOneMonth(f.referred_by as string);
+    } catch (e) {
+      // Récompense ratée : on REND le verrou, sinon le mois offert serait
+      // perdu silencieusement (Stripe rejouera l'événement).
+      await supabase
+        .from("coaches")
+        .update({ referral_rewarded_at: null })
+        .eq("id", coachId);
+      throw e;
+    }
   }
 
   try {

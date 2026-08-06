@@ -8,6 +8,7 @@ import {
   bookingNotificationCoach,
   requestReceivedClient,
   newRequestCoach,
+  refundClient,
 } from "@/lib/email/templates";
 import { googleCalendarUrl } from "@/lib/calendar/links";
 import { attachMeetToBooking } from "@/lib/google/calendar";
@@ -114,6 +115,23 @@ export async function fulfillCheckoutSession(
         { charge: chargeId },
         { idempotencyKey: `conflict_refund_${piId}` }
       );
+    }
+    // Le client est prévenu (best-effort) : quand c'est le webhook qui
+    // traite (onglet fermé), personne ne voyait jamais l'explication.
+    if (m.email) {
+      try {
+        const tpl = refundClient({
+          coachName: "ton coach",
+          refundStr: (((session.amount_total ?? 0)) / 100).toLocaleString(
+            "fr-FR",
+            { style: "currency", currency: "EUR" }
+          ),
+          reason: "cancellation",
+        });
+        await sendEmail({ to: m.email, subject: tpl.subject, html: tpl.html });
+      } catch {
+        /* best-effort */
+      }
     }
     return result;
   }
@@ -226,8 +244,35 @@ export async function fulfillCheckoutSession(
       .select("booking_id")
       .eq("stripe_payment_intent_id", piId)
       .maybeSingle();
-    result.bookingId = (winner?.booking_id as string | null) ?? "";
-    return result;
+    if (winner) {
+      // Course d'idempotence : l'autre appel a gagné, tout va bien.
+      result.bookingId = (winner.booking_id as string | null) ?? "";
+      return result;
+    }
+    // Échec RÉEL (contrainte, colonne, panne) : sans ce bloc, le client
+    // restait débité sans séance, sans remboursement et sans alerte.
+    try {
+      if (authorized) {
+        await stripe.paymentIntents.cancel(piId, {}, { idempotencyKey: `payfail_cancel_${piId}` });
+      } else if (chargeId) {
+        await stripe.refunds.create({ charge: chargeId }, { idempotencyKey: `payfail_refund_${piId}` });
+      }
+    } catch {
+      /* le rejeu du webhook retentera */
+    }
+    if (process.env.FOUNDER_EMAIL) {
+      try {
+        const { founderAlert } = await import("@/lib/email/templates");
+        const tpl = founderAlert({
+          context: "Paiement encaissé sans séance enregistrée (insert payments en échec)",
+          details: [`pi: ${piId}`, payError.message ?? "erreur inconnue", "Remboursement automatique tenté."],
+        });
+        await sendEmail({ to: process.env.FOUNDER_EMAIL, subject: tpl.subject, html: tpl.html });
+      } catch {
+        /* best-effort */
+      }
+    }
+    throw new Error(`payments_insert_failed: ${payError.message}`);
   }
 
   // Prestation achetée : le nom sert aux emails, type/pack_size au circuit
