@@ -25,11 +25,12 @@ const fr = {
     save: "Enregistrer",
     cancel: "Annuler",
     close: "Fermer",
+    optional: "(facultatif)",
     loading: "Chargement…",
     delete: "Supprimer",
   },
   nav: {
-    overview: "Dashboard",
+    overview: "Vue d'ensemble",
     clients: "Clients",
     schedule: "Agenda",
     availability: "Disponibilités",
@@ -171,7 +172,7 @@ const fr = {
     toLabel: "À",
     siret: "SIRET",
     siretHint:
-      "Obligatoire sur tes factures. Il figurera automatiquement sur chacune d'elles. Modifiable à tout moment dans les réglages.",
+      "Facultatif ici : tu peux l'ajouter plus tard dans Réglages → Facturation. Il figurera automatiquement sur tes factures (mention légale obligatoire).",
     doneTitle: "Ton profil est prêt",
     doneSubtitle:
       "Dernière marche pour apparaître sur la marketplace et encaisser tes séances : active tes paiements. C'est fait en 5 minutes.",
@@ -179,7 +180,7 @@ const fr = {
     stripeDesc:
       "Compte Stripe sécurisé à ton nom : tes clients paient en ligne, tu es versé automatiquement après chaque séance.",
     stripeCta: "Activer les paiements",
-    goDashboard: "Plus tard, aller à mon dashboard",
+    goDashboard: "Plus tard, aller à ma vue d'ensemble",
     firstName: "Prénom",
     lastName: "Nom",
     specialty: "Spécialité",
@@ -192,15 +193,15 @@ const fr = {
     submit: "Continuer",
     planTitle: "Ton offre Madger",
     planSubtitle:
-      "Démarre en Free, ou active Pro avec ton code d'accès anticipé.",
-    continueFree: "Continuer en Free",
+      "Démarre en Gratuit, ou active Pro avec ton code d'accès anticipé.",
+    continueFree: "Continuer en Gratuit",
     finish: "Accéder à mon espace",
-    saving: "Création…",
+    saving: "Enregistrement…",
     errors: {
       generic: "Une erreur est survenue. Réessaie.",
       slugTaken: "Ce lien est déjà pris, choisis-en un autre.",
       slugInvalid: "Lien invalide (lettres minuscules, chiffres et tirets).",
-      nameRequired: "Indique au moins ton prénom.",
+      nameRequired: "Indique ton prénom.",
     },
   },
   availability: {
@@ -329,7 +330,7 @@ const fr = {
   goal: {
     title: "Objectif",
     settingsTitle: "Objectif du mois",
-    settingsDesc: "Revenus et séances visés, affichés en jauges sur ton dashboard.",
+    settingsDesc: "Revenus et séances visés, affichés en jauges sur ta vue d'ensemble.",
     cta: "Définir dans les réglages",
     saved: "Objectif enregistré",
     edit: "Modifier l'objectif (dans les réglages)",
@@ -373,7 +374,7 @@ const fr = {
   plans: {
     title: "Abonnement",
     currentPlan: "Ton offre",
-    free: "Madger Basic",
+    free: "Gratuit",
     pro: "Madger Pro",
     proActive: "Pro actif",
     welcomePro:
@@ -406,7 +407,7 @@ const fr = {
       "Rappels automatiques",
     ],
     featuresPro: [
-      "Tout le plan Free",
+      "Tout le plan Gratuit",
       "0 % de commission Madger",
       "Statistiques avancées",
       "Support prioritaire",
@@ -451,7 +452,7 @@ const fr = {
   },
   promo: {
     title: "Code d'accès anticipé",
-    desc: "Membre early access ? Entre ton code pour 3 mois de Pro offerts.",
+    desc: "Membre de l'accès anticipé ? Entre ton code pour 3 mois de Pro offerts.",
     placeholder: "Ton code",
     redeem: "Valider",
     redeeming: "Validation…",
@@ -536,7 +537,7 @@ const fr = {
     emptyDesc: "Tes échanges apparaîtront ici.",
     back: "Conversations",
     backLabel: "Retour",
-    viewSessions: "Séances",
+    viewSessions: "Mes séances",
     emptyThread: "Écris ton premier message",
     placeholder: "Écris un message…",
     send: "Envoyer",
@@ -628,7 +629,7 @@ const fr = {
     },
   },
   overview: {
-    title: "Dashboard",
+    title: "Vue d'ensemble",
     greeting: "Bonjour",
     greetingMorning: "Bonjour",
     greetingAfternoon: "Bon après-midi",
@@ -644,6 +645,7 @@ const fr = {
     chartRevenue: "Revenus",
     chartSessions: "Séances par semaine",
     breakdownTitle: "Répartition du mois",
+    seeAll: "Tout voir",
     weekLoad: "Ta semaine",
     weekRevenue: "Encaissé cette semaine",
     breakdownOther: "Autres",
@@ -747,6 +749,7 @@ const fr = {
       "Paiement sécurisé : ton argent est protégé et versé au coach seulement après ta séance.",
     about: "À propos",
     results: "Résultats",
+    zoom: "Agrandir la photo",
     before: "Avant",
     after: "Après",
     services: "Prestations",
@@ -799,7 +802,7 @@ const fr = {
     createAccount: "Créer un compte pour suivre mes séances",
     errors: {
       generic: "Une erreur est survenue. Réessaie.",
-      nameRequired: "Indique au moins ton prénom.",
+      nameRequired: "Indique ton prénom.",
       emailRequired: "Indique ton email pour être recontacté.",
       dateRequired: "Choisis une date et une heure.",
       datePast: "Choisis une date à venir.",
@@ -938,7 +941,7 @@ const fr = {
     slugChangeWarning:
       "Attention : ton ancien lien (bio Instagram, cartes de visite…) ne fonctionnera plus après l'enregistrement.",
     googleNotConfigured:
-      "Les clés Google ne sont pas encore actives côté serveur : ajoute GOOGLE_CLIENT_ID et GOOGLE_CLIENT_SECRET dans Vercel, puis redéploie.",
+      "La connexion Google n'est pas encore activée sur Madger. Utilise l'email et le mot de passe en attendant.",
     googleError:
       "La connexion Google a échoué. Réessaie, et vérifie que ton email est bien dans les utilisateurs test de l'app Google.",
     viewPublic: "Voir ma page publique",
@@ -947,7 +950,7 @@ const fr = {
     saved: "Enregistré",
     errors: {
       generic: "Une erreur est survenue. Réessaie.",
-      nameRequired: "Le prénom est obligatoire.",
+      nameRequired: "Indique ton prénom.",
       slugTaken: "Ce lien est déjà pris, choisis-en un autre.",
       slugInvalid: "Lien invalide (minuscules, chiffres et tirets).",
     },
@@ -1342,6 +1345,7 @@ const en: Dictionary = {
     save: "Save",
     cancel: "Cancel",
     close: "Close",
+    optional: "(optional)",
     loading: "Loading…",
     delete: "Delete",
   },
@@ -1685,7 +1689,7 @@ const en: Dictionary = {
   plans: {
     title: "Subscription",
     currentPlan: "Your plan",
-    free: "Madger Basic",
+    free: "Free",
     pro: "Madger Pro",
     proActive: "Pro active",
     welcomePro:
@@ -1847,7 +1851,7 @@ const en: Dictionary = {
     emptyDesc: "Your conversations will show up here.",
     back: "Conversations",
     backLabel: "Back",
-    viewSessions: "Sessions",
+    viewSessions: "My sessions",
     emptyThread: "Write your first message",
     placeholder: "Write a message…",
     send: "Send",
@@ -1955,6 +1959,7 @@ const en: Dictionary = {
     chartRevenue: "Revenue",
     chartSessions: "Sessions per week",
     breakdownTitle: "This month's breakdown",
+    seeAll: "See all",
     weekLoad: "Your week",
     weekRevenue: "Collected this week",
     breakdownOther: "Other",
@@ -2058,6 +2063,7 @@ const en: Dictionary = {
       "Secure payment: your money is protected and released to the coach only after your session.",
     about: "About",
     results: "Results",
+    zoom: "Enlarge photo",
     before: "Before",
     after: "After",
     services: "Services",

@@ -104,8 +104,11 @@ export default async function ReservationPage({
           {!booking ? (
             <div className="rounded-2xl border border-border bg-bg-card p-6 text-center">
               <p className="text-text-muted">{r.notFound}</p>
-              <Link href="/" className="mt-4 inline-block text-sm text-accent hover:underline">
-                {r.backHome}
+              <Link
+                href="/coachs"
+                className="mt-4 inline-block rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+              >
+                {dict.clientSpace.findCoach}
               </Link>
             </div>
           ) : (

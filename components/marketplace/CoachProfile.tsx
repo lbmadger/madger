@@ -51,6 +51,9 @@ export default function CoachProfile({
   // Modale « tous les avis », filtrable par note (via les barres du résumé).
   const [reviewsOpen, setReviewsOpen] = useState(false);
   const [starFilter, setStarFilter] = useState<number | null>(null);
+  // Photo Résultats agrandie (lightbox) : en vignette, la preuve est
+  // illisible.
+  const [zoom, setZoom] = useState<CoachPhoto | null>(null);
 
   // Retour de connexion/inscription ou de Stripe avec ?book=<serviceId|1> :
   // rouvre le modal de réservation là où le client s'était arrêté (le
@@ -400,7 +403,14 @@ export default function CoachProfile({
                 {photos.map((p) => (
                   <figure
                     key={p.id}
-                    className="relative overflow-hidden rounded-xl border border-border bg-bg-elevated"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={t("coachProfile.zoom")}
+                    onClick={() => setZoom(p)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") setZoom(p);
+                    }}
+                    className="relative cursor-zoom-in overflow-hidden rounded-xl border border-border bg-bg-elevated transition-colors hover:border-accent/40"
                   >
                     {p.url_after ? (
                       <div className="grid grid-cols-2">
@@ -631,11 +641,6 @@ export default function CoachProfile({
                 {coachFullName(coach)}
               </p>
             )}
-            {coach.rating_avg != null && coach.rating_count > 0 && (
-              <p className="flex items-center gap-1 text-[11px] text-text-muted">
-                <StarIcon size={11} className="mr-1 inline-block align-[-1px] text-accent" />{Number(coach.rating_avg)} ({coach.rating_count})
-              </p>
-            )}
           </div>
           <div className="flex shrink-0 gap-2">
             <Button
@@ -698,6 +703,48 @@ export default function CoachProfile({
         </Dialog>
       )}
 
+      {/* Photo Résultats en grand (lightbox) */}
+      {zoom && (
+        <Dialog
+          onClose={() => setZoom(null)}
+          label={zoom.caption ?? t("coachProfile.results")}
+          className="w-full max-w-2xl overflow-hidden rounded-2xl border border-border bg-bg-card p-3"
+        >
+          {zoom.url_after ? (
+            <div className="grid grid-cols-2 gap-2">
+              <div className="relative aspect-[4/5] overflow-hidden rounded-lg">
+                <Image src={zoom.url} alt={zoom.caption ?? ""} fill sizes="(max-width: 640px) 45vw, 330px" className="object-cover" />
+                <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-medium uppercase text-white backdrop-blur">
+                  {t("coachProfile.before")}
+                </span>
+              </div>
+              <div className="relative aspect-[4/5] overflow-hidden rounded-lg">
+                <Image src={zoom.url_after} alt={zoom.caption ?? ""} fill sizes="(max-width: 640px) 45vw, 330px" className="object-cover" />
+                <span className="absolute left-2 top-2 rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold uppercase text-black">
+                  {t("coachProfile.after")}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="relative aspect-[4/5] overflow-hidden rounded-lg">
+              <Image src={zoom.url} alt={zoom.caption ?? ""} fill sizes="(max-width: 640px) 90vw, 660px" className="object-cover" />
+            </div>
+          )}
+          <div className="flex items-center justify-between gap-3 px-1 pb-1 pt-3">
+            <p className="text-sm font-semibold text-text-base">
+              {zoom.caption ?? ""}
+            </p>
+            <button
+              type="button"
+              onClick={() => setZoom(null)}
+              className="shrink-0 rounded-full border border-border-strong px-3.5 py-1.5 text-xs font-medium text-text-muted transition-colors hover:border-accent hover:text-accent"
+            >
+              {t("common.close")}
+            </button>
+          </div>
+        </Dialog>
+      )}
+
       {/* Tous les avis : liste complète, filtrable par note. */}
       {reviewsOpen && (
         <Dialog
@@ -713,7 +760,7 @@ export default function CoachProfile({
             <button
               type="button"
               onClick={() => setReviewsOpen(false)}
-              aria-label={t("common.cancel")}
+              aria-label={t("common.close")}
               className="flex h-8 w-8 items-center justify-center rounded-full border border-border-strong text-text-muted transition-colors hover:border-accent hover:text-accent"
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">

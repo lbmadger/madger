@@ -273,7 +273,7 @@ export default function ClientOnboarding() {
               </label>
             </div>
             <label className="flex flex-col gap-1.5">
-              <span className={labelClass}>{t("clientOnboarding.phone")}</span>
+              <span className={labelClass}>{t("clientOnboarding.phone")} <span className="font-normal text-text-dim">{t("common.optional")}</span></span>
               <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} />
             </label>
           </>
@@ -284,17 +284,17 @@ export default function ClientOnboarding() {
           <>
             <div className="grid grid-cols-2 gap-3">
               <label className="flex flex-col gap-1.5">
-                <span className={labelClass}>{t("clientOnboarding.height")}</span>
+                <span className={labelClass}>{t("clientOnboarding.height")} <span className="font-normal text-text-dim">{t("common.optional")}</span></span>
                 <input type="number" inputMode="numeric" min={100} max={250} value={heightCm} onChange={(e) => setHeightCm(e.target.value)} className={inputClass} />
               </label>
               <label className="flex flex-col gap-1.5">
-                <span className={labelClass}>{t("clientOnboarding.weight")}</span>
+                <span className={labelClass}>{t("clientOnboarding.weight")} <span className="font-normal text-text-dim">{t("common.optional")}</span></span>
                 <input type="number" inputMode="decimal" step="0.5" min={30} max={300} value={weightKg} onChange={(e) => setWeightKg(e.target.value)} className={inputClass} />
               </label>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <label className="flex flex-col gap-1.5">
-                <span className={labelClass}>{t("clientOnboarding.birthDate")}</span>
+                <span className={labelClass}>{t("clientOnboarding.birthDate")} <span className="font-normal text-text-dim">{t("common.optional")}</span></span>
                 <input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} className={inputClass} />
               </label>
               <label className="flex flex-col gap-1.5">

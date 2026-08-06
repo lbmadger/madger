@@ -853,7 +853,7 @@ export default async function OverviewPage() {
                   href="/dashboard/agenda"
                   className="text-xs font-medium text-accent hover:underline"
                 >
-                  {dict.agenda.title}
+                  {o.seeAll}
                 </Link>
               </div>
 
@@ -984,7 +984,7 @@ export default async function OverviewPage() {
                   href="/dashboard/messages"
                   className="text-xs font-medium text-accent hover:underline"
                 >
-                  {o.allInvoices}
+                  {o.seeAll}
                 </Link>
               </div>
               {msgPreview.length === 0 ? (
@@ -1126,7 +1126,7 @@ export default async function OverviewPage() {
                   href="/dashboard/factures"
                   className="text-xs font-medium text-accent hover:underline"
                 >
-                  {o.allInvoices}
+                  {o.seeAll}
                 </Link>
               </div>
               {(latestInvoices ?? []).length === 0 ? (

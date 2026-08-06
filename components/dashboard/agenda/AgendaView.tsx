@@ -518,13 +518,10 @@ export default function AgendaView({
             </button>
           ))}
         </div>
+        {/* Un seul accès aux Disponibilités sur cet écran : celui de la
+            légende du calendrier (le doublon d'ici était en plus masqué en
+            mobile). */}
         <div className="flex shrink-0 items-center gap-2">
-          <Link
-            href="/dashboard/disponibilites"
-            className="hidden whitespace-nowrap rounded-full border border-border-strong px-4 py-2.5 text-sm font-medium text-text-muted transition-colors hover:text-text-base sm:inline-flex"
-          >
-            {t("availability.title")}
-          </Link>
           <button
             type="button"
             onClick={() => {

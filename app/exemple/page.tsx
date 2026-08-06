@@ -45,7 +45,7 @@ const DEMO_COACH: PublicCoach = {
   rating_count: 27,
   sport: "musculation",
   specialties: ["weight_loss", "muscle_gain", "fitness"],
-  venues: ["coach_gym", "home", "outdoor"],
+  venues: ["coach_gym", "client_home", "outdoor"],
   gym_name: "Basic-Fit Lyon Part-Dieu",
   from_price_cents: 4500,
   verified: true,

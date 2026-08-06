@@ -88,6 +88,8 @@ function AccessForm() {
             value={code}
             onChange={(e) => setCode(e.target.value)}
             placeholder="Code d'accès"
+            aria-label="Code d'accès"
+            required
             autoFocus
             className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-center text-base tracking-widest text-white outline-none transition-colors focus:border-[#CBFF03]"
           />

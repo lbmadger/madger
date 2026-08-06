@@ -420,7 +420,7 @@ export default function OnboardingForm({
               />
             </label>
             <label className="flex flex-col gap-1.5">
-              <span className={labelClass}>{t("onboarding.lastName")}</span>
+              <span className={labelClass}>{t("onboarding.lastName")} <span className="font-normal text-text-dim">{t("common.optional")}</span></span>
               <input
                 type="text"
                 value={lastName}
@@ -431,7 +431,7 @@ export default function OnboardingForm({
           </div>
 
           <label className="flex flex-col gap-1.5">
-            <span className={labelClass}>{t("onboarding.specialty")}</span>
+            <span className={labelClass}>{t("onboarding.specialty")} <span className="font-normal text-text-dim">{t("common.optional")}</span></span>
             <input
               type="text"
               value={specialty}
@@ -442,7 +442,7 @@ export default function OnboardingForm({
           </label>
 
           <label className="flex flex-col gap-1.5">
-            <span className={labelClass}>{t("onboarding.city")}</span>
+            <span className={labelClass}>{t("onboarding.city")} <span className="font-normal text-text-dim">{t("common.optional")}</span></span>
             <CityAutocomplete
               value={city}
               onChange={(v) => {
@@ -459,7 +459,7 @@ export default function OnboardingForm({
           </label>
 
           <label className="flex flex-col gap-1.5">
-            <span className={labelClass}>{t("onboarding.siret")}</span>
+            <span className={labelClass}>{t("onboarding.siret")} <span className="font-normal text-text-dim">{t("common.optional")}</span></span>
             <input
               type="text"
               inputMode="numeric"

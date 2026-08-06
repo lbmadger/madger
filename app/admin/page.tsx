@@ -247,7 +247,7 @@ export default async function AdminOverview() {
             kind="currency"
             index={3}
             trend={pctTrend(commissionMonthCents, commissionPrevMonthCents, "vs mois dernier")}
-            info="Les 5 % prélevés sur les coachs Basic, comptés le jour du versement au coach (pas le jour du paiement client) : c'est à ce moment que la commission naît, même règle que tes factures."
+            info="Les 5 % prélevés sur les coachs Gratuit, comptés le jour du versement au coach (pas le jour du paiement client) : c'est à ce moment que la commission naît, même règle que tes factures."
           />
           <AnimatedStat
             label="Volume traité (30 j)"
@@ -286,7 +286,7 @@ export default async function AdminOverview() {
             </span>
             <span className="flex items-center gap-1.5">
               <span className="h-2.5 w-2.5 rounded-full bg-accent/50" />
-              Basic ({Math.max(0, points.length - proCount)})
+              Gratuit ({Math.max(0, points.length - proCount)})
             </span>
             {coaches - points.length > 0 && (
               <span className="text-text-dim">

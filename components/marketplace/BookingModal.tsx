@@ -722,7 +722,7 @@ export default function BookingModal({
 
               <div className="grid grid-cols-2 gap-3">
                 <label className="flex flex-col gap-1.5">
-                  <span className={labelClass}>{t("booking.firstName")}</span>
+                  <span className={labelClass}>{t("booking.firstName")} <span className="text-accent">*</span></span>
                   <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} required className={inputClass} />
                 </label>
                 <label className="flex flex-col gap-1.5">
@@ -735,7 +735,7 @@ export default function BookingModal({
                   de l'inscription au moment de payer. */}
               {Boolean(sessionEmail) && (
                 <label className="flex flex-col gap-1.5">
-                  <span className={labelClass}>{t("booking.email")}</span>
+                  <span className={labelClass}>{t("booking.email")} <span className="text-accent">*</span></span>
                   <input
                     type="email"
                     value={email}
