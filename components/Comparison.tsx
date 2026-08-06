@@ -105,7 +105,7 @@ export default function Comparison() {
           ))}
           <div style={{ padding: "14px 18px" }}>
             <a href="#early-access" className="block w-full text-center py-3 rounded-xl text-black font-bold text-sm" style={{ background: "#CBFF03" }}>
-              Commencer gratuitement
+              Rejoindre l'accès anticipé
             </a>
           </div>
         </motion.div>

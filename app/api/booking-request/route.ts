@@ -145,12 +145,9 @@ export async function POST(req: NextRequest) {
       if (m.includes("coach_not_found")) {
         return NextResponse.json({ error: "coach_not_found" }, { status: 404 });
       }
-      return NextResponse.json(
-        // `detail` est affiché en petit dans le formulaire : il donne la
-        // cause technique exacte sans exposer de secret.
-        { error: "server_error", detail: m.slice(0, 200) },
-        { status: 500 }
-      );
+      // Pas de détail technique côté public : le message Postgres brut
+      // exposait contraintes et structure de la base (il reste en logs).
+      return NextResponse.json({ error: "server_error" }, { status: 500 });
     }
 
     // ── Emails (best-effort) : confirmation au client + alerte au coach ────

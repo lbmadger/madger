@@ -291,21 +291,27 @@ export default function AgendaView({
   // Annule une séance confirmée. Si un paiement est sous séquestre, le
   // remboursement (selon la formule d'annulation ou intégral si le coach
   // annule) est exécuté côté serveur.
-  async function cancelBooking(id: string, by: "coach" | "client") {
+  async function cancelBooking(
+    id: string,
+    by: "coach" | "client",
+    alreadyConfirmed = false
+  ) {
     // Confirmation OBLIGATOIRE : cette action déclenche un remboursement
     // Stripe irréversible (total si le coach annule, selon la formule si
     // c'est le client).
-    const ok = await confirm({
-      title: t("agenda.cancelBooking"),
-      message:
-        by === "coach"
-          ? t("agenda.cancelConfirmCoach")
-          : t("agenda.cancelConfirmClient"),
-      confirmLabel: t("agenda.cancelBooking"),
-      cancelLabel: t("agenda.cancelKeep"),
-      danger: true,
-    });
-    if (!ok) return;
+    if (!alreadyConfirmed) {
+      const ok = await confirm({
+        title: t("agenda.cancelBooking"),
+        message:
+          by === "coach"
+            ? t("agenda.cancelConfirmCoach")
+            : t("agenda.cancelConfirmClient"),
+        confirmLabel: t("agenda.cancelBooking"),
+        cancelLabel: t("agenda.cancelKeep"),
+        danger: true,
+      });
+      if (!ok) return;
+    }
     setCancelling(true);
     setActionError(null);
     setActionErrorId(id);
@@ -343,7 +349,8 @@ export default function AgendaView({
       danger: true,
     });
     if (!ok) return;
-    cancelBooking(id, "coach");
+    // Déjà confirmé ci-dessus : pas de seconde boîte de dialogue.
+    cancelBooking(id, "coach", true);
   }
 
   // Séances à venir uniquement (>= maintenant), regroupées par jour.

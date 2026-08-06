@@ -90,6 +90,9 @@ export default function MarketplaceView({
           .order("created_at", { ascending: false })
           .limit(50);
         setCoaches((data ?? []) as PublicCoach[]);
+        // Parcours par défaut : la pagination reste possible (le
+        // setHasMore(false) global ci-dessus tuait « Voir plus »).
+        setHasMore(((data ?? []) as PublicCoach[]).length >= 50);
         return;
       }
 
@@ -434,10 +437,11 @@ export default function MarketplaceView({
               <button
                 type="button"
                 onClick={() => {
-                  setFilter("online");
+                  // setFilter déclenche déjà la recherche (effet [filter]) :
+                  // un runSearch ici créerait deux requêtes concurrentes.
                   setQuery("");
                   setCoords(null);
-                  runSearch("", null);
+                  setFilter("online");
                 }}
                 className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90"
               >

@@ -169,7 +169,7 @@ export default function CoachDashboard() {
               { label: "Revenus ce mois", value: "1 240 €", delta: "+18 %", color: "#CBFF03" },
               { label: "Séances ce mois", value: "24",      delta: "+4",    color: "#CBFF03" },
               { label: "Clients actifs",  value: "12",      delta: "+2",    color: "#4ADE80" },
-              { label: "Taux remplissage",value: "87 %",    delta: "+5 %",color: "#4ADE80" },
+              { label: "Taux de remplissage",value: "87 %",    delta: "+5 %",color: "#4ADE80" },
             ].map(({ label, value, delta, color }) => (
               <motion.div
                 key={label}

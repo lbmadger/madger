@@ -789,15 +789,15 @@ export default function BookingModal({
                   pour une séance à date déterminée. */}
               {payMode && (
                 <p className="text-center text-[11px] leading-relaxed text-text-dim">
-                  {t("booking.legalPrefix")}{" "}
+                  {t("coachProfile.legalPrefix")}{" "}
                   <Link href="/cgv" target="_blank" className="underline hover:text-text-muted">
-                    {t("booking.legalCgv")}
+                    {t("coachProfile.legalCgv")}
                   </Link>{" "}
-                  {t("booking.legalAnd")}{" "}
+                  {t("coachProfile.legalAnd")}{" "}
                   <Link href="/charte-paiement" target="_blank" className="underline hover:text-text-muted">
-                    {t("booking.legalCharter")}
+                    {t("coachProfile.legalCharter")}
                   </Link>
-                  {isSubscription ? "" : ` ${t("booking.legalNoWithdrawal")}`}
+                  {isSubscription ? "" : ` ${t("coachProfile.legalNoWithdrawal")}`}
                 </p>
               )}
             </form>

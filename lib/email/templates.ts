@@ -395,9 +395,14 @@ export function sessionReminderClient(p: {
   online: boolean;
   reservationUrl: string;
   meetUrl?: string;
+  // true = la séance a lieu le jour même (cron du matin) : le sujet ne
+  // doit pas annoncer « demain ».
+  sameDay?: boolean;
 }): Email {
   return {
-    subject: `C'est demain : séance avec ${p.coachName} ⏰`,
+    subject: p.sameDay
+      ? `C'est aujourd'hui : séance avec ${p.coachName} ⏰`
+      : `C'est demain : séance avec ${p.coachName} ⏰`,
     html: layout({
       preheader: `Rappel : ta séance a lieu ${p.dateStr}.`,
       eyebrow: "Rappel de séance",
@@ -1271,10 +1276,10 @@ export function proCancelledCoach(p: {
       ? {
           subject: "Your Pro plan has ended",
           preheader:
-            "Your account is back on Madger Basic. You can reactivate Pro anytime.",
+            "Your account is back on plan Gratuit. You can reactivate Pro anytime.",
           eyebrow: "Pro plan",
-          title: "Back to Madger Basic",
-          intro: `Your Pro subscription has ended and your account is back on <b style="color:${C.text};">Madger Basic</b>. Nothing else changes: your calendar, clients and payments keep working exactly the same. The only difference is that the <b style="color:${C.text};">5% Madger commission</b> applies again to your sessions.`,
+          title: "Back to plan Gratuit",
+          intro: `Your Pro subscription has ended and your account is back on <b style="color:${C.text};">plan Gratuit</b>. Nothing else changes: your calendar, clients and payments keep working exactly the same. The only difference is that the <b style="color:${C.text};">5% Madger commission</b> applies again to your sessions.`,
           boxTitle: "Come back whenever you want",
           boxBody:
             "Reactivate Pro in two clicks to get back to 0% commission and your advanced stats. Your data is right where you left it.",
@@ -1285,10 +1290,10 @@ export function proCancelledCoach(p: {
       : {
           subject: "Ton plan Pro est terminé",
           preheader:
-            "Ton compte repasse en Madger Basic. Tu peux réactiver Pro à tout moment.",
+            "Ton compte repasse au plan Gratuit. Tu peux réactiver Pro à tout moment.",
           eyebrow: "Plan Pro",
-          title: "Retour en Madger Basic",
-          intro: `Ton abonnement Pro est arrivé à son terme : ton compte repasse en <b style="color:${C.text};">Madger Basic</b>. Rien d'autre ne change : ton agenda, tes clients et tes paiements continuent de fonctionner exactement pareil. Seule différence : la <b style="color:${C.text};">commission Madger de 5 %</b> s'applique de nouveau sur tes séances.`,
+          title: "Retour au plan Gratuit",
+          intro: `Ton abonnement Pro est arrivé à son terme : ton compte repasse en <b style="color:${C.text};">plan Gratuit</b>. Rien d'autre ne change : ton agenda, tes clients et tes paiements continuent de fonctionner exactement pareil. Seule différence : la <b style="color:${C.text};">commission Madger de 5 %</b> s'applique de nouveau sur tes séances.`,
           boxTitle: "Tu peux revenir quand tu veux",
           boxBody:
             "Réactive Pro en deux clics pour retrouver 0 % de commission et tes statistiques avancées. Tes données sont restées exactement là où tu les as laissées.",

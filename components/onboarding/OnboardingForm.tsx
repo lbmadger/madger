@@ -781,7 +781,17 @@ export default function OnboardingForm({
           </Button>
           <button
             type="button"
-            onClick={() => setStep(6)}
+            onClick={async () => {
+              // « Passer » doit AUSSI finaliser : sans les drapeaux, le
+              // dashboard renverrait vers l'onboarding en boucle.
+              const supabase = createClient();
+              await supabase
+                .from("coaches")
+                .update({ listed: true, onboarding_completed: true })
+                .eq("id", userId);
+              track("onboarding_completed");
+              setStep(6);
+            }}
             className="text-center text-xs font-medium text-text-dim transition-colors hover:text-text-base"
           >
             {t("onboarding.skip")}

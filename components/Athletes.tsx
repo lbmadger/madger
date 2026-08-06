@@ -7,7 +7,7 @@ const CARDS = [
   {
     photo: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=1000&fit=crop&auto=format&q=85",
     tag: "Gain de temps",
-    title: "Récupérez 5h\npar semaine",
+    title: "Récupère 5 h\npar semaine",
     desc: "Réservations, paiements et factures générées automatiquement à chaque séance. Tu fais ce pour quoi tu es payé : coacher.",
   },
   {

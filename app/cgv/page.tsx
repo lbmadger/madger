@@ -45,7 +45,7 @@ export default function CGV() {
             <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>Offres et tarifs</h2>
             <p>Madger propose deux formules :</p>
             <ul className="mt-3 flex flex-col gap-2" style={{ paddingLeft: 20, listStyleType: "disc" }}>
-              <li><strong className="text-white">Madger Basic</strong> : 0 €, 5 % de commission par séance encaissée</li>
+              <li><strong className="text-white">« Gratuit »</strong> : 0 €, 5 % de commission par séance encaissée</li>
               <li><strong className="text-white">Madger Pro</strong> : 49 € HT / mois ou 490 € HT / an, 0 % de commission</li>
             </ul>
             <p className="mt-3">

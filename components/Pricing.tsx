@@ -14,7 +14,7 @@ const freeFeatures = [
 ];
 
 const proFeatures = [
-  "Tout le plan Free",
+  "Tout le plan Gratuit",
   "0 % de commission Madger",
   "Page coach personnalisable",
   "Statistiques avancées",
@@ -44,7 +44,7 @@ export default function Pricing() {
         background: "linear-gradient(180deg, transparent, rgba(255,255,255,0.01), transparent)",
       }}
     >
-      <CoachAside line="Démarrez sans engagement." src="/character/coach-ok.webp" side="right" inset={12} />
+      <CoachAside line="Démarre sans engagement." src="/character/coach-ok.webp" side="right" inset={12} />
       <div className="max-w-6xl mx-auto px-5 sm:px-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -96,7 +96,7 @@ export default function Pricing() {
               </div>
               <div style={{ minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "center" }}>
                 <div className="font-extrabold text-white mb-1" style={{ fontSize: "clamp(24px, 6.5vw, 52px)", letterSpacing: "-0.04em", lineHeight: 1 }}>
-                  Madger Basic
+                  Gratuit
                 </div>
                 <div className="text-text-muted text-sm pt-1">
                   Pour démarrer · tarif communiqué au lancement

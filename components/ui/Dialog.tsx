@@ -2,6 +2,11 @@
 
 import { useEffect, useRef } from "react";
 
+// Pile des modales ouvertes : Échap et le piège de focus ne concernent que
+// celle du DESSUS (une confirmation par-dessus une fiche ne doit pas fermer
+// les deux).
+const dialogStack: symbol[] = [];
+
 // Coquille de modale accessible, partagée par toutes les modales du produit :
 // - role="dialog" + aria-modal + aria-label (lecteurs d'écran)
 // - focus posé sur le premier élément interactif à l'ouverture
@@ -24,6 +29,9 @@ export default function Dialog({
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const token = Symbol("dialog");
+    dialogStack.push(token);
+    const isTop = () => dialogStack[dialogStack.length - 1] === token;
     const previouslyFocused = document.activeElement as HTMLElement | null;
     const panel = panelRef.current;
 
@@ -39,6 +47,7 @@ export default function Dialog({
     focusables()[0]?.focus();
 
     function onKey(e: KeyboardEvent) {
+      if (!isTop()) return;
       if (e.key === "Escape") {
         e.stopPropagation();
         onClose();
@@ -59,6 +68,8 @@ export default function Dialog({
 
     document.addEventListener("keydown", onKey);
     return () => {
+      const i = dialogStack.indexOf(token);
+      if (i !== -1) dialogStack.splice(i, 1);
       document.removeEventListener("keydown", onKey);
       previouslyFocused?.focus?.();
     };

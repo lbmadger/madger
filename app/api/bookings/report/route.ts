@@ -90,7 +90,11 @@ export async function POST(req: NextRequest) {
       disputed_at: new Date().toISOString(),
       dispute_reason: reason,
     })
-    .eq("id", payment.id);
+    .eq("id", payment.id)
+    // Gel uniquement si les fonds sont encore retenus : en course avec le
+    // cron de versement, on ne marque pas « en litige » de l'argent déjà
+    // transféré au coach.
+    .eq("escrow_status", "held");
 
   // Emails de litige (best-effort) : alerte admins, information du coach
   // (versement gelé) et accusé de réception au client.

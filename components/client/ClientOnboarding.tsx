@@ -46,10 +46,14 @@ export default function ClientOnboarding() {
   // rechargement ou une déconnexion accidentelle. Restauré au montage,
   // purgé quand le profil est enregistré.
   const DRAFT_KEY = "madger_client_onboarding_draft";
+  // true = un brouillon vient d'être restauré : le pré-remplissage async du
+  // profil existant ne doit alors PAS écraser la saisie en cours.
+  const draftRestoredRef = { current: false } as { current: boolean };
   useEffect(() => {
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (!raw) return;
+      draftRestoredRef.current = true;
       const d = JSON.parse(raw) as Record<string, unknown>;
       if (typeof d.step === "number") setStep(d.step);
       if (typeof d.firstName === "string") setFirstName(d.firstName);
@@ -106,6 +110,7 @@ export default function ClientOnboarding() {
         .select("*")
         .eq("id", user.id)
         .maybeSingle();
+      if (draftRestoredRef.current) return;
       if (p) {
         setFirstName(p.first_name ?? "");
         setLastName(p.last_name ?? "");

@@ -66,8 +66,13 @@ export async function POST() {
         "customer.subscription.deleted",
         // Séances : enregistre la réservation même sans retour navigateur.
         "checkout.session.completed",
-        // Chargeback : gèle le paiement en litige.
+        // Chargeback : gèle le paiement en litige, puis le résout.
         "charge.dispute.created",
+        "charge.dispute.closed",
+        // Remboursement fait depuis le dashboard Stripe : synchronisé.
+        "charge.refunded",
+        // Échec de renouvellement d'abonnement.
+        "invoice.payment_failed",
       ];
     const hooks = await stripe.webhookEndpoints.list({ limit: 100 });
     const existing = hooks.data.find((h) => h.url === result.webhook.url);

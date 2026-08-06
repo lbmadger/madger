@@ -74,9 +74,15 @@ export async function GET(req: NextRequest) {
         // Fuseau du coach : la séance a lieu à son heure locale.
         timeZone: (coach?.timezone as string | null) || "Europe/Paris",
       });
+      // Séance le jour même (cron de 7 h) : le sujet ne doit pas dire
+      // « demain ».
+      const sameDay =
+        new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeZone: (coach?.timezone as string | null) || "Europe/Paris" }).format(new Date(b.starts_at as string)) ===
+        new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeZone: (coach?.timezone as string | null) || "Europe/Paris" }).format(new Date());
       const t = sessionReminderClient({
         coachName,
         dateStr,
+        sameDay,
         online: b.location === "online",
         reservationUrl: `${APP_URL}/reservation/${b.id}`,
         meetUrl:

@@ -437,7 +437,7 @@ export default function EarlyAccessForm() {
                   <Label>Instagram ou site <span style={{ color: "var(--text-dim)" }}>(optionnel)</span></Label>
                   <input
                     type="text"
-                    placeholder="@votre_compte ou https://..."
+                    placeholder="@ton_compte ou https://..."
                     value={fields.instagram_site}
                     onChange={set("instagram_site")}
                     className={cls}
