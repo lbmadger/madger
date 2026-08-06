@@ -78,7 +78,22 @@ export default function AuthForm({ mode }: { mode: Mode }) {
             emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`,
           },
         });
-        if (error) return setError(t("auth.errors.generic"));
+        if (error) {
+          // Le cas n°1 en vrai : l'email a déjà un compte. Le dire, sinon
+          // l'utilisateur boucle sur « une erreur est survenue ».
+          const msg = (error.message ?? "").toLowerCase();
+          return setError(
+            msg.includes("already registered") || msg.includes("already exists")
+              ? t("auth.errors.emailTaken")
+              : t("auth.errors.generic")
+          );
+        }
+        // Compte déjà existant avec confirmation email active : Supabase
+        // « réussit » sans créer d'identité (anti-énumération). Sans ce
+        // test, on afficherait « vérifie ta boîte mail » et rien n'arrive.
+        if (data.user && (data.user.identities?.length ?? 0) === 0) {
+          return setError(t("auth.errors.emailTaken"));
+        }
         // Confirmation email active → pas de session immédiate : on invite à
         // vérifier la boîte mail. Sinon, on entre directement.
         if (data.session) {

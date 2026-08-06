@@ -32,6 +32,7 @@ export default function MessageThread({
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [body, setBody] = useState("");
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // Chargement INCRÉMENTAL : on ne demande que les messages plus récents que
@@ -116,6 +117,7 @@ export default function MessageThread({
     const text = body.trim();
     if (!text) return;
     setSending(true);
+    setSendError(false);
     setBody("");
     try {
       const supabase = createClient();
@@ -125,7 +127,9 @@ export default function MessageThread({
         body: text,
       });
       if (error) {
-        setBody(text); // restaure en cas d'échec
+        // Échec visible : le texte revient dans le champ ET on le dit.
+        setBody(text);
+        setSendError(true);
       } else {
         // Notifie l'autre participant par email (throttlé côté serveur).
         fetch("/api/messages/notify", {
@@ -205,6 +209,14 @@ export default function MessageThread({
       </div>
 
       {/* Composer */}
+      {sendError && (
+        <p
+          role="alert"
+          className="border-t border-danger/20 bg-danger/[0.06] px-4 py-2 text-center text-xs text-danger"
+        >
+          {t("messages.sendFailed")}
+        </p>
+      )}
       <form
         onSubmit={send}
         className="flex items-center gap-2 border-t border-border px-4 py-3"

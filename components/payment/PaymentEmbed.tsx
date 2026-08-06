@@ -13,12 +13,22 @@ import MadgerLogo from "@/components/ui/MadgerLogo";
 // dans l'URL sans risque. `back` ramène au point de départ (page du coach
 // avec la modale rouverte, ou page Abonnement) : chemins internes uniquement.
 export default function PaymentEmbed() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const params = useSearchParams();
   const cs = params.get("cs");
   const rawBack = params.get("back") || "/";
   const back =
     rawBack.startsWith("/") && !rawBack.startsWith("//") ? rawBack : "/";
+  // Récap de ce qui est payé (affichage seul, passé en query par la modale
+  // de réservation) : prestation, coach, créneau, lieu.
+  const recapService = params.get("sv");
+  const recapCoach = params.get("co");
+  const recapAtRaw = params.get("at");
+  const recapAt =
+    recapAtRaw && !Number.isNaN(new Date(recapAtRaw).getTime())
+      ? new Date(recapAtRaw)
+      : null;
+  const recapLoc = params.get("lo");
   const mountRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState(false);
 
@@ -76,6 +86,46 @@ export default function PaymentEmbed() {
         </div>
       ) : (
         <>
+          {/* Récapitulatif : le client revoit CE qu'il paie avant de payer. */}
+          {recapService && (
+            <div className="mb-4 rounded-2xl border border-border bg-bg-card px-4 py-3.5">
+              <p className="text-sm font-semibold text-text-base">
+                {recapService}
+                {recapCoach ? (
+                  <span className="font-normal text-text-muted">
+                    {" "}
+                    · {recapCoach}
+                  </span>
+                ) : null}
+              </p>
+              {(recapAt || recapLoc) && (
+                <p className="mt-0.5 text-xs capitalize text-text-muted">
+                  {recapAt
+                    ? recapAt.toLocaleString(
+                        locale === "en" ? "en-GB" : "fr-FR",
+                        {
+                          weekday: "long",
+                          day: "numeric",
+                          month: "long",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        }
+                      )
+                    : null}
+                  {recapLoc ? (
+                    <span className="normal-case">
+                      {recapAt ? " · " : ""}
+                      {t(
+                        recapLoc === "online"
+                          ? "agenda.badge.online"
+                          : "agenda.badge.in_person"
+                      )}
+                    </span>
+                  ) : null}
+                </p>
+              )}
+            </div>
+          )}
           {/* Le formulaire Stripe est clair : un cadre blanc arrondi évite
               l'effet « collé » sur notre fond sombre. */}
           <div

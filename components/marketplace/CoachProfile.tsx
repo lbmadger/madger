@@ -604,6 +604,16 @@ export default function CoachProfile({
 
       {/* Barre de réservation mobile, fixe en bas */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-bg/90 px-4 py-3 backdrop-blur lg:hidden">
+        {/* L'erreur Contacter doit aussi se voir ici : l'aside qui l'affiche
+            est masquée en mobile. */}
+        {contactError && (
+          <p
+            role="alert"
+            className="mx-auto mb-2 max-w-2xl text-center text-xs text-danger"
+          >
+            {contactError}
+          </p>
+        )}
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3">
           <div className="min-w-0">
             {fromService ? (
@@ -634,7 +644,7 @@ export default function CoachProfile({
               disabled={contacting}
               className="px-4 py-2.5 text-sm"
             >
-              {t("coachProfile.contact")}
+              {contacting ? t("common.loading") : t("coachProfile.contact")}
             </Button>
             <Button onClick={() => openBooking()} className="px-5 py-2.5 text-sm">
               {t("coachProfile.book")}

@@ -274,6 +274,20 @@ export default function AgendaView({
   // remboursement (selon la formule d'annulation ou intégral si le coach
   // annule) est exécuté côté serveur.
   async function cancelBooking(id: string, by: "coach" | "client") {
+    // Confirmation OBLIGATOIRE : cette action déclenche un remboursement
+    // Stripe irréversible (total si le coach annule, selon la formule si
+    // c'est le client).
+    const ok = await confirm({
+      title: t("agenda.cancelBooking"),
+      message:
+        by === "coach"
+          ? t("agenda.cancelConfirmCoach")
+          : t("agenda.cancelConfirmClient"),
+      confirmLabel: t("agenda.cancelBooking"),
+      cancelLabel: t("agenda.cancelKeep"),
+      danger: true,
+    });
+    if (!ok) return;
     setCancelling(true);
     setActionError(null);
     setActionErrorId(id);

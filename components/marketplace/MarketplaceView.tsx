@@ -201,9 +201,12 @@ export default function MarketplaceView({
     }
   }
 
-  // Filtres sport / accompagnement appliqués côté client sur les résultats.
+  // Filtres sport / accompagnement / visio appliqués côté client sur les
+  // résultats affichés (le filtre visio n'était appliqué qu'au moment d'une
+  // recherche : sur le parcours par défaut, le chip ne faisait rien).
   const filtered = coaches.filter(
     (c) =>
+      (filter !== "online" || c.accepts_online) &&
       (!sportFilter || c.sport === sportFilter) &&
       (!specialtyFilter || (c.specialties ?? []).includes(specialtyFilter))
   );
@@ -251,8 +254,58 @@ export default function MarketplaceView({
         </p>
       </div>
 
+      {/* Recherche de ville : TOUJOURS visible, y compris mobile (c'est
+          l'action n°1 de la page, elle ne vit plus derrière « Filtres »). */}
+      <form
+        onSubmit={onSubmit}
+        className="mx-auto mt-6 flex max-w-2xl flex-col gap-2 sm:flex-row"
+      >
+        <CityAutocomplete
+          value={query}
+          onChange={(v) => {
+            setQuery(v);
+            setCoords(null);
+          }}
+          onSelect={(c: City) => {
+            setQuery(c.name);
+            setCoords({ lat: c.lat, lng: c.lng });
+            runSearch(c.name, { lat: c.lat, lng: c.lng });
+          }}
+          placeholder={t("marketplace.cityPlaceholder")}
+          ariaLabel={t("marketplace.cityLabel")}
+          className="flex-1"
+          inputClassName="w-full rounded-full border border-border-strong bg-white/[0.03] px-4 py-2.5 text-base text-text-base outline-none transition-colors placeholder:text-text-dim focus:border-accent"
+        />
+        {/* Périmètre autour de la ville */}
+        <select
+          value={radiusKm}
+          onChange={(e) => {
+            const v = Number(e.target.value);
+            setRadiusKm(v);
+            if (query.trim()) runSearch(query, coords, v);
+          }}
+          disabled={!query.trim()}
+          aria-label={t("marketplace.radiusLabel")}
+          className={`rounded-full border px-3 py-2.5 text-sm font-medium outline-none transition-colors disabled:opacity-40 ${
+            radiusKm > 0
+              ? "border-accent bg-accent/10 text-accent"
+              : "border-border-strong bg-transparent text-text-muted"
+          }`}
+        >
+          <option value={0}>{t("marketplace.exactCity")}</option>
+          {[10, 20, 30, 50].map((km) => (
+            <option key={km} value={km}>
+              + {km} {t("marketplace.km")}
+            </option>
+          ))}
+        </select>
+        <Button type="submit" disabled={loading} className="px-6 py-2.5">
+          {t("marketplace.search")}
+        </Button>
+      </form>
+
       {/* Barre : ouvrir les filtres + tout effacer */}
-      <div className="mx-auto mt-6 flex max-w-2xl items-center justify-center gap-2">
+      <div className="mx-auto mt-3 flex max-w-2xl items-center justify-center gap-2">
         <button
           type="button"
           onClick={() => setShowFilters((v) => !v)}
@@ -284,57 +337,9 @@ export default function MarketplaceView({
         )}
       </div>
 
-      {/* Panneau de filtres : ville, rayon, mode, sport, objectif */}
+      {/* Panneau de filtres secondaires : mode, sport, objectif */}
       {showFilters && (
-        <form
-          onSubmit={onSubmit}
-          className="mx-auto mt-3 flex max-w-2xl flex-col gap-3 rounded-2xl border border-border bg-bg-card p-4"
-        >
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <CityAutocomplete
-              value={query}
-              onChange={(v) => {
-                setQuery(v);
-                setCoords(null);
-              }}
-              onSelect={(c: City) => {
-                setQuery(c.name);
-                setCoords({ lat: c.lat, lng: c.lng });
-                runSearch(c.name, { lat: c.lat, lng: c.lng });
-              }}
-              placeholder={t("marketplace.cityPlaceholder")}
-              ariaLabel={t("marketplace.cityLabel")}
-              className="flex-1"
-              inputClassName="w-full rounded-full border border-border-strong bg-white/[0.03] px-4 py-2.5 text-base text-text-base outline-none transition-colors placeholder:text-text-dim focus:border-accent"
-            />
-            {/* Périmètre autour de la ville */}
-            <select
-              value={radiusKm}
-              onChange={(e) => {
-                const v = Number(e.target.value);
-                setRadiusKm(v);
-                if (query.trim()) runSearch(query, coords, v);
-              }}
-              disabled={!query.trim()}
-              aria-label={t("marketplace.radiusLabel")}
-              className={`rounded-full border px-3 py-2.5 text-sm font-medium outline-none transition-colors disabled:opacity-40 ${
-                radiusKm > 0
-                  ? "border-accent bg-accent/10 text-accent"
-                  : "border-border-strong bg-transparent text-text-muted"
-              }`}
-            >
-              <option value={0}>{t("marketplace.exactCity")}</option>
-              {[10, 20, 30, 50].map((km) => (
-                <option key={km} value={km}>
-                  + {km} {t("marketplace.km")}
-                </option>
-              ))}
-            </select>
-            <Button type="submit" disabled={loading} className="px-6 py-2.5">
-              {t("marketplace.search")}
-            </Button>
-          </div>
-
+        <div className="mx-auto mt-3 flex max-w-2xl flex-col gap-3 rounded-2xl border border-border bg-bg-card p-4">
           <div className="flex flex-wrap items-center gap-2">
             {(["all", "online"] as Filter[]).map((f) => (
               <button
@@ -388,7 +393,7 @@ export default function MarketplaceView({
               ))}
             </select>
           </div>
-        </form>
+        </div>
       )}
 
       {/* Bandeau rayon : choisi par l'utilisateur ou élargi automatiquement */}
@@ -565,8 +570,10 @@ export default function MarketplaceView({
             </ul>
             )}
 
-            {/* Page suivante (parcours par défaut uniquement, vue liste) */}
-            {view === "list" && hasMore && activeCount === 0 && (
+            {/* Page suivante (parcours par défaut, vue liste). Reste visible
+                avec des filtres actifs : sinon les coachs au-delà des 24
+                premiers devenaient inatteignables dès qu'on filtrait. */}
+            {view === "list" && hasMore && !query.trim() && (
               <div className="mt-6 text-center">
                 <button
                   type="button"

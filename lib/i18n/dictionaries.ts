@@ -24,6 +24,7 @@ const fr = {
     comingSoon: "Bientôt disponible",
     save: "Enregistrer",
     cancel: "Annuler",
+    close: "Fermer",
     loading: "Chargement…",
     delete: "Supprimer",
   },
@@ -120,6 +121,8 @@ const fr = {
     errors: {
       generic: "Une erreur est survenue. Réessaie.",
       invalidCredentials: "Email ou mot de passe incorrect.",
+      emailTaken:
+        "Un compte existe déjà avec cet email. Connecte-toi (ou utilise « Mot de passe oublié »).",
       passwordWeak: "Le mot de passe ne respecte pas tous les critères.",
       phoneInvalid: "Numéro invalide (format +33…).",
       invalidCode: "Code incorrect ou expiré.",
@@ -241,6 +244,10 @@ const fr = {
     edit: "Modifier",
     cancelBooking: "Annuler la séance",
     cancelWho: "Qui est à l'origine de l'annulation ?",
+    cancelConfirmCoach:
+      "Tu annules cette séance : le client sera intégralement remboursé, immédiatement et définitivement.",
+    cancelConfirmClient:
+      "Annulation à l'initiative du client : ta politique d'annulation s'applique (remboursement selon le délai). Action définitive.",
     cancelByClient: "Le client (formule appliquée)",
     cancelByCoach: "Moi (remboursement total)",
     cancelKeep: "Ne rien faire",
@@ -517,6 +524,7 @@ const fr = {
     },
   },
   messages: {
+    sendFailed: "Message non envoyé. Vérifie ta connexion et réessaie.",
     you: "Toi :",
     unread: "Non lu",
     title: "Messages",
@@ -1323,6 +1331,7 @@ const en: Dictionary = {
     comingSoon: "Coming soon",
     save: "Save",
     cancel: "Cancel",
+    close: "Close",
     loading: "Loading…",
     delete: "Delete",
   },
@@ -1419,6 +1428,8 @@ const en: Dictionary = {
     errors: {
       generic: "Something went wrong. Please try again.",
       invalidCredentials: "Incorrect email or password.",
+      emailTaken:
+        "An account already exists with this email. Log in (or use “Forgot password”).",
       passwordWeak: "Password doesn't meet all the requirements.",
       phoneInvalid: "Invalid number (format +1…).",
       invalidCode: "Incorrect or expired code.",
@@ -1536,6 +1547,10 @@ const en: Dictionary = {
     edit: "Edit",
     cancelBooking: "Cancel session",
     cancelWho: "Who is cancelling?",
+    cancelConfirmCoach:
+      "You are cancelling this session: the client will be fully refunded, immediately and permanently.",
+    cancelConfirmClient:
+      "Client-initiated cancellation: your cancellation policy applies (refund based on timing). This is permanent.",
     cancelByClient: "The client (policy applies)",
     cancelByCoach: "Me (full refund)",
     cancelKeep: "Do nothing",
@@ -1810,6 +1825,7 @@ const en: Dictionary = {
     },
   },
   messages: {
+    sendFailed: "Message not sent. Check your connection and try again.",
     you: "You:",
     unread: "Unread",
     title: "Messages",

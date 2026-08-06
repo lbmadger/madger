@@ -32,7 +32,26 @@ export default function ResetPasswordPage() {
         return;
       }
       setOkMsg(true);
-      setTimeout(() => router.push("/dashboard"), 1200);
+      // Redirection selon le RÔLE : un client n'a rien à faire sur l'espace
+      // coach. Repli sur /espace si le profil est illisible (moins pire
+      // qu'envoyer un client sur /dashboard).
+      let dest = "/espace";
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("role")
+            .eq("id", user.id)
+            .maybeSingle();
+          if (profile?.role === "coach") dest = "/dashboard";
+        }
+      } catch {
+        /* repli /espace */
+      }
+      setTimeout(() => router.push(dest), 1200);
     } catch {
       setError(t("auth.errors.generic"));
     } finally {

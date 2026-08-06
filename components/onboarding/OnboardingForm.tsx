@@ -111,8 +111,9 @@ export default function OnboardingForm({
           accepts_online: acceptsOnline,
           siret: siret.trim() || null,
           slug,
-          listed: true,
-          onboarding_completed: true,
+          // listed / onboarding_completed ne sont posés qu'à la FIN de
+          // l'étape 5 : sinon un abandon à l'étape 2 publiait un profil
+          // vide et rendait l'onboarding irrécupérable (redirigé dashboard).
         })
         .eq("id", userId);
       if (error) {
@@ -182,10 +183,16 @@ export default function OnboardingForm({
     setError(null);
     try {
       const supabase = createClient();
-      await supabase
+      const { error } = await supabase
         .from("coaches")
         .update({ bio: bio.trim() || null })
         .eq("id", userId);
+      // Échec silencieux interdit : la bio serait perdue sans que le coach
+      // le sache. On reste sur l'étape avec un message.
+      if (error) {
+        setError(t("onboarding.errors.generic"));
+        return;
+      }
       track("onboarding_step_done", { step: 2 });
       setStep(3);
     } finally {
@@ -199,7 +206,7 @@ export default function OnboardingForm({
     setError(null);
     try {
       const supabase = createClient();
-      await supabase
+      const { error } = await supabase
         .from("coaches")
         .update({
           sport: sport || null,
@@ -208,6 +215,10 @@ export default function OnboardingForm({
           gym_name: gymName.trim() || null,
         })
         .eq("id", userId);
+      if (error) {
+        setError(t("onboarding.errors.generic"));
+        return;
+      }
       track("onboarding_step_done", { step: 3 });
       setStep(4);
     } finally {
@@ -268,6 +279,16 @@ export default function OnboardingForm({
         }))
       );
       if (error) {
+        setError(t("onboarding.errors.generic"));
+        return;
+      }
+      // C'est ICI que le profil devient officiel : publié + onboarding
+      // terminé, une fois les 5 étapes réellement franchies.
+      const { error: doneErr } = await supabase
+        .from("coaches")
+        .update({ listed: true, onboarding_completed: true })
+        .eq("id", userId);
+      if (doneErr) {
         setError(t("onboarding.errors.generic"));
         return;
       }

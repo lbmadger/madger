@@ -291,7 +291,14 @@ export default function BookingModal({
             // /paiement, aux couleurs Madger. `back` rouvre la modale avec
             // le brouillon si le client renonce.
             const back = `/${coach.slug}?payment=canceled&book=${selectedService.id}`;
-            window.location.href = `/paiement?cs=${encodeURIComponent(data.client_secret)}&back=${encodeURIComponent(back)}`;
+            // Récap affiché sur /paiement (coach, prestation, créneau,
+            // lieu) : le client revoit ce qu'il paie avant de payer.
+            const recap =
+              `&sv=${encodeURIComponent(selectedService.name)}` +
+              `&co=${encodeURIComponent([coach.first_name, coach.last_name].filter(Boolean).join(" "))}` +
+              (starts ? `&at=${encodeURIComponent(starts.toISOString())}` : "") +
+              `&lo=${online ? "online" : "in_person"}`;
+            window.location.href = `/paiement?cs=${encodeURIComponent(data.client_secret)}&back=${encodeURIComponent(back)}${recap}`;
           } else {
             window.location.href = data.url; // secours : page Stripe hébergée
           }
@@ -389,8 +396,10 @@ export default function BookingModal({
                   {t("clientSpace.title")}
                 </Button>
               </Link>
+              {/* « Fermer », surtout pas « Annuler » : sur un écran de
+                  succès, le client lirait « annuler ma séance ». */}
               <Button variant="ghost" onClick={onClose}>
-                {t("booking.cancel")}
+                {t("common.close")}
               </Button>
             </div>
           </div>
