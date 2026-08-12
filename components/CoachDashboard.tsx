@@ -149,16 +149,16 @@ export default function CoachDashboard() {
             className="font-extrabold text-white mb-4"
             style={{ fontSize: "clamp(28px, 4.5vw, 52px)", letterSpacing: "-0.035em", lineHeight: 1.06 }}
           >
-            Toute ton activité,<br />
+            Ta journée est pleine.<br />
             <span style={{
               background: "linear-gradient(90deg, #CBFF03, #a8e600)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
-            }}>en un seul endroit.</span>
+            }}>Ton admin, lui, est déjà fait.</span>
           </h2>
           <p className="text-text-muted text-lg max-w-lg mx-auto" style={{ lineHeight: 1.6 }}>
-            Réservations, paiements, clients, factures : tout est centralisé et automatisé.
+            Réservations, paiements, clients, factures : tout tourne pendant que tu coaches.
           </p>
         </motion.div>
 

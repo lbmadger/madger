@@ -73,8 +73,53 @@ export default function Testimonials() {
             </p>
           </div>
 
-          {/* Signature */}
-          <div className="flex items-center gap-3 mt-7 pt-6" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+          {/* Signature manuscrite : tracé SVG animé au scroll, comme un
+              paraphe au stylo. Le dessin est volontairement imparfait. */}
+          <motion.svg
+            viewBox="0 0 260 70"
+            className="mt-7 h-14 w-auto select-none"
+            aria-hidden
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-40px" }}
+          >
+            {/* Paraphe : grand L bouclé puis envolée vers la droite, tracé
+                d'un seul geste (le nom en clair est imprimé juste dessous). */}
+            <motion.path
+              d="M46 8 C38 22 30 38 27 50 C25 57 29 60 36 57 C30 62 20 64 16 58 C13 53 20 48 32 47 C60 45 100 43 132 44 C160 45 180 48 196 44 C206 41 208 34 200 32 C193 31 189 38 196 44 C204 51 226 50 244 42"
+              fill="none"
+              stroke="#CBFF03"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ opacity: 0.85 }}
+              variants={{
+                hidden: { pathLength: 0 },
+                visible: {
+                  pathLength: 1,
+                  transition: { duration: 1.4, ease: "easeInOut", delay: 0.2 },
+                },
+              }}
+            />
+            {/* Point final du paraphe */}
+            <motion.circle
+              cx="252"
+              cy="40"
+              r="2.4"
+              fill="#CBFF03"
+              style={{ opacity: 0.85 }}
+              variants={{
+                hidden: { opacity: 0, scale: 0 },
+                visible: {
+                  opacity: 0.85,
+                  scale: 1,
+                  transition: { duration: 0.25, delay: 1.6 },
+                },
+              }}
+            />
+          </motion.svg>
+
+          <div className="flex items-center gap-3 mt-4 pt-6" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
             <div
               className="flex items-center justify-center flex-shrink-0"
               style={{

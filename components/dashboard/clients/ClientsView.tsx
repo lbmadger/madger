@@ -7,6 +7,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Client } from "@/lib/clients/types";
 import AddClientModal from "./AddClientModal";
 import Button from "@/components/ui/Button";
+import Leo from "@/components/ui/Leo";
 import { interactiveCardClass } from "@/lib/ui/styles";
 
 function initials(c: Client): string {
@@ -71,6 +72,7 @@ export default function ClientsView({
       {/* Liste ou état vide */}
       {initialClients.length === 0 ? (
         <div className="rounded-2xl border border-border bg-bg-card p-10 text-center">
+          <Leo pose="point" size={84} className="mx-auto mb-4" />
           <h3 className="text-base font-semibold text-text-base">
             {t("clients.emptyTitle")}
           </h3>

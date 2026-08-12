@@ -76,13 +76,13 @@ export default function FAQ() {
             className="font-extrabold text-white mb-4"
             style={{ fontSize: "clamp(26px, 4vw, 44px)", letterSpacing: "-0.035em", lineHeight: 1.06 }}
           >
-            Les questions qu'on nous<br />
+            Les questions que tu te poses<br />
             <span style={{
               background: "linear-gradient(90deg, #CBFF03, #a8e600)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
-            }}>pose le plus souvent.</span>
+            }}>sûrement déjà.</span>
           </h2>
         </div>
 

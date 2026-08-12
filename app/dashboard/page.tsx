@@ -5,6 +5,7 @@ import AnimatedStat, {
   type StatTrend,
 } from "@/components/dashboard/AnimatedStat";
 import SetupChecklist from "@/components/dashboard/SetupChecklist";
+import FirstBookingCard from "@/components/dashboard/FirstBookingCard";
 import GoalCard from "@/components/dashboard/GoalCard";
 import LeiaTips from "@/components/dashboard/LeiaTips";
 import { SunIcon, MoonIcon, StarIcon } from "@/components/ui/icons";
@@ -62,6 +63,7 @@ export default async function OverviewPage() {
     next30Res,
     monthSessionsRes,
     breakdownRes,
+    totalBookingsRes,
     { coach },
   ] = await Promise.all([
     supabase.from("clients").select("*", { count: "exact", head: true }),
@@ -160,6 +162,13 @@ export default async function OverviewPage() {
         .eq("status", "paid")
         .gte("paid_at", monthStart.toISOString())
         .limit(1000),
+      // Toutes séances confondues : sert uniquement à détecter LA première
+      // réservation (célébrée en haut de page, une seule fois).
+      supabase
+        .from("bookings")
+        .select("*", { count: "exact", head: true })
+        .eq("is_block", false)
+        .neq("status", "cancelled"),
       // Profil du coach (objectifs, checklist, salutation, plan).
       getCoach(),
     ]);
@@ -439,6 +448,12 @@ export default async function OverviewPage() {
     const t = new Date(b.starts_at as string).getTime();
     return t >= todayStart.getTime() && t < todayEnd.getTime();
   }).length;
+  // Prochaine séance du jour (pas encore commencée) : donne une phrase
+  // d'accueil vivante (« prochaine à 18h00 ») plutôt qu'un simple décompte.
+  const todayNextAt = weekBookings
+    .map((b) => new Date(b.starts_at as string))
+    .filter((d) => d.getTime() >= now.getTime() && d.getTime() < todayEnd.getTime())
+    .sort((a, b) => a.getTime() - b.getTime())[0];
 
   // Mini-widgets de la colonne droite : séances par jour (semaine courante)
   // et encaissements de la semaine.
@@ -720,6 +735,13 @@ export default async function OverviewPage() {
             <span className="normal-case">
               {" "}
               · {todayCount} {o.sessionsToday}
+              {todayNextAt
+                ? ` · ${o.nextAt} ${todayNextAt.toLocaleTimeString(loc, {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    timeZone: coach?.timezone || "Europe/Paris",
+                  })}`
+                : ""}
             </span>
           </p>
         </div>
@@ -742,6 +764,35 @@ export default async function OverviewPage() {
             </span>
           </Link>
         )}
+
+        {/* Première réservation de la vie du coach : on la fête. */}
+        {(totalBookingsRes.count ?? 0) === 1 &&
+          (() => {
+            const first = upcoming[0];
+            const cl = first?.clients ?? null;
+            return (
+              <FirstBookingCard
+                clientName={
+                  cl
+                    ? [cl.first_name, cl.last_name].filter(Boolean).join(" ") ||
+                      null
+                    : null
+                }
+                dateStr={
+                  first
+                    ? new Date(first.starts_at).toLocaleString(loc, {
+                        weekday: "long",
+                        day: "numeric",
+                        month: "long",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        timeZone: coach?.timezone || "Europe/Paris",
+                      })
+                    : null
+                }
+              />
+            );
+          })()}
 
         {/* Conseils de Leia : bande fine dépliable, tout en haut */}
         <LeiaTips tips={leiaTips} dailyIndex={leiaDailyIndex} />
@@ -1186,6 +1237,40 @@ export default async function OverviewPage() {
             locale={loc}
             mode="weeks"
           />
+        </div>
+
+        {/* Raccourcis mobiles : Paiements, Factures et Stats n'ont pas
+            d'onglet dans la barre du bas, et le menu compte est redevenu un
+            pur menu compte. Leur porte d'entrée mobile vit donc ici. */}
+        <div className="mt-5 grid grid-cols-3 gap-2 md:hidden">
+          {[
+            {
+              href: "/dashboard/paiements",
+              label: dict.nav.payments,
+              d: "M2 8h20M5 5h14a3 3 0 013 3v8a3 3 0 01-3 3H5a3 3 0 01-3-3V8a3 3 0 013-3z",
+            },
+            {
+              href: "/dashboard/factures",
+              label: dict.nav.invoices,
+              d: "M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zM14 2v6h6M9 13h6M9 17h6",
+            },
+            {
+              href: "/dashboard/stats",
+              label: dict.nav.stats,
+              d: "M18 20V10M12 20V4M6 20v-6",
+            },
+          ].map((s) => (
+            <Link
+              key={s.href}
+              href={s.href}
+              className="flex flex-col items-center gap-1.5 rounded-2xl border border-border bg-bg-card py-3.5 text-xs font-medium text-text-muted transition-colors hover:border-accent/40 hover:text-text-base"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d={s.d} />
+              </svg>
+              {s.label}
+            </Link>
+          ))}
         </div>
       </main>
     </>

@@ -51,7 +51,8 @@ export default function CoachPagePreview() {
           </h2>
           <p className="max-w-lg text-lg text-text-muted" style={{ lineHeight: 1.6 }}>
             Ta page pro, prête en 10 minutes : prestations, tarifs, avis et
-            réservation avec paiement en ligne. Tu la partages, c'est tout.
+            réservation avec paiement en ligne. Tu la colles en bio Insta, tu
+            l'envoies en réponse aux DM. C'est tout.
           </p>
         </motion.div>
 

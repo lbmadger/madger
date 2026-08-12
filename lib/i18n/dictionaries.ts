@@ -155,6 +155,13 @@ const fr = {
     bioLabel: "Ta présentation",
     bioPlaceholder:
       "Ton parcours, ta méthode, les résultats de tes clients…",
+    aiBioTitle: "Ta bio, écrite par l'IA",
+    aiBioHint:
+      "Tape quelques mots en vrac au-dessus (ou rien du tout) : l'IA rédige une bio pro à partir de ton profil. Tu la retouches ensuite comme tu veux.",
+    aiBioCta: "Écrire ma bio avec l'IA",
+    aiBioLoading: "L'IA écrit…",
+    aiBioError: "L'IA n'a pas répondu. Réessaie dans un instant.",
+    aiBioUnavailable: "L'IA n'est pas encore activée. Écris ta bio à la main pour l'instant.",
     activityTitle: "Ton activité",
     activitySubtitle:
       "Ces informations alimentent les filtres de recherche des clients.",
@@ -656,6 +663,11 @@ const fr = {
     noInvoices: "Elles apparaissent après chaque paiement encaissé.",
     today: "Aujourd'hui",
     sessionsToday: "séance(s) aujourd'hui",
+    nextAt: "prochaine à",
+    firstBookingTitle: "Ta première réservation est là 🎉",
+    firstBookingDesc:
+      "Ça y est, Madger travaille pour toi : réservé, payé, facturé, sans un seul message.",
+    firstBookingCta: "Voir dans l'agenda",
     fillRate: "Taux de remplissage",
     fillRateHint: "heures réservées / heures ouvertes cette semaine",
     rating: "Note moyenne",
@@ -1473,6 +1485,13 @@ const en: Dictionary = {
     photoHint: "Sharp image, natural light. 5 MB max.",
     bioLabel: "About you",
     bioPlaceholder: "Your background, your method, your clients' results…",
+    aiBioTitle: "Your bio, written by AI",
+    aiBioHint:
+      "Type a few rough words above (or nothing at all): the AI writes a professional bio from your profile. You can edit it afterwards.",
+    aiBioCta: "Write my bio with AI",
+    aiBioLoading: "The AI is writing…",
+    aiBioError: "The AI did not answer. Try again in a moment.",
+    aiBioUnavailable: "The AI is not enabled yet. Write your bio by hand for now.",
     activityTitle: "Your activity",
     activitySubtitle: "This information powers the client search filters.",
     serviceTitle: "Your first service",
@@ -1970,6 +1989,11 @@ const en: Dictionary = {
     noInvoices: "They appear after each collected payment.",
     today: "Today",
     sessionsToday: "session(s) today",
+    nextAt: "next at",
+    firstBookingTitle: "Your first booking just landed 🎉",
+    firstBookingDesc:
+      "That's it, Madger is working for you: booked, paid, invoiced, without a single message.",
+    firstBookingCta: "See it in the agenda",
     fillRate: "Fill rate",
     fillRateHint: "booked hours / open hours this week",
     rating: "Average rating",

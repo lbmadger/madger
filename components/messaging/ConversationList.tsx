@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Leo from "@/components/ui/Leo";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { interactiveCardClass } from "@/lib/ui/styles";
 import type { Conversation } from "@/lib/messaging/types";
@@ -36,6 +37,7 @@ export default function ConversationList({
   if (conversations.length === 0) {
     return (
       <div className="rounded-2xl border border-border bg-bg-card p-10 text-center">
+        <Leo pose="ok" size={84} className="mx-auto mb-4" />
         <h3 className="text-base font-semibold text-text-base">
           {t("messages.emptyTitle")}
         </h3>

@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { slugify, isValidSlug } from "@/lib/utils/slug";
 import Button from "@/components/ui/Button";
+import Leo from "@/components/ui/Leo";
 import CityAutocomplete from "@/components/ui/CityAutocomplete";
 import AccountSwitchBar from "@/components/auth/AccountSwitchBar";
 import { inputClass, labelClass } from "@/lib/ui/styles";
@@ -59,6 +60,37 @@ export default function OnboardingForm({
   const [uploading, setUploading] = useState(false);
   const [bio, setBio] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Bio écrite par l'IA : ce que le coach a tapé (même en vrac) sert de
+  // matière première, le résultat remplace le champ et reste retouchable.
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  async function generateBio() {
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const res = await fetch("/api/ai/bio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notes: bio }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.bio) {
+        setAiError(
+          res.status === 503
+            ? t("onboarding.aiBioUnavailable")
+            : t("onboarding.aiBioError")
+        );
+        return;
+      }
+      setBio(data.bio as string);
+      track("ai_bio_generated");
+    } catch {
+      setAiError(t("onboarding.aiBioError"));
+    } finally {
+      setAiLoading(false);
+    }
+  }
 
   // Étape 3 : activité
   const [siret, setSiret] = useState("");
@@ -310,7 +342,10 @@ export default function OnboardingForm({
   // ── Écran final : paiements Stripe + dashboard ────────────────────────────
   if (step === 6) {
     return (
-      <div className="rounded-2xl border border-border bg-bg-card p-6">
+      <div className="rounded-2xl border border-border bg-bg-card p-6 text-center sm:text-left">
+        {/* Léo fête la fin du parcours : c'est un moment de victoire, pas
+            une simple fin de formulaire. */}
+        <Leo pose="ok" size={96} className="mx-auto mb-4 sm:mx-0" />
         <h1 className="text-2xl font-extrabold tracking-tight text-text-base">
           {t("onboarding.doneTitle")}
         </h1>
@@ -569,6 +604,36 @@ export default function OnboardingForm({
               className={`${inputClass} resize-none`}
             />
           </label>
+
+          {/* L'IA écrit la bio : le moment où le coach cale le plus, réglé
+              en un clic. Ce qu'il a déjà tapé sert de matière première. */}
+          <div className="rounded-xl border border-accent/25 bg-accent/[0.05] p-3.5">
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-text-base">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#CBFF03" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z" />
+              </svg>
+              {t("onboarding.aiBioTitle")}
+            </p>
+            <p className="mt-1 text-xs leading-relaxed text-text-muted">
+              {t("onboarding.aiBioHint")}
+            </p>
+            {aiError && (
+              <p role="alert" className="mt-1.5 text-xs text-danger">
+                {aiError}
+              </p>
+            )}
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={aiLoading}
+              onClick={generateBio}
+              className="mt-2.5 px-4 py-2 text-sm"
+            >
+              {aiLoading
+                ? t("onboarding.aiBioLoading")
+                : t("onboarding.aiBioCta")}
+            </Button>
+          </div>
 
           {error && <p role="alert" className="text-sm text-danger">{error}</p>}
           <Button

@@ -9,6 +9,7 @@ import {
   requestReceivedClient,
   newRequestCoach,
   refundClient,
+  firstPaymentCoach,
 } from "@/lib/email/templates";
 import { googleCalendarUrl } from "@/lib/calendar/links";
 import { attachMeetToBooking } from "@/lib/google/calendar";
@@ -446,6 +447,22 @@ export async function fulfillCheckoutSession(
           dashboardUrl: `${APP_URL}/dashboard/agenda`,
         });
         await sendEmail({ to: coachEmail, subject: t.subject, html: t.html });
+
+        // Tout premier encaissement du coach : mot personnel du fondateur,
+        // une seule fois (le count vaut 1 uniquement pour ce paiement-ci).
+        const { count: paidCount } = await supabase
+          .from("payments")
+          .select("*", { count: "exact", head: true })
+          .eq("coach_id", m.coach_id)
+          .eq("status", "paid");
+        if ((paidCount ?? 0) === 1) {
+          const f = firstPaymentCoach({
+            locale: coachLocale,
+            priceStr: coachPriceStr,
+            dashboardUrl: `${APP_URL}/dashboard/paiements`,
+          });
+          await sendEmail({ to: coachEmail, subject: f.subject, html: f.html });
+        }
       }
     }
   } catch {

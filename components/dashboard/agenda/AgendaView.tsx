@@ -10,6 +10,7 @@ import type { Availability } from "@/lib/availability/types";
 import AddSessionModal from "./AddSessionModal";
 import WeekView from "./WeekView";
 import Button from "@/components/ui/Button";
+import Leo from "@/components/ui/Leo";
 import Dialog from "@/components/ui/Dialog";
 import Spinner from "@/components/ui/Spinner";
 import { useConfirm } from "@/components/ui/useConfirm";
@@ -573,6 +574,7 @@ export default function AgendaView({
         />
       ) : groups.length === 0 ? (
         <div className="rounded-2xl border border-border bg-bg-card p-10 text-center">
+          <Leo pose="ok" size={84} className="mx-auto mb-4" />
           <h3 className="text-base font-semibold text-text-base">
             {t("agenda.emptyTitle")}
           </h3>

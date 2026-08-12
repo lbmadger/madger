@@ -166,8 +166,9 @@ export default function Problem() {
             perdues en tâches administratives, en moyenne chaque semaine
           </h2>
           <p className="text-text-muted max-w-xl mx-auto" style={{ fontSize: 16, lineHeight: 1.65 }}>
-            C'est ce que nous disent les coachs qu'on a rencontrés.
-            Tu es coach, pas secrétaire.
+            C'est ce que nous disent les coachs qu'on a rencontrés. Les
+            relances entre deux séances, les factures à 23h, les « tu peux me
+            faire un virement ? ». Tu es coach, pas secrétaire.
           </p>
         </motion.div>
 

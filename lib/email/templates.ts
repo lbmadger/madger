@@ -1012,6 +1012,49 @@ export function proWelcomeCoach(p: {
   };
 }
 
+// ── Coach : premier encaissement de sa vie sur Madger ───────────────────────
+// Envoyé UNE seule fois, au premier paiement encaissé : mot personnel signé
+// du fondateur. C'est le moment le plus marquant du parcours coach.
+export function firstPaymentCoach(p: {
+  priceStr: string;
+  dashboardUrl: string;
+  locale?: EmailLocale;
+}): Email {
+  const locale = p.locale ?? "fr";
+  const L =
+    locale === "en"
+      ? {
+          subject: "Your first payment on Madger 🎉",
+          preheader:
+            "A client booked, paid, and the invoice went out. Without you lifting a finger.",
+          eyebrow: "First payment",
+          title: "It's working.",
+          intro: `A client just booked and paid <b style="color:${C.text};">${p.priceStr}</b> online. No WhatsApp message, no chasing, and the invoice already went out on its own. This is exactly why Madger exists.<br/><br/>A personal note: this is your first payment here, and for us it is a moment too. Thanks for being one of the first.<br/><br/>Léonard, founder of Madger`,
+          cta: "See my payments",
+        }
+      : {
+          subject: "Ton premier encaissement sur Madger 🎉",
+          preheader:
+            "Un client a réservé, payé, et la facture est partie. Sans que tu lèves le petit doigt.",
+          eyebrow: "Premier paiement",
+          title: "Ça y est, ça tourne.",
+          intro: `Un client vient de réserver et de payer <b style="color:${C.text};">${p.priceStr}</b> en ligne. Pas de message WhatsApp, pas de relance, et la facture est déjà partie toute seule. C'est exactement pour ça que Madger existe.<br/><br/>Un mot perso : c'est ton premier encaissement ici, et pour nous aussi c'est un moment. Merci de faire partie des premiers.<br/><br/>Léonard, fondateur de Madger`,
+          cta: "Voir mes paiements",
+        };
+  return {
+    subject: L.subject,
+    html: layout({
+      locale,
+      preheader: L.preheader,
+      eyebrow: L.eyebrow,
+      title: L.title,
+      intro: L.intro,
+      blocks: [],
+      cta: { label: L.cta, url: p.dashboardUrl },
+    }),
+  };
+}
+
 // ── Admin : nouveau litige à trancher ───────────────────────────────────────
 export function disputeOpenedAdmin(p: {
   clientName: string;
