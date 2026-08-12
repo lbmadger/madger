@@ -7,8 +7,11 @@ export const maxDuration = 30;
 
 // Bio de coach écrite par l'IA (onboarding, retouchable ensuite) : le coach
 // donne quelques mots bruts, le serveur renvoie une bio prête à publier.
-// La clé Anthropic ne vit QUE côté serveur (ANTHROPIC_API_KEY sur Vercel) ;
-// sans elle, la route répond 503 et le bouton s'explique côté client.
+// Deux fournisseurs possibles, choisis par variable d'environnement Vercel
+// (les clés ne vivent QUE côté serveur) :
+//   1. ANTHROPIC_API_KEY (payant, qualité maximale) si présente ;
+//   2. sinon GEMINI_API_KEY (palier gratuit de Google AI Studio) ;
+//   3. sinon 503, et le bouton s'explique côté client.
 const SYSTEM = `Tu écris la bio publique d'un coach sportif indépendant pour sa page de réservation.
 Règles strictes :
 - 60 à 90 mots, en français, à la première personne (« je »).
@@ -18,8 +21,56 @@ Règles strictes :
 - Structure : qui je suis, qui j'accompagne, ce que tu obtiens avec moi, une phrase d'invitation à réserver.
 Réponds UNIQUEMENT avec la bio, sans préambule, sans guillemets, sans titre.`;
 
+async function viaAnthropic(prompt: string): Promise<string> {
+  const anthropic = new Anthropic();
+  const msg = await anthropic.messages.create({
+    model: "claude-haiku-4-5",
+    max_tokens: 400,
+    system: SYSTEM,
+    messages: [{ role: "user", content: prompt }],
+  });
+  return msg.content.find((b) => b.type === "text")?.text?.trim() ?? "";
+}
+
+async function viaGemini(prompt: string): Promise<string> {
+  // API REST Gemini (pas de SDK à embarquer). thinkingBudget: 0 : sans lui,
+  // les modèles 2.5 dépensent le plafond de tokens en réflexion interne et
+  // peuvent renvoyer un texte vide.
+  const res = await fetch(
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": process.env.GEMINI_API_KEY as string,
+      },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: SYSTEM }] },
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          maxOutputTokens: 800,
+          thinkingConfig: { thinkingBudget: 0 },
+        },
+      }),
+    }
+  );
+  if (!res.ok) return "";
+  const data = await res.json().catch(() => null);
+  const parts: { text?: string }[] =
+    data?.candidates?.[0]?.content?.parts ?? [];
+  return parts
+    .map((p) => p.text ?? "")
+    .join("")
+    .trim();
+}
+
 export async function POST(req: NextRequest) {
-  if (!process.env.ANTHROPIC_API_KEY) {
+  const provider = process.env.ANTHROPIC_API_KEY
+    ? "anthropic"
+    : process.env.GEMINI_API_KEY
+    ? "gemini"
+    : null;
+  if (!provider) {
     return NextResponse.json({ error: "ai_not_configured" }, { status: 503 });
   }
 
@@ -51,24 +102,15 @@ export async function POST(req: NextRequest) {
   ]
     .filter(Boolean)
     .join("\n");
+  const prompt =
+    facts ||
+    "Aucune information fournie : écris une bio de coach sportif chaleureuse et facile à personnaliser.";
 
   try {
-    const anthropic = new Anthropic();
-    const msg = await anthropic.messages.create({
-      model: "claude-haiku-4-5",
-      max_tokens: 400,
-      system: SYSTEM,
-      messages: [
-        {
-          role: "user",
-          content:
-            facts ||
-            "Aucune information fournie : écris une bio de coach sportif chaleureuse et facile à personnaliser.",
-        },
-      ],
-    });
     const text =
-      msg.content.find((b) => b.type === "text")?.text?.trim() ?? "";
+      provider === "anthropic"
+        ? await viaAnthropic(prompt)
+        : await viaGemini(prompt);
     if (!text) {
       return NextResponse.json({ error: "ai_failed" }, { status: 502 });
     }
