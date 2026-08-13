@@ -23,8 +23,10 @@ export default function CoachNotPublished({
           encore visible
         </h1>
         <p className="mt-2 text-sm text-text-muted">
-          Elle apparaîtra automatiquement dans l&apos;annuaire dès que ces
-          {missing.length > 1 ? " points" : " point"} seront complétés :
+          Elle apparaîtra automatiquement dans l&apos;annuaire{" "}
+          {missing.length === 1
+            ? "dès que ce point sera complété :"
+            : "dès que ces points seront complétés :"}
         </p>
 
         <ul className="mt-6 flex flex-col gap-2">

@@ -25,8 +25,7 @@ import type { PublicService } from "@/lib/services/types";
 // dynamique (langue via cookie) mais le crawl Google des 1000 pages coach
 // ne retape plus Supabase à chaque hit. Client anon SANS cookies
 // (obligatoire dans unstable_cache ; les vues publiques suffisent).
-const getCoachPageData = unstable_cache(
-  async (slug: string) => {
+const fetchCoachPageData = async (slug: string) => {
     const supabase = createAnon(SUPABASE_URL, SUPABASE_ANON_KEY);
     const { data: coach, error } = await supabase
       .from("public_coaches")
@@ -65,10 +64,11 @@ const getCoachPageData = unstable_cache(
       reviews: (reviews ?? []) as PublicReview[],
       photos: (photos ?? []) as CoachPhoto[],
     };
-  },
-  ["coach-page"],
-  { revalidate: 120 }
-);
+  };
+
+const getCoachPageData = unstable_cache(fetchCoachPageData, ["coach-page"], {
+  revalidate: 120,
+});
 
 async function getCoachBySlug(slug: string): Promise<PublicCoach | null> {
   const { coach } = await getCoachPageData(slug);
@@ -175,27 +175,38 @@ export default async function CoachPublicPage({
   searchParams: { paid?: string; conflict?: string; sub?: string };
 }) {
   const { locale, dict } = getServerDictionary();
-  const { coach, services, reviews, photos } = await getCoachPageData(
-    params.slug
-  );
+  let data = await getCoachPageData(params.slug);
 
-  if (!coach) {
+  if (!data.coach) {
     // Page publique absente : si c'est le COACH lui-même qui ouvre son propre
     // profil non encore publié, on lui explique ce qui manque au lieu d'un
     // 404 muet. Sinon, vrai 404.
     const owner = await getOwnPublishState(params.slug);
     if (owner) {
-      const { default: CoachNotPublished } = await import(
-        "@/components/marketplace/CoachNotPublished"
-      );
-      return (
-        <div className="min-h-screen bg-bg">
-          <CoachNotPublished firstName={owner.firstName} checks={owner.checks} />
-        </div>
-      );
+      // Publication toute fraîche : les critères viennent tous de passer au
+      // vert mais le cache 120 s sert encore l'ancien état. Relecture
+      // directe, sinon le coach voit « pas visible » avec tout coché.
+      if (owner.checks.every((c) => c.done)) {
+        data = await fetchCoachPageData(params.slug);
+      }
+      if (!data.coach) {
+        const { default: CoachNotPublished } = await import(
+          "@/components/marketplace/CoachNotPublished"
+        );
+        return (
+          <div className="min-h-screen bg-bg">
+            <CoachNotPublished
+              firstName={owner.firstName}
+              checks={owner.checks}
+            />
+          </div>
+        );
+      }
     }
-    notFound();
   }
+  const coach = data.coach;
+  if (!coach) notFound();
+  const { services, reviews, photos } = data;
 
   // Données structurées (Google). Person n'est pas éligible aux extraits
   // d'avis : la note passe par un Service avec offres (prestations réelles),
