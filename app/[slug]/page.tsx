@@ -177,6 +177,18 @@ export default async function CoachPublicPage({
   const { locale, dict } = getServerDictionary();
   let data = await getCoachPageData(params.slug);
 
+  if (data.coach) {
+    // Le coach qui regarde SA page voit toujours l'état frais : sans ça, il
+    // ajoute une prestation ou change sa bio et ne voit rien pendant les
+    // 2 minutes du cache. Les visiteurs anonymes gardent le cache.
+    const {
+      data: { user },
+    } = await createClient().auth.getUser();
+    if (user && user.id === data.coach.id) {
+      data = await fetchCoachPageData(params.slug);
+    }
+  }
+
   if (!data.coach) {
     // Page publique absente : si c'est le COACH lui-même qui ouvre son propre
     // profil non encore publié, on lui explique ce qui manque au lieu d'un
