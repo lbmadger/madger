@@ -978,8 +978,9 @@ export default async function OverviewPage() {
               )}
               {breakdown.length > 0 && breakdownTotal > 0 && (
                 <section className="rounded-2xl border border-border bg-bg-card p-5">
-                  <h3 className="text-base font-semibold capitalize text-text-base">
-                    {o.breakdownTitle} {monthLabel}
+                  <h3 className="text-base font-semibold text-text-base">
+                    {o.breakdownTitle}
+                    <span className="text-text-dim"> · {monthLabel}</span>
                   </h3>
                   <ul className="mt-3 flex flex-col gap-3">
                     {breakdown.map((b) => (

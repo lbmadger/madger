@@ -190,12 +190,18 @@ export default async function ReservationPage({
                   celle du lien reçu par email, elle ne doit pas être un
                   cul-de-sac. */}
               <p className="mt-5">
+                {/* Deux tons : le verbe en sourdine, la destination
+                    « Mes séances » en accent, sinon tout se fond dans la
+                    même ligne verte. */}
                 <Link
                   href="/espace"
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:underline"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-text-muted transition-colors hover:text-text-base"
                 >
-                  {r.manageInSpace}
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  {r.manageInSpace}{" "}
+                  <span className="font-semibold text-accent underline underline-offset-4">
+                    {r.manageInSpaceLink}
+                  </span>
+                  <svg className="text-accent" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M9 18l6-6-6-6" />
                   </svg>
                 </Link>
