@@ -104,11 +104,18 @@ export default async function InvoicePage({
               {coach.business_name ||
                 [coach.first_name, coach.last_name].filter(Boolean).join(" ")}
             </p>
-            {coach.business_name && (
-              <p className="text-text-muted">
-                {[coach.first_name, coach.last_name].filter(Boolean).join(" ")}
-              </p>
-            )}
+            {/* Nom de la personne SOUS la raison sociale, seulement s'ils
+                diffèrent : sinon le même nom s'affichait deux fois. */}
+            {coach.business_name &&
+              coach.business_name.trim() !==
+                [coach.first_name, coach.last_name]
+                  .filter(Boolean)
+                  .join(" ")
+                  .trim() && (
+                <p className="text-text-muted">
+                  {[coach.first_name, coach.last_name].filter(Boolean).join(" ")}
+                </p>
+              )}
             {coach.billing_address && (
               <p className="text-text-muted">{coach.billing_address}</p>
             )}
@@ -131,7 +138,9 @@ export default async function InvoicePage({
             <p className="mt-1 font-semibold text-text-base">
               {[client?.first_name, client?.last_name].filter(Boolean).join(" ") || "-"}
             </p>
-            {client?.email && <p className="text-text-muted">{client.email}</p>}
+            {client?.email && (
+              <p className="break-all text-text-muted">{client.email}</p>
+            )}
           </div>
         </div>
 

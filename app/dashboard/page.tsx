@@ -882,6 +882,41 @@ export default async function OverviewPage() {
           })}
         </div>
 
+        {/* Raccourcis mobiles : Paiements, Factures et Stats n'ont pas
+            d'onglet dans la barre du bas, et le menu compte est un pur menu
+            compte. Leur porte d'entrée mobile vit ICI, juste sous les stats,
+            pas en fond de page où personne ne les trouvait. */}
+        <div className="mt-3 grid grid-cols-3 gap-2 md:hidden">
+          {[
+            {
+              href: "/dashboard/paiements",
+              label: dict.nav.payments,
+              d: "M2 8h20M5 5h14a3 3 0 013 3v8a3 3 0 01-3 3H5a3 3 0 01-3-3V8a3 3 0 013-3z",
+            },
+            {
+              href: "/dashboard/factures",
+              label: dict.nav.invoices,
+              d: "M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zM14 2v6h6M9 13h6M9 17h6",
+            },
+            {
+              href: "/dashboard/stats",
+              label: dict.nav.stats,
+              d: "M18 20V10M12 20V4M6 20v-6",
+            },
+          ].map((s) => (
+            <Link
+              key={s.href}
+              href={s.href}
+              className="flex flex-col items-center gap-1.5 rounded-2xl border border-border bg-bg-card py-3 text-xs font-medium text-text-muted transition-colors hover:border-accent/40 hover:text-text-base"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d={s.d} />
+              </svg>
+              {s.label}
+            </Link>
+          ))}
+        </div>
+
         {/* Héros revenus : grand chiffre du mois + graphique en aire animé.
             La pièce maîtresse visuelle de la vue d'ensemble. */}
         <div className="mt-4 sm:mt-5">
@@ -1246,39 +1281,6 @@ export default async function OverviewPage() {
           />
         </div>
 
-        {/* Raccourcis mobiles : Paiements, Factures et Stats n'ont pas
-            d'onglet dans la barre du bas, et le menu compte est redevenu un
-            pur menu compte. Leur porte d'entrée mobile vit donc ici. */}
-        <div className="mt-5 grid grid-cols-3 gap-2 md:hidden">
-          {[
-            {
-              href: "/dashboard/paiements",
-              label: dict.nav.payments,
-              d: "M2 8h20M5 5h14a3 3 0 013 3v8a3 3 0 01-3 3H5a3 3 0 01-3-3V8a3 3 0 013-3z",
-            },
-            {
-              href: "/dashboard/factures",
-              label: dict.nav.invoices,
-              d: "M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zM14 2v6h6M9 13h6M9 17h6",
-            },
-            {
-              href: "/dashboard/stats",
-              label: dict.nav.stats,
-              d: "M18 20V10M12 20V4M6 20v-6",
-            },
-          ].map((s) => (
-            <Link
-              key={s.href}
-              href={s.href}
-              className="flex flex-col items-center gap-1.5 rounded-2xl border border-border bg-bg-card py-3.5 text-xs font-medium text-text-muted transition-colors hover:border-accent/40 hover:text-text-base"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                <path d={s.d} />
-              </svg>
-              {s.label}
-            </Link>
-          ))}
-        </div>
       </main>
     </>
   );

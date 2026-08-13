@@ -16,6 +16,9 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL("https://madger.app"),
   alternates: { canonical: "/" },
+  // iOS transforme adresses/téléphones en liens soulignés pointillés (très
+  // visible sur la facture) : détection coupée, nos liens restent explicites.
+  formatDetection: { telephone: false, address: false, email: false },
   title: "Madger · L'app préférée des coachs sportifs",
   description: "Ton lien de réservation, tes paiements sécurisés, tes factures automatiques. Tes clients réservent seuls, ton planning se remplit. Fait pour les coachs sportifs indépendants.",
   keywords: ["réservation coach sportif", "coach sportif", "logiciel réservation sport", "prise de rendez-vous coach", "application coach sportif", "paiement en ligne coach", "facturation coach"],
