@@ -731,6 +731,7 @@ export default async function OverviewPage() {
               weekday: "long",
               day: "numeric",
               month: "long",
+              timeZone: coach?.timezone || "Europe/Paris",
             })}
             <span className="normal-case">
               {" "}
@@ -923,16 +924,20 @@ export default async function OverviewPage() {
                         className="flex items-center gap-3 rounded-lg border border-border bg-bg-elevated p-3 transition-colors hover:border-accent/40"
                       >
                         <div className="flex w-14 shrink-0 flex-col">
+                          {/* Fuseau du coach : le serveur tourne en UTC,
+                              sans lui la séance de 9h30 s'affiche 7h30. */}
                           <span className="text-xs font-medium text-text-base">
                             {new Date(b.starts_at).toLocaleDateString(loc, {
                               day: "2-digit",
                               month: "short",
+                              timeZone: coach?.timezone || "Europe/Paris",
                             })}
                           </span>
                           <span className="text-[11px] text-text-dim">
                             {new Date(b.starts_at).toLocaleTimeString(loc, {
                               hour: "2-digit",
                               minute: "2-digit",
+                              timeZone: coach?.timezone || "Europe/Paris",
                             })}
                           </span>
                         </div>
@@ -1072,6 +1077,7 @@ export default async function OverviewPage() {
                             {new Date(m.created_at).toLocaleTimeString(loc, {
                               hour: "2-digit",
                               minute: "2-digit",
+                              timeZone: coach?.timezone || "Europe/Paris",
                             })}
                           </span>
                         </div>
