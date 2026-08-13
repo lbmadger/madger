@@ -33,8 +33,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "not_a_coach" }, { status: 403 });
   }
 
-  let accountId = coach.stripe_account_id as string | null;
-  if (!accountId) {
+  // Colonnes Stripe protégées par la RLS (0035) : écriture via service role.
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!serviceKey) {
+    return NextResponse.json({ error: "not_configured" }, { status: 500 });
+  }
+  const admin = createAdmin(SUPABASE_URL, serviceKey);
+
+  const createAccount = async (): Promise<string> => {
     const account = await stripe.accounts.create({
       type: "express",
       email: user.email ?? undefined,
@@ -45,25 +51,52 @@ export async function POST(req: NextRequest) {
         card_payments: { requested: true },
       },
     });
-    accountId = account.id;
-    // Colonne Stripe protégée par la RLS (0035) : écriture via service role.
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!serviceKey) {
-      return NextResponse.json({ error: "not_configured" }, { status: 500 });
-    }
-    const admin = createAdmin(SUPABASE_URL, serviceKey);
     await admin
       .from("coaches")
-      .update({ stripe_account_id: accountId })
+      .update({ stripe_account_id: account.id, stripe_charges_enabled: false })
       .eq("id", user.id);
+    return account.id;
+  };
+
+  try {
+    let accountId = coach.stripe_account_id as string | null;
+    const hadAccount = !!accountId;
+    if (!accountId) {
+      accountId = await createAccount();
+    }
+
+    let link;
+    try {
+      link = await stripe.accountLinks.create({
+        account: accountId,
+        refresh_url: `${origin}/dashboard/paiements`,
+        return_url: `${origin}/dashboard/paiements?connected=1`,
+        type: "account_onboarding",
+      });
+    } catch (err) {
+      // Compte enregistré du temps des clés de TEST : il n'existe pas en
+      // mode réel (les deux univers Stripe sont séparés). On repart sur un
+      // compte neuf UNE fois, plutôt que de bloquer le coach pour toujours.
+      if (!hadAccount) throw err;
+      accountId = await createAccount();
+      link = await stripe.accountLinks.create({
+        account: accountId,
+        refresh_url: `${origin}/dashboard/paiements`,
+        return_url: `${origin}/dashboard/paiements?connected=1`,
+        type: "account_onboarding",
+      });
+    }
+
+    return NextResponse.json({ url: link.url });
+  } catch (err) {
+    // Remonte le message Stripe (route authentifiée) : « réessaie plus
+    // tard » sans détail rendait le vrai problème indiagnosticable.
+    const message =
+      err instanceof Error ? err.message : "Erreur Stripe inconnue";
+    console.error("stripe_connect_failed:", message);
+    return NextResponse.json(
+      { error: "stripe_error", detail: message },
+      { status: 502 }
+    );
   }
-
-  const link = await stripe.accountLinks.create({
-    account: accountId,
-    refresh_url: `${origin}/dashboard/paiements`,
-    return_url: `${origin}/dashboard/paiements?connected=1`,
-    type: "account_onboarding",
-  });
-
-  return NextResponse.json({ url: link.url });
 }

@@ -11,18 +11,23 @@ export default function StripeConnectButton({ label }: { label: string }) {
   const { t } = useI18n();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  // Détail technique renvoyé par le serveur (message Stripe) : sans lui,
+  // impossible de diagnostiquer un échec de connexion à distance.
+  const [detail, setDetail] = useState<string | null>(null);
 
   async function go() {
     setLoading(true);
     setError(false);
+    setDetail(null);
     try {
       const res = await fetch("/api/stripe/connect", { method: "POST" });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (data.url) {
         window.location.href = data.url;
         return;
       }
       setError(true);
+      if (typeof data.detail === "string") setDetail(data.detail);
     } catch {
       setError(true);
     }
@@ -35,7 +40,10 @@ export default function StripeConnectButton({ label }: { label: string }) {
         {loading ? t("payments.connecting") : label}
       </Button>
       {error && (
-        <p role="alert" className="mt-2 text-xs text-danger">{t("payments.connectError")}</p>
+        <p role="alert" className="mt-2 text-xs text-danger">
+          {t("payments.connectError")}
+          {detail ? ` (${detail})` : ""}
+        </p>
       )}
     </div>
   );
