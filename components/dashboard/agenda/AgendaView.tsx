@@ -33,12 +33,15 @@ export default function AgendaView({
   clients,
   availabilities = [],
   profiles = {},
+  services = [],
 }: {
   initialBookings: Booking[];
   clients: ClientOption[];
   availabilities?: Availability[];
   // Fiche sportive par client CRM (agenda : le coach voit à qui il a affaire).
   profiles?: Record<string, ClientProfile>;
+  // Noms des prestations : affichés sur les séances (grille, liste, fiche).
+  services?: { id: string; name: string }[];
 }) {
   const { t, locale } = useI18n();
   const router = useRouter();
@@ -94,6 +97,14 @@ export default function AgendaView({
   const [quickBlockError, setQuickBlockError] = useState(false);
 
   const loc = locale === "fr" ? "fr-FR" : "en-GB";
+
+  // Nom de la prestation d'une séance (null : bloc ou séance sans presta).
+  const serviceNames = useMemo(
+    () => new Map(services.map((s) => [s.id, s.name])),
+    [services]
+  );
+  const serviceName = (b: Booking): string | null =>
+    b.service_id ? serviceNames.get(b.service_id) ?? null : null;
 
   // Crée le blocage : une séance sans client marquée is_block, que les
   // créneaux publics et les contrôles de chevauchement excluent déjà.
@@ -566,6 +577,7 @@ export default function AgendaView({
         <WeekView
           bookings={bookings}
           availabilities={availabilities}
+          serviceName={serviceName}
           onBookingClick={(b) => {
             setActionError(null);
             setSelected(b);
@@ -615,6 +627,11 @@ export default function AgendaView({
                       <span className="block truncate text-sm font-medium text-text-base">
                         {clientName(b)}
                       </span>
+                      {serviceName(b) && (
+                        <span className="block truncate text-xs font-medium text-accent">
+                          {serviceName(b)}
+                        </span>
+                      )}
                       {(b.location_text || b.meeting_url) && (
                         <span className="block truncate text-xs text-text-muted">
                           {b.location === "online"
@@ -773,13 +790,18 @@ export default function AgendaView({
         <Dialog
           onClose={() => setSelected(null)}
           label={clientName(selected)}
-          className="w-full max-w-sm rounded-t-2xl border border-border bg-bg-card p-5 sm:rounded-2xl"
+          className="max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-t-2xl border border-border bg-bg-card p-5 sm:rounded-2xl sm:p-6"
         >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <h2 className="truncate text-lg font-extrabold tracking-tight text-text-base">
                   {clientName(selected)}
                 </h2>
+                {serviceName(selected) && (
+                  <p className="mt-0.5 truncate text-sm font-semibold text-accent">
+                    {serviceName(selected)}
+                  </p>
+                )}
                 <p className="mt-0.5 text-sm capitalize text-text-muted">
                   {new Date(selected.starts_at).toLocaleString(loc, {
                     weekday: "long",
@@ -789,6 +811,14 @@ export default function AgendaView({
                     minute: "2-digit",
                   })}
                 </p>
+                {(selected.location_text ||
+                  (selected.location === "online" && selected.meeting_url)) && (
+                  <p className="mt-0.5 truncate text-xs text-text-muted">
+                    {selected.location === "online"
+                      ? selected.meeting_url
+                      : selected.location_text}
+                  </p>
+                )}
               </div>
               <span
                 className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
@@ -809,6 +839,19 @@ export default function AgendaView({
 
             {actionError && (
               <p role="alert" className="mt-3 text-sm text-danger">{t(actionError)}</p>
+            )}
+
+            {/* Ce que le client a précisé en réservant (ou la note du coach
+                sur une séance créée à la main). */}
+            {!selected.is_block && selected.notes && (
+              <div className="mt-3 rounded-xl border border-border bg-bg-elevated p-3.5">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-text-dim">
+                  {t("agenda.noteLabel")}
+                </p>
+                <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-text-base">
+                  {selected.notes}
+                </p>
+              </div>
             )}
 
             {/* Fiche sportive du client (objectifs, niveau, mensurations) :

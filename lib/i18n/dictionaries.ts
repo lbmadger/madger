@@ -276,6 +276,7 @@ const fr = {
     blocked: "Bloqué",
     blockBtn: "Bloquer un créneau",
     blockDesc: "Les clients ne pourront pas réserver sur cette plage.",
+    noteLabel: "Note de la séance",
     blockCta: "Bloquer",
     blockConfirmTitle: "Bloquer ce créneau ?",
     blockConfirmDesc:
@@ -1605,6 +1606,7 @@ const en: Dictionary = {
     blocked: "Blocked",
     blockBtn: "Block a slot",
     blockDesc: "Clients will not be able to book during this window.",
+    noteLabel: "Session note",
     blockCta: "Block",
     blockConfirmTitle: "Block this slot?",
     blockConfirmDesc:

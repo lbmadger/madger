@@ -38,6 +38,7 @@ export default function WeekView({
   availabilities,
   onBookingClick,
   onSlotClick,
+  serviceName,
 }: {
   bookings: Booking[];
   availabilities: Availability[];
@@ -46,6 +47,8 @@ export default function WeekView({
   // Clic sur une case horaire LIBRE : blocage direct du créneau (1 h),
   // façon Airbnb. Absent → cases inertes.
   onSlotClick?: (start: Date) => void;
+  // Nom de la prestation d'une séance (affiché sur les tuiles hautes).
+  serviceName?: (b: Booking) => string | null;
 }) {
   const { t, locale } = useI18n();
   const loc = locale === "fr" ? "fr-FR" : "en-GB";
@@ -257,6 +260,12 @@ export default function WeekView({
               {h >= 34 && (
                 <span className="block truncate text-[10px] leading-tight text-text-muted">
                   {clientName(b)}
+                </span>
+              )}
+              {/* Type de prestation dès que la tuile est assez haute */}
+              {h >= 48 && serviceName?.(b) && (
+                <span className="block truncate text-[10px] font-medium leading-tight text-accent">
+                  {serviceName(b)}
                 </span>
               )}
             </>

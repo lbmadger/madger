@@ -13,25 +13,31 @@ export default async function AgendaPage() {
   const { dict } = getServerDictionary();
   const supabase = createClient();
 
-  const [{ data: bookings }, { data: clients }, { data: availabilities }] =
-    await Promise.all([
-      supabase
-        .from("bookings")
-        .select("*, clients(first_name, last_name)")
-        // Fenêtre glissante : sans borne, PostgREST plafonne à 1000 lignes et
-        // un gros historique évincerait silencieusement les séances futures.
-        .gte(
-          "starts_at",
-          new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
-        )
-        .order("starts_at", { ascending: true })
-        .limit(1000),
-      supabase
-        .from("clients")
-        .select("id, first_name, last_name")
-        .order("first_name", { ascending: true }),
-      supabase.from("availabilities").select("*"),
-    ]);
+  const [
+    { data: bookings },
+    { data: clients },
+    { data: availabilities },
+    { data: services },
+  ] = await Promise.all([
+    supabase
+      .from("bookings")
+      .select("*, clients(first_name, last_name)")
+      // Fenêtre glissante : sans borne, PostgREST plafonne à 1000 lignes et
+      // un gros historique évincerait silencieusement les séances futures.
+      .gte(
+        "starts_at",
+        new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+      )
+      .order("starts_at", { ascending: true })
+      .limit(1000),
+    supabase
+      .from("clients")
+      .select("id, first_name, last_name")
+      .order("first_name", { ascending: true }),
+    supabase.from("availabilities").select("*"),
+    // Noms des prestations : affichés sur les séances (grille + fiche).
+    supabase.from("services").select("id, name"),
+  ]);
 
   // Fiche sportive des clients (objectifs, niveau, mensurations), affichée
   // dans le détail d'une séance. Chemin RLS existant : conversations du
@@ -73,6 +79,7 @@ export default async function AgendaPage() {
           clients={(clients ?? []) as ClientOption[]}
           availabilities={(availabilities ?? []) as Availability[]}
           profiles={profiles}
+          services={(services ?? []) as { id: string; name: string }[]}
         />
       </main>
     </>
