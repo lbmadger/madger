@@ -518,7 +518,10 @@ export default function AgendaView({
           </Link>
         </div>
       )}
-      <div className="mb-5 flex items-center justify-between gap-3">
+      {/* Barre d'outils : passe sur deux lignes en mobile (le bouton
+          + Ajouter débordait de l'écran et créait un défilement horizontal
+          qui permettait de dézoomer toute la page). */}
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         {/* Sélecteur de vue Semaine / Liste */}
         <div className="inline-flex rounded-full border border-border-strong p-0.5">
           {(["week", "list"] as const).map((v) => (
@@ -540,14 +543,14 @@ export default function AgendaView({
         {/* Un seul accès aux Disponibilités sur cet écran : celui de la
             légende du calendrier (le doublon d'ici était en plus masqué en
             mobile). */}
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex w-full items-center gap-2 sm:w-auto">
           <button
             type="button"
             onClick={() => {
               setBlockError(null);
               setBlocking(true);
             }}
-            className="whitespace-nowrap rounded-full border border-border-strong px-4 py-2.5 text-sm font-medium text-text-muted transition-colors hover:border-accent hover:text-text-base"
+            className="flex-1 whitespace-nowrap rounded-full border border-border-strong px-4 py-2.5 text-sm font-medium text-text-muted transition-colors hover:border-accent hover:text-text-base sm:flex-none"
           >
             {t("agenda.blockBtn")}
           </button>
@@ -557,7 +560,7 @@ export default function AgendaView({
             title={
               clients.length === 0 ? t("agenda.needClientTitle") : undefined
             }
-            className="whitespace-nowrap px-4 py-2.5"
+            className="flex-1 whitespace-nowrap px-4 py-2.5 sm:flex-none"
           >
             + {t("agenda.add")}
           </Button>
