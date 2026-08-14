@@ -192,9 +192,12 @@ export default function AddSessionModal({
             </select>
           </label>
 
-          {/* Date + heure */}
-          <div className="grid grid-cols-2 gap-3">
-            <label className="flex flex-col gap-1.5">
+          {/* Date + heure. EMPILÉS sur mobile : côte à côte, les sélecteurs
+              natifs iOS débordaient l'un sur l'autre et masquaient le
+              segment AM/PM (des séances enregistrées à 21:30 au lieu de
+              9:30 sans que le coach le voie). */}
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <label className="flex min-w-0 flex-col gap-1.5">
               <span className="text-xs font-medium text-text-muted">
                 {t("agenda.form.date")}
                 <span aria-hidden="true" className="ml-0.5 text-danger">*</span>
@@ -204,10 +207,10 @@ export default function AddSessionModal({
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 required
-                className={fieldClass}
+                className={`${fieldClass} min-w-0`}
               />
             </label>
-            <label className="flex flex-col gap-1.5">
+            <label className="flex min-w-0 flex-col gap-1.5">
               <span className="text-xs font-medium text-text-muted">
                 {t("agenda.form.time")}
                 <span aria-hidden="true" className="ml-0.5 text-danger">*</span>
@@ -217,7 +220,7 @@ export default function AddSessionModal({
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
                 required
-                className={fieldClass}
+                className={`${fieldClass} min-w-0`}
               />
             </label>
           </div>

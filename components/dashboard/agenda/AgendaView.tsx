@@ -788,7 +788,10 @@ export default function AgendaView({
       {/* Fiche d'une séance cliquée dans la grille semaine */}
       {selected && (
         <Dialog
-          onClose={() => setSelected(null)}
+          onClose={() => {
+            setSelected(null);
+            setCancelId(null);
+          }}
           label={clientName(selected)}
           className="max-h-[88vh] w-full max-w-lg overflow-y-auto rounded-t-2xl border border-border bg-bg-card p-5 sm:rounded-2xl sm:p-6"
         >
@@ -802,7 +805,9 @@ export default function AgendaView({
                     {serviceName(selected)}
                   </p>
                 )}
-                <p className="mt-0.5 text-sm capitalize text-text-muted">
+                {/* Date en bas de casse naturelle du français (« vendredi 14
+                    août à 9:30 ») : capitalize mettait Août et À en majuscule. */}
+                <p className="mt-0.5 text-sm text-text-muted first-letter:uppercase">
                   {new Date(selected.starts_at).toLocaleString(loc, {
                     weekday: "long",
                     day: "numeric",
@@ -848,7 +853,7 @@ export default function AgendaView({
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-text-dim">
                   {t("agenda.noteLabel")}
                 </p>
-                <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-text-base">
+                <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed text-text-base">
                   {selected.notes}
                 </p>
               </div>
@@ -926,46 +931,72 @@ export default function AgendaView({
                 </button>
               </div>
             ) : selected.status === "confirmed" ? (
-              <div className="mt-4 flex flex-col gap-2">
-                <p className="text-xs text-text-muted">{t("agenda.cancelWho")}</p>
-                <div className="flex gap-2">
+              // Annulation en DEUX temps : la fiche propose d'abord des
+              // actions neutres ; « qui annule ? » n'apparaît qu'après un
+              // clic explicite sur Annuler (sinon la fiche ressemblait à un
+              // formulaire d'annulation obligatoire).
+              cancelId === selected.id ? (
+                <div className="mt-4 flex flex-col gap-2">
+                  <p className="text-xs text-text-muted">
+                    {t("agenda.cancelWho")}
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      disabled={cancelling}
+                      onClick={() => cancelBooking(selected.id, "client")}
+                      className="flex-1 rounded-full border border-border-strong py-2.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
+                    >
+                      {t("agenda.cancelByClient")}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={cancelling}
+                      onClick={() => cancelBooking(selected.id, "coach")}
+                      className="flex-1 rounded-full border border-border-strong py-2.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
+                    >
+                      {t("agenda.cancelByCoach")}
+                    </button>
+                  </div>
                   <button
                     type="button"
-                    disabled={cancelling}
-                    onClick={() => cancelBooking(selected.id, "client")}
-                    className="flex-1 rounded-full border border-border-strong py-2.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
-                  >
-                    {t("agenda.cancelByClient")}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={cancelling}
-                    onClick={() => cancelBooking(selected.id, "coach")}
-                    className="flex-1 rounded-full border border-border-strong py-2.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
-                  >
-                    {t("agenda.cancelByCoach")}
-                  </button>
-                </div>
-                <div className="flex items-center justify-center gap-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditing(selected);
-                      setSelected(null);
-                    }}
-                    className="text-xs font-medium text-text-dim transition-colors hover:text-accent"
-                  >
-                    <PencilIcon size={11} className="mr-1 inline-block align-[-1px]" />{t("agenda.edit")}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelected(null)}
-                    className="text-xs text-text-dim hover:text-text-muted"
+                    onClick={() => setCancelId(null)}
+                    className="self-center text-xs text-text-dim hover:text-text-muted"
                   >
                     {t("agenda.cancelKeep")}
                   </button>
                 </div>
-              </div>
+              ) : (
+                <div className="mt-4 flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="secondary"
+                      className="flex-1"
+                      onClick={() => {
+                        setEditing(selected);
+                        setSelected(null);
+                      }}
+                    >
+                      <PencilIcon size={12} className="mr-1.5 inline-block align-[-1px]" />
+                      {t("agenda.edit")}
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={() => setCancelId(selected.id)}
+                      className="flex-1 rounded-full border border-danger/40 py-2.5 text-sm font-medium text-danger transition-colors hover:border-danger"
+                    >
+                      {t("agenda.cancelBooking")}
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelected(null)}
+                    className="self-center text-xs text-text-dim hover:text-text-muted"
+                  >
+                    {t("agenda.cancelKeep")}
+                  </button>
+                </div>
+              )
             ) : (
               <div className="mt-4 text-center">
                 <Button variant="secondary" onClick={() => setSelected(null)}>

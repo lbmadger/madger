@@ -64,6 +64,14 @@ export default function BookingModal({
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
+  // Objectif du client (chips optionnelles) : pour les clients SANS compte,
+  // c'est souvent la seule info que le coach aura avant la première séance.
+  // Combiné au message libre, il atterrit dans la note de la séance.
+  const [goal, setGoal] = useState<string | null>(null);
+  const composedMessage = () =>
+    [goal ? `${t("booking.goalPrefix")} ${goal}` : null, message.trim() || null]
+      .filter(Boolean)
+      .join("\n") || null;
   // Coach avec des prestations payantes : la « demande simple sans paiement »
   // disparaît (elle permettrait de réserver un vrai créneau sans payer) ; la
   // première prestation est présélectionnée.
@@ -114,6 +122,7 @@ export default function BookingModal({
       if (typeof d.lastName === "string") setLastName(d.lastName);
       if (typeof d.phone === "string") setPhone(d.phone);
       if (typeof d.message === "string") setMessage(d.message);
+      if (typeof d.goal === "string" && d.goal) setGoal(d.goal);
       if (typeof d.online === "boolean") setOnline(d.online);
       if (typeof d.duration === "number") setDuration(d.duration);
       if (typeof d.date === "string") setDate(d.date);
@@ -148,6 +157,7 @@ export default function BookingModal({
           lastName,
           phone,
           message,
+          goal: goal ?? "",
         })
       );
     } catch {
@@ -278,7 +288,7 @@ export default function BookingModal({
             starts_at: starts ? starts.toISOString() : null,
             duration_min: effectiveDuration,
             online,
-            message: message.trim() || null,
+            message: composedMessage(),
           }),
         });
         const data = await res.json().catch(() => ({}));
@@ -323,7 +333,7 @@ export default function BookingModal({
           phone: phone.trim() || null,
           starts_at: starts ? starts.toISOString() : null,
           duration_min: effectiveDuration,
-          message: message.trim() || null,
+          message: composedMessage(),
           online,
           website, // honeypot
         }),
@@ -751,6 +761,35 @@ export default function BookingModal({
                 <span className={labelClass}>{t("booking.phone")}</span>
                 <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} />
               </label>
+
+              {/* Objectif en chips : une info précieuse pour le coach,
+                  surtout quand le client n'a pas de compte (pas de fiche
+                  sportive). Optionnel, un tap suffit. */}
+              <div className="flex flex-col gap-1.5">
+                <span className={labelClass}>{t("booking.goalLabel")}</span>
+                <div className="flex flex-wrap gap-2">
+                  {(["goalWeight", "goalMuscle", "goalFitness", "goalPerf"] as const).map(
+                    (k) => {
+                      const label = t(`booking.${k}`);
+                      const active = goal === label;
+                      return (
+                        <button
+                          key={k}
+                          type="button"
+                          onClick={() => setGoal(active ? null : label)}
+                          className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
+                            active
+                              ? "border-accent bg-accent/10 text-accent"
+                              : "border-border-strong text-text-muted hover:text-text-base"
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    }
+                  )}
+                </div>
+              </div>
 
               <label className="flex flex-col gap-1.5">
                 <span className={labelClass}>{t("booking.message")}</span>
