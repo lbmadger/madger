@@ -92,8 +92,11 @@ function layout(opts: {
 <html lang="${locale}">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark"></head>
 <body style="margin:0;padding:0;background:${C.bg};">
-  <!-- Préheader : visible dans l'aperçu de la boîte mail, pas dans l'email -->
-  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">${preheader}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>
+  <!-- Préheader : visible dans l'aperçu de la boîte mail, pas dans l'email.
+       Le rembourrage invisible remplit le reste de l'aperçu : sans lui,
+       Gmail concatène le texte du corps (logo, titre, intro) et l'aperçu
+       devient une bouillie redondante. -->
+  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">${preheader}${"&nbsp;&zwnj;".repeat(160)}</div>
 
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${C.bg};">
     <tr><td align="center" style="padding:44px 16px 40px;">
