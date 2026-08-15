@@ -696,6 +696,8 @@ const fr = {
     today: "Aujourd'hui",
     sessionsToday: "séance(s) aujourd'hui",
     nextAt: "prochaine à",
+    sessionsTomorrow: "séance(s) demain",
+    firstAt: "première à",
     firstBookingTitle: "Ta première réservation est là 🎉",
     firstBookingDesc:
       "Ça y est, Madger travaille pour toi : réservé, payé, facturé, sans un seul message.",
@@ -2060,6 +2062,8 @@ const en: Dictionary = {
     today: "Today",
     sessionsToday: "session(s) today",
     nextAt: "next at",
+    sessionsTomorrow: "session(s) tomorrow",
+    firstAt: "first at",
     firstBookingTitle: "Your first booking just landed 🎉",
     firstBookingDesc:
       "That's it, Madger is working for you: booked, paid, invoiced, without a single message.",

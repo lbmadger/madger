@@ -38,6 +38,13 @@ export default async function OverviewPage() {
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekStart.getDate() + 7);
 
+  // Bornes de demain (pour la salutation « X séances demain »).
+  const tomorrowStart = new Date(now);
+  tomorrowStart.setHours(0, 0, 0, 0);
+  tomorrowStart.setDate(tomorrowStart.getDate() + 1);
+  const tomorrowEnd = new Date(tomorrowStart);
+  tomorrowEnd.setDate(tomorrowStart.getDate() + 1);
+
   const monthStartForClients = new Date(now.getFullYear(), now.getMonth(), 1);
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
@@ -64,6 +71,7 @@ export default async function OverviewPage() {
     monthSessionsRes,
     breakdownRes,
     totalBookingsRes,
+    tomorrowRes,
     { coach },
   ] = await Promise.all([
     supabase.from("clients").select("*", { count: "exact", head: true }),
@@ -169,6 +177,15 @@ export default async function OverviewPage() {
         .select("*", { count: "exact", head: true })
         .eq("is_block", false)
         .neq("status", "cancelled"),
+      // Séances de demain : quand la journée est vide, la salutation bascule
+      // sur « X séances demain » au lieu d'un « 0 séance » déprimant.
+      supabase
+        .from("bookings")
+        .select("*", { count: "exact", head: true })
+        .gte("starts_at", tomorrowStart.toISOString())
+        .lt("starts_at", tomorrowEnd.toISOString())
+        .neq("status", "cancelled")
+        .eq("is_block", false),
       // Profil du coach (objectifs, checklist, salutation, plan).
       getCoach(),
     ]);
@@ -454,6 +471,15 @@ export default async function OverviewPage() {
     .map((b) => new Date(b.starts_at as string))
     .filter((d) => d.getTime() >= now.getTime() && d.getTime() < todayEnd.getTime())
     .sort((a, b) => a.getTime() - b.getTime())[0];
+  // Journée vide mais demain rempli : la salutation regarde devant.
+  const tomorrowCount = tomorrowRes.count ?? 0;
+  const tomorrowFirstAt = upcoming
+    .map((b) => new Date(b.starts_at))
+    .find(
+      (d) =>
+        d.getTime() >= tomorrowStart.getTime() &&
+        d.getTime() < tomorrowEnd.getTime()
+    );
 
   // Mini-widgets de la colonne droite : séances par jour (semaine courante)
   // et encaissements de la semaine.
@@ -735,14 +761,25 @@ export default async function OverviewPage() {
             })}
             <span className="normal-case">
               {" "}
-              · {todayCount} {o.sessionsToday}
-              {todayNextAt
-                ? ` · ${o.nextAt} ${todayNextAt.toLocaleTimeString(loc, {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    timeZone: coach?.timezone || "Europe/Paris",
-                  })}`
-                : ""}
+              {todayCount === 0 && !todayNextAt && tomorrowCount > 0
+                ? `· ${tomorrowCount} ${o.sessionsTomorrow}${
+                    tomorrowFirstAt
+                      ? ` · ${o.firstAt} ${tomorrowFirstAt.toLocaleTimeString(loc, {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          timeZone: coach?.timezone || "Europe/Paris",
+                        })}`
+                      : ""
+                  }`
+                : `· ${todayCount} ${o.sessionsToday}${
+                    todayNextAt
+                      ? ` · ${o.nextAt} ${todayNextAt.toLocaleTimeString(loc, {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          timeZone: coach?.timezone || "Europe/Paris",
+                        })}`
+                      : ""
+                  }`}
             </span>
           </p>
         </div>
