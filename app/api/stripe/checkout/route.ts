@@ -131,15 +131,15 @@ export async function POST(req: NextRequest) {
   // retour de Stripe (remboursement automatique) : correct mais pénible ;
   // indispensable surtout en saisie libre, où le client tape n'importe
   // quelle heure. Le contrôle du fulfillment reste en double sécurité.
+  const starts = new Date(String(starts_at));
+  const ends = new Date(
+    // Durée RELUE depuis la prestation : celle du corps de requête est
+    // forgeable (fenêtre de chevauchement réduite, séance à durée libre).
+    starts.getTime() +
+      ((service.duration_min as number | null) ?? (Number(duration_min) || 60)) *
+        60000
+  );
   {
-    const starts = new Date(String(starts_at));
-    const ends = new Date(
-      // Durée RELUE depuis la prestation : celle du corps de requête est
-      // forgeable (fenêtre de chevauchement réduite, séance à durée libre).
-      starts.getTime() +
-        ((service.duration_min as number | null) ?? (Number(duration_min) || 60)) *
-          60000
-    );
     const { data: overlapping } = await supabase
       .from("bookings")
       .select("id")
@@ -153,13 +153,58 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // ── Verrou de créneau (migration 0052) ────────────────────────────────────
+  // Dès qu'un client ouvre le paiement, le créneau est verrouillé 15 min :
+  // un second client reçoit « créneau pris » au lieu de payer pour rien.
+  // Défensif : si la table n'existe pas encore, on continue sans verrou
+  // (le contrôle du fulfillment reste la sécurité finale).
+  let holdId: string | null = null;
+  {
+    const cutoff = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+    // Purge opportuniste des verrous expirés : pas de cron nécessaire.
+    await supabase.from("slot_holds").delete().lt("created_at", cutoff);
+    const { data: held, error: holdReadError } = await supabase
+      .from("slot_holds")
+      .select("id")
+      .eq("coach_id", coach.id)
+      .gte("created_at", cutoff)
+      .lt("starts_at", ends.toISOString())
+      .gt("ends_at", starts.toISOString())
+      .limit(1);
+    if (!holdReadError) {
+      if ((held ?? []).length > 0) {
+        return NextResponse.json({ error: "slot_taken" }, { status: 409 });
+      }
+      const { data: hold, error: holdWriteError } = await supabase
+        .from("slot_holds")
+        .insert({
+          coach_id: coach.id,
+          starts_at: starts.toISOString(),
+          ends_at: ends.toISOString(),
+        })
+        .select("id")
+        .single();
+      if (holdWriteError) {
+        // 23505 = index unique : un autre client vient de verrouiller
+        // exactement ce créneau dans la même seconde.
+        if (holdWriteError.code === "23505") {
+          return NextResponse.json({ error: "slot_taken" }, { status: 409 });
+        }
+      } else {
+        holdId = (hold?.id as string) ?? null;
+      }
+    }
+  }
+
   // Modèle Airbnb : en mode approbation, la carte est seulement AUTORISÉE
   // (empreinte bancaire). Le débit ne part que si le coach accepte ; refus ou
   // non-réponse → l'autorisation est simplement libérée, rien n'est prélevé.
   const approval = coach.booking_mode === "approval";
 
   // Charge sur le compte plateforme (pas d'option stripeAccount) → séquestre.
-  const session = await stripe.checkout.sessions.create({
+  let session;
+  try {
+    session = await stripe.checkout.sessions.create({
     mode: "payment",
     line_items: [
       {
@@ -193,7 +238,23 @@ export async function POST(req: NextRequest) {
       online: online ? "1" : "0",
       message: message ? String(message).slice(0, 500) : "",
     },
-  });
+    });
+  } catch (err) {
+    // Stripe indisponible : le verrou est rendu tout de suite, pas dans 15 min.
+    if (holdId) {
+      await supabase.from("slot_holds").delete().eq("id", holdId);
+    }
+    throw err;
+  }
+
+  // Verrou rattaché à la session Stripe : le fulfillment le libèrera dès la
+  // réservation créée (ou l'expiration des 15 min s'en chargera).
+  if (holdId) {
+    await supabase
+      .from("slot_holds")
+      .update({ stripe_session_id: session.id })
+      .eq("id", holdId);
+  }
 
   return NextResponse.json({ client_secret: session.client_secret });
 }

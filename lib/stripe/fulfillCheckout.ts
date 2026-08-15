@@ -134,6 +134,11 @@ export async function fulfillCheckoutSession(
         /* best-effort */
       }
     }
+    // Conflit acté : le verrou de ce paiement est rendu (migration 0052).
+    await supabase
+      .from("slot_holds")
+      .delete()
+      .eq("stripe_session_id", session.id);
     return result;
   }
 
@@ -212,6 +217,13 @@ export async function fulfillCheckoutSession(
     }
     return result;
   }
+
+  // La réservation existe : le verrou de créneau posé au checkout est rendu
+  // (migration 0052 ; l'expiration 15 min couvre les paiements abandonnés).
+  await supabase
+    .from("slot_holds")
+    .delete()
+    .eq("stripe_session_id", session.id);
 
   const { data: payment, error: payError } = await supabase
     .from("payments")

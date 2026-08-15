@@ -76,6 +76,22 @@ export async function GET(req: NextRequest) {
     end: new Date(b.ends_at).getTime(),
   }));
 
+  // Créneaux VERROUILLÉS (paiement en cours, migration 0052) : retirés de
+  // l'affichage pendant 15 min. Défensif : table absente = simplement ignoré.
+  const { data: holds, error: holdsError } = await supabase
+    .from("slot_holds")
+    .select("starts_at, ends_at")
+    .eq("coach_id", coach.id)
+    .gte("created_at", new Date(now.getTime() - 15 * 60 * 1000).toISOString());
+  if (!holdsError) {
+    for (const h of holds ?? []) {
+      busy.push({
+        start: new Date(h.starts_at).getTime(),
+        end: new Date(h.ends_at).getTime(),
+      });
+    }
+  }
+
   const minStart = now.getTime() + noticeMs;
   const days: { date: string; slots: Slot[] }[] = [];
 
