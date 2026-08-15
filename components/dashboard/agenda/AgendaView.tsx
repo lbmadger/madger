@@ -106,6 +106,11 @@ export default function AgendaView({
   const serviceName = (b: Booking): string | null =>
     b.service_id ? serviceNames.get(b.service_id) ?? null : null;
 
+  // Séance terminée : plus modifiable (un report après coup fausserait le
+  // circuit du séquestre et l'historique). L'annulation reste possible
+  // (séance non effectuée = remboursement légitime).
+  const isPast = (b: Booking) => new Date(b.ends_at).getTime() < Date.now();
+
   // Crée le blocage : une séance sans client marquée is_block, que les
   // créneaux publics et les contrôles de chevauchement excluent déjà.
   async function submitBlock() {
@@ -716,7 +721,7 @@ export default function AgendaView({
                    )}
 
                    {/* Modifier une demande en attente */}
-                   {b.status === "pending" && (
+                   {b.status === "pending" && !isPast(b) && (
                      <button
                        type="button"
                        onClick={() => setEditing(b)}
@@ -762,13 +767,15 @@ export default function AgendaView({
                          </div>
                        ) : (
                          <div className="flex items-center gap-4">
-                           <button
-                             type="button"
-                             onClick={() => setEditing(b)}
-                             className="text-xs font-medium text-text-dim transition-colors hover:text-accent"
-                           >
-                             <PencilIcon size={11} className="mr-1 inline-block align-[-1px]" />{t("agenda.edit")}
-                           </button>
+                           {!isPast(b) && (
+                             <button
+                               type="button"
+                               onClick={() => setEditing(b)}
+                               className="text-xs font-medium text-text-dim transition-colors hover:text-accent"
+                             >
+                               <PencilIcon size={11} className="mr-1 inline-block align-[-1px]" />{t("agenda.edit")}
+                             </button>
+                           )}
                            <button
                              type="button"
                              onClick={() => setCancelId(b.id)}
@@ -922,16 +929,18 @@ export default function AgendaView({
                     )}
                   </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEditing(selected);
-                    setSelected(null);
-                  }}
-                  className="self-center text-xs font-medium text-text-dim transition-colors hover:text-accent"
-                >
-                  <PencilIcon size={11} className="mr-1 inline-block align-[-1px]" />{t("agenda.edit")}
-                </button>
+                {!isPast(selected) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditing(selected);
+                      setSelected(null);
+                    }}
+                    className="self-center text-xs font-medium text-text-dim transition-colors hover:text-accent"
+                  >
+                    <PencilIcon size={11} className="mr-1 inline-block align-[-1px]" />{t("agenda.edit")}
+                  </button>
+                )}
               </div>
             ) : selected.status === "confirmed" ? (
               // Annulation en DEUX temps : la fiche propose d'abord des
@@ -972,17 +981,19 @@ export default function AgendaView({
               ) : (
                 <div className="mt-4 flex flex-col gap-2">
                   <div className="flex gap-2">
-                    <Button
-                      variant="secondary"
-                      className="flex-1"
-                      onClick={() => {
-                        setEditing(selected);
-                        setSelected(null);
-                      }}
-                    >
-                      <PencilIcon size={12} className="mr-1.5 inline-block align-[-1px]" />
-                      {t("agenda.edit")}
-                    </Button>
+                    {!isPast(selected) && (
+                      <Button
+                        variant="secondary"
+                        className="flex-1"
+                        onClick={() => {
+                          setEditing(selected);
+                          setSelected(null);
+                        }}
+                      >
+                        <PencilIcon size={12} className="mr-1.5 inline-block align-[-1px]" />
+                        {t("agenda.edit")}
+                      </Button>
+                    )}
                     <button
                       type="button"
                       onClick={() => setCancelId(selected.id)}

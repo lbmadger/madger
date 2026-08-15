@@ -54,6 +54,20 @@ export async function POST(req: NextRequest) {
     .update({ reminder_sent_at: null, reminder_soon_sent_at: null })
     .eq("id", bookingId);
 
+  // Le séquestre SUIT la séance : sans ça, reporter une séance payée
+  // laissait l'ancienne date de versement et l'argent partait au coach
+  // AVANT la séance (le client perdait sa protection « signaler un
+  // problème »). Uniquement si le paiement est encore sous séquestre.
+  await admin
+    .from("payments")
+    .update({
+      release_after: new Date(
+        new Date(booking.ends_at as string).getTime() + 24 * 3600 * 1000
+      ).toISOString(),
+    })
+    .eq("booking_id", bookingId)
+    .eq("escrow_status", "held");
+
   // Événement Google recréé au nouvel horaire (best-effort).
   try {
     const { data: client } = await admin

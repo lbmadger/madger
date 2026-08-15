@@ -79,6 +79,13 @@ export default function AddSessionModal({
     const starts = new Date(`${date}T${time}`);
     const ends = new Date(starts.getTime() + duration * 60 * 1000);
 
+    // Une MODIFICATION ne peut pas envoyer la séance dans le passé : c'est
+    // la porte ouverte aux reports fantômes (séance « déjà faite » déplacée).
+    if (booking && starts.getTime() < Date.now()) {
+      setError(t("agenda.errors.pastDate"));
+      return;
+    }
+
     setLoading(true);
     try {
       const supabase = createClient();
@@ -202,12 +209,14 @@ export default function AddSessionModal({
                 {t("agenda.form.date")}
                 <span aria-hidden="true" className="ml-0.5 text-danger">*</span>
               </span>
+              {/* appearance-none : sans lui, iOS impose à ses sélecteurs
+                  date/heure une largeur intrinsèque qui déborde du cadre. */}
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 required
-                className={`${fieldClass} min-w-0`}
+                className={`${fieldClass} min-w-0 appearance-none [&::-webkit-date-and-time-value]:text-left`}
               />
             </label>
             <label className="flex min-w-0 flex-col gap-1.5">
@@ -220,7 +229,7 @@ export default function AddSessionModal({
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
                 required
-                className={`${fieldClass} min-w-0`}
+                className={`${fieldClass} min-w-0 appearance-none [&::-webkit-date-and-time-value]:text-left`}
               />
             </label>
           </div>

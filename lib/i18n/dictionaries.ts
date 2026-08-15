@@ -351,6 +351,8 @@ const fr = {
       generic: "Une erreur est survenue. Réessaie.",
       clientRequired: "Choisis un client.",
       dateRequired: "Indique une date et une heure.",
+      pastDate:
+        "Impossible de déplacer une séance dans le passé. Choisis un créneau à venir.",
       overlap:
         "Ce créneau chevauche une autre séance. Choisis un autre horaire.",
       captureFailed:
@@ -1710,6 +1712,8 @@ const en: Dictionary = {
       generic: "Something went wrong. Please try again.",
       clientRequired: "Choose a client.",
       dateRequired: "Pick a date and time.",
+      pastDate:
+        "A session cannot be moved into the past. Pick an upcoming slot.",
       overlap: "This slot overlaps another session. Pick another time.",
       captureFailed:
         "Charging the client failed (card expired or authorization lapsed). Decline the request: nothing will be taken from them.",
