@@ -1191,7 +1191,11 @@ export default async function OverviewPage() {
                   />
                 </div>
               </section>
-              <section className="rounded-2xl border border-border bg-bg-card p-4">
+              {/* Cliquable : mène à la page Avis (réponses, signalements). */}
+              <Link
+                href="/dashboard/avis"
+                className="rounded-2xl border border-border bg-bg-card p-4 transition-colors hover:border-accent/40"
+              >
                 <h3 className="text-xs font-medium text-text-muted">
                   {o.rating}
                 </h3>
@@ -1206,7 +1210,7 @@ export default async function OverviewPage() {
                 <p className="mt-2 text-[11px] text-text-dim">
                   {ratingCount} {dict.reviews.countLabel}
                 </p>
-              </section>
+              </Link>
             </div>
 
             {/* Dernières factures + téléchargement */}

@@ -35,6 +35,9 @@ const I = {
     <path d="M7 3h10l3 3v15H4V3h3zm0 7h10M7 14h10M7 18h6" />
   ),
   stats: <path d="M4 20V10m6 10V4m6 16v-6m6 6V8" />,
+  reviews: (
+    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+  ),
   messages: (
     <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
   ),
@@ -59,6 +62,7 @@ const NAV: NavItem[] = [
   { href: "/dashboard/messages", labelKey: "nav.messages", icon: I.messages },
   { href: "/dashboard/paiements", labelKey: "nav.payments", icon: I.payments },
   { href: "/dashboard/factures", labelKey: "nav.invoices", icon: I.invoices },
+  { href: "/dashboard/avis", labelKey: "nav.reviews", icon: I.reviews },
   { href: "/dashboard/stats", labelKey: "nav.stats", icon: I.stats },
 ];
 

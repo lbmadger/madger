@@ -51,6 +51,9 @@ export type PublicReview = {
   comment: string | null;
   created_at: string;
   client_first_name: string;
+  // Réponse publique du coach (migration 0053), affichée sous l'avis.
+  reply: string | null;
+  replied_at: string | null;
 };
 
 export function coachFullName(c: {

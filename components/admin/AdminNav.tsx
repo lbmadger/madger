@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/admin/clients", label: "Clients" },
   { href: "/admin/verifications", label: "Vérifications" },
   { href: "/admin/litiges", label: "Litiges" },
+  { href: "/admin/avis", label: "Avis" },
   { href: "/admin/analytics", label: "Analytics" },
   { href: "/admin/stripe", label: "Stripe" },
   { href: "/admin/emails", label: "Emails" },

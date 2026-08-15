@@ -835,6 +835,18 @@ function ReviewItem({
           {review.comment}
         </p>
       )}
+      {/* Réponse publique du coach (migration 0053), façon Vinted : un avis
+          défavorable n'est jamais un mur, le coach a le dernier mot visible. */}
+      {review.reply && (
+        <div className="mt-2 rounded-lg border-l-2 border-accent/50 bg-white/[0.03] px-3 py-2">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-text-dim">
+            {locale === "fr" ? "Réponse du coach" : "Coach's reply"}
+          </p>
+          <p className="mt-0.5 whitespace-pre-wrap break-words text-sm leading-relaxed text-text-muted">
+            {review.reply}
+          </p>
+        </div>
+      )}
       <p className="mt-1.5 text-[11px] text-text-dim">
         {new Date(review.created_at).toLocaleDateString(
           locale === "fr" ? "fr-FR" : "en-GB",

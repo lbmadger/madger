@@ -38,10 +38,34 @@ const fr = {
     messages: "Messages",
     payments: "Paiements",
     invoices: "Factures",
+    reviews: "Avis",
     stats: "Statistiques",
     settings: "Réglages",
     publicPage: "Ma page publique",
     subscription: "Abonnement",
+  },
+  coachReviews: {
+    title: "Avis",
+    intro:
+      "Réponds publiquement à tes avis (ta réponse s'affiche sous l'avis sur ta page) et signale ceux qui enfreignent les règles : l'équipe Madger tranche.",
+    emptyTitle: "Pas encore d'avis",
+    emptyDesc:
+      "Après chaque séance payée, tes clients reçoivent une invitation à laisser un avis. Ils apparaîtront ici et sur ta page publique.",
+    yourReply: "Ta réponse publique",
+    reply: "Répondre publiquement",
+    editReply: "Modifier ma réponse",
+    replyPlaceholder:
+      "Reste factuel et pro : ta réponse est publique et en dit autant sur toi que l'avis.",
+    replySave: "Publier ma réponse",
+    replySaving: "Publication…",
+    replyCancel: "Annuler",
+    saveError: "La réponse n'a pas pu être enregistrée. Réessaie.",
+    report: "Signaler cet avis",
+    reported: "Signalé, l'équipe va trancher",
+    reportPrompt:
+      "Pourquoi signaler cet avis ? (insultes, hors-sujet, faux avis…)",
+    reportError: "Le signalement n'a pas pu partir. Réessaie.",
+    hiddenBadge: "masqué par la modération",
   },
   topbar: {
     language: "Langue",
@@ -1378,10 +1402,33 @@ const en: Dictionary = {
     messages: "Messages",
     payments: "Payments",
     invoices: "Invoices",
+    reviews: "Reviews",
     stats: "Statistics",
     settings: "Settings",
     publicPage: "My public page",
     subscription: "Subscription",
+  },
+  coachReviews: {
+    title: "Reviews",
+    intro:
+      "Reply publicly to your reviews (your reply shows under the review on your page) and report the ones that break the rules: the Madger team decides.",
+    emptyTitle: "No reviews yet",
+    emptyDesc:
+      "After each paid session, your clients get an invitation to leave a review. They will appear here and on your public page.",
+    yourReply: "Your public reply",
+    reply: "Reply publicly",
+    editReply: "Edit my reply",
+    replyPlaceholder:
+      "Stay factual and professional: your reply is public and says as much about you as the review.",
+    replySave: "Publish my reply",
+    replySaving: "Publishing…",
+    replyCancel: "Cancel",
+    saveError: "The reply could not be saved. Try again.",
+    report: "Report this review",
+    reported: "Reported, the team will decide",
+    reportPrompt: "Why report this review? (insults, off-topic, fake review…)",
+    reportError: "The report could not be sent. Try again.",
+    hiddenBadge: "hidden by moderation",
   },
   topbar: {
     language: "Language",
