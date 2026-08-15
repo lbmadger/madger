@@ -627,6 +627,11 @@ const fr = {
     add: "Ajouter un client",
     search: "Rechercher un client…",
     count: "client(s)",
+    report: "Signaler ce client à l'équipe Madger",
+    reportPrompt:
+      "Pourquoi signaler ce client ? (comportement déplacé, absences répétées, harcèlement…)",
+    reportSent: "Signalement envoyé, l'équipe Madger revient vers toi.",
+    reportError: "Le signalement n'a pas pu partir. Réessaie.",
     emptyTitle: "Aucun client pour l'instant",
     emptyDesc: "Ajoute ton premier client pour commencer à le suivre.",
     form: {
@@ -1986,6 +1991,11 @@ const en: Dictionary = {
     add: "Add a client",
     search: "Search clients…",
     count: "client(s)",
+    report: "Report this client to the Madger team",
+    reportPrompt:
+      "Why report this client? (inappropriate behavior, repeated no-shows, harassment…)",
+    reportSent: "Report sent, the Madger team will get back to you.",
+    reportError: "The report could not be sent. Try again.",
     emptyTitle: "No clients yet",
     emptyDesc: "Add your first client to start tracking them.",
     form: {

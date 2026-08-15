@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Topbar from "@/components/dashboard/Topbar";
 import ClientDetail from "@/components/dashboard/clients/ClientDetail";
+import ReportClientButton from "@/components/dashboard/clients/ReportClientButton";
 import { TicketIcon, RepeatIcon, HistoryIcon, ChevronDownIcon } from "@/components/ui/icons";
 import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
@@ -230,6 +231,9 @@ export default async function ClientDetailPage({
             )}
           </div>
         </details>
+
+        {/* Recours discret : signaler ce client à l'équipe Madger. */}
+        <ReportClientButton clientId={params.id} />
       </main>
     </>
   );
