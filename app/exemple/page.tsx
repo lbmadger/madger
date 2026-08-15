@@ -130,6 +130,8 @@ const DEMO_REVIEWS: PublicReview[] = [
       "Emma est top ! En 3 mois j'ai perdu 6 kg et surtout j'ai enfin pris goût au sport. Les séances passent super vite.",
     created_at: "2025-05-12T10:00:00.000Z",
     client_first_name: "Julie",
+    reply: null,
+    replied_at: null,
   },
   {
     id: "r2",
@@ -139,6 +141,8 @@ const DEMO_REVIEWS: PublicReview[] = [
       "Très à l'écoute et hyper pédagogue. Le programme est vraiment adapté à mon emploi du temps chargé.",
     created_at: "2025-04-28T10:00:00.000Z",
     client_first_name: "Karim",
+    reply: null,
+    replied_at: null,
   },
   {
     id: "r3",
@@ -148,6 +152,10 @@ const DEMO_REVIEWS: PublicReview[] = [
       "Super accompagnement pour reprendre le sport après des années sans rien faire. Rien à redire, je recommande les yeux fermés.",
     created_at: "2025-03-30T10:00:00.000Z",
     client_first_name: "Thomas",
+    // Montre la réponse publique du coach (migration 0053) sur la démo.
+    reply:
+      "Merci Thomas ! Reprendre après des années sans sport, c'est le plus dur. Bravo pour ta régularité, on continue.",
+    replied_at: "2025-04-01T10:00:00.000Z",
   },
   ...(
     [
@@ -183,6 +191,8 @@ const DEMO_REVIEWS: PublicReview[] = [
     comment,
     created_at: `${date}T10:00:00.000Z`,
     client_first_name: name,
+    reply: null,
+    replied_at: null,
   })),
 ];
 
