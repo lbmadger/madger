@@ -62,7 +62,7 @@ export default function MobileNav() {
     >
       {TABS.map((tab) => {
         const active = isNavActive(pathname, tab.href, tab.href === "/dashboard");
-        const className = `flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition-colors ${
+        const className = `flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-2.5 text-[10px] font-medium transition-colors ${
           tab.soon
             ? "text-text-dim"
             : active
@@ -95,7 +95,7 @@ export default function MobileNav() {
                 </span>
               )}
             </span>
-            <span className="truncate">{t(tab.labelKey)}</span>
+            <span className="max-w-full truncate">{t(tab.labelKey)}</span>
           </>
         );
 
