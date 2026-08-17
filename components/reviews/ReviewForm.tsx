@@ -8,29 +8,38 @@ import { inputClass, labelClass } from "@/lib/ui/styles";
 
 // Formulaire d'avis après la séance (page de réservation). 1 client = 1 avis
 // par coach : re-noter remplace l'avis précédent (géré côté API/BDD).
-export default function ReviewForm({ bookingId }: { bookingId: string }) {
+// `clientEmail` : email du client de la réservation, fourni par la page
+// (lecture serveur). L'URL de réservation n'est envoyée qu'au client : elle
+// suffit à l'identifier, aucune re-saisie. Sans lui (cas limite), repli sur
+// un champ email éditable — surtout PAS verrouillé sur l'email de session :
+// un coach connecté sur le même appareil bloquait l'avis du client.
+export default function ReviewForm({
+  bookingId,
+  clientEmail = null,
+}: {
+  bookingId: string;
+  clientEmail?: string | null;
+}) {
   const { t } = useI18n();
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [comment, setComment] = useState("");
-  const [email, setEmail] = useState("");
-  // Connecté → email prérempli et verrouillé : pas de re-saisie inutile.
-  const [sessionEmail, setSessionEmail] = useState<string | null>(null);
+  const [email, setEmail] = useState(clientEmail ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
   useEffect(() => {
+    if (clientEmail) return;
+    // Pré-remplissage de confort uniquement (champ toujours éditable).
     createClient()
       .auth.getUser()
       .then(({ data }) => {
         const mail = data.user?.email ?? null;
-        if (mail) {
-          setSessionEmail(mail);
-          setEmail(mail);
-        }
+        if (mail) setEmail((prev) => prev || mail);
       })
       .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function submit(e: FormEvent) {
@@ -121,7 +130,7 @@ export default function ReviewForm({ bookingId }: { bookingId: string }) {
         />
       </label>
 
-      {!sessionEmail && (
+      {!clientEmail && (
         <label className="flex flex-col gap-1.5">
           <span className={labelClass}>{t("reviews.emailLabel")}</span>
           <input

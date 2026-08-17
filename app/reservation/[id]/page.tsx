@@ -25,6 +25,7 @@ type BookingInfo = {
   meeting_url: string | null;
   coach_name: string;
   escrow_status: string | null;
+  client_email: string | null;
 };
 
 async function getBooking(id: string): Promise<BookingInfo | null> {
@@ -34,7 +35,7 @@ async function getBooking(id: string): Promise<BookingInfo | null> {
   const { data: booking } = await admin
     .from("bookings")
     .select(
-      "starts_at, ends_at, status, location, meeting_url, coaches(first_name, last_name)"
+      "starts_at, ends_at, status, location, meeting_url, coaches(first_name, last_name), clients(email)"
     )
     .eq("id", id)
     .maybeSingle();
@@ -49,6 +50,11 @@ async function getBooking(id: string): Promise<BookingInfo | null> {
     | { first_name: string | null; last_name: string | null }[]
     | null;
   const c = Array.isArray(coach) ? coach[0] : coach;
+  const cl = booking.clients as
+    | { email: string | null }
+    | { email: string | null }[]
+    | null;
+  const clientRow = Array.isArray(cl) ? cl[0] : cl;
   return {
     starts_at: booking.starts_at as string,
     ends_at: booking.ends_at as string,
@@ -57,6 +63,7 @@ async function getBooking(id: string): Promise<BookingInfo | null> {
     meeting_url: (booking.meeting_url as string | null) ?? null,
     coach_name: [c?.first_name, c?.last_name].filter(Boolean).join(" "),
     escrow_status: payment?.escrow_status ?? null,
+    client_email: clientRow?.email ?? null,
   };
 }
 
@@ -217,7 +224,10 @@ export default async function ReservationPage({
               {booking.status !== "cancelled" &&
                 new Date(booking.ends_at).getTime() < Date.now() && (
                   <div className="mt-6 border-t border-border pt-6">
-                    <ReviewForm bookingId={params.id} />
+                    <ReviewForm
+                      bookingId={params.id}
+                      clientEmail={booking.client_email}
+                    />
                   </div>
                 )}
             </div>
