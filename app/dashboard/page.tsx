@@ -919,11 +919,11 @@ export default async function OverviewPage() {
           })}
         </div>
 
-        {/* Raccourcis mobiles : Paiements, Factures et Stats n'ont pas
-            d'onglet dans la barre du bas, et le menu compte est un pur menu
-            compte. Leur porte d'entrée mobile vit ICI, juste sous les stats,
-            pas en fond de page où personne ne les trouvait. */}
-        <div className="mt-3 grid grid-cols-3 gap-2 md:hidden">
+        {/* Raccourcis mobiles : Paiements, Factures, Avis et Stats n'ont
+            pas d'onglet dans la barre du bas, et le menu compte est un pur
+            menu compte. Leur porte d'entrée mobile vit ICI, juste sous les
+            stats, pas en fond de page où personne ne les trouvait. */}
+        <div className="mt-3 grid grid-cols-4 gap-2 md:hidden">
           {[
             {
               href: "/dashboard/paiements",
@@ -936,6 +936,11 @@ export default async function OverviewPage() {
               d: "M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zM14 2v6h6M9 13h6M9 17h6",
             },
             {
+              href: "/dashboard/avis",
+              label: dict.nav.reviews,
+              d: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z",
+            },
+            {
               href: "/dashboard/stats",
               label: dict.nav.stats,
               d: "M18 20V10M12 20V4M6 20v-6",
@@ -944,12 +949,12 @@ export default async function OverviewPage() {
             <Link
               key={s.href}
               href={s.href}
-              className="flex flex-col items-center gap-1.5 rounded-2xl border border-border bg-bg-card py-3 text-xs font-medium text-text-muted transition-colors hover:border-accent/40 hover:text-text-base"
+              className="flex min-w-0 flex-col items-center gap-1.5 rounded-2xl border border-border bg-bg-card px-1 py-3 text-xs font-medium text-text-muted transition-colors hover:border-accent/40 hover:text-text-base"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                 <path d={s.d} />
               </svg>
-              {s.label}
+              <span className="max-w-full truncate">{s.label}</span>
             </Link>
           ))}
         </div>
