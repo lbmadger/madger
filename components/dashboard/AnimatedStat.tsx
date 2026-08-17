@@ -112,7 +112,7 @@ export default function AnimatedStat({
         {info && <InfoTip text={info} />}
       </p>
       <div className="mt-2 flex items-baseline gap-2">
-        <span className="text-2xl font-extrabold tracking-tight text-text-base sm:text-3xl">
+        <span className="font-display text-2xl font-extrabold tracking-tight text-text-base sm:text-3xl">
           {prefix}
           {fmt(inView ? display : value, kind, locale)}
         </span>

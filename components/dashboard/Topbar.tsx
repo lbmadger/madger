@@ -13,7 +13,7 @@ import { CopyLinkPill, NotificationBell } from "@/components/dashboard/TopbarAct
 export default function Topbar({ title }: { title: string }) {
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-border bg-bg/80 px-4 backdrop-blur sm:px-6">
-      <h1 className="text-base font-semibold text-text-base">{title}</h1>
+      <h1 className="text-lg font-extrabold tracking-tight text-text-base">{title}</h1>
 
       {/* Logo (icône iOS) centré — mobile uniquement */}
       <Link

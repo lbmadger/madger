@@ -19,6 +19,20 @@
   padding: 0;
 }
 
+/* Signature typographique : Space Grotesk sur tous les grands titres
+   (landing et app), Inter reste le corps de texte. h3 volontairement
+   exclu : beaucoup de petits labels de widgets sont des h3. */
+h1,
+h2 {
+  font-family: var(--font-display), var(--font-inter), sans-serif;
+}
+
+/* Chiffres à chasse fixe partout : les montants et stats ne « sautent »
+   plus quand ils changent, et les colonnes de chiffres s'alignent. */
+body {
+  font-variant-numeric: tabular-nums;
+}
+
 /* Fondu d'entrée de page (app/template.tsx), en CSS pur. */
 .page-fade {
   animation: page-fade-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;

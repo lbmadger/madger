@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Space_Grotesk } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import AnalyticsProvider from "@/components/AnalyticsProvider";
 import GrainOverlay from "@/components/ui/GrainOverlay";
@@ -10,6 +10,15 @@ import "./globals.css";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  display: "swap",
+});
+
+// Signature typographique : Space Grotesk porte les titres et les gros
+// chiffres (géométrique, caractère sportif qui répond au vert fluo), Inter
+// reste le corps de texte. Auto-hébergée comme Inter.
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-display",
   display: "swap",
 });
 
@@ -73,7 +82,9 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
         />
       </head>
-      <body className={`${inter.variable} overflow-x-hidden antialiased`}>
+      <body
+        className={`${inter.variable} ${spaceGrotesk.variable} overflow-x-hidden antialiased`}
+      >
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[9999] focus:rounded-full focus:bg-accent focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-black"

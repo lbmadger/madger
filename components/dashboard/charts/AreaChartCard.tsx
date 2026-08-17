@@ -99,7 +99,7 @@ export default function AreaChartCard({
           {(headline || trend) && (
             <p className="mt-1 flex items-baseline gap-2">
               {headline && (
-                <span className="text-3xl font-extrabold tracking-tight text-text-base sm:text-4xl">
+                <span className="font-display text-3xl font-extrabold tracking-tight text-text-base sm:text-4xl">
                   {headline}
                 </span>
               )}

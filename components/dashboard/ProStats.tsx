@@ -49,7 +49,7 @@ export default function ProStats({
               style={{ animationDelay: `${i * 0.05}s`, animationDuration: "0.3s" }}
             >
               <p className="text-[11px] text-text-dim">{it.label}</p>
-              <p className="mt-1 text-lg font-extrabold capitalize tracking-tight text-text-base">
+              <p className="mt-1 font-display text-lg font-extrabold capitalize tracking-tight text-text-base">
                 {it.value}
               </p>
               {it.hint && (

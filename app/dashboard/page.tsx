@@ -1216,7 +1216,7 @@ export default async function OverviewPage() {
                 <h3 className="text-xs font-medium text-text-muted">
                   {o.weekRevenue}
                 </h3>
-                <p className="mt-2 text-xl font-extrabold text-text-base">
+                <p className="mt-2 font-display text-xl font-extrabold tracking-tight text-text-base">
                   {euros(weekRevenueCents)}
                 </p>
                 <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/[0.06]">
@@ -1236,7 +1236,7 @@ export default async function OverviewPage() {
                 <h3 className="text-xs font-medium text-text-muted">
                   {o.rating}
                 </h3>
-                <p className="mt-2 flex items-center gap-1.5 text-xl font-extrabold text-text-base">
+                <p className="mt-2 flex items-center gap-1.5 font-display text-xl font-extrabold tracking-tight text-text-base">
                   <StarIcon size={16} className="shrink-0 text-accent" />
                   {ratingCount > 0
                     ? ratingAvg.toLocaleString(loc, {
