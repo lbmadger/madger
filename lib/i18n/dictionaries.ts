@@ -1009,6 +1009,7 @@ const fr = {
   },
   reservation: {
     manageInSpace: "Gérer ou annuler dans",
+    historyInSpace: "Retrouve toutes tes séances dans",
     manageInSpaceLink: "Mes séances",
     title: "Ta réservation",
     paidBanner: "Paiement confirmé",
@@ -2371,6 +2372,7 @@ const en: Dictionary = {
   },
   reservation: {
     manageInSpace: "Manage or cancel in",
+    historyInSpace: "Find all your sessions in",
     manageInSpaceLink: "My sessions",
     title: "Your booking",
     paidBanner: "Payment confirmed",

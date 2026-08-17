@@ -199,12 +199,16 @@ export default async function ReservationPage({
               <p className="mt-5">
                 {/* Deux tons : le verbe en sourdine, la destination
                     « Mes séances » en accent, sinon tout se fond dans la
-                    même ligne verte. */}
+                    même ligne verte. Séance passée : plus question de
+                    « gérer ou annuler », on invite juste à retrouver son
+                    historique. */}
                 <Link
                   href="/espace"
                   className="inline-flex items-center gap-1.5 text-sm font-medium text-text-muted transition-colors hover:text-text-base"
                 >
-                  {r.manageInSpace}{" "}
+                  {new Date(booking.ends_at).getTime() < Date.now()
+                    ? r.historyInSpace
+                    : r.manageInSpace}{" "}
                   <span className="font-semibold text-accent underline underline-offset-4">
                     {r.manageInSpaceLink}
                   </span>
