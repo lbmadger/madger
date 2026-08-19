@@ -1,5 +1,18 @@
 // Données FAQ partagées entre le composant FAQ (affichage) et le JSON-LD
 // FAQPage généré côté serveur dans app/page.tsx (rich snippets Google).
+// La première question dépend du mode du site : avant le lancement elle parle
+// de l'accès anticipé, après (SITE_LAUNCHED=1) elle explique comment démarrer.
+export function getFaqs(launched: boolean) {
+  if (!launched) return faqs;
+  return [
+    {
+      q: "Comment démarrer avec Madger ?",
+      a: "Tu crées ton compte gratuitement, tu configures ta page en quelques minutes (prestations, disponibilités, paiement) et tu partages ton lien. Chaque nouveau compte démarre avec 14 jours de Pro offerts, sans engagement et sans carte bancaire.",
+    },
+    ...faqs.slice(1),
+  ];
+}
+
 export const faqs = [
   {
     q: "Quand Madger sera-t-il disponible ?",

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-export default function StickyMobileCTA() {
+export default function StickyMobileCTA({ launched = false }: { launched?: boolean }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -52,7 +52,7 @@ export default function StickyMobileCTA() {
       }}
     >
       <a
-        href="#early-access"
+        href={launched ? "/signup" : "#early-access"}
         tabIndex={visible ? undefined : -1}
         className={`${visible ? "pointer-events-auto" : "pointer-events-none"} flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl font-bold text-sm text-black`}
         style={{
@@ -60,7 +60,7 @@ export default function StickyMobileCTA() {
           boxShadow: "0 6px 20px rgba(0,0,0,0.5), 0 0 18px rgba(203,255,3,0.22)",
         }}
       >
-        <span>Réserver ma place</span>
+        <span>{launched ? "Créer mon compte" : "Réserver ma place"}</span>
         <span style={{ fontSize: 16 }}>→</span>
       </a>
     </div>

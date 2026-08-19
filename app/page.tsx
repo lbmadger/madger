@@ -5,7 +5,7 @@ import HeroScrollExperience from "@/components/HeroScrollExperience";
 import TrustBar from "@/components/TrustBar";
 import ScrollBackground from "@/components/ScrollBackground";
 import StickyMobileCTA from "@/components/StickyMobileCTA";
-import { faqs } from "@/components/faq-data";
+import { getFaqs } from "@/components/faq-data";
 
 // Sections sous la ligne de flottaison : chargées dans des chunks séparés
 // pour alléger le JS initial (le hero GSAP est déjà lourd). Le SSR reste
@@ -20,19 +20,26 @@ const Testimonials = dynamic(() => import("@/components/Testimonials"));
 const Pricing = dynamic(() => import("@/components/Pricing"));
 const FAQ = dynamic(() => import("@/components/FAQ"));
 const EarlyAccessForm = dynamic(() => import("@/components/EarlyAccessForm"));
+const LaunchCTA = dynamic(() => import("@/components/LaunchCTA"));
 const Footer = dynamic(() => import("@/components/Footer"));
 
-const faqJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: faqs.map((f) => ({
-    "@type": "Question",
-    name: f.q,
-    acceptedAnswer: { "@type": "Answer", text: f.a },
-  })),
-};
-
 export default function Home() {
+  // Interrupteur de lancement (le même que le middleware) : une fois
+  // SITE_LAUNCHED=1 posé dans Vercel, toute la landing bascule en mode
+  // "Créer mon compte" (CTA vers /signup, formulaire d'accès anticipé
+  // remplacé par un CTA final). Aucun commit nécessaire le jour J.
+  const launched = process.env.SITE_LAUNCHED === "1";
+
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: getFaqs(launched).map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+
   return (
     <>
       <script
@@ -41,23 +48,23 @@ export default function Home() {
       />
       <MotionSettings>
         <ScrollBackground />
-        <StickyMobileCTA />
+        <StickyMobileCTA launched={launched} />
         <main id="main" tabIndex={-1} className="bg-bg relative" style={{ zIndex: 1 }}>
-          <Navbar />
-          <HeroScrollExperience />
+          <Navbar launched={launched} />
+          <HeroScrollExperience launched={launched} />
           <div id="after-hero" />
           <TrustBar />
           <Problem />
           <Athletes />
           <CoachDashboard />
           <CoachPagePreview />
-          <Comparison />
+          <Comparison launched={launched} />
           <Compliance2026 />
           <Testimonials />
-          <Pricing />
-          <FAQ />
-          <EarlyAccessForm />
-          <Footer />
+          <Pricing launched={launched} />
+          <FAQ launched={launched} />
+          {launched ? <LaunchCTA /> : <EarlyAccessForm />}
+          <Footer launched={launched} />
         </main>
       </MotionSettings>
     </>

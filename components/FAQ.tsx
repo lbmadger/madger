@@ -2,7 +2,7 @@
 
 import { useId, useState } from "react";
 import SectionLabel from "@/components/ui/SectionLabel";
-import { faqs } from "@/components/faq-data";
+import { getFaqs } from "@/components/faq-data";
 
 function Item({ q, a, isOpen, onToggle }: { q: string; a: string; isOpen: boolean; onToggle: () => void }) {
   // Identifiant unique pour relier le bouton (aria-controls) au panneau.
@@ -54,7 +54,8 @@ function Item({ q, a, isOpen, onToggle }: { q: string; a: string; isOpen: boolea
   );
 }
 
-export default function FAQ() {
+export default function FAQ({ launched = false }: { launched?: boolean }) {
+  const faqs = getFaqs(launched);
   // Plusieurs questions peuvent rester ouvertes en même temps : ouvrir une
   // question plus bas ne referme plus celle du haut (ce qui faisait "remonter"
   // toute la page). La première est ouverte par défaut.

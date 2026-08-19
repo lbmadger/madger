@@ -30,10 +30,17 @@ const STEPS = [
   },
 ];
 
-export default function HeroScrollExperience() {
-  // Accès anticipé complet → on bascule les CTA / badges du hero en liste d'attente.
-  const full = useEarlyAccessFull();
-  const ctaLabel = full ? "Rejoindre la liste d'attente" : "Rejoindre l'accès anticipé";
+export default function HeroScrollExperience({ launched = false }: { launched?: boolean }) {
+  // Accès anticipé complet → on bascule les CTA / badges du hero en liste
+  // d'attente. Après le lancement (SITE_LAUNCHED=1), plus d'accès anticipé :
+  // les CTA mènent directement à la création de compte.
+  const full = useEarlyAccessFull() && !launched;
+  const ctaLabel = launched
+    ? "Créer mon compte gratuitement"
+    : full
+    ? "Rejoindre la liste d'attente"
+    : "Rejoindre l'accès anticipé";
+  const ctaHref = launched ? "/signup" : "#early-access";
 
   // ── Scroll section refs ──────────────────────────────────────
   const sectionRef = useRef<HTMLElement>(null);
@@ -312,7 +319,9 @@ export default function HeroScrollExperience() {
           >
             <span className="w-1.5 h-1.5 rounded-full bg-accent glow-dot block" />
             <span style={{ color: "#CBFF03", fontSize: 11, letterSpacing: "0.06em" }}>
-              Inscriptions ouvertes · Accès anticipé gratuit
+              {launched
+                ? "Inscriptions ouvertes · Gratuit pour commencer"
+                : "Inscriptions ouvertes · Accès anticipé gratuit"}
             </span>
           </motion.div>
 
@@ -350,7 +359,7 @@ export default function HeroScrollExperience() {
           >
             <MagneticButton className="w-full sm:w-auto" strength={0.45}>
               <motion.a
-                href="#early-access"
+                href={ctaHref}
                 className="cta-shine block w-full sm:w-auto sm:inline-block font-semibold text-sm px-8 py-4 rounded-full text-center"
                 style={{ background: "#CBFF03", color: "#000" }}
                 whileHover={{ scale: 1.04, boxShadow: "0 0 30px rgba(203,255,3,0.5), 0 0 60px rgba(203,255,3,0.2)" }}
@@ -382,8 +391,8 @@ export default function HeroScrollExperience() {
             transition={{ delay: 0.5 }}
           >
             <span className="flex items-center gap-1.5"><Check />Sans engagement</span>
-            <span className="hidden sm:flex items-center gap-1.5"><Check />Accès sélectionné manuellement</span>
-            <span className="flex items-center gap-1.5"><Check />{full ? "Accès anticipé complet" : "Plan Pro offert 3 mois"}</span>
+            <span className="hidden sm:flex items-center gap-1.5"><Check />{launched ? "Paiements sécurisés par Stripe" : "Accès sélectionné manuellement"}</span>
+            <span className="flex items-center gap-1.5"><Check />{launched ? "14 jours de Pro offerts" : full ? "Accès anticipé complet" : "Plan Pro offert 3 mois"}</span>
           </motion.div>
         </div>
 
@@ -475,7 +484,7 @@ export default function HeroScrollExperience() {
                 </div>
                 <div ref={dCtaRef}>
                   <a
-                    href="#early-access"
+                    href={ctaHref}
                     style={{
                       display: "inline-flex",
                       alignItems: "center",
@@ -593,7 +602,7 @@ export default function HeroScrollExperience() {
                 </div>
                 <div ref={mCtaRef}>
                   <a
-                    href="#early-access"
+                    href={ctaHref}
                     style={{
                       display: "inline-flex",
                       background: "#CBFF03",

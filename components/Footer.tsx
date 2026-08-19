@@ -3,7 +3,7 @@
 import Link from "next/link";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 
-export default function Footer() {
+export default function Footer({ launched = false }: { launched?: boolean }) {
   return (
     <footer
       className="py-16"
@@ -21,7 +21,11 @@ export default function Footer() {
             <a href="#dashboard" className="text-text-muted hover:text-white transition-colors duration-200">Dashboard</a>
             <a href="#tarifs" className="text-text-muted hover:text-white transition-colors duration-200">Tarifs</a>
             <Link href="/blog" className="text-text-muted hover:text-white transition-colors duration-200">Blog</Link>
-            <a href="#early-access" className="text-text-muted hover:text-white transition-colors duration-200">Accès anticipé</a>
+            {launched ? (
+              <Link href="/signup" className="text-text-muted hover:text-white transition-colors duration-200">Créer mon compte</Link>
+            ) : (
+              <a href="#early-access" className="text-text-muted hover:text-white transition-colors duration-200">Accès anticipé</a>
+            )}
             <a href="mailto:contact@madger.app" className="text-text-muted hover:text-white transition-colors duration-200">Contact</a>
           </div>
 

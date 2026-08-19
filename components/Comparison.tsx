@@ -45,7 +45,8 @@ function Check({ ok }: { ok: boolean }) {
   );
 }
 
-export default function Comparison() {
+export default function Comparison({ launched = false }: { launched?: boolean }) {
+  const ctaHref = launched ? "/signup" : "#early-access";
   return (
     <section className="py-20 sm:py-24 relative overflow-hidden">
       <div
@@ -104,8 +105,8 @@ export default function Comparison() {
             </div>
           ))}
           <div style={{ padding: "14px 18px" }}>
-            <a href="#early-access" className="block w-full text-center py-3 rounded-xl text-black font-bold text-sm" style={{ background: "#CBFF03" }}>
-              Rejoindre l'accès anticipé
+            <a href={ctaHref} className="block w-full text-center py-3 rounded-xl text-black font-bold text-sm" style={{ background: "#CBFF03" }}>
+              {launched ? "Créer mon compte" : "Rejoindre l'accès anticipé"}
             </a>
           </div>
         </motion.div>
@@ -224,7 +225,7 @@ export default function Comparison() {
                 >
                   {highlight ? (
                     <a
-                      href="#early-access"
+                      href={ctaHref}
                       className="block w-full py-2 rounded-xl text-black font-bold text-xs"
                       style={{ background: "#CBFF03" }}
                     >

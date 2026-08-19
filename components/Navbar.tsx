@@ -11,7 +11,9 @@ const LINKS = [
   { label: "Tarifs", href: "#tarifs" },
 ];
 
-export default function Navbar() {
+export default function Navbar({ launched = false }: { launched?: boolean }) {
+  // Après le lancement, les CTA mènent directement à la création de compte.
+  const ctaHref = launched ? "/signup" : "#early-access";
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
@@ -96,22 +98,22 @@ export default function Navbar() {
           {/* CTA desktop : survol en CSS pur (échelle + halo) */}
           <MagneticButton className="hidden md:inline-block" strength={0.5}>
             <a
-              href="#early-access"
+              href={ctaHref}
               className="cta-shine inline-flex items-center text-sm font-semibold px-5 py-2.5 rounded-full transition-[transform,box-shadow] duration-200 hover:scale-[1.03] hover:shadow-[0_0_22px_rgba(203,255,3,0.45)] active:scale-[0.97]"
               style={{ background: "#CBFF03", color: "#000" }}
             >
-              Rejoindre l'accès anticipé
+              {launched ? "Créer mon compte" : "Rejoindre l'accès anticipé"}
             </a>
           </MagneticButton>
 
           {/* CTA mobile compact */}
           <a
-            href="#early-access"
+            href={ctaHref}
             className="md:hidden inline-flex items-center text-xs font-bold px-4 py-2 rounded-full"
             style={{ background: "#CBFF03", color: "#000", letterSpacing: "-0.01em" }}
             onClick={() => setOpen(false)}
           >
-            Accès anticipé
+            {launched ? "Commencer" : "Accès anticipé"}
           </a>
 
           {/* Hamburger */}
@@ -193,7 +195,7 @@ export default function Navbar() {
 
             {/* CTA principal */}
             <a
-              href="#early-access"
+              href={ctaHref}
               className={open ? "anim-fade-up flex items-center justify-center font-bold py-4 rounded-2xl text-black" : "flex items-center justify-center font-bold py-4 rounded-2xl text-black"}
               style={{
                 background: "#CBFF03",
@@ -203,7 +205,7 @@ export default function Navbar() {
               tabIndex={open ? undefined : -1}
               onClick={() => setOpen(false)}
             >
-              Rejoindre l'accès anticipé →
+              {launched ? "Créer mon compte →" : "Rejoindre l'accès anticipé →"}
             </a>
 
             {/* Sous-texte */}
