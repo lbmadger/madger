@@ -14,7 +14,7 @@ import type { PublicCoach } from "@/lib/coaches/public-types";
 // affiche « ouvre bientôt » au lieu d'une grille quasi vide qui crierait
 // « personne n'utilise ce produit ». L'ouverture est automatique : dès que le
 // seuil est atteint, la grille remplace le teaser sans aucun déploiement.
-const DIRECTORY_MIN_COACHES = 6;
+const DIRECTORY_MIN_COACHES = 10;
 
 // Liste initiale en cache 120 s : la page reste dynamique (langue via
 // cookie) mais chaque visite/crawl ne retape plus Supabase. Client anon
