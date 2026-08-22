@@ -783,6 +783,13 @@ const fr = {
     emptyRadiusDesc: "Aucun coach dans cette ville ni dans le rayon de recherche.",
     onlineBadge: "En ligne",
     viewProfile: "Voir le profil",
+    soonBadge: "Ouverture en cours",
+    soonTitle: "L'annuaire des coachs ouvre bientôt",
+    soonDesc:
+      "On accueille les premiers coachs en ce moment. Ton coach t'a envoyé son lien Madger ? Réserve directement depuis sa page, tout fonctionne déjà.",
+    soonClientCta: "Accéder à mon espace client",
+    soonCoachHint: "Tu es coach ?",
+    soonCoachCta: "Crée ta page et prends ta place parmi les premiers",
   },
   coachProfile: {
     backToSearch: "Tous les coachs",
@@ -2150,6 +2157,13 @@ const en: Dictionary = {
     emptyRadiusDesc: "No coach in this city or within the search radius.",
     onlineBadge: "Online",
     viewProfile: "View profile",
+    soonBadge: "Opening soon",
+    soonTitle: "The coach directory is opening soon",
+    soonDesc:
+      "We are welcoming the first coaches right now. Did your coach send you their Madger link? Book directly from their page, everything already works.",
+    soonClientCta: "Go to my client space",
+    soonCoachHint: "Are you a coach?",
+    soonCoachCta: "Create your page and be among the first",
   },
   coachProfile: {
     backToSearch: "All coaches",
