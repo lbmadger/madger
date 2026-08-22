@@ -91,6 +91,19 @@ export default function Navbar({ launched = false }: { launched?: boolean }) {
               {l.label}
             </a>
           ))}
+          {/* Après le lancement : porte d'entrée discrète du client d'un
+              coach (la landing vend aux coachs, lui cherche ses séances). */}
+          {launched && (
+            <a
+              href="/espace"
+              className="text-sm font-medium transition-colors duration-200"
+              style={{ color: "#8A8A8A" }}
+              onMouseEnter={e => (e.currentTarget.style.color = "#fff")}
+              onMouseLeave={e => (e.currentTarget.style.color = "#8A8A8A")}
+            >
+              Espace client
+            </a>
+          )}
         </nav>
 
         {/* CTA desktop + hamburger mobile */}
@@ -215,6 +228,19 @@ export default function Navbar({ launched = false }: { launched?: boolean }) {
             >
               Inscriptions ouvertes · Sans engagement
             </p>
+
+            {/* Client d'un coach : accès discret à ses séances (lancé) */}
+            {launched && (
+              <a
+                href="/espace"
+                className={open ? "anim-fade-in text-center text-sm font-medium py-2" : "text-center text-sm font-medium py-2"}
+                style={{ color: "#8A8A8A", animationDelay: open ? "0.3s" : undefined }}
+                tabIndex={open ? undefined : -1}
+                onClick={() => setOpen(false)}
+              >
+                Déjà client d&apos;un coach ? <span style={{ color: "#fff" }}>Mes séances →</span>
+              </a>
+            )}
           </div>
         </div>
       </div>

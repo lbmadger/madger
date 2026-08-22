@@ -22,7 +22,13 @@ export default function Footer({ launched = false }: { launched?: boolean }) {
             <a href="#tarifs" className="text-text-muted hover:text-white transition-colors duration-200">Tarifs</a>
             <Link href="/blog" className="text-text-muted hover:text-white transition-colors duration-200">Blog</Link>
             {launched ? (
-              <Link href="/signup" className="text-text-muted hover:text-white transition-colors duration-200">Créer mon compte</Link>
+              <>
+                <Link href="/signup" className="text-text-muted hover:text-white transition-colors duration-200">Créer mon compte</Link>
+                {/* Porte d'entrée discrète pour le client d'un coach qui
+                    arrive ici : la landing vend aux coachs, lui cherche
+                    juste ses séances. */}
+                <Link href="/espace" className="text-text-muted hover:text-white transition-colors duration-200">Espace client</Link>
+              </>
             ) : (
               <a href="#early-access" className="text-text-muted hover:text-white transition-colors duration-200">Accès anticipé</a>
             )}
