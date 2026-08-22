@@ -175,6 +175,9 @@ export function bookingConfirmationClient(p: {
   reservationUrl: string;
   meetUrl?: string;
   calendarUrl?: string;
+  // Lieu de la séance en présentiel (salle + adresse) : le client doit
+  // savoir OÙ aller sans avoir à écrire au coach.
+  placeStr?: string;
 }): Email {
   return {
     subject: `Ta séance avec ${p.coachName} est confirmée ✅`,
@@ -188,6 +191,9 @@ export function bookingConfirmationClient(p: {
           { label: "Coach", value: p.coachName },
           { label: "Date & heure", value: p.dateStr },
           { label: "Format", value: p.online ? "En visio" : "En présentiel" },
+          ...(!p.online && p.placeStr
+            ? [{ label: "Lieu", value: p.placeStr }]
+            : []),
           { label: "Montant réglé", value: p.priceStr, accent: true },
         ]),
         infoBox(
@@ -398,6 +404,8 @@ export function sessionReminderClient(p: {
   online: boolean;
   reservationUrl: string;
   meetUrl?: string;
+  // Lieu de la séance en présentiel (salle + adresse).
+  placeStr?: string;
   // true = la séance a lieu le jour même (cron du matin) : le sujet ne
   // doit pas annoncer « demain ».
   sameDay?: boolean;
@@ -416,6 +424,9 @@ export function sessionReminderClient(p: {
           { label: "Coach", value: p.coachName },
           { label: "Date & heure", value: p.dateStr },
           { label: "Format", value: p.online ? "En visio" : "En présentiel" },
+          ...(!p.online && p.placeStr
+            ? [{ label: "Lieu", value: p.placeStr }]
+            : []),
         ]),
         ...meetCalLinks(p.meetUrl),
       ],

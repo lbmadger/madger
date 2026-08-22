@@ -67,7 +67,7 @@ export default async function ClientSpacePage() {
           admin
             .from("bookings")
             .select(
-              "id, starts_at, ends_at, status, location, coaches(first_name, last_name, slug, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct)"
+              "id, starts_at, ends_at, status, location, location_text, coaches(first_name, last_name, slug, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, gym_name, gym_address)"
             )
             .in("client_id", clientIds)
             .order("starts_at", { ascending: false })
@@ -132,6 +132,14 @@ export default async function ClientSpacePage() {
           ends_at: b.ends_at as string,
           status: b.status as string,
           location: b.location as string,
+          // Lieu de la séance en présentiel : texte posé sur la séance,
+          // sinon salle + adresse du coach.
+          place:
+            b.location === "online"
+              ? null
+              : (b.location_text as string | null) ||
+                [co?.gym_name, co?.gym_address].filter(Boolean).join(" · ") ||
+                null,
           coach_name:
             [co?.first_name, co?.last_name].filter(Boolean).join(" ") || "-",
           coach_slug: (co?.slug as string) ?? null,

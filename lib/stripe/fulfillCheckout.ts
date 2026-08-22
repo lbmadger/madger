@@ -358,7 +358,7 @@ export async function fulfillCheckoutSession(
     const [{ data: coachRow }, { data: coachAuth }] = await Promise.all([
       supabase
         .from("coaches")
-        .select("first_name, last_name, timezone, locale")
+        .select("first_name, last_name, timezone, locale, gym_name, gym_address")
         .eq("id", m.coach_id)
         .maybeSingle(),
       supabase.auth.admin.getUserById(m.coach_id),
@@ -392,6 +392,14 @@ export async function fulfillCheckoutSession(
     const coachDateStr = fmtDate(coachLocale);
     const coachPriceStr = fmtPrice(coachLocale);
     const online = m.online === "1";
+    // Lieu de la séance en présentiel (salle + adresse du coach) : affiché
+    // dans l'email de confirmation et l'événement calendrier, pour que le
+    // client sache OÙ aller sans écrire au coach.
+    const placeStr = online
+      ? undefined
+      : [coachRow?.gym_name, coachRow?.gym_address]
+          .filter(Boolean)
+          .join(" · ") || undefined;
     const reservationUrl = `${APP_URL}/reservation/${result.bookingId}`;
     const calendarUrl = googleCalendarUrl({
       title: `Séance avec ${coachName}`,
@@ -403,7 +411,7 @@ export async function fulfillCheckoutSession(
       ]
         .filter(Boolean)
         .join("\n"),
-      location: meetUrl,
+      location: meetUrl ?? placeStr,
     });
 
     const clientName =
@@ -443,6 +451,7 @@ export async function fulfillCheckoutSession(
           reservationUrl,
           meetUrl,
           calendarUrl,
+          placeStr,
         });
         await sendEmail({ to: m.email, subject: t.subject, html: t.html });
       }

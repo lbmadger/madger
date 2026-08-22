@@ -26,6 +26,8 @@ type BookingInfo = {
   coach_name: string;
   escrow_status: string | null;
   client_email: string | null;
+  // Lieu de la séance en présentiel (salle + adresse), null en visio.
+  place: string | null;
 };
 
 async function getBooking(id: string): Promise<BookingInfo | null> {
@@ -35,7 +37,7 @@ async function getBooking(id: string): Promise<BookingInfo | null> {
   const { data: booking } = await admin
     .from("bookings")
     .select(
-      "starts_at, ends_at, status, location, meeting_url, coaches(first_name, last_name), clients(email)"
+      "starts_at, ends_at, status, location, location_text, meeting_url, coaches(first_name, last_name, gym_name, gym_address), clients(email)"
     )
     .eq("id", id)
     .maybeSingle();
@@ -45,10 +47,13 @@ async function getBooking(id: string): Promise<BookingInfo | null> {
     .select("escrow_status")
     .eq("booking_id", id)
     .maybeSingle();
-  const coach = booking.coaches as
-    | { first_name: string | null; last_name: string | null }
-    | { first_name: string | null; last_name: string | null }[]
-    | null;
+  type CoachRow = {
+    first_name: string | null;
+    last_name: string | null;
+    gym_name: string | null;
+    gym_address: string | null;
+  };
+  const coach = booking.coaches as CoachRow | CoachRow[] | null;
   const c = Array.isArray(coach) ? coach[0] : coach;
   const cl = booking.clients as
     | { email: string | null }
@@ -64,6 +69,13 @@ async function getBooking(id: string): Promise<BookingInfo | null> {
     coach_name: [c?.first_name, c?.last_name].filter(Boolean).join(" "),
     escrow_status: payment?.escrow_status ?? null,
     client_email: clientRow?.email ?? null,
+    // Lieu : texte posé sur la séance, sinon salle + adresse du coach.
+    place:
+      booking.location === "online"
+        ? null
+        : (booking.location_text as string | null) ||
+          [c?.gym_name, c?.gym_address].filter(Boolean).join(" · ") ||
+          null,
   };
 }
 
@@ -131,6 +143,14 @@ export default async function ReservationPage({
               <p className="mt-2 text-sm text-text-muted">
                 {dateStr} · {r.withCoach} {booking.coach_name}
               </p>
+              {booking.place && (
+                <p className="mt-1.5 flex items-start gap-1.5 text-sm text-text-muted">
+                  <svg className="mt-0.5 shrink-0 text-accent" width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" />
+                  </svg>
+                  <span className="break-words">{booking.place}</span>
+                </p>
+              )}
 
               {booking.escrow_status && (
                 <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-border-strong px-3 py-1.5 text-xs font-medium text-text-muted">
@@ -181,7 +201,7 @@ export default async function ReservationPage({
                         ]
                           .filter(Boolean)
                           .join("\n"),
-                        location: booking.meeting_url ?? undefined,
+                        location: booking.meeting_url ?? booking.place ?? undefined,
                       })}
                       target="_blank"
                       rel="noopener noreferrer"

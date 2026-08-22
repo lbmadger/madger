@@ -35,6 +35,8 @@ export type ClientBooking = {
   ends_at: string;
   status: string;
   location: string;
+  // Lieu de la séance en présentiel (salle + adresse), null en visio.
+  place: string | null;
   coach_name: string;
   coach_slug: string | null;
   cancellation_policy: string;
@@ -400,6 +402,14 @@ export default function ClientSpace({
                     )}
                     {b.location === "online" && ` · ${t("clientSpace.online")}`}
                   </p>
+                  {b.place && (
+                    <p className="mt-0.5 flex items-start gap-1 text-xs text-text-dim">
+                      <svg className="mt-0.5 shrink-0" width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z" />
+                      </svg>
+                      <span className="break-words">{b.place}</span>
+                    </p>
+                  )}
                 </div>
                 <span
                   className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${statusChip[b.status]?.cls ?? ""}`}

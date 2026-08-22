@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
     const { data: bookings } = await supabase
       .from("bookings")
       .select(
-        "id, starts_at, location, meeting_url, reminder_sent_at, status, clients(first_name, email), coaches(first_name, last_name, timezone)"
+        "id, starts_at, location, location_text, meeting_url, reminder_sent_at, status, clients(first_name, email), coaches(first_name, last_name, timezone, gym_name, gym_address)"
       )
       .eq("status", "confirmed")
       .eq("is_block", false)
@@ -89,6 +89,15 @@ export async function GET(req: NextRequest) {
           b.location === "online"
             ? (b.meeting_url as string | null) ?? undefined
             : undefined,
+        // Lieu : texte posé sur la séance, sinon salle + adresse du coach.
+        placeStr:
+          b.location === "online"
+            ? undefined
+            : (b.location_text as string | null) ||
+              [coach?.gym_name, coach?.gym_address]
+                .filter(Boolean)
+                .join(" · ") ||
+              undefined,
       });
       delivered = await sendEmail({ to: email, subject: t.subject, html: t.html });
       if (delivered) sent++;
