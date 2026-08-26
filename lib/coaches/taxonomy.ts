@@ -68,3 +68,34 @@ export const VENUE_KEYS = [
   "online", // en visio
 ] as const;
 export type VenueKey = (typeof VENUE_KEYS)[number];
+
+// Prestation par défaut proposée selon le sport, à l'onboarding. L'idée n'est
+// PAS de deviner juste, mais de ne jamais présenter un formulaire vide : le
+// coach voit une offre plausible et l'ajuste, au lieu de la composer de zéro.
+// Prix indicatifs du marché français en séance individuelle, en euros.
+type DefaultService = { price: number; duration: number };
+
+const DEFAULT_SERVICE: Record<string, DefaultService> = {
+  musculation: { price: 50, duration: 60 },
+  fitness: { price: 50, duration: 60 },
+  crossfit: { price: 55, duration: 60 },
+  boxe: { price: 50, duration: 60 },
+  arts_martiaux: { price: 50, duration: 60 },
+  yoga: { price: 45, duration: 60 },
+  pilates: { price: 45, duration: 60 },
+  running: { price: 45, duration: 60 },
+  natation: { price: 50, duration: 45 },
+  cyclisme: { price: 45, duration: 90 },
+  tennis: { price: 50, duration: 60 },
+  football: { price: 45, duration: 60 },
+  basket: { price: 45, duration: 60 },
+  danse: { price: 40, duration: 60 },
+};
+
+const FALLBACK_SERVICE: DefaultService = { price: 50, duration: 60 };
+
+export function defaultServiceForSport(
+  sport: string | null | undefined
+): DefaultService {
+  return (sport && DEFAULT_SERVICE[sport]) || FALLBACK_SERVICE;
+}

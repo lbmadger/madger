@@ -1,7 +1,6 @@
 "use client";
 
-import { useRef, useState, type FormEvent } from "react";
-import Image from "next/image";
+import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { startRouteProgress } from "@/components/ui/RouteProgress";
 import { createClient } from "@/lib/supabase/client";
@@ -9,23 +8,23 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import { slugify, isValidSlug } from "@/lib/utils/slug";
 import Button from "@/components/ui/Button";
 import Leo from "@/components/ui/Leo";
-import CityAutocomplete from "@/components/ui/CityAutocomplete";
 import AccountSwitchBar from "@/components/auth/AccountSwitchBar";
 import { inputClass, labelClass } from "@/lib/ui/styles";
-import {
-  SPORT_KEYS,
-  VENUE_KEYS,
-  specialtiesForSport,
-} from "@/lib/coaches/taxonomy";
+import { SPORT_KEYS, defaultServiceForSport } from "@/lib/coaches/taxonomy";
 import { WEEK_ORDER } from "@/lib/availability/types";
 import { track } from "@/lib/analytics/posthog";
 
-// Onboarding guidé en 5 étapes (identité → photo et bio → activité →
-// première prestation → disponibilités), avec barre de progression. À la fin,
-// dernière marche : activer les paiements Stripe. La marketplace n'affiche
-// que les profils complets : ce parcours amène le coach jusque-là.
+// Onboarding en 3 étapes : qui tu es → ce que tu proposes → quand tu es
+// dispo. C'est le chemin le plus court vers le seul moment qui compte, le
+// lien de réservation qui fonctionne.
+//
+// Tout ce qui n'est pas nécessaire à ce lien (photo, bio, ville, SIRET,
+// objectifs, lieux) a quitté ce parcours : ces champs vivent dans Réglages,
+// qui les couvrait déjà tous, et l'écran final y renvoie explicitement. Un
+// formulaire vide n'est jamais présenté : le choix du sport pré-remplit la
+// première prestation, et les disponibilités arrivent déjà cochées.
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 3;
 const DURATIONS = [30, 45, 60, 90];
 
 export default function OnboardingForm({
@@ -40,75 +39,34 @@ export default function OnboardingForm({
   const { t } = useI18n();
   const router = useRouter();
 
-  const [step, setStep] = useState(1); // 1..5, 6 = écran final
+  const [step, setStep] = useState(1); // 1..3, 4 = écran final
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Étape 1 : identité
+  // Étape 1 : qui tu es
   const [firstName, setFirstName] = useState(initialFirstName);
   const [lastName, setLastName] = useState(initialLastName);
-  const [specialty, setSpecialty] = useState("");
-  const [city, setCity] = useState("");
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
-  const [acceptsOnline, setAcceptsOnline] = useState(false);
   const [slug, setSlug] = useState(
     slugify(`${initialFirstName} ${initialLastName}`)
   );
   const [slugTouched, setSlugTouched] = useState(false);
+  const [editingSlug, setEditingSlug] = useState(false);
 
-  // Étape 2 : photo + bio
-  const [avatarUrl, setAvatarUrl] = useState("");
-  const [uploading, setUploading] = useState(false);
-  const [bio, setBio] = useState("");
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  // Bio écrite par l'IA : ce que le coach a tapé (même en vrac) sert de
-  // matière première, le résultat remplace le champ et reste retouchable.
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null);
-  async function generateBio() {
-    setAiLoading(true);
-    setAiError(null);
-    try {
-      const res = await fetch("/api/ai/bio", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notes: bio }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.bio) {
-        setAiError(
-          res.status === 503
-            ? t("onboarding.aiBioUnavailable")
-            : t("onboarding.aiBioError")
-        );
-        return;
-      }
-      setBio(data.bio as string);
-      track("ai_bio_generated");
-    } catch {
-      setAiError(t("onboarding.aiBioError"));
-    } finally {
-      setAiLoading(false);
-    }
-  }
-
-  // Étape 3 : activité
-  const [siret, setSiret] = useState("");
+  // Étape 2 : ce que tu proposes
   const [sport, setSport] = useState("");
-  const [specialties, setSpecialties] = useState<string[]>([]);
-  const [venues, setVenues] = useState<string[]>([]);
-  const [gymName, setGymName] = useState("");
-
-  // Étape 4 : première prestation
   const [serviceName, setServiceName] = useState("");
   const [servicePrice, setServicePrice] = useState("");
   const [serviceDuration, setServiceDuration] = useState(60);
+  // Le coach a-t-il touché au prix / à la durée ? Tant que non, un changement
+  // de sport les recalcule ; dès qu'il a ajusté, on ne réécrit plus par-dessus.
+  const [offerTouched, setOfferTouched] = useState(false);
 
-  // Étape 5 : disponibilités
+  // Étape 3 : quand tu es dispo (pré-rempli : semaine 9 h – 18 h)
   const [days, setDays] = useState<number[]>([1, 2, 3, 4, 5]);
   const [dayStart, setDayStart] = useState("09:00");
   const [dayEnd, setDayEnd] = useState("18:00");
+
+  const [copied, setCopied] = useState(false);
 
   function syncNames(next: { first?: string; last?: string }) {
     const f = next.first ?? firstName;
@@ -118,11 +76,18 @@ export default function OnboardingForm({
     if (!slugTouched) setSlug(slugify(`${f} ${l}`));
   }
 
-  function toggle(list: string[], set: (v: string[]) => void, key: string) {
-    set(list.includes(key) ? list.filter((k) => k !== key) : [...list, key]);
+  // Choisir son sport remplit l'offre : le coach n'affronte jamais trois
+  // champs vides, il valide ou corrige une proposition.
+  function pickSport(next: string) {
+    setSport(next);
+    if (offerTouched) return;
+    const preset = defaultServiceForSport(next);
+    setServiceName(t("onboarding.serviceDefaultName"));
+    setServicePrice(String(preset.price));
+    setServiceDuration(preset.duration);
   }
 
-  // ── Étape 1 : enregistre l'identité (le coach existe dès cette étape) ─────
+  // ── Étape 1 : identité (le coach et son lien existent dès cette étape) ────
   async function submitIdentity(e: FormEvent) {
     e.preventDefault();
     setError(null);
@@ -137,15 +102,9 @@ export default function OnboardingForm({
         .update({
           first_name: firstName.trim(),
           last_name: lastName.trim() || null,
-          specialty: specialty.trim() || null,
-          city: city.trim() || null,
-          lat: coords?.lat ?? null,
-          lng: coords?.lng ?? null,
-          accepts_online: acceptsOnline,
-          siret: siret.trim() || null,
           slug,
           // listed / onboarding_completed ne sont posés qu'à la FIN de
-          // l'étape 5 : sinon un abandon à l'étape 2 publiait un profil
+          // l'étape 3 : sinon un abandon à l'étape 2 publiait un profil
           // vide et rendait l'onboarding irrécupérable (redirigé dashboard).
         })
         .eq("id", userId);
@@ -181,48 +140,41 @@ export default function OnboardingForm({
     }
   }
 
-  // ── Étape 2 : photo (upload immédiat) + bio (au clic Continuer) ──────────
-  async function uploadAvatar(file: File) {
+  // ── Étape 2 : sport + première prestation, en une seule écriture ──────────
+  async function submitOffer() {
     setError(null);
-    if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
-      setError(t("settings.photoErr"));
-      return;
+    if (!sport) return setError(t("onboarding.sportRequired"));
+    const priceCents = Math.round(
+      (parseFloat(servicePrice.replace(",", ".")) || 0) * 100
+    );
+    if (!serviceName.trim() || priceCents <= 0) {
+      return setError(t("onboarding.serviceInvalid"));
     }
-    setUploading(true);
+
+    setLoading(true);
     try {
       const supabase = createClient();
-      const path = `${userId}/avatar`;
-      const { error: upErr } = await supabase.storage
-        .from("avatars")
-        .upload(path, file, { upsert: true, contentType: file.type });
-      if (upErr) {
-        setError(t("settings.photoErr"));
+      const { error: sportErr } = await supabase
+        .from("coaches")
+        .update({ sport })
+        .eq("id", userId);
+      if (sportErr) {
+        setError(t("onboarding.errors.generic"));
         return;
       }
-      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
-      const url = `${data.publicUrl}?v=${Date.now()}`;
-      await supabase
-        .from("coaches")
-        .update({ avatar_url: url })
-        .eq("id", userId);
-      setAvatarUrl(url);
-    } finally {
-      setUploading(false);
-    }
-  }
-
-  async function submitPhotoBio() {
-    setLoading(true);
-    setError(null);
-    try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from("coaches")
-        .update({ bio: bio.trim() || null })
-        .eq("id", userId);
-      // Échec silencieux interdit : la bio serait perdue sans que le coach
-      // le sache. On reste sur l'étape avec un message.
-      if (error) {
+      const { error: svcErr } = await supabase.from("services").insert({
+        coach_id: userId,
+        name: serviceName.trim(),
+        type: "single",
+        // Le lieu se précise dans Réglages : par défaut, une séance en
+        // présentiel, le cas de très loin le plus fréquent.
+        location: "in_person",
+        duration_min: serviceDuration,
+        price_cents: priceCents,
+        currency: "eur",
+        active: true,
+      });
+      if (svcErr) {
         setError(t("onboarding.errors.generic"));
         return;
       }
@@ -233,72 +185,11 @@ export default function OnboardingForm({
     }
   }
 
-  // ── Étape 3 : activité ────────────────────────────────────────────────────
-  async function submitActivity() {
-    setLoading(true);
-    setError(null);
-    try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from("coaches")
-        .update({
-          sport: sport || null,
-          specialties,
-          venues,
-          gym_name: gymName.trim() || null,
-        })
-        .eq("id", userId);
-      if (error) {
-        setError(t("onboarding.errors.generic"));
-        return;
-      }
-      track("onboarding_step_done", { step: 3 });
-      setStep(4);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // ── Étape 4 : première prestation ─────────────────────────────────────────
-  async function submitService() {
-    setError(null);
-    const priceCents = Math.round(
-      (parseFloat(servicePrice.replace(",", ".")) || 0) * 100
-    );
-    if (!serviceName.trim() || priceCents <= 0) {
-      setError(t("onboarding.serviceInvalid"));
-      return;
-    }
-    setLoading(true);
-    try {
-      const supabase = createClient();
-      const { error } = await supabase.from("services").insert({
-        coach_id: userId,
-        name: serviceName.trim(),
-        type: "single",
-        location: acceptsOnline && !city ? "online" : "in_person",
-        duration_min: serviceDuration,
-        price_cents: priceCents,
-        currency: "eur",
-        active: true,
-      });
-      if (error) {
-        setError(t("onboarding.errors.generic"));
-        return;
-      }
-      track("onboarding_step_done", { step: 4 });
-      setStep(5);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // ── Étape 5 : disponibilités ──────────────────────────────────────────────
+  // ── Étape 3 : disponibilités, puis le profil devient officiel ─────────────
   async function submitAvailability() {
     setError(null);
     if (days.length === 0 || dayEnd <= dayStart) {
-      setError(t("onboarding.availInvalid"));
-      return;
+      return setError(t("onboarding.availInvalid"));
     }
     setLoading(true);
     try {
@@ -316,7 +207,7 @@ export default function OnboardingForm({
         return;
       }
       // C'est ICI que le profil devient officiel : publié + onboarding
-      // terminé, une fois les 5 étapes réellement franchies.
+      // terminé, une fois les 3 étapes réellement franchies.
       const { error: doneErr } = await supabase
         .from("coaches")
         .update({ listed: true, onboarding_completed: true })
@@ -325,9 +216,9 @@ export default function OnboardingForm({
         setError(t("onboarding.errors.generic"));
         return;
       }
-      track("onboarding_step_done", { step: 5 });
+      track("onboarding_step_done", { step: 3 });
       track("onboarding_completed");
-      setStep(6);
+      setStep(4);
     } finally {
       setLoading(false);
     }
@@ -340,21 +231,48 @@ export default function OnboardingForm({
         : "border-border-strong text-text-muted hover:text-text-base"
     }`;
 
-  // ── Écran final : paiements Stripe + dashboard ────────────────────────────
-  if (step === 6) {
+  const bookingUrl = `madger.app/${slug}`;
+
+  // ── Écran final : le lien est en ligne, puis les marches suivantes ────────
+  if (step === 4) {
     return (
-      <div className="rounded-2xl border border-border bg-bg-card p-6 text-center sm:text-left">
-        {/* Léo fête la fin du parcours : c'est un moment de victoire, pas
-            une simple fin de formulaire. */}
-        <Leo pose="ok" size={96} className="mx-auto mb-4 sm:mx-0" />
-        <h1 className="text-2xl font-extrabold tracking-tight text-text-base">
-          {t("onboarding.doneTitle")}
+      <div className="anim-scale-in rounded-2xl border border-border bg-bg-card p-6 text-center">
+        <Leo size={56} className="mx-auto" />
+        <h1 className="mt-4 text-2xl font-extrabold tracking-tight text-text-base">
+          {t("onboarding.liveTitle")}
         </h1>
-        <p className="mt-2 text-sm leading-relaxed text-text-muted">
-          {t("onboarding.doneSubtitle")}
+        <p className="mt-1 text-sm text-text-muted">
+          {t("onboarding.liveSubtitle")}
         </p>
 
-        <div className="mt-5 rounded-xl border border-accent/25 bg-accent/[0.05] p-4">
+        {/* Le lien, en grand : c'est le produit. Il se copie en un geste. */}
+        <div className="mt-5 flex items-center gap-2 rounded-xl border border-accent/30 bg-accent/[0.06] p-3">
+          <a
+            href={`/${slug}`}
+            target="_blank"
+            rel="noreferrer"
+            className="min-w-0 flex-1 truncate text-left font-display text-sm font-bold text-accent hover:underline"
+          >
+            {bookingUrl}
+          </a>
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(`https://${bookingUrl}`);
+                setCopied(true);
+                window.setTimeout(() => setCopied(false), 2000);
+              } catch {
+                /* clipboard refusé (http, permission) : le lien reste cliquable */
+              }
+            }}
+            className="shrink-0 rounded-full bg-accent px-3.5 py-2 text-xs font-semibold text-black transition-opacity hover:opacity-90"
+          >
+            {copied ? t("onboarding.copied") : t("onboarding.copyLink")}
+          </button>
+        </div>
+
+        <div className="mt-5 rounded-xl border border-border p-4 text-left">
           <p className="text-sm font-semibold text-text-base">
             {t("onboarding.stripeTitle")}
           </p>
@@ -373,6 +291,27 @@ export default function OnboardingForm({
           </Button>
         </div>
 
+        {/* Photo, bio et ville ont quitté le parcours : c'est ici qu'on les
+            réclame, une fois la valeur déjà livrée. */}
+        <div className="mt-3 rounded-xl border border-border p-4 text-left">
+          <p className="text-sm font-semibold text-text-base">
+            {t("onboarding.profileTitle")}
+          </p>
+          <p className="mt-1 text-xs text-text-muted">
+            {t("onboarding.profileDesc")}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              startRouteProgress();
+              router.push("/dashboard/reglages");
+              router.refresh();
+            }}
+            className="mt-3 rounded-full border border-border-strong px-4 py-2 text-xs font-semibold text-text-base transition-colors hover:border-accent"
+          >
+            {t("onboarding.profileCta")}
+          </button>
+        </div>
 
         <button
           type="button"
@@ -392,18 +331,10 @@ export default function OnboardingForm({
   const stepTitles: Record<number, { title: string; subtitle: string }> = {
     1: { title: t("onboarding.title"), subtitle: t("onboarding.subtitle") },
     2: {
-      title: t("onboarding.photoTitle"),
-      subtitle: t("onboarding.photoSubtitle"),
+      title: t("onboarding.offerTitle"),
+      subtitle: t("onboarding.offerSubtitle"),
     },
     3: {
-      title: t("onboarding.activityTitle"),
-      subtitle: t("onboarding.activitySubtitle"),
-    },
-    4: {
-      title: t("onboarding.serviceTitle"),
-      subtitle: t("onboarding.serviceSubtitle"),
-    },
-    5: {
       title: t("onboarding.availTitle"),
       subtitle: t("onboarding.availSubtitle"),
     },
@@ -414,458 +345,269 @@ export default function OnboardingForm({
       {/* Rappel du compte connecté + changement de compte (mauvais Google) */}
       <AccountSwitchBar />
       <div className="rounded-2xl border border-border bg-bg-card p-6">
-      {/* Progression */}
-      <div className="mb-5">
-        <div className="flex items-center justify-between text-xs text-text-dim">
-          <span>
-            {t("onboarding.stepLabel")} {step} {t("onboarding.of")} {TOTAL_STEPS}
-          </span>
-          {step > 1 && (
-            <button
-              type="button"
-              onClick={() => setStep(step - 1)}
-              className="font-medium transition-colors hover:text-text-base"
-            >
-              ‹ {t("onboarding.back")}
-            </button>
-          )}
-        </div>
-        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-bg-elevated">
-          <div
-            className="h-full rounded-full bg-accent transition-all duration-500"
-            style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
-          />
-        </div>
-      </div>
-
-      <h1 className="text-2xl font-extrabold tracking-tight text-text-base">
-        {stepTitles[step].title}
-      </h1>
-      <p className="mt-1 text-sm text-text-muted">{stepTitles[step].subtitle}</p>
-
-      {/* ── Étape 1 : identité ── */}
-      {step === 1 && (
-        <form onSubmit={submitIdentity} className="mt-6 flex flex-col gap-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <label className="flex flex-col gap-1.5">
-              <span className={labelClass}>{t("onboarding.firstName")}</span>
-              <input
-                type="text"
-                required
-                value={firstName}
-                onChange={(e) => syncNames({ first: e.target.value })}
-                className={inputClass}
-              />
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className={labelClass}>{t("onboarding.lastName")} <span className="font-normal text-text-dim">{t("common.optional")}</span></span>
-              <input
-                type="text"
-                value={lastName}
-                onChange={(e) => syncNames({ last: e.target.value })}
-                className={inputClass}
-              />
-            </label>
-          </div>
-
-          <label className="flex flex-col gap-1.5">
-            <span className={labelClass}>{t("onboarding.specialty")} <span className="font-normal text-text-dim">{t("common.optional")}</span></span>
-            <input
-              type="text"
-              value={specialty}
-              onChange={(e) => setSpecialty(e.target.value)}
-              placeholder={t("onboarding.specialtyPlaceholder")}
-              className={inputClass}
-            />
-          </label>
-
-          <label className="flex flex-col gap-1.5">
-            <span className={labelClass}>{t("onboarding.city")} <span className="font-normal text-text-dim">{t("common.optional")}</span></span>
-            <CityAutocomplete
-              value={city}
-              onChange={(v) => {
-                setCity(v);
-                setCoords(null);
-              }}
-              onSelect={(c) => {
-                setCity(c.name);
-                setCoords({ lat: c.lat, lng: c.lng });
-              }}
-              placeholder={t("onboarding.cityPlaceholder")}
-              inputClassName={inputClass}
-            />
-          </label>
-
-          <label className="flex flex-col gap-1.5">
-            <span className={labelClass}>{t("onboarding.siret")} <span className="font-normal text-text-dim">{t("common.optional")}</span></span>
-            <input
-              type="text"
-              inputMode="numeric"
-              value={siret}
-              onChange={(e) => setSiret(e.target.value)}
-              placeholder="123 456 789 00012"
-              className={inputClass}
-            />
-            <span className="text-xs text-text-dim">
-              {t("onboarding.siretHint")}
+        {/* Progression */}
+        <div className="mb-5">
+          <div className="flex items-center justify-between text-xs text-text-dim">
+            <span>
+              {t("onboarding.stepLabel")} {step} {t("onboarding.of")}{" "}
+              {TOTAL_STEPS}
             </span>
-          </label>
-
-          <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3">
-            <input
-              type="checkbox"
-              checked={acceptsOnline}
-              onChange={(e) => setAcceptsOnline(e.target.checked)}
-              className="h-4 w-4 shrink-0 accent-accent"
-            />
-            <span className="text-sm text-text-base">
-              {t("onboarding.acceptsOnline")}
-            </span>
-          </label>
-
-          <label className="flex flex-col gap-1.5">
-            <span className={labelClass}>{t("onboarding.slugLabel")}</span>
-            <div className="flex items-center rounded-xl border border-border-strong bg-white/[0.03] transition-colors focus-within:border-accent">
-              <span className="pl-4 text-base text-text-dim">madger.app/</span>
-              <input
-                type="text"
-                value={slug}
-                onChange={(e) => {
-                  setSlugTouched(true);
-                  setSlug(slugify(e.target.value));
-                }}
-                className="w-full bg-transparent py-3 pr-4 text-base text-text-base outline-none"
-              />
-            </div>
-            <span className="text-xs text-text-dim">
-              {t("onboarding.slugHint")}
-            </span>
-          </label>
-
-          {error && <p role="alert" className="text-sm text-danger">{error}</p>}
-          <Button type="submit" disabled={loading} className="mt-2 w-full">
-            {loading ? t("onboarding.saving") : t("onboarding.next")}
-          </Button>
-        </form>
-      )}
-
-      {/* ── Étape 2 : photo + bio ── */}
-      {step === 2 && (
-        <div className="mt-6 flex flex-col gap-4">
-          <div className="flex items-center gap-4">
-            {avatarUrl ? (
-              <Image
-                src={avatarUrl}
-                alt=""
-                width={72}
-                height={72}
-                className="h-18 w-18 rounded-full border border-border-strong object-cover"
-                style={{ height: 72, width: 72 }}
-              />
-            ) : (
-              <span className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-accent/10 text-xl font-semibold text-accent">
-                {firstName.charAt(0).toUpperCase() || "?"}
-              </span>
-            )}
-            <div>
-              <Button
+            {step > 1 && (
+              <button
                 type="button"
-                variant="secondary"
-                disabled={uploading}
-                onClick={() => fileRef.current?.click()}
-                className="px-4 py-2 text-sm"
+                onClick={() => setStep(step - 1)}
+                className="font-medium transition-colors hover:text-text-base"
               >
-                {uploading
-                  ? t("settings.photoUploading")
-                  : avatarUrl
-                  ? t("onboarding.changePhoto")
-                  : t("onboarding.addPhoto")}
-              </Button>
-              <p className="mt-1.5 text-xs text-text-dim">
-                {t("onboarding.photoHint")}
-              </p>
-            </div>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) uploadAvatar(f);
-              }}
+                ‹ {t("onboarding.back")}
+              </button>
+            )}
+          </div>
+          <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-bg-elevated">
+            <div
+              className="h-full rounded-full bg-accent transition-all duration-500"
+              style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
             />
           </div>
+        </div>
 
-          <label className="flex flex-col gap-1.5">
-            <span className={labelClass}>{t("onboarding.bioLabel")}</span>
-            <textarea
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              rows={4}
-              placeholder={t("onboarding.bioPlaceholder")}
-              className={`${inputClass} resize-none`}
-            />
-          </label>
+        <h1 className="text-2xl font-extrabold tracking-tight text-text-base">
+          {stepTitles[step].title}
+        </h1>
+        <p className="mt-1 text-sm text-text-muted">
+          {stepTitles[step].subtitle}
+        </p>
 
-          {/* L'IA écrit la bio : le moment où le coach cale le plus, réglé
-              en un clic. Ce qu'il a déjà tapé sert de matière première. */}
-          <div className="rounded-xl border border-accent/25 bg-accent/[0.05] p-3.5">
-            <p className="flex items-center gap-1.5 text-xs font-semibold text-text-base">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#CBFF03" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3zM19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z" />
-              </svg>
-              {t("onboarding.aiBioTitle")}
-            </p>
-            <p className="mt-1 text-xs leading-relaxed text-text-muted">
-              {t("onboarding.aiBioHint")}
-            </p>
-            {aiError && (
-              <p role="alert" className="mt-1.5 text-xs text-danger">
-                {aiError}
+        {/* ── Étape 1 : qui tu es ── */}
+        {step === 1 && (
+          <form onSubmit={submitIdentity} className="mt-6 flex flex-col gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label className="flex flex-col gap-1.5">
+                <span className={labelClass}>{t("onboarding.firstName")}</span>
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => syncNames({ first: e.target.value })}
+                  className={inputClass}
+                  autoFocus
+                />
+              </label>
+              <label className="flex flex-col gap-1.5">
+                <span className={labelClass}>
+                  {t("onboarding.lastName")}{" "}
+                  <span className="font-normal text-text-dim">
+                    {t("common.optional")}
+                  </span>
+                </span>
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => syncNames({ last: e.target.value })}
+                  className={inputClass}
+                />
+              </label>
+            </div>
+
+            {/* Le lien n'est pas un champ de plus : il se fabrique sous les
+                yeux du coach, et ne devient éditable que s'il le demande. */}
+            <div className="rounded-xl border border-border-strong p-3">
+              <p className={labelClass}>{t("onboarding.linkPreview")}</p>
+              {editingSlug ? (
+                <>
+                  <input
+                    type="text"
+                    value={slug}
+                    onChange={(e) => {
+                      setSlugTouched(true);
+                      setSlug(slugify(e.target.value));
+                    }}
+                    className={`${inputClass} mt-1.5`}
+                    autoFocus
+                  />
+                  <p className="mt-1.5 text-xs text-text-dim">
+                    {t("onboarding.slugHint")}
+                  </p>
+                </>
+              ) : (
+                <div className="mt-1.5 flex items-center gap-2">
+                  <span className="min-w-0 flex-1 truncate font-display text-sm font-bold text-accent">
+                    {bookingUrl}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setEditingSlug(true)}
+                    className="shrink-0 text-xs font-semibold text-text-muted underline transition-colors hover:text-text-base"
+                  >
+                    {t("onboarding.editLink")}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {error && (
+              <p role="alert" className="text-sm text-danger">
+                {error}
+              </p>
+            )}
+            <Button type="submit" disabled={loading} className="mt-2 w-full">
+              {loading ? t("onboarding.saving") : t("onboarding.next")}
+            </Button>
+          </form>
+        )}
+
+        {/* ── Étape 2 : ce que tu proposes ── */}
+        {step === 2 && (
+          <div className="mt-6 flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <span className={labelClass}>{t("settings.sport")}</span>
+              <div className="flex flex-wrap gap-2">
+                {SPORT_KEYS.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    aria-pressed={sport === s}
+                    onClick={() => pickSport(s)}
+                    className={chipClass(sport === s)}
+                  >
+                    {t(`taxonomy.sports.${s}`)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* L'offre n'apparaît qu'une fois le sport choisi : un seul choix
+                à faire à l'écran, et elle arrive déjà remplie. */}
+            {sport && (
+              <div className="anim-fade-up flex flex-col gap-4 rounded-xl border border-border-strong p-4">
+                <p className="text-xs text-text-dim">
+                  {t("onboarding.prefilledHint")}
+                </p>
+                <label className="flex flex-col gap-1.5">
+                  <span className={labelClass}>{t("services.form.name")}</span>
+                  <input
+                    type="text"
+                    value={serviceName}
+                    onChange={(e) => {
+                      setOfferTouched(true);
+                      setServiceName(e.target.value);
+                    }}
+                    className={inputClass}
+                  />
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="flex flex-col gap-1.5">
+                    <span className={labelClass}>
+                      {t("services.form.price")}
+                    </span>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={servicePrice}
+                      onChange={(e) => {
+                        setOfferTouched(true);
+                        setServicePrice(e.target.value);
+                      }}
+                      className={inputClass}
+                    />
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className={labelClass}>
+                      {t("services.form.duration")}
+                    </span>
+                    <select
+                      value={serviceDuration}
+                      onChange={(e) => {
+                        setOfferTouched(true);
+                        setServiceDuration(Number(e.target.value));
+                      }}
+                      className={inputClass}
+                    >
+                      {DURATIONS.map((d) => (
+                        <option key={d} value={d}>
+                          {d} min
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {error && (
+              <p role="alert" className="text-sm text-danger">
+                {error}
               </p>
             )}
             <Button
-              type="button"
-              variant="secondary"
-              disabled={aiLoading}
-              onClick={generateBio}
-              className="mt-2.5 px-4 py-2 text-sm"
+              onClick={submitOffer}
+              disabled={loading || !sport}
+              className="mt-2 w-full"
             >
-              {aiLoading
-                ? t("onboarding.aiBioLoading")
-                : t("onboarding.aiBioCta")}
+              {loading ? t("onboarding.saving") : t("onboarding.next")}
             </Button>
           </div>
+        )}
 
-          {error && <p role="alert" className="text-sm text-danger">{error}</p>}
-          <Button
-            onClick={submitPhotoBio}
-            disabled={loading}
-            className="mt-2 w-full"
-          >
-            {loading ? t("onboarding.saving") : t("onboarding.next")}
-          </Button>
-        </div>
-      )}
-
-      {/* ── Étape 3 : activité ── */}
-      {step === 3 && (
-        <div className="mt-6 flex flex-col gap-4">
-          <label className="flex flex-col gap-1.5">
-            <span className={labelClass}>{t("settings.sport")}</span>
-            <select
-              value={sport}
-              onChange={(e) => {
-                const next = e.target.value;
-                setSport(next);
-                // Objectif « compétition » retiré si le nouveau sport ne le
-                // propose pas (évite de garder un objectif invisible coché).
-                const allowed = specialtiesForSport(next);
-                setSpecialties((prev) => prev.filter((k) => allowed.includes(k as never)));
-              }}
-              className={inputClass}
-            >
-              <option value="">-</option>
-              {SPORT_KEYS.map((s) => (
-                <option key={s} value={s}>
-                  {t(`taxonomy.sports.${s}`)}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div className="flex flex-col gap-1.5">
-            <span className={labelClass}>{t("settings.specialtiesLabel")}</span>
-            <div className="flex flex-wrap gap-2">
-              {specialtiesForSport(sport).map((k) => (
-                <button
-                  key={k}
-                  type="button"
-                  aria-pressed={specialties.includes(k)}
-                  onClick={() => toggle(specialties, setSpecialties, k)}
-                  className={chipClass(specialties.includes(k))}
-                >
-                  {t(`clientOnboarding.goals.${k}`)}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <span className={labelClass}>{t("settings.venuesLabel")}</span>
-            <div className="flex flex-wrap gap-2">
-              {VENUE_KEYS.map((k) => (
-                <button
-                  key={k}
-                  type="button"
-                  aria-pressed={venues.includes(k)}
-                  onClick={() => toggle(venues, setVenues, k)}
-                  className={chipClass(venues.includes(k))}
-                >
-                  {t(`taxonomy.venues.${k}`)}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {venues.includes("coach_gym") && (
-            <label className="flex flex-col gap-1.5">
-              <span className={labelClass}>{t("settings.gymName")}</span>
-              <input
-                type="text"
-                value={gymName}
-                onChange={(e) => setGymName(e.target.value)}
-                placeholder={t("settings.gymNamePlaceholder")}
-                className={inputClass}
-              />
-            </label>
-          )}
-
-          {error && <p role="alert" className="text-sm text-danger">{error}</p>}
-          <Button
-            onClick={submitActivity}
-            disabled={loading}
-            className="mt-2 w-full"
-          >
-            {loading ? t("onboarding.saving") : t("onboarding.next")}
-          </Button>
-        </div>
-      )}
-
-      {/* ── Étape 4 : première prestation ── */}
-      {step === 4 && (
-        <div className="mt-6 flex flex-col gap-4">
-          <label className="flex flex-col gap-1.5">
-            <span className={labelClass}>{t("services.form.name")}</span>
-            <input
-              type="text"
-              value={serviceName}
-              onChange={(e) => setServiceName(e.target.value)}
-              placeholder={t("onboarding.servicePlaceholder")}
-              className={inputClass}
-            />
-          </label>
-          <div className="grid grid-cols-2 gap-3">
-            <label className="flex flex-col gap-1.5">
-              <span className={labelClass}>{t("services.form.price")}</span>
-              <input
-                type="text"
-                inputMode="decimal"
-                value={servicePrice}
-                onChange={(e) => setServicePrice(e.target.value)}
-                placeholder="50"
-                className={inputClass}
-              />
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className={labelClass}>{t("services.form.duration")}</span>
-              <select
-                value={serviceDuration}
-                onChange={(e) => setServiceDuration(Number(e.target.value))}
-                className={inputClass}
-              >
-                {DURATIONS.map((d) => (
-                  <option key={d} value={d}>
-                    {d} min
-                  </option>
+        {/* ── Étape 3 : quand tu es dispo ── */}
+        {step === 3 && (
+          <div className="mt-6 flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <span className={labelClass}>{t("onboarding.daysLabel")}</span>
+              <div className="flex flex-wrap gap-2">
+                {WEEK_ORDER.map(({ weekday, key }) => (
+                  <button
+                    key={weekday}
+                    type="button"
+                    aria-pressed={days.includes(weekday)}
+                    onClick={() =>
+                      setDays(
+                        days.includes(weekday)
+                          ? days.filter((d) => d !== weekday)
+                          : [...days, weekday]
+                      )
+                    }
+                    className={chipClass(days.includes(weekday))}
+                  >
+                    {t(`availability.days.${key}`)}
+                  </button>
                 ))}
-              </select>
-            </label>
-          </div>
-
-          {error && <p role="alert" className="text-sm text-danger">{error}</p>}
-          <Button
-            onClick={submitService}
-            disabled={loading}
-            className="mt-2 w-full"
-          >
-            {loading ? t("onboarding.saving") : t("onboarding.next")}
-          </Button>
-          <button
-            type="button"
-            onClick={() => setStep(5)}
-            className="text-center text-xs font-medium text-text-dim transition-colors hover:text-text-base"
-          >
-            {t("onboarding.skip")}
-          </button>
-        </div>
-      )}
-
-      {/* ── Étape 5 : disponibilités ── */}
-      {step === 5 && (
-        <div className="mt-6 flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <span className={labelClass}>{t("onboarding.daysLabel")}</span>
-            <div className="flex flex-wrap gap-2">
-              {WEEK_ORDER.map(({ weekday, key }) => (
-                <button
-                  key={weekday}
-                  type="button"
-                  aria-pressed={days.includes(weekday)}
-                  onClick={() =>
-                    setDays(
-                      days.includes(weekday)
-                        ? days.filter((d) => d !== weekday)
-                        : [...days, weekday]
-                    )
-                  }
-                  className={chipClass(days.includes(weekday))}
-                >
-                  {t(`availability.days.${key}`)}
-                </button>
-              ))}
+              </div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <label className="flex flex-col gap-1.5">
-              <span className={labelClass}>{t("onboarding.fromLabel")}</span>
-              <input
-                type="time"
-                value={dayStart}
-                onChange={(e) => setDayStart(e.target.value)}
-                className={inputClass}
-              />
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className={labelClass}>{t("onboarding.toLabel")}</span>
-              <input
-                type="time"
-                value={dayEnd}
-                onChange={(e) => setDayEnd(e.target.value)}
-                className={inputClass}
-              />
-            </label>
-          </div>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="flex flex-col gap-1.5">
+                <span className={labelClass}>{t("onboarding.fromLabel")}</span>
+                <input
+                  type="time"
+                  value={dayStart}
+                  onChange={(e) => setDayStart(e.target.value)}
+                  className={inputClass}
+                />
+              </label>
+              <label className="flex flex-col gap-1.5">
+                <span className={labelClass}>{t("onboarding.toLabel")}</span>
+                <input
+                  type="time"
+                  value={dayEnd}
+                  onChange={(e) => setDayEnd(e.target.value)}
+                  className={inputClass}
+                />
+              </label>
+            </div>
 
-          {error && <p role="alert" className="text-sm text-danger">{error}</p>}
-          <Button
-            onClick={submitAvailability}
-            disabled={loading}
-            className="mt-2 w-full"
-          >
-            {loading ? t("onboarding.saving") : t("onboarding.next")}
-          </Button>
-          <button
-            type="button"
-            onClick={async () => {
-              // « Passer » doit AUSSI finaliser : sans les drapeaux, le
-              // dashboard renverrait vers l'onboarding en boucle.
-              const supabase = createClient();
-              await supabase
-                .from("coaches")
-                .update({ listed: true, onboarding_completed: true })
-                .eq("id", userId);
-              track("onboarding_completed");
-              setStep(6);
-            }}
-            className="text-center text-xs font-medium text-text-dim transition-colors hover:text-text-base"
-          >
-            {t("onboarding.skip")}
-          </button>
-        </div>
-      )}
+            {error && (
+              <p role="alert" className="text-sm text-danger">
+                {error}
+              </p>
+            )}
+            <Button
+              onClick={submitAvailability}
+              disabled={loading}
+              className="mt-2 w-full"
+            >
+              {loading ? t("onboarding.saving") : t("onboarding.finish")}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

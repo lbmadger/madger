@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/icons";
 import PolicyTiers from "@/components/booking/PolicyTiers";
 import { inputClass, labelClass } from "@/lib/ui/styles";
+import AiBio from "@/components/ui/AiBio";
 import {
   resolveRefundPolicy,
   REFUND_PCT_CHOICES,
@@ -381,6 +382,11 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
               className={`${inputClass} resize-none`}
             />
           </label>
+
+          {/* La bio ne se rédige plus à l'onboarding (parcours ramené à 3
+              étapes) : l'assistant IA vit désormais ici, là où le coach
+              complète son profil public. */}
+          <AiBio value={bio} onChange={setBio} />
 
           <label className="flex flex-col gap-1.5">
             <span className={labelClass}>{t("settings.slug")}</span>
