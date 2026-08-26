@@ -3,6 +3,7 @@
 import { useRef, useState, type FormEvent } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { startRouteProgress } from "@/components/ui/RouteProgress";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { slugify, isValidSlug } from "@/lib/utils/slug";
@@ -362,6 +363,7 @@ export default function OnboardingForm({
           </p>
           <Button
             onClick={() => {
+              startRouteProgress();
               router.push("/dashboard/paiements");
               router.refresh();
             }}
@@ -375,6 +377,7 @@ export default function OnboardingForm({
         <button
           type="button"
           onClick={() => {
+            startRouteProgress();
             router.push("/dashboard");
             router.refresh();
           }}

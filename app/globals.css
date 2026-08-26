@@ -317,6 +317,138 @@ textarea:focus-visible {
   outline: none;
 }
 
+/* ── Attente de navigation (components/ui/RouteProgress.tsx) ───────────── */
+/* Barre fine en haut de l'écran : elle avance dès le clic, avant même que la
+   nouvelle page n'existe. Posée au-dessus du grain (z-index 9999) pour ne
+   jamais être filtrée par lui. */
+.route-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 10000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.route-bar[data-visible="true"] {
+  opacity: 1;
+}
+.route-bar__fill {
+  position: relative;
+  height: 100%;
+  /* Dégradé : la barre s'éteint vers la gauche, le lime pur reste en tête. */
+  background: linear-gradient(
+    90deg,
+    rgba(203, 255, 3, 0) 0%,
+    rgba(203, 255, 3, 0.45) 30%,
+    #cbff03 100%
+  );
+  box-shadow: 0 0 4px rgba(203, 255, 3, 0.9), 0 0 14px rgba(203, 255, 3, 0.5);
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+/* Comète : la traînée floutée qui précède la tête de barre. */
+.route-bar__head {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  width: 90px;
+  height: 2px;
+  transform: translateY(-50%);
+  background: linear-gradient(90deg, rgba(232, 255, 92, 0), #e8ff5c);
+  filter: blur(3px);
+}
+
+/* Voile des attentes longues (> 700 ms) : la page qu'on quitte s'estompe
+   derrière un flou, et le trait du logo se dessine au centre. */
+.route-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: rgba(10, 10, 10, 0.62);
+  backdrop-filter: blur(7px) saturate(120%);
+  -webkit-backdrop-filter: blur(7px) saturate(120%);
+  animation: route-veil-in 0.35s ease both;
+}
+@keyframes route-veil-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* pathLength="1" normalise la longueur du tracé : le dash se pilote de 1 à 0
+   (dessin), puis 0 à -1 (effacement par la queue), quelle que soit la
+   géométrie réelle du chemin. */
+.route-veil__trace {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  filter: drop-shadow(0 0 10px rgba(203, 255, 3, 0.45));
+  animation: route-trace 1.9s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+@keyframes route-trace {
+  0% {
+    stroke-dashoffset: 1;
+  }
+  45% {
+    stroke-dashoffset: 0;
+  }
+  60% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -1;
+  }
+}
+.route-veil__dot {
+  transform-origin: 884px 180px;
+  animation: route-dot 1.9s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+@keyframes route-dot {
+  0%,
+  40% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  52% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+/* Motricité réduite : le kill-switch global ne coupe que la durée et le
+   nombre d'itérations — un tracé figé à mi-course resterait invisible. On
+   supprime donc l'animation par son nom et on fixe l'état final lisible. */
+@media (prefers-reduced-motion: reduce) {
+  .route-veil {
+    animation-name: none !important;
+  }
+  .route-veil__trace {
+    animation-name: none !important;
+    stroke-dashoffset: 0;
+  }
+  .route-veil__dot {
+    animation-name: none !important;
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* ── Impression : seule la facture s'imprime, en noir sur blanc ── */
 @media print {
   body * {

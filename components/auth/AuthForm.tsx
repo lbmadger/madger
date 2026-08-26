@@ -3,6 +3,7 @@
 import { useState, useEffect, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { startRouteProgress } from "@/components/ui/RouteProgress";
 import { createClient } from "@/lib/supabase/client";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/supabase/config";
 import { useI18n } from "@/lib/i18n/I18nProvider";
@@ -98,6 +99,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
         // Confirmation email active → pas de session immédiate : on invite à
         // vérifier la boîte mail. Sinon, on entre directement.
         if (data.session) {
+          startRouteProgress();
           router.push(redirectTo);
           router.refresh();
         } else {
@@ -110,6 +112,9 @@ export default function AuthForm({ mode }: { mode: Mode }) {
         password,
       });
       if (error) return setError(t("auth.errors.invalidCredentials"));
+      // Le dashboard est rendu côté serveur : sans ce signal, le bouton reste
+      // muet pendant toute la requête (pas de <a> cliqué à intercepter).
+      startRouteProgress();
       router.push(redirectTo);
       router.refresh();
     } catch {

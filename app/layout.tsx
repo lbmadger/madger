@@ -3,6 +3,7 @@ import { Inter, Space_Grotesk } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import AnalyticsProvider from "@/components/AnalyticsProvider";
 import GrainOverlay from "@/components/ui/GrainOverlay";
+import RouteProgress from "@/components/ui/RouteProgress";
 import "./globals.css";
 
 // Inter est auto-hébergée par next/font au build : aucune requête vers
@@ -91,6 +92,9 @@ export default function RootLayout({
         >
           Aller au contenu
         </a>
+        {/* Retour visuel pendant les changements de page : barre de
+            progression, puis voile animé si l'attente se prolonge. */}
+        <RouteProgress />
         {children}
         <GrainOverlay />
         <Analytics />
