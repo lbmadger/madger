@@ -1,0 +1,1429 @@
+<title>Plan de lancement Madger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..112,400..900&family=Instrument+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --noir:#0A0A0A; --vert:#CBFF03; --blanc:#FFFFFF;
+  --ground:#FFFFFF;
+  --surface:rgba(10,10,10,.038);
+  --surface2:rgba(10,10,10,.075);
+  --line:rgba(10,10,10,.14);
+  --line-soft:rgba(10,10,10,.08);
+  --text:#0A0A0A;
+  --muted:rgba(10,10,10,.60);
+  --faint:rgba(10,10,10,.42);
+  --accent-fill:#CBFF03;
+  --accent-on-fill:#0A0A0A;
+  --accent-text:#0A0A0A;
+  --code-ground:#0A0A0A;
+  --code-text:#FFFFFF;
+  --code-line:rgba(255,255,255,.14);
+  --code-muted:rgba(255,255,255,.58);
+  --shadow:0 1px 0 rgba(10,10,10,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0A0A0A;
+    --surface:rgba(255,255,255,.045);
+    --surface2:rgba(255,255,255,.085);
+    --line:rgba(255,255,255,.15);
+    --line-soft:rgba(255,255,255,.09);
+    --text:#FFFFFF;
+    --muted:rgba(255,255,255,.62);
+    --faint:rgba(255,255,255,.44);
+    --accent-text:#CBFF03;
+    --code-ground:rgba(255,255,255,.045);
+    --code-text:#FFFFFF;
+    --code-line:rgba(255,255,255,.15);
+    --code-muted:rgba(255,255,255,.58);
+    --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0A0A0A;
+  --surface:rgba(255,255,255,.045);
+  --surface2:rgba(255,255,255,.085);
+  --line:rgba(255,255,255,.15);
+  --line-soft:rgba(255,255,255,.09);
+  --text:#FFFFFF;
+  --muted:rgba(255,255,255,.62);
+  --faint:rgba(255,255,255,.44);
+  --accent-text:#CBFF03;
+  --code-ground:rgba(255,255,255,.045);
+  --code-text:#FFFFFF;
+  --code-line:rgba(255,255,255,.15);
+  --code-muted:rgba(255,255,255,.58);
+  --shadow:none;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--ground); color:var(--text);
+  font-family:"Instrument Sans",ui-sans-serif,system-ui,"Helvetica Neue",Arial,sans-serif;
+  font-size:16px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.shell{max-width:1120px; margin:0 auto; padding:0 22px 96px}
+.prose{max-width:68ch}
+h1,h2,h3,h4{font-family:"Archivo",ui-sans-serif,system-ui,sans-serif; text-wrap:balance; margin:0}
+h1{font-weight:900; font-stretch:112%; font-size:clamp(2.5rem,6.2vw,4.6rem); line-height:.94; letter-spacing:-.028em}
+h2{font-weight:800; font-stretch:106%; font-size:clamp(1.75rem,3.4vw,2.5rem); line-height:1.04; letter-spacing:-.02em}
+h3{font-weight:700; font-stretch:100%; font-size:1.24rem; line-height:1.24; letter-spacing:-.01em}
+h4{font-weight:700; font-size:1rem; letter-spacing:-.005em}
+p{margin:0}
+a{color:inherit}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent-fill); outline-offset:3px; border-radius:2px}
+
+.eyebrow{
+  font-family:"DM Mono",ui-monospace,monospace; font-size:.685rem; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--muted);
+}
+.stack{display:flex; flex-direction:column}
+.g8{gap:8px}.g12{gap:12px}.g16{gap:16px}.g20{gap:20px}.g28{gap:28px}.g40{gap:40px}
+
+/* masthead */
+.masthead{padding:72px 0 40px; border-bottom:1px solid var(--line)}
+.mast-tag{display:inline-flex; align-items:center; gap:9px; align-self:flex-start;
+  background:var(--accent-fill); color:var(--accent-on-fill);
+  font-family:"DM Mono",monospace; font-size:.7rem; font-weight:500;
+  letter-spacing:.14em; text-transform:uppercase; padding:6px 11px}
+.mast-sub{font-size:1.12rem; color:var(--muted); max-width:60ch}
+.mast-meta{display:flex; flex-wrap:wrap; gap:0; border-top:1px solid var(--line-soft); margin-top:12px}
+.mast-meta div{flex:1 1 168px; padding:14px 18px 14px 0; border-right:1px solid var(--line-soft)}
+.mast-meta div:last-child{border-right:0}
+.mast-meta dt{font-family:"DM Mono",monospace; font-size:.66rem; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--faint); margin-bottom:3px}
+.mast-meta dd{margin:0; font-weight:600; font-size:.95rem}
+
+/* nav */
+.toc{display:flex; flex-wrap:wrap; gap:0; border-bottom:1px solid var(--line); margin-bottom:8px}
+.toc a{flex:1 1 190px; text-decoration:none; padding:18px 20px 18px 0; border-right:1px solid var(--line-soft);
+  display:flex; gap:12px; align-items:baseline; transition:opacity .15s}
+.toc a:last-child{border-right:0}
+.toc a:hover{opacity:.6}
+.toc .n{font-family:"DM Mono",monospace; font-size:.72rem; color:var(--faint)}
+.toc .t{font-family:"Archivo",sans-serif; font-weight:700; font-size:1rem}
+
+section{padding-top:76px; scroll-margin-top:20px}
+.sec-head{display:flex; flex-direction:column; gap:12px; padding-bottom:8px}
+.sec-rule{height:6px; background:var(--accent-fill); width:56px}
+
+/* generic blocks */
+.card{background:var(--surface); border:1px solid var(--line-soft); padding:20px 22px}
+.card.flat{background:transparent; border:1px solid var(--line)}
+.note{border-left:4px solid var(--accent-fill); padding:4px 0 4px 18px}
+.lede{font-size:1.1rem; line-height:1.55}
+.muted{color:var(--muted)}
+.faint{color:var(--faint)}
+.small{font-size:.9rem}
+.xsmall{font-size:.82rem}
+strong{font-weight:600}
+.mono{font-family:"DM Mono",monospace; font-variant-numeric:tabular-nums}
+
+/* findings */
+.finding{display:grid; grid-template-columns:34px 1fr; gap:16px; padding:20px 0; border-top:1px solid var(--line-soft)}
+.finding:first-child{border-top:1px solid var(--line)}
+.finding .idx{font-family:"DM Mono",monospace; font-size:.76rem; color:var(--faint); padding-top:3px}
+
+/* chips */
+.chip{display:inline-flex; align-items:center; gap:6px; font-family:"DM Mono",monospace;
+  font-size:.66rem; letter-spacing:.09em; text-transform:uppercase; padding:3px 8px; white-space:nowrap}
+.chip-ok{background:var(--accent-fill); color:var(--accent-on-fill)}
+.chip-fix{background:var(--surface2); color:var(--text); box-shadow:inset 0 0 0 1px var(--line)}
+.chip-new{background:var(--text); color:var(--ground)}
+.chip-wait{background:transparent; color:var(--muted); box-shadow:inset 0 0 0 1px var(--line)}
+
+/* tables */
+.tw{overflow-x:auto; border:1px solid var(--line); background:var(--ground)}
+table{border-collapse:collapse; width:100%; min-width:660px; font-size:.9rem}
+th,td{text-align:left; padding:11px 14px; border-bottom:1px solid var(--line-soft); vertical-align:top}
+thead th{font-family:"DM Mono",monospace; font-size:.66rem; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--muted); font-weight:500; background:var(--surface); border-bottom:1px solid var(--line);
+  position:sticky; top:0; z-index:2}
+tbody tr:last-child td{border-bottom:0}
+td.d{font-family:"DM Mono",monospace; font-variant-numeric:tabular-nums; white-space:nowrap; font-size:.82rem}
+.acct{font-family:"DM Mono",monospace; font-size:.72rem; letter-spacing:.04em; white-space:nowrap;
+  padding:2px 7px; display:inline-block}
+.acct-ma{background:var(--accent-fill); color:var(--accent-on-fill)}
+.acct-lb{background:var(--text); color:var(--ground)}
+.acct-tt{background:transparent; color:var(--text); box-shadow:inset 0 0 0 1px var(--line)}
+.acct-off{background:transparent; color:var(--faint); box-shadow:inset 0 0 0 1px var(--line-soft)}
+tr.phase td{background:var(--text); color:var(--ground); padding:13px 14px}
+tr.phase .pt{font-family:"Archivo",sans-serif; font-weight:800; font-size:.95rem; letter-spacing:.01em}
+tr.phase .pd{font-family:"DM Mono",monospace; font-size:.7rem; opacity:.72; letter-spacing:.06em}
+tr.big td{background:var(--accent-fill); color:var(--accent-on-fill)}
+tr.big td.d strong,tr.big td.d{color:var(--accent-on-fill)}
+tr.big .acct{background:#0A0A0A; color:#CBFF03; box-shadow:none}
+tr.big .acct-off{background:transparent; color:#0A0A0A; box-shadow:inset 0 0 0 1px rgba(10,10,10,.4)}
+tr.big td{border-bottom:1px solid rgba(10,10,10,.14)}
+tr.we td.d{color:var(--faint)}
+.tag{font-family:"DM Mono",monospace; font-size:.64rem; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--muted); display:block; margin-bottom:2px}
+
+/* copy blocks */
+.copy{border:1px solid var(--line); background:var(--ground); margin-top:14px}
+.copy-bar{display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:9px 12px 9px 14px; border-bottom:1px solid var(--line); background:var(--surface)}
+.copy-lab{font-family:"DM Mono",monospace; font-size:.67rem; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--muted)}
+.copy-btn{font-family:"DM Mono",monospace; font-size:.67rem; letter-spacing:.1em; text-transform:uppercase;
+  background:var(--text); color:var(--ground); border:0; padding:5px 11px; cursor:pointer}
+.copy-btn:hover{background:var(--accent-fill); color:var(--accent-on-fill)}
+.copy-btn[data-state="done"]{background:var(--accent-fill); color:var(--accent-on-fill)}
+.copy pre{margin:0; padding:18px 20px; white-space:pre-wrap; word-wrap:break-word;
+  font-family:"Instrument Sans",sans-serif; font-size:.95rem; line-height:1.66; color:var(--text)}
+.copy pre.code{font-family:"DM Mono",monospace; font-size:.86rem; line-height:1.6}
+.copy-note{padding:10px 20px 14px; border-top:1px dashed var(--line); color:var(--muted); font-size:.84rem}
+
+/* script tables */
+.script{border:1px solid var(--line); margin-top:18px}
+.script-head{background:var(--text); color:var(--ground); padding:16px 20px; display:flex;
+  flex-wrap:wrap; gap:6px 16px; align-items:baseline; justify-content:space-between}
+.script-head .st{font-family:"Archivo",sans-serif; font-weight:800; font-size:1.08rem}
+.script-head .sm{font-family:"DM Mono",monospace; font-size:.7rem; opacity:.74; letter-spacing:.08em}
+.script table{min-width:720px}
+.script td.t{font-family:"DM Mono",monospace; font-size:.78rem; white-space:nowrap; color:var(--muted)}
+.script td.ost{font-weight:600}
+.ost span{background:var(--accent-fill); color:var(--accent-on-fill); padding:1px 6px;
+  font-family:"DM Mono",monospace; font-size:.8rem; display:inline-block; margin:1px 0}
+
+/* shot list */
+.blocs{display:grid; gap:1px; background:var(--line); border:1px solid var(--line)}
+.bloc{background:var(--ground); padding:22px 24px}
+.bloc-h{display:flex; gap:14px; align-items:baseline; justify-content:space-between; margin-bottom:14px}
+.bloc-h .bn{font-family:"DM Mono",monospace; font-size:.7rem; letter-spacing:.12em; color:var(--muted)}
+.bloc ol{margin:0; padding-left:20px}
+.bloc li{margin-bottom:9px; padding-left:4px}
+.bloc li::marker{font-family:"DM Mono",monospace; font-size:.82rem; color:var(--faint)}
+
+footer{margin-top:88px; padding-top:28px; border-top:6px solid var(--accent-fill);
+  display:flex; flex-wrap:wrap; gap:16px; justify-content:space-between; align-items:flex-end}
+.sig{font-family:"Archivo",sans-serif; font-weight:900; font-stretch:112%; font-size:1.5rem; letter-spacing:-.02em}
+@media (max-width:640px){
+  .masthead{padding:44px 0 30px}
+  .mast-meta div{flex:1 1 100%; border-right:0; border-bottom:1px solid var(--line-soft); padding-right:0}
+  .toc a{flex:1 1 100%; border-right:0; padding:14px 0; border-bottom:1px solid var(--line-soft)}
+  section{padding-top:56px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+</style>
+<div class="shell">
+
+<header class="masthead stack g20">
+  <span class="mast-tag">Madger · lancement 14 septembre 2026</span>
+  <h1>Audit, calendrier<br>et contenus prêts<br>à publier.</h1>
+  <p class="mast-sub">Tout ce qui suit se copie et se poste. Rien à retraduire, rien à réécrire. Objectif du mois : 10 coachs inscrits.</p>
+  <dl class="mast-meta">
+    <div><dt>Établi le</dt><dd class="mono">27.08.2026</dd></div>
+    <div><dt>Couvre</dt><dd class="mono">27.08 → 14.10</dd></div>
+    <div><dt>Comptes</dt><dd>@madger.app · @leonaardb · TikTok</dd></div>
+    <div><dt>Cadence</dt><dd>3 + 3 + 3 par semaine</dd></div>
+  </dl>
+</header>
+
+<nav class="toc" aria-label="Sommaire">
+  <a href="#audit"><span class="n">01</span><span class="t">Audit</span></a>
+  <a href="#calendrier"><span class="n">02</span><span class="t">Calendrier</span></a>
+  <a href="#contenus"><span class="n">03</span><span class="t">Contenus</span></a>
+  <a href="#tournage"><span class="n">04</span><span class="t">Liste de tournage</span></a>
+</nav>
+
+<!-- ================= AUDIT ================= -->
+<section id="audit">
+  <div class="sec-head stack g12">
+    <div class="sec-rule"></div>
+    <span class="eyebrow">01 · Audit</span>
+    <h2>Ce que j'ai pu voir,<br>ce que je n'ai pas pu voir.</h2>
+  </div>
+
+  <div class="stack g20 prose" style="margin-top:26px">
+    <div class="note">
+      <p><strong>Instagram m'a bloqué.</strong> Trois voies essayées, trois murs : la page publique renvoie une coquille déconnectée sans aucune donnée de profil, l'API publique répond 401 « require_login », et la page d'intégration renvoie « EmbedIsBroken ». Je n'invente pas ce que je n'ai pas vu, donc je ne décrirai pas ta bio ni ta grille tant que je n'ai pas les captures.</p>
+    </div>
+    <p class="muted">En attendant, j'ai audité ce qui décide vraiment de la conversion : ce qu'un coach trouve quand il clique sur ton lien. Et j'y ai trouvé un problème qui casse le lancement.</p>
+  </div>
+
+  <div class="card" style="margin-top:30px; border-left:4px solid var(--accent-fill)">
+    <h3 style="margin-bottom:6px">Les 6 captures dont j'ai besoin</h3>
+    <p class="small muted" style="margin-bottom:14px">Envoie-les d'un bloc, je complète l'audit dans la foulée. Cinq minutes de ton téléphone.</p>
+    <ol style="margin:0; padding-left:22px" class="small">
+      <li>Le haut du profil <span class="mono">@madger.app</span> en entier : photo, nom, bio, lien, nombre de publications, abonnés, abonnements.</li>
+      <li>La grille complète, en 2 ou 3 captures si besoin, jusqu'au tout premier post.</li>
+      <li>Les stories à la une : les couvertures, plus une story ouverte dans chacune.</li>
+      <li>Trois posts ouverts, légende visible, avec les likes et commentaires.</li>
+      <li>Si le compte est en pro : Statistiques, vue 30 jours (comptes touchés, visites de profil, clics sur le lien).</li>
+      <li>Le haut du profil et la grille de <span class="mono">@leonaardb</span>.</li>
+    </ol>
+  </div>
+
+  <h3 style="margin-top:52px">Ce que j'ai audité à la place</h3>
+  <p class="muted small" style="margin-top:6px; max-width:68ch">Vérifié en direct aujourd'hui sur madger.app et madger.app/exemple.</p>
+
+  <div style="margin-top:22px">
+
+    <div class="finding">
+      <span class="idx">01</span>
+      <div class="stack g8">
+        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center">
+          <h4>Le lien avec « www » est cassé</h4><span class="chip chip-fix">à corriger avant le 14</span>
+        </div>
+        <p class="small"><span class="mono">https://madger.app</span> répond correctement. <span class="mono">https://www.madger.app</span> renvoie une erreur de certificat : le navigateur affiche un écran rouge « connexion non privée ». Si ta bio, une story ou une carte de visite porte le « www », le coach tombe sur un avertissement de sécurité et repart. C'est le seul point de cette liste qui peut coûter des inscriptions le soir du lancement.</p>
+        <p class="small muted">Action : ajouter le sous domaine www chez ton hébergeur et le rediriger vers l'apex. Puis écrire le lien partout sans « www » et sans « https:// », simplement <span class="mono">madger.app</span>.</p>
+      </div>
+    </div>
+
+    <div class="finding">
+      <span class="idx">02</span>
+      <div class="stack g8">
+        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center">
+          <h4>Le site ne renvoie vers aucun réseau</h4><span class="chip chip-fix">à retoucher</span>
+        </div>
+        <p class="small">Aucun lien Instagram ni TikTok dans la page, pied de page compris. La boucle ne tourne que dans un sens : Insta envoie vers le site, le site ne renvoie rien. Un coach qui hésite ne peut pas aller vérifier que le projet est vivant, et c'est exactement ce qu'il fait avant de confier ses paiements à un inconnu.</p>
+        <p class="small muted">Action : deux icônes en pied de page, plus une ligne « On construit Madger en public » sous le mot du fondateur.</p>
+      </div>
+    </div>
+
+    <div class="finding">
+      <span class="idx">03</span>
+      <div class="stack g8">
+        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center">
+          <h4>Le site dit « accès anticipé », pas « lancement »</h4><span class="chip chip-fix">à basculer le 14</span>
+        </div>
+        <p class="small">Toute la page est écrite au futur : « Rejoindre l'accès anticipé », « les coachs sont sélectionnés manuellement », « on te contacte dès que ton accès est prêt ». C'est le bon ton aujourd'hui. Le 14 au soir, ton post envoie sur une page qui dit en substance « on n'est pas encore là ». Tu perds la moitié de ton trafic à cet endroit précis.</p>
+        <p class="small muted">Action : préparer la bascule de wording avant le 14 et la déclencher à 18h25, cinq minutes avant le post.</p>
+      </div>
+    </div>
+
+    <div class="finding">
+      <span class="idx">04</span>
+      <div class="stack g8">
+        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center">
+          <h4>Deux versions de la promesse de paiement</h4><span class="chip chip-fix">à trancher</span>
+        </div>
+        <p class="small">Le site écrit « versé au coach après la séance ». Toi tu m'as dit « versé 24 h après la séance ». Deux formulations pour la même chose, c'est un doute qui s'installe au moment exact où le coach se demande s'il peut te faire confiance avec son argent.</p>
+        <p class="small muted">Je tranche : si le délai de 24 h est réellement garanti par ta configuration Stripe, tu écris <strong>« versé 24 h après la séance »</strong> partout, site compris, parce qu'un chiffre précis rassure plus qu'une formule vague. S'il ne l'est pas, tu écris <strong>« versé après la séance »</strong> et rien d'autre. Tu ne choisis pas selon ce qui sonne mieux, tu choisis selon ce qui est vrai. J'ai écrit le script de la vidéo 3 pour que les deux versions tiennent, il y a une variante à l'endroit exact.</p>
+      </div>
+    </div>
+
+    <div class="finding">
+      <span class="idx">05</span>
+      <div class="stack g8">
+        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center">
+          <h4>Léo existe mais n'est pas présenté</h4><span class="chip chip-new">à produire</span>
+        </div>
+        <p class="small">Sur le site, Léo apparaît comme une étiquette posée sur des blocs, jamais comme un personnage. Une mascotte qui n'est pas présentée une fois ne devient jamais un repère : les gens la voient sans la retenir. Sur Instagram tu as une occasion propre de le faire, et un personnage vert sur fond noir est le genre d'élément qui rend une grille reconnaissable au pouce.</p>
+        <p class="small muted">Action : un post de présentation le 4 septembre, puis Léo devient le signal visuel de tous les contenus « friction ». Voir le calendrier.</p>
+      </div>
+    </div>
+
+    <div class="finding">
+      <span class="idx">06</span>
+      <div class="stack g8">
+        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center">
+          <h4>La page exemple est ton meilleur argument, et personne ne la voit</h4><span class="chip chip-ok">déjà fait, à exploiter</span>
+        </div>
+        <p class="small"><span class="mono">madger.app/exemple</span> est excellente : une vraie page de coach, prestations, tarifs, avis, avant/après, bouton de réservation, et la mention « ton argent est protégé et versé au coach seulement après ta séance ». Elle fait en dix secondes ce que ta page d'accueil met deux minutes à expliquer. Elle est aujourd'hui enterrée à trois clics.</p>
+        <p class="small muted">Action : c'est elle qui va en lien de bio, pas la page d'accueil. Le coach ne veut pas comprendre ton produit, il veut se voir dedans.</p>
+      </div>
+    </div>
+
+    <div class="finding">
+      <span class="idx">07</span>
+      <div class="stack g8">
+        <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:center">
+          <h4>Un angle de lancement que tu n'exploites pas</h4><span class="chip chip-ok">déjà fait, à exploiter</span>
+        </div>
+        <p class="small">Ton site mentionne la réforme française de la facturation électronique, avec une réception obligatoire dès septembre 2026. Ton lancement est le 14 septembre 2026. C'est un argument daté, vérifiable, qui ne vient pas de toi, et qui donne à un coach une raison d'agir cette semaine plutôt qu'un jour. C'est le meilleur levier d'urgence que tu aies, et il est honnête.</p>
+        <p class="small muted">Action : il porte deux posts et un TikTok dans le calendrier. Tu n'as aucun chiffre à inventer, tu cites la loi.</p>
+      </div>
+    </div>
+
+  </div>
+  <h3 style="margin-top:56px">Tableau A · Vérifié par moi</h3>
+  <p class="muted small" style="margin:6px 0 16px; max-width:68ch">L'écosystème autour du compte. Chaque ligne a été constatée aujourd'hui.</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th style="width:24%">Élément</th><th style="width:15%">État</th><th>Ce qu'on fait</th><th style="width:14%">Qui</th><th style="width:12%">Quand</th></tr></thead>
+      <tbody>
+        <tr><td>Page d'accueil madger.app</td><td><span class="chip chip-ok">déjà fait</span></td><td>Discours clair, mot du fondateur solide, comparatif utile. On y puise les contenus, on ne la réécrit pas.</td><td>Léonard</td><td class="d">fait</td></tr>
+        <tr><td>Page démo /exemple</td><td><span class="chip chip-ok">déjà fait</span></td><td>Devient la destination du lien de bio de @madger.app. C'est la meilleure démo qu'on ait.</td><td>Léonard</td><td class="d">28.08</td></tr>
+        <tr><td>Signature de marque</td><td><span class="chip chip-ok">déjà fait</span></td><td>« Un lien. Une séance. C'est tout. » est déjà sur le site. On la met en dernière ligne de chaque légende, sans exception.</td><td>Comm</td><td class="d">permanent</td></tr>
+        <tr><td>Argument réforme e-facture 2026</td><td><span class="chip chip-ok">déjà fait</span></td><td>Présent sur le site, jamais sur les réseaux. Devient un pilier de contenu à part entière.</td><td>Comm</td><td class="d">09.09</td></tr>
+        <tr><td>Sous domaine www</td><td><span class="chip chip-fix">à retoucher</span></td><td>Certificat invalide, écran d'erreur navigateur. Ajouter www chez l'hébergeur et rediriger vers l'apex.</td><td>Léonard</td><td class="d">avant 01.09</td></tr>
+        <tr><td>Liens sociaux sur le site</td><td><span class="chip chip-fix">à retoucher</span></td><td>Ajouter Instagram et TikTok en pied de page. Boucler le circuit dans les deux sens.</td><td>Léonard</td><td class="d">avant 07.09</td></tr>
+        <tr><td>Wording « accès anticipé »</td><td><span class="chip chip-fix">à retoucher</span></td><td>Préparer la version « lancé », la déclencher le 14.09 à 18h25.</td><td>Léonard</td><td class="d">14.09</td></tr>
+        <tr><td>Promesse de versement</td><td><span class="chip chip-fix">à trancher</span></td><td>« 24 h après la séance » si c'est garanti, « après la séance » sinon. Une seule formule partout.</td><td>Léonard</td><td class="d">avant 07.09</td></tr>
+        <tr><td>Présentation de Léo</td><td><span class="chip chip-new">à produire</span></td><td>Post de présentation, puis Léo signe tous les contenus « friction ».</td><td>Comm</td><td class="d">04.09</td></tr>
+        <tr><td>Les 3 vidéos démo</td><td><span class="chip chip-new">à produire</span></td><td>Scripts prêts en section 03. Tournage batch du 29.08.</td><td>Comm</td><td class="d">29.08</td></tr>
+        <tr><td>Stories à la une</td><td><span class="chip chip-new">à produire</span></td><td>Quatre bulles, couvertures noires à pictogramme vert : Démo · Léo · Coulisses · Tarifs.</td><td>Comm</td><td class="d">02.09</td></tr>
+        <tr><td>Liste de DM du lancement</td><td><span class="chip chip-new">à produire</span></td><td>30 coachs identifiés nominativement, à contacter un par un le 14 à 19h. C'est ça qui fait les 10 inscriptions, pas la portée.</td><td>Léonard</td><td class="d">avant 13.09</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="margin-top:52px">Tableau B · À confirmer sur tes captures</h3>
+  <p class="muted small" style="margin:6px 0 16px; max-width:68ch">Le compte lui même. J'ai pré rempli l'action attendue pour chaque cas : coche l'état réel et l'action est déjà écrite. Si un point est déjà bon, tu le passes.</p>
+  <div class="tw">
+    <table>
+      <thead><tr><th style="width:22%">Point de contrôle</th><th style="width:26%">Le standard qu'on vise</th><th>Si ce n'est pas le cas</th></tr></thead>
+      <tbody>
+        <tr><td>Nom du compte</td><td><span class="mono">Madger · Coachs sportifs</span>, pour être trouvé en cherchant « coach ».</td><td>Le remplacer. Le champ nom est indexé par la recherche Instagram, la bio ne l'est pas.</td></tr>
+        <tr><td>Bio</td><td>Ce que c'est, pour qui, la signature, une flèche vers le lien.</td><td>Copier la bio prête en section 03.</td></tr>
+        <tr><td>Lien</td><td><span class="mono">madger.app/exemple</span>, sans www.</td><td>Le remplacer. Pas de raccourcisseur, pas d'agrégateur de liens, un lien direct.</td></tr>
+        <tr><td>Photo de profil</td><td>Logo Madger vert sur noir, lisible à 32 pixels.</td><td>Refaire. Test simple : réduis la à la taille d'un ongle, si tu ne la reconnais pas elle est mauvaise.</td></tr>
+        <tr><td>Type de compte</td><td>Compte professionnel, catégorie Application, statistiques actives.</td><td>Basculer dans les réglages. Sans ça tu pilotes à l'aveugle le soir du lancement.</td></tr>
+        <tr><td>Cohérence visuelle de la grille</td><td>Noir, vert #CBFF03, blanc. Aucune autre couleur, y compris dans les photos.</td><td>Archiver les posts hors charte plutôt que les supprimer. Tu gardes l'historique, tu nettoies la vitrine.</td></tr>
+        <tr><td>Nombre de publications</td><td>Au moins 6 posts au 14.09, pour ne pas avoir l'air d'un compte vide.</td><td>Le calendrier en produit 9 avant le lancement. C'est calibré pour ça.</td></tr>
+        <tr><td>Sujets déjà traités</td><td>Produit, douleur du coach, coulisses. Rien sur le fitness générique.</td><td>Si la grille parle sport et pas coach indépendant, on repart des 3 piliers du calendrier.</td></tr>
+        <tr><td>Post épinglé</td><td>Le manifeste du 31.08 en position 1.</td><td>L'épingler dès sa publication et le laisser jusqu'au 14.</td></tr>
+        <tr><td>Stories à la une</td><td>Quatre bulles, couvertures homogènes.</td><td>Supprimer les bulles hors sujet, en créer quatre propres.</td></tr>
+        <tr><td>Abonnements du compte</td><td>Des coachs indépendants français, pas des comptes de motivation.</td><td>Suivre 100 coachs cibles avant le 07.09. C'est ta liste de DM du lancement.</td></tr>
+        <tr><td>@leonaardb, bio</td><td>22 ans, alternant, construit Madger le soir, lien vers madger.app.</td><td>Copier la bio prête en section 03.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+<!-- ================= CALENDRIER ================= -->
+<section id="calendrier">
+  <div class="sec-head stack g12">
+    <div class="sec-rule"></div>
+    <span class="eyebrow">02 · Calendrier</span>
+    <h2>49 jours, jour par jour,<br>du 27 août au 14 octobre.</h2>
+  </div>
+
+  <div class="stack g16 prose" style="margin-top:26px">
+    <p class="lede">Quatre phases. On ne publie rien pendant les quatre premiers jours, et c'est volontaire : on répare le lien cassé, on refait les profils, on tourne tout en une matinée. Un compte relancé proprement le 31 août vaut mieux qu'un compte relancé dans le désordre le 28.</p>
+  </div>
+
+  <h3 style="margin-top:40px">Les six règles du calendrier</h3>
+  <div class="tw" style="margin-top:14px">
+    <table>
+      <thead><tr><th style="width:26%">Règle</th><th>Pourquoi je tranche comme ça</th></tr></thead>
+      <tbody>
+        <tr><td><strong>@madger.app</strong> publie lundi, mercredi, vendredi à 12h30</td><td>Le coach indépendant a ses créneaux pleins de 6h à 9h et de 17h à 21h. Sa fenêtre de téléphone, c'est le midi entre deux clients. C'est là qu'il regarde des contenus métier.</td></tr>
+        <tr><td><strong>@leonaardb</strong> publie mardi, jeudi, samedi à 21h30</td><td>Ton récit est « je construis le soir ». Poster à 21h30 fait coïncider le contenu avec le moment qu'il raconte. Ce n'est pas un détail, c'est ce qui rend le récit crédible.</td></tr>
+        <tr><td><strong>Un seul compte TikTok</strong>, @madger.app, mardi, jeudi, dimanche à 18h30</td><td>À trois vidéos par semaine, tu n'alimentes pas deux comptes TikTok. Et sur TikTok, ce qui marche pour un logiciel c'est la démo à l'écran, pas le visage du fondateur. Le compte marque absorbe les deux registres.</td></tr>
+        <tr><td>Jamais deux comptes le même jour, sauf le 14</td><td>Ta communauté se recoupe. Deux posts le même jour, c'est un post vu deux fois et un post ignoré. Le 14, la redondance est l'effet recherché.</td></tr>
+        <tr><td><strong>Un tournage donne trois formats</strong></td><td>Chaque rush produit : un Reel sur @madger.app, un TikTok remonté plus sec avec une autre accroche, et trois stories découpées. Les trois démos du 29 août couvrent donc neuf publications.</td></tr>
+        <tr><td><strong>Chaque contenu finit par une action</strong></td><td>L'objectif du mois est 10 inscriptions, pas des abonnés. Une légende sans invitation à agir est une légende ratée, même si elle plaît.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" style="margin-top:28px; border-left:4px solid var(--accent-fill)">
+    <h4 style="margin-bottom:8px">Le point du calendrier qui compte le plus</h4>
+    <p class="small">Le 14 septembre à 19h00, tu envoies 30 messages privés à 30 coachs que tu as identifiés nommément avant le 13. Un par un, avec leur prénom et une phrase qui prouve que tu as regardé leur compte. Aucun copier coller. C'est cette heure là qui te donne tes 10 premiers coachs. Le post de lancement sert à ce que le DM ne tombe pas de nulle part, il ne sert pas à convertir tout seul.</p>
+  </div>
+
+  <h3 style="margin-top:48px">Le calendrier</h3>
+  <p class="muted small" style="margin:6px 0 16px">Les week ends sont grisés dans la colonne de gauche. La ligne verte, c'est le lancement.</p>
+<div class="tw"><table><thead><tr><th style="width:9%">Jour</th><th style="width:10%">Compte</th><th style="width:7%">Heure</th><th style="width:14%">Format</th><th>Contenu et intention</th></tr></thead><tbody>
+<tr class="phase"><td colspan="5"><span class="pt">Phase 0 · Fondations</span> <span class="pd">27.08 → 30.08</span><br><span class="small" style="opacity:.8">On ne publie rien. On répare, on prépare, on tourne. Un compte qu'on relance mal vaut moins qu'un compte qu'on relance quatre jours plus tard.</span></td></tr>
+<tr class="">
+<td class="d" rowspan="1"><strong>jeu</strong><br>27.08</td>
+<td><span class="acct acct-off">hors ligne</span></td>
+<td class="d"></td>
+<td>Réglages</td>
+<td>Refonte des deux profils : nom, bio, lien, photo, passage en compte pro. Corriger le sous domaine www. M'envoyer les 6 captures.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="2"><strong>ven</strong><br>28.08</td>
+<td><span class="acct acct-off">hors ligne</span></td>
+<td class="d"></td>
+<td>Préparation</td>
+<td>Repérage du lieu de tournage, charge des batteries, liste de plans imprimée. Créer les 4 couvertures de stories à la une.</td>
+</tr>
+<tr class="">
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">19h00</td>
+<td>1 story</td>
+<td>Fond noir, texte vert : « On remet tout à plat. Rendez vous le 14 septembre à 18h30. » Rien de plus. Une story sobre vaut mieux qu'un teasing bavard.</td>
+</tr>
+<tr class="we">
+<td class="d" rowspan="2"><strong>sam</strong><br>29.08</td>
+<td><span class="acct acct-off">hors ligne</span></td>
+<td class="d">09h → 13h</td>
+<td>Tournage batch</td>
+<td>Session unique, voir la liste de tournage en section 04. Tout ce qui alimente les deux premières semaines est dans la boîte à 13h.</td>
+</tr>
+<tr class="we">
+<td><span class="acct acct-lb">@leonaardb</span></td>
+<td class="d">21h30</td>
+<td>3 stories</td>
+<td>Coulisses brutes du tournage, téléphone à la main, sans montage. C'est le seul contenu non préparé de la semaine et c'est voulu.</td>
+</tr>
+<tr class="we">
+<td class="d" rowspan="1"><strong>dim</strong><br>30.08</td>
+<td><span class="acct acct-off">hors ligne</span></td>
+<td class="d"></td>
+<td>Montage</td>
+<td>Montage des 3 démos, découpe en versions TikTok, extraction des 9 stories. Nommage des fichiers selon la convention.</td>
+</tr>
+<tr class="phase"><td colspan="5"><span class="pt">Phase 1 · Fondations publiques</span> <span class="pd">31.08 → 06.09</span><br><span class="small" style="opacity:.8">On pose le problème avant de montrer le produit. Un coach n'achète pas une solution tant qu'il n'a pas nommé sa douleur.</span></td></tr>
+<tr class="">
+<td class="d" rowspan="1"><strong>lun</strong><br>31.08</td>
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">12h30</td>
+<td>Carrousel 5 slides</td>
+<td>POST MANIFESTE. « Tu n'as pas un problème d'agenda. » Légende prête en section 03. À épingler immédiatement, il reste en position 1 jusqu'au 14.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="2"><strong>mar</strong><br>01.09</td>
+<td><span class="acct acct-lb">@leonaardb</span></td>
+<td class="d">21h30</td>
+<td>Reel 40 s</td>
+<td>Face caméra : « J'ai 22 ans, je suis alternant ingénieur, et je construis une app le soir. Voilà pourquoi. » CTA : lien en bio.</td>
+</tr>
+<tr class="">
+<td><span class="acct acct-tt">TikTok</span></td>
+<td class="d">18h30</td>
+<td>TikTok 35 s</td>
+<td>Même rush, autre accroche : « POV : tu construis un SaaS entre 21h et 1h du matin. » Texte à l'écran dès la seconde 0.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="2"><strong>mer</strong><br>02.09</td>
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">12h30</td>
+<td>Reel 35 s</td>
+<td>Démo 1 en version courte, sans date de lancement. Accroche : « Ton client met 4 clics. Toi, zéro. » CTA : « Ta page existe déjà, regarde en bio. »</td>
+</tr>
+<tr class="">
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">18h00</td>
+<td>2 stories</td>
+<td>Sondage : « Tu passes combien d'heures par semaine sur ton admin ? 0-2 / 2-5 / 5+ ». Ce sondage te donnera un vrai chiffre à citer au lancement.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="2"><strong>jeu</strong><br>03.09</td>
+<td><span class="acct acct-lb">@leonaardb</span></td>
+<td class="d">21h30</td>
+<td>Carrousel 4 slides</td>
+<td>« 3 phrases que des coachs m'ont dites cette semaine au téléphone. » Verbatims réels, anonymes, une par slide, fond noir texte blanc.</td>
+</tr>
+<tr class="">
+<td><span class="acct acct-tt">TikTok</span></td>
+<td class="d">18h30</td>
+<td>TikTok 40 s</td>
+<td>Démo 1 en version TikTok : « Réserver et payer en 4 clics. » Montage plus sec, accroche sur l'écran de paiement.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="1"><strong>ven</strong><br>04.09</td>
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">12h30</td>
+<td>Post statique</td>
+<td>PRÉSENTATION DE LÉO. Léo seul sur fond noir. Légende : qui il est, ce qu'il compte, pourquoi il existe. Il devient le repère de tous les contenus friction.</td>
+</tr>
+<tr class="we">
+<td class="d" rowspan="1"><strong>sam</strong><br>05.09</td>
+<td><span class="acct acct-lb">@leonaardb</span></td>
+<td class="d">21h30</td>
+<td>Post photo</td>
+<td>Photo réelle de ton écran un samedi soir. Légende : les vrais chiffres de la semaine, coachs en liste d'attente, lignes de code, ce qui a marché et ce qui a cassé. Aucun chiffre arrondi vers le haut.</td>
+</tr>
+<tr class="we">
+<td class="d" rowspan="2"><strong>dim</strong><br>06.09</td>
+<td><span class="acct acct-tt">TikTok</span></td>
+<td class="d">18h30</td>
+<td>TikTok 30 s</td>
+<td>« Les 3 outils d'un coach qui ne se parlent pas. » WhatsApp, Google Agenda, Excel filmés côte à côte, puis un seul lien qui les remplace.</td>
+</tr>
+<tr class="we">
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">19h00</td>
+<td>1 story</td>
+<td>Résultat du sondage du 02.09, en chiffres bruts. Tu montres que tu écoutes avant de vendre.</td>
+</tr>
+<tr class="phase"><td colspan="5"><span class="pt">Phase 2 · Compte à rebours</span> <span class="pd">07.09 → 13.09</span><br><span class="small" style="opacity:.8">Chaque jour a un but : montrer une preuve, créer une date, remplir une liste de DM. La portée ne t'intéresse pas, les 30 noms de ta liste si.</span></td></tr>
+<tr class="">
+<td class="d" rowspan="2"><strong>lun</strong><br>07.09</td>
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">12h30</td>
+<td>Reel 40 s</td>
+<td>DÉMO 2 : la facture qui se génère seule. Script en section 03.</td>
+</tr>
+<tr class="">
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">18h00</td>
+<td>Story J-7</td>
+<td>Story J-7, visuel et texte prêts en section 03. Sticker compte à rebours nommé « Madger ». @leonaardb repartage.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="2"><strong>mar</strong><br>08.09</td>
+<td><span class="acct acct-lb">@leonaardb</span></td>
+<td class="d">21h30</td>
+<td>Reel 45 s</td>
+<td>« Pourquoi j'ai annoncé une date publique alors que rien n'est fini. » La contrainte comme méthode. Honnête, pas héroïque.</td>
+</tr>
+<tr class="">
+<td><span class="acct acct-tt">TikTok</span></td>
+<td class="d">18h30</td>
+<td>TikTok 40 s</td>
+<td>Démo 2 en version TikTok. Accroche : « Il est minuit et tu refais une facture. »</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="1"><strong>mer</strong><br>09.09</td>
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">12h30</td>
+<td>Carrousel 6 slides</td>
+<td>« Facturation électronique 2026 : ce que la loi change pour toi, coach. » Réception obligatoire dès septembre 2026. Tu cites la réforme, tu n'inventes rien. Slide 6 : Madger le fait déjà.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="2"><strong>jeu</strong><br>10.09</td>
+<td><span class="acct acct-lb">@leonaardb</span></td>
+<td class="d">21h30</td>
+<td>Reel 40 s</td>
+<td>« Ce qui a cassé cette semaine. » Un vrai bug, une vraie soirée perdue. Les coachs achètent à quelqu'un qui répare, pas à quelqu'un qui promet.</td>
+</tr>
+<tr class="">
+<td><span class="acct acct-tt">TikTok</span></td>
+<td class="d">18h30</td>
+<td>TikTok 35 s</td>
+<td>« Le truc que personne ne dit aux coachs sur la facturation. » Angle réforme, ton direct, une seule idée.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="2"><strong>ven</strong><br>11.09</td>
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">12h30</td>
+<td>Reel 40 s</td>
+<td>DÉMO 3 : l'argent versé après la séance. Script en section 03, avec la variante à trancher.</td>
+</tr>
+<tr class="">
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">18h00</td>
+<td>Story J-3</td>
+<td>Story J-3, visuel et texte prêts en section 03. Sticker questions : « Ta pire galère d'admin ? » Les réponses alimentent les posts d'octobre.</td>
+</tr>
+<tr class="we">
+<td class="d" rowspan="1"><strong>sam</strong><br>12.09</td>
+<td><span class="acct acct-lb">@leonaardb</span></td>
+<td class="d">21h30</td>
+<td>Post carrousel</td>
+<td>« Ce que j'ai appris en appelant des coachs. » Nombre réel d'appels, ce qui revient à chaque fois. Dernière slide : lundi 18h30, Madger ouvre.</td>
+</tr>
+<tr class="we">
+<td class="d" rowspan="3"><strong>dim</strong><br>13.09</td>
+<td><span class="acct acct-tt">TikTok</span></td>
+<td class="d">18h30</td>
+<td>TikTok 40 s</td>
+<td>Démo 3 en version TikTok. Accroche : « Tu ne cours plus jamais après un paiement. »</td>
+</tr>
+<tr class="we">
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">19h00</td>
+<td>Story J-1</td>
+<td>Story J-1 sur les deux comptes, visuel et texte prêts en section 03. Sticker rappel activé.</td>
+</tr>
+<tr class="we">
+<td><span class="acct acct-off">hors ligne</span></td>
+<td class="d">21h00</td>
+<td>Préparation</td>
+<td>Finaliser la liste des 30 DM. Écrire les messages à l'avance, un par un, avec le prénom et une ligne qui prouve que tu as regardé leur compte.</td>
+</tr>
+<tr class="phase"><td colspan="5"><span class="pt">Phase 3 · Lancement</span> <span class="pd">lundi 14.09</span><br><span class="small" style="opacity:.8">Une seule fenêtre, 18h30 à 20h00, les trois comptes ensemble. Après 20h tu ne postes plus, tu réponds.</span></td></tr>
+<tr class="big">
+<td class="d" rowspan="6"><strong>lun</strong><br>14.09</td>
+<td><span class="acct acct-off">hors ligne</span></td>
+<td class="d">18h25</td>
+<td>Bascule</td>
+<td>Passer le site en version lancée. Basculer le lien de bio de @madger.app sur madger.app. Vérifier le lien sur ton téléphone, pas sur ton ordinateur.</td>
+</tr>
+<tr class="big">
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">18h30</td>
+<td>Reel + légende</td>
+<td>POST DE LANCEMENT. Légende prête en section 03. À épingler.</td>
+</tr>
+<tr class="big">
+<td><span class="acct acct-lb">@leonaardb</span></td>
+<td class="d">18h35</td>
+<td>Reel</td>
+<td>Version perso du lancement : ce que ça fait d'appuyer sur le bouton. 45 secondes, face caméra, sans montage.</td>
+</tr>
+<tr class="big">
+<td><span class="acct acct-tt">TikTok</span></td>
+<td class="d">18h40</td>
+<td>TikTok</td>
+<td>Version TikTok du lancement, accroche sur la démo pas sur toi.</td>
+</tr>
+<tr class="big">
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">18h45</td>
+<td>5 stories</td>
+<td>Séquence lancement : le lien, la démo, Léo, le tarif, le lien encore. Sticker lien sur chacune.</td>
+</tr>
+<tr class="big">
+<td><span class="acct acct-off">hors ligne</span></td>
+<td class="d">19h00</td>
+<td>30 DM</td>
+<td>Le vrai travail de la soirée. Un par un, personnalisés, jamais copiés collés. C'est de là que viennent tes 10 premiers coachs, pas de la portée du post.</td>
+</tr>
+<tr class="phase"><td colspan="5"><span class="pt">Phase 4 · Rythme de croisière</span> <span class="pd">15.09 → 14.10</span><br><span class="small" style="opacity:.8">@madger.app le lundi, mercredi, vendredi. @leonaardb le mardi, jeudi, samedi. TikTok le mardi, jeudi, dimanche. Trois piliers qui tournent, jamais deux fois le même le même jour.</span></td></tr>
+<tr class="">
+<td class="d" rowspan="2"><strong>mar</strong><br>15.09</td>
+<td><span class="acct acct-lb">@leonaardb</span></td>
+<td class="d">21h30</td>
+<td>Reel 45 s</td>
+<td>« 24 heures après le lancement. » Chiffres réels : visites, inscriptions, DM reçus. Même si c'est 3 inscriptions, tu dis 3.</td>
+</tr>
+<tr class="">
+<td><span class="acct acct-tt">TikTok</span></td>
+<td class="d">18h30</td>
+<td>TikTok 35 s</td>
+<td>« J'ai lancé mon app hier soir, voilà ce qui s'est passé. »</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="1"><strong>mer</strong><br>16.09</td>
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">12h30</td>
+<td>Reel 45 s</td>
+<td>POST 1 après lancement : démo des 4 clics, version longue. Légende en section 03.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="2"><strong>jeu</strong><br>17.09</td>
+<td><span class="acct acct-lb">@leonaardb</span></td>
+<td class="d">21h30</td>
+<td>Carrousel</td>
+<td>Verbatims d'appels de la semaine, anonymes.</td>
+</tr>
+<tr class="">
+<td><span class="acct acct-tt">TikTok</span></td>
+<td class="d">18h30</td>
+<td>TikTok 30 s</td>
+<td>POV coach : le dimanche soir où tu refais tes factures.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="1"><strong>ven</strong><br>18.09</td>
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">12h30</td>
+<td>Carrousel 6 slides</td>
+<td>POST 2 : la facture et la réforme 2026. Légende en section 03.</td>
+</tr>
+<tr class="we">
+<td class="d" rowspan="1"><strong>sam</strong><br>19.09</td>
+<td><span class="acct acct-lb">@leonaardb</span></td>
+<td class="d">21h30</td>
+<td>Post photo</td>
+<td>Chiffres de la semaine, sans arrondi.</td>
+</tr>
+<tr class="we">
+<td class="d" rowspan="1"><strong>dim</strong><br>20.09</td>
+<td><span class="acct acct-tt">TikTok</span></td>
+<td class="d">18h30</td>
+<td>TikTok 30 s</td>
+<td>Léo contre les trois outils. Format court et drôle, aucune voix off.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="2"><strong>lun</strong><br>21.09</td>
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">12h30</td>
+<td>Reel 40 s</td>
+<td>POST 3 : l'argent versé après la séance. Légende en section 03.</td>
+</tr>
+<tr class="">
+<td><span class="acct acct-off">hors ligne</span></td>
+<td class="d">12h00</td>
+<td>Bascule</td>
+<td>Le lien de bio de @madger.app revient sur madger.app/exemple.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="2"><strong>mar</strong><br>22.09</td>
+<td><span class="acct acct-lb">@leonaardb</span></td>
+<td class="d">21h30</td>
+<td>Reel</td>
+<td>« La question que tous les coachs me posent en premier. »</td>
+</tr>
+<tr class="">
+<td><span class="acct acct-tt">TikTok</span></td>
+<td class="d">18h30</td>
+<td>TikTok</td>
+<td>Écran partagé : réserver sur WhatsApp contre réserver sur Madger.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="1"><strong>mer</strong><br>23.09</td>
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">12h30</td>
+<td>Post statique</td>
+<td>POST 4 : Léo et les trois outils en moins. Légende en section 03.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="2"><strong>jeu</strong><br>24.09</td>
+<td><span class="acct acct-lb">@leonaardb</span></td>
+<td class="d">21h30</td>
+<td>Carrousel</td>
+<td>Verbatims d'appels.</td>
+</tr>
+<tr class="">
+<td><span class="acct acct-tt">TikTok</span></td>
+<td class="d">18h30</td>
+<td>TikTok</td>
+<td>Le dashboard filmé à l'écran, sans commentaire, musique seule.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="1"><strong>ven</strong><br>25.09</td>
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">12h30</td>
+<td>Carrousel</td>
+<td>POST 5 : le premier coach embarqué. Légende en section 03. À ne publier qu'avec son accord écrit.</td>
+</tr>
+<tr class="we">
+<td class="d" rowspan="1"><strong>sam</strong><br>26.09</td>
+<td><span class="acct acct-lb">@leonaardb</span></td>
+<td class="d">21h30</td>
+<td>Post photo</td>
+<td>Chiffres de la semaine.</td>
+</tr>
+<tr class="we">
+<td class="d" rowspan="1"><strong>dim</strong><br>27.09</td>
+<td><span class="acct acct-tt">TikTok</span></td>
+<td class="d">18h30</td>
+<td>TikTok</td>
+<td>« Combien coûte Madger. » Réponse directe, aucune esquive.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="1"><strong>lun</strong><br>28.09</td>
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">12h30</td>
+<td>Carrousel</td>
+<td>POST 6 : « Mes clients doivent créer un compte ? » Traitement frontal de l'objection. Légende en section 03.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="2"><strong>mar</strong><br>29.09</td>
+<td><span class="acct acct-lb">@leonaardb</span></td>
+<td class="d">21h30</td>
+<td>Reel</td>
+<td>« Le mois 1 en vrai : ce que j'avais sous estimé. »</td>
+</tr>
+<tr class="">
+<td><span class="acct acct-tt">TikTok</span></td>
+<td class="d">18h30</td>
+<td>TikTok</td>
+<td>Les 10 minutes de la création de page, en accéléré.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="1"><strong>mer</strong><br>30.09</td>
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">12h30</td>
+<td>Reel 35 s</td>
+<td>« Le lien que tu colles en bio Instagram. » Méta et efficace : ta cible est déjà sur Instagram.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="2"><strong>jeu</strong><br>01.10</td>
+<td><span class="acct acct-lb">@leonaardb</span></td>
+<td class="d">21h30</td>
+<td>Carrousel</td>
+<td>Verbatims d'appels.</td>
+</tr>
+<tr class="">
+<td><span class="acct acct-tt">TikTok</span></td>
+<td class="d">18h30</td>
+<td>TikTok</td>
+<td>« Un client annule 2 h avant. Que se passe t il ? »</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="1"><strong>ven</strong><br>02.10</td>
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">12h30</td>
+<td>Carrousel 4 slides</td>
+<td>« Ta page coach en 10 minutes : les 4 écrans. » Captures réelles du produit.</td>
+</tr>
+<tr class="we">
+<td class="d" rowspan="1"><strong>sam</strong><br>03.10</td>
+<td><span class="acct acct-lb">@leonaardb</span></td>
+<td class="d">21h30</td>
+<td>Post photo</td>
+<td>Chiffres de la semaine.</td>
+</tr>
+<tr class="we">
+<td class="d" rowspan="1"><strong>dim</strong><br>04.10</td>
+<td><span class="acct acct-tt">TikTok</span></td>
+<td class="d">18h30</td>
+<td>TikTok</td>
+<td>Léo compte les heures perdues. Format court, boucle.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="1"><strong>lun</strong><br>05.10</td>
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">12h30</td>
+<td>Reel 40 s</td>
+<td>« Un client annule. Voilà ce qui se passe. » Annulation et remboursement, l'objection numéro deux des coachs.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="2"><strong>mar</strong><br>06.10</td>
+<td><span class="acct acct-lb">@leonaardb</span></td>
+<td class="d">21h30</td>
+<td>Reel</td>
+<td>« Alternance et startup : ma semaine, heure par heure. »</td>
+</tr>
+<tr class="">
+<td><span class="acct acct-tt">TikTok</span></td>
+<td class="d">18h30</td>
+<td>TikTok</td>
+<td>Ta semaine type en 30 secondes.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="1"><strong>mer</strong><br>07.10</td>
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">12h30</td>
+<td>Carrousel</td>
+<td>« Madger contre Calendly plus WhatsApp plus Excel. » Le comparatif du site, adapté au format carrousel.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="2"><strong>jeu</strong><br>08.10</td>
+<td><span class="acct acct-lb">@leonaardb</span></td>
+<td class="d">21h30</td>
+<td>Reel</td>
+<td>« Le coach qui m'a dit non, et pourquoi il avait raison. »</td>
+</tr>
+<tr class="">
+<td><span class="acct acct-tt">TikTok</span></td>
+<td class="d">18h30</td>
+<td>TikTok</td>
+<td>Une objection, une réponse, 25 secondes.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="1"><strong>ven</strong><br>09.10</td>
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">12h30</td>
+<td>Reel 40 s</td>
+<td>« Ton mois en un écran. » Le dashboard : revenus, séances, net versé.</td>
+</tr>
+<tr class="we">
+<td class="d" rowspan="1"><strong>sam</strong><br>10.10</td>
+<td><span class="acct acct-lb">@leonaardb</span></td>
+<td class="d">21h30</td>
+<td>Post photo</td>
+<td>Chiffres de la semaine.</td>
+</tr>
+<tr class="we">
+<td class="d" rowspan="1"><strong>dim</strong><br>11.10</td>
+<td><span class="acct acct-tt">TikTok</span></td>
+<td class="d">18h30</td>
+<td>TikTok</td>
+<td>« Ce qu'on a codé cette semaine grâce à un message d'un coach. »</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="1"><strong>lun</strong><br>12.10</td>
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">12h30</td>
+<td>Carrousel</td>
+<td>« Ce qu'on a codé ce mois ci grâce à vos retours. » Preuve que tu construis avec les coachs, pas pour eux.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="2"><strong>mar</strong><br>13.10</td>
+<td><span class="acct acct-lb">@leonaardb</span></td>
+<td class="d">21h30</td>
+<td>Reel</td>
+<td>« Objectif 10 coachs : où j'en suis vraiment. » Le chiffre réel, quel qu'il soit.</td>
+</tr>
+<tr class="">
+<td><span class="acct acct-tt">TikTok</span></td>
+<td class="d">18h30</td>
+<td>TikTok</td>
+<td>Le bilan du premier mois, en chiffres.</td>
+</tr>
+<tr class="">
+<td class="d" rowspan="2"><strong>mer</strong><br>14.10</td>
+<td><span class="acct acct-ma">@madger.app</span></td>
+<td class="d">12h30</td>
+<td>Reel 35 s</td>
+<td>« Le rappel automatique qui évite le rendez vous manqué. » Dernière démo produit du cycle.</td>
+</tr>
+<tr class="">
+<td><span class="acct acct-off">hors ligne</span></td>
+<td class="d"></td>
+<td>Bilan</td>
+<td>Revue du mois : combien de coachs inscrits, quel contenu a amené quelle inscription. C'est ça qui écrit le calendrier de novembre.</td>
+</tr>
+</tbody></table></div></section>
+<!-- ================= CONTENUS ================= -->
+<section id="contenus">
+  <div class="sec-head stack g12">
+    <div class="sec-rule"></div>
+    <span class="eyebrow">03 · Contenus</span>
+    <h2>Prêts à copier,<br>prêts à tourner.</h2>
+  </div>
+  <div class="stack g16 prose" style="margin-top:26px">
+    <p class="lede">Tout ce qui suit respecte le cadre : tutoiement, aucun jargon, aucun tiret long, aucun chiffre inventé, aucun faux témoignage, la signature en dernière ligne. Là où un chiffre doit être réel, il y a un crochet à remplir. Ne publie jamais un crochet.</p>
+  </div>
+
+  <h3 style="margin-top:46px">Les deux bios</h3>
+
+  <div class="copy">
+    <div class="copy-bar"><span class="copy-lab">@madger.app · champ « Nom »</span><button class="copy-btn" type="button">Copier</button></div>
+    <pre class="code">Madger · Coachs sportifs</pre>
+    <p class="copy-note">Le champ nom est indexé par la recherche Instagram, la bio ne l'est pas. Mettre « coachs sportifs » là plutôt que dans la bio, c'est la seule optimisation de référencement qui existe sur Instagram et elle est gratuite.</p>
+  </div>
+
+  <div class="copy">
+    <div class="copy-bar"><span class="copy-lab">@madger.app · bio · 122 caractères sur 150</span><button class="copy-btn" type="button">Copier</button></div>
+<pre>Réservation, paiement et facture pour coachs indépendants.
+Un lien. Une séance. C'est tout.
+Regarde à quoi ressemble ta page ↓</pre>
+    <p class="copy-note"><strong>Lien :</strong> <span class="mono">madger.app/exemple</span>, sans www. Je tranche pour la page démo plutôt que la page d'accueil : le coach ne veut pas comprendre ton produit, il veut se voir dedans, et /exemple le lui montre en dix secondes. Exception : du 14 au 21 septembre, le lien passe sur <span class="mono">madger.app</span> pour la fenêtre de lancement, puis revient.</p>
+  </div>
+
+  <div class="copy">
+    <div class="copy-bar"><span class="copy-lab">@leonaardb · champ « Nom »</span><button class="copy-btn" type="button">Copier</button></div>
+    <pre class="code">Léonard · Madger</pre>
+  </div>
+
+  <div class="copy">
+    <div class="copy-bar"><span class="copy-lab">@leonaardb · bio · 129 caractères sur 150</span><button class="copy-btn" type="button">Copier</button></div>
+<pre>22 ans, alternant ingé.
+Je construis Madger le soir : l'app de résa, paiement et facture des coachs.
+Coulisses et vrais chiffres ↓</pre>
+    <p class="copy-note"><strong>Lien :</strong> <span class="mono">madger.app</span>, la page d'accueil, pas la démo. Sur ton compte perso les gens viennent pour l'histoire, et le mot du fondateur est dessus. Deux portes différentes, un seul couloir.</p>
+  </div>
+
+  <h3 style="margin-top:52px">Le post manifeste</h3>
+  <p class="muted small" style="margin:6px 0 0; max-width:68ch">Lundi 31 août, 12h30, @madger.app. Carrousel 5 slides, fond noir, texte blanc, un mot en vert par slide. À épingler.</p>
+
+  <div class="copy">
+    <div class="copy-bar"><span class="copy-lab">Les 5 slides · texte à l'écran</span><button class="copy-btn" type="button">Copier</button></div>
+<pre class="code">SLIDE 1  Tu n'as pas un problème d'AGENDA.
+SLIDE 2  Tu as trois outils qui ne se PARLENT pas.
+SLIDE 3  Chaque couture entre eux : un WhatsApp à 22h.
+SLIDE 4  Un lien. Le client réserve, il a payé, la facture est partie.
+SLIDE 5  Trois outils en MOINS.</pre>
+    <p class="copy-note">Le mot en majuscules est le mot en vert #CBFF03. Un seul par slide, jamais deux.</p>
+  </div>
+
+  <div class="copy">
+    <div class="copy-bar"><span class="copy-lab">Légende du post manifeste</span><button class="copy-btn" type="button">Copier</button></div>
+<pre>Tu n'as pas un problème d'agenda.
+
+Tout le monde répète la même chose : les coachs perdent des heures en administratif. Et tout le monde en conclut qu'il faut un meilleur agenda.
+
+C'est faux.
+
+Le vrai sujet, c'est que la réservation, le paiement et la facture sont trois moments séparés, gérés par trois outils qui ne se parlent pas. Entre chaque outil il y a une couture. Et chaque couture, c'est un message WhatsApp à 22h, une relance gênante pour 45 euros, une facture refaite à minuit parce que tu ne retrouves plus le bon numéro.
+
+Madger supprime les coutures.
+
+Un lien. Ton client choisit son créneau, il paie en réservant, la facture part toute seule. Les trois moments n'en font plus qu'un.
+
+Ce n'est pas un outil de plus. C'est trois outils en moins.
+
+Et on le construit avec les coachs, pas pour eux. Chaque retour des premiers décide de ce qu'on code la semaine d'après.
+
+Un lien. Une séance. C'est tout.
+
+Tu veux voir à quoi ressemblerait ta page ? Elle t'attend en bio.
+
+#coachsportif #coachindependant #personaltrainer #entrepreneuriat #freelancefrance</pre>
+  </div>
+  <h3 style="margin-top:56px">Les 3 scripts de démo</h3>
+  <div class="stack g12 prose" style="margin-top:8px">
+    <p class="small muted">Format vertical 9:16. Le texte à l'écran est en majuscules, blanc, sauf le mot en vert #CBFF03 qui est indiqué entre crochets verts. Sous titres obligatoires sur les trois : la moitié des gens regardent sans le son, et ta voix off ne sert à rien si elle est le seul porteur du message. Les trois premières secondes se jouent sans voix off intelligible : c'est le texte à l'écran qui accroche.</p>
+  </div>
+
+  <div class="script">
+    <div class="script-head"><span class="st">Vidéo 1 · Réserver et payer en 4 clics</span><span class="sm">42 s · Reel 02.09 et 16.09 · TikTok 03.09 · 3 stories</span></div>
+    <div class="tw"><table>
+      <thead><tr><th style="width:9%">Temps</th><th style="width:27%">Image</th><th style="width:38%">Voix off</th><th style="width:26%">Texte à l'écran</th></tr></thead>
+      <tbody>
+        <tr><td class="t">0:00 · 0:03</td><td>Gros plan sur un fil WhatsApp qui déborde, les notifications tombent les unes sur les autres.</td><td>Réserver une séance avec toi, aujourd'hui, ça prend combien de messages ?</td><td class="ost"><span>COMBIEN DE MESSAGES ?</span></td></tr>
+        <tr><td class="t">0:03 · 0:07</td><td>Coupe franche sur fond noir. Léo entre par la droite.</td><td>Chez ton client, la réponse c'est huit. Sur Madger, c'est quatre clics.</td><td class="ost"><span>4 CLICS</span></td></tr>
+        <tr><td class="t">0:07 · 0:13</td><td>Capture d'écran de la page coach. Un pouce appuie sur « Réserver une séance ».</td><td>Un. Il ouvre ton lien et choisit sa prestation.</td><td class="ost"><span>CLIC 1</span> sa prestation</td></tr>
+        <tr><td class="t">0:13 · 0:19</td><td>Capture d'écran du calendrier, un créneau se sélectionne.</td><td>Deux. Il prend son créneau dans tes vraies disponibilités.</td><td class="ost"><span>CLIC 2</span> son créneau</td></tr>
+        <tr><td class="t">0:19 · 0:25</td><td>Capture d'écran du paiement, logo Stripe visible une seconde.</td><td>Trois. Il paie en réservant. Pas après. Pas peut être.</td><td class="ost"><span>CLIC 3</span> il paie</td></tr>
+        <tr><td class="t">0:25 · 0:31</td><td>Écran de confirmation, puis la notification de facture qui apparaît en haut.</td><td>Quatre. C'est confirmé. Et la facture est déjà partie.</td><td class="ost"><span>CLIC 4</span> c'est réservé</td></tr>
+        <tr><td class="t">0:31 · 0:37</td><td>Plan large : le coach en pleine séance, son téléphone posé face contre la table.</td><td>Pendant ces quatre clics, toi tu coachais. Tu n'as rien fait.</td><td class="ost">TOI : <span>0 CLIC</span></td></tr>
+        <tr><td class="t">0:37 · 0:42</td><td>Fond noir, logo Madger, le lien s'écrit lettre par lettre.</td><td>Un lien. Une séance. C'est tout.</td><td class="ost"><span>madger.app/exemple</span></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="script">
+    <div class="script-head"><span class="st">Vidéo 2 · La facture qui se génère seule</span><span class="sm">44 s · Reel 07.09 et 18.09 · TikTok 08.09 · 3 stories</span></div>
+    <div class="tw"><table>
+      <thead><tr><th style="width:9%">Temps</th><th style="width:27%">Image</th><th style="width:38%">Voix off</th><th style="width:26%">Texte à l'écran</th></tr></thead>
+      <tbody>
+        <tr><td class="t">0:00 · 0:04</td><td>Ambiance nuit. Lampe de bureau, tableur ouvert, l'heure visible sur l'écran.</td><td>Il est minuit et tu refais une facture. On arrête ça.</td><td class="ost"><span>00:12</span></td></tr>
+        <tr><td class="t">0:04 · 0:09</td><td>Gros plan sur les mains qui recopient un numéro d'une ligne à l'autre.</td><td>Le numéro qui se suit, ton SIRET, la mention de TVA, la date. À chaque séance.</td><td class="ost">À CHAQUE <span>SÉANCE</span></td></tr>
+        <tr><td class="t">0:09 · 0:14</td><td>Coupe nette. Écran Madger, la séance bascule sur l'état payé.</td><td>Sur Madger, la séance est encaissée.</td><td class="ost"><span>PAYÉ</span></td></tr>
+        <tr><td class="t">0:14 · 0:21</td><td>La facture apparaît dans la liste, numérotée, à ton nom.</td><td>Et la facture existe. Numérotée, à ton nom, avec tes mentions légales. Zéro saisie.</td><td class="ost">FAC-024 <span>générée seule</span></td></tr>
+        <tr><td class="t">0:21 · 0:27</td><td>Liste complète des factures, un clic sur « Télécharger tout ».</td><td>Toute ton année s'exporte en un clic pour ton comptable.</td><td class="ost">EXPORT <span>1 CLIC</span></td></tr>
+        <tr><td class="t">0:27 · 0:34</td><td>Fond noir, le texte de loi s'écrit. Rythme plus lent, voix plus posée.</td><td>Et la facture électronique devient obligatoire en France. Réception dès septembre 2026.</td><td class="ost"><span>SEPTEMBRE 2026</span> obligatoire</td></tr>
+        <tr><td class="t">0:34 · 0:40</td><td>Léo, bras croisés, à côté d'une pile de factures qui disparaît.</td><td>Pendant que d'autres chercheront un logiciel, les tiennes seront déjà en règle.</td><td class="ost"><span>DÉJÀ EN RÈGLE</span></td></tr>
+        <tr><td class="t">0:40 · 0:44</td><td>Fond noir, logo, lien.</td><td>Un lien. Une séance. C'est tout.</td><td class="ost"><span>madger.app/exemple</span></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="script">
+    <div class="script-head"><span class="st">Vidéo 3 · L'argent versé après la séance</span><span class="sm">41 s · Reel 11.09 et 21.09 · TikTok 13.09 · 3 stories</span></div>
+    <div class="tw"><table>
+      <thead><tr><th style="width:9%">Temps</th><th style="width:27%">Image</th><th style="width:38%">Voix off</th><th style="width:26%">Texte à l'écran</th></tr></thead>
+      <tbody>
+        <tr><td class="t">0:00 · 0:04</td><td>Gros plan téléphone. Un message en cours d'écriture : « Salut, désolé de relancer, tu as pu faire le virement ? ». Le pouce hésite, puis efface.</td><td>Ce message, tu l'as déjà écrit. Et tu l'as effacé.</td><td class="ost"><span>TU L'AS DÉJÀ ÉCRIT</span></td></tr>
+        <tr><td class="t">0:04 · 0:09</td><td>Coupe sur fond noir, Léo hausse les épaules.</td><td>Relancer un client pour 45 euros, c'est gênant. Alors tu attends.</td><td class="ost">ALORS <span>TU ATTENDS</span></td></tr>
+        <tr><td class="t">0:09 · 0:15</td><td>Capture d'écran : le client valide sa réservation et paie dans le même geste.</td><td>Sur Madger, ton client paie au moment où il réserve.</td><td class="ost">PAYÉ <span>À LA RÉSERVATION</span></td></tr>
+        <tr><td class="t">0:15 · 0:21</td><td>Écran de la séance, mention de paiement sécurisé, petit cadenas.</td><td>L'argent est sécurisé jusqu'à la séance. Ni lui ni toi n'y touchez.</td><td class="ost"><span>SÉCURISÉ</span></td></tr>
+        <tr><td class="t">0:21 · 0:28</td><td>La séance passe en terminée, le virement apparaît dans les revenus du mois.</td><td>La séance a lieu. Vingt quatre heures après, l'argent part sur ton compte.</td><td class="ost"><span>24 H APRÈS</span> versé</td></tr>
+        <tr><td class="t">0:28 · 0:35</td><td>Le coach range son sac, salue son client, ne regarde pas son téléphone.</td><td>Tu ne relances plus personne. Tu ne demandes plus rien. Tu coaches.</td><td class="ost"><span>ZÉRO RELANCE</span></td></tr>
+        <tr><td class="t">0:35 · 0:41</td><td>Fond noir, logo, lien.</td><td>Un lien. Une séance. C'est tout.</td><td class="ost"><span>madger.app/exemple</span></td></tr>
+      </tbody>
+    </table></div>
+    <div class="copy-note" style="border-top:1px solid var(--line)"><strong>Variante à 0:21, à trancher avant le tournage.</strong> Si le délai de 24 h n'est pas garanti par ta configuration Stripe, tu enregistres à la place : « La séance a lieu. L'argent part sur ton compte. » et le texte à l'écran devient <span class="mono">VERSÉ APRÈS LA SÉANCE</span>. Tourne les deux prises pendant la session, ça coûte trente secondes et ça t'évite d'avoir à retourner la vidéo.</div>
+  </div>
+  <h3 style="margin-top:56px">Les 3 stories du compte à rebours</h3>
+  <p class="muted small" style="margin:6px 0 0; max-width:68ch">Une story par jalon, publiée à 18h. Fond noir plein, texte blanc en Archivo gras, le chiffre du décompte en vert #CBFF03. Toujours le même gabarit : c'est la répétition qui installe la date dans la tête des gens.</p>
+
+  <div class="copy">
+    <div class="copy-bar"><span class="copy-lab">J-7 · lundi 07.09 · @madger.app</span><button class="copy-btn" type="button">Copier</button></div>
+<pre class="code">VISUEL   Fond noir. Le chiffre 7 en vert, immense, centré.
+         Sous le chiffre, en blanc, petit.
+
+TEXTE    J-7
+
+         Dans une semaine, tu auras un lien
+         qui encaisse à ta place.
+
+         Lundi 14 septembre, 18h30.
+
+STICKERS Compte à rebours, nommé « Madger ouvre »
+         Sondage : « Tu perds combien d'heures par semaine sur ton admin ? »
+                   0 à 2 h  /  2 à 5 h  /  plus de 5 h</pre>
+    <p class="copy-note">Le sondage n'est pas décoratif. Il te donne un chiffre réel, sorti de ta propre audience, que tu pourras citer au lancement sans rien inventer. Republie le résultat brut le 6 au soir, puis réutilise le dans la légende du 14.</p>
+  </div>
+
+  <div class="copy">
+    <div class="copy-bar"><span class="copy-lab">J-3 · vendredi 11.09 · @madger.app</span><button class="copy-btn" type="button">Copier</button></div>
+<pre class="code">VISUEL   Fond noir. Léo à gauche, le chiffre 3 en vert à droite.
+         Trois logos barrés au dessus de lui : WhatsApp, un tableur, un agenda.
+
+TEXTE    J-3
+
+         Trois outils qui ne se parlent pas.
+         Lundi, il n'en reste qu'un.
+
+         14 septembre, 18h30.
+
+STICKERS Compte à rebours « Madger ouvre »
+         Questions : « C'est quoi ta pire galère d'admin ? »</pre>
+    <p class="copy-note">Les réponses au sticker questions deviennent les sujets des posts d'octobre. Tu ne cherches plus quoi publier, ton audience te l'écrit. Screenshote les toutes le soir même.</p>
+  </div>
+
+  <div class="copy">
+    <div class="copy-bar"><span class="copy-lab">J-1 · dimanche 13.09 · @madger.app et @leonaardb</span><button class="copy-btn" type="button">Copier</button></div>
+<pre class="code">VISUEL   Fond noir. Un seul trait vert horizontal au centre de l'écran.
+         Au dessus du trait, l'adresse s'écrit lettre par lettre : madger.app
+         Le chiffre 1 en vert, en bas à droite, petit.
+
+TEXTE    J-1
+
+         Demain soir, ce lien devient le tien.
+
+         18h30.
+
+STICKERS Compte à rebours « Madger ouvre » (dernières 24 h)
+         Rappel : « Me prévenir »</pre>
+    <p class="copy-note">Sur @leonaardb, même visuel mais une phrase différente en dessous : « Un an que je code le soir pour ça. Demain 18h30. » Le compte perso porte la tension, le compte marque porte la date.</p>
+  </div>
+
+  <h3 style="margin-top:56px">Le post de lancement</h3>
+  <p class="muted small" style="margin:6px 0 0; max-width:68ch">Lundi 14 septembre, 18h30, @madger.app. Reel : le montage des trois démos en une seule vidéo de 50 secondes, plus la signature. À épingler en position 1.</p>
+
+  <div class="copy">
+    <div class="copy-bar"><span class="copy-lab">Légende du 14 septembre</span><button class="copy-btn" type="button">Copier</button></div>
+<pre>Madger est ouvert.
+
+Un lien à toi. Ton client choisit sa séance, il paie en réservant, il reçoit sa facture. Toi tu ne fais rien, parce que tu étais en train de coacher.
+
+Ce que tu arrêtes ce soir :
+les allers retours WhatsApp pour caler un créneau
+la relance gênante pour 45 euros
+la facture refaite à minuit avec le mauvais numéro
+les cinq onglets ouverts qui ne se parlent pas
+
+Ce que tu gardes : ton métier.
+
+Concrètement. Tu crées ta page en dix minutes, tu colles ton lien en bio, et tu es opérationnel. Gratuit pour démarrer. Les factures sont conformes à la réforme française qui arrive, donc tu n'auras pas à y penser en janvier.
+
+On a construit Madger en appelant des coachs, un par un, pendant des mois. Chaque retour a décidé de ce qu'on codait la semaine suivante. Ce soir on ouvre, et ça continue exactement pareil : tu m'écris, on code.
+
+Je cherche dix coachs pour démarrer avec nous. Pas mille. Dix, qu'on accompagne un par un.
+
+Si c'est toi : le lien est en bio, ou tu m'envoies un message ici et je te réponds moi même.
+
+Un lien. Une séance. C'est tout.
+
+#coachsportif #coachindependant #personaltrainer #lancement #freelancefrance</pre>
+    <p class="copy-note">« Je cherche dix coachs, pas mille » est la phrase la plus importante de la légende. Elle transforme un lancement en sélection, et elle est vraie. Ne la retire pas pour paraître plus gros que tu n'es.</p>
+  </div>
+  <h3 style="margin-top:56px">Les 6 premiers posts d'après lancement</h3>
+  <p class="muted small" style="margin:6px 0 0; max-width:68ch">@madger.app, du 16 au 28 septembre. Chacun traite une seule idée et se termine par une action. Trois montrent le produit, un installe Léo, un donne une preuve, un désamorce l'objection qui bloque le plus.</p>
+
+  <div class="copy">
+    <div class="copy-bar"><span class="copy-lab">Post 1 · mercredi 16.09 · Reel démo</span><button class="copy-btn" type="button">Copier</button></div>
+<pre>Quatre clics. C'est tout ce que ton client a à faire.
+
+Un : il ouvre ton lien et choisit sa prestation.
+Deux : il prend son créneau dans tes vraies disponibilités.
+Trois : il paie en réservant.
+Quatre : c'est confirmé, et sa facture est déjà partie.
+
+Pendant ces quatre clics, toi tu étais en séance. Tu n'as ouvert aucune application, tu n'as répondu à aucun message, tu n'as rien validé.
+
+C'est la différence entre un outil qui te donne du travail et un outil qui t'en enlève.
+
+Ton lien t'attend en bio. Regarde à quoi ressemble une page de coach sur Madger.
+
+Un lien. Une séance. C'est tout.</pre>
+  </div>
+
+  <div class="copy">
+    <div class="copy-bar"><span class="copy-lab">Post 2 · vendredi 18.09 · Carrousel facture</span><button class="copy-btn" type="button">Copier</button></div>
+<pre>Tes factures seront en règle avant que tu y penses.
+
+La France impose la facturation électronique aux entreprises, micro entrepreneurs compris. La réception devient obligatoire dès septembre 2026, l'émission suit en 2027. Si tu fais tes factures dans un tableur aujourd'hui, tu chercheras un logiciel dans quelques mois, comme tout le monde, au même moment que tout le monde.
+
+Sur Madger, ça se règle sans que tu fasses quoi que ce soit.
+
+Chaque séance encaissée produit une facture numérotée, à ton nom, avec ton SIRET, ton adresse et ta mention de TVA. Zéro saisie.
+Chaque mois, Madger t'envoie sa propre facture, claire, pour ta compta.
+Toute ton année s'exporte en un clic pour ton comptable.
+Le format électronique s'activera pour toi le moment venu. Tu ne changeras rien à tes habitudes.
+
+Tu n'as pas à devenir expert en réglementation. Tu as juste à ne pas avoir à t'en occuper.
+
+Le lien est en bio.
+
+Un lien. Une séance. C'est tout.</pre>
+  </div>
+
+  <div class="copy">
+    <div class="copy-bar"><span class="copy-lab">Post 3 · lundi 21.09 · Reel paiement</span><button class="copy-btn" type="button">Copier</button></div>
+<pre>« Tu as pu faire le virement ? »
+
+Tu connais ce message. Tu l'as écrit, tu l'as relu, et souvent tu l'as effacé. Parce que relancer quelqu'un pour 45 euros quand tu viens de passer une heure à l'encourager, c'est gênant. Alors tu attends. Et parfois tu oublies.
+
+Sur Madger, ce message n'existe plus.
+
+Ton client paie au moment où il réserve. L'argent est sécurisé jusqu'à la séance : ni lui ni toi n'y touchez. La séance a lieu, et l'argent part sur ton compte.
+
+Tu ne relances plus personne. Tu ne demandes plus rien. Tu coaches, tu es payé.
+
+Ce n'est pas un confort. C'est ce qui fait la différence entre une activité et un métier.
+
+Le lien est en bio.
+
+Un lien. Une séance. C'est tout.</pre>
+    <p class="copy-note">Si tu as tranché pour la formulation précise, remplace « et l'argent part sur ton compte » par « et vingt quatre heures après, l'argent est sur ton compte ». Une seule version, la même que sur le site et dans la vidéo.</p>
+  </div>
+
+  <div class="copy">
+    <div class="copy-bar"><span class="copy-lab">Post 4 · mercredi 23.09 · Léo</span><button class="copy-btn" type="button">Copier</button></div>
+<pre>Voilà Léo. Son métier, c'est de compter ce que tu perds.
+
+Léo regarde ta semaine et il compte. Les messages pour caler un créneau. Les captures d'écran de virements. Les factures refaites parce que le numéro ne suivait pas. Les onglets ouverts entre WhatsApp, ton agenda, ton tableur et ton application de paiement.
+
+Il ne compte pas des heures de sport. Il compte des heures de secrétariat que personne ne t'a payées.
+
+Madger ne te donne pas un outil de plus. Il t'en enlève trois. La réservation, le paiement et la facture arrêtent d'être trois moments séparés et deviennent un seul geste : ton client clique sur ton lien.
+
+Léo n'a plus rien à compter. C'est le but.
+
+Le lien est en bio.
+
+Un lien. Une séance. C'est tout.</pre>
+  </div>
+
+  <div class="copy">
+    <div class="copy-bar"><span class="copy-lab">Post 5 · vendredi 25.09 · Le premier coach</span><button class="copy-btn" type="button">Copier</button></div>
+<pre>[Prénom] est le premier coach à avoir mis Madger en bio.
+
+[Une phrase factuelle sur qui il est : sa discipline, sa ville, depuis combien de temps il est indépendant.]
+
+Ce qu'il faisait avant : [décris en une phrase son organisation réelle, avec ses mots à lui.]
+
+Ce qui a changé la première semaine : [ce qu'il t'a dit, textuellement, avec son accord écrit.]
+
+On ne va pas te raconter que sa vie a basculé en sept jours. Il a créé sa page, il a collé son lien, ses clients réservent et paient tout seuls. C'est tout ce qu'on promet, et c'est déjà beaucoup quand on a passé des années à faire ça à la main.
+
+Il reste des places dans le premier groupe. On accompagne chaque coach un par un, donc on n'en prend pas cinquante.
+
+Écris moi ici, je réponds moi même.
+
+Un lien. Une séance. C'est tout.</pre>
+    <p class="copy-note"><strong>Règle absolue.</strong> Ne publie ce post que si le coach existe, que la citation est la sienne mot pour mot, et que tu as son accord écrit en message privé. Si tu n'as pas encore de coach embarqué le 25, tu décales ce post et tu publies à la place la démo de la page coach créée en dix minutes. Un faux témoignage est le seul contenu qui peut tuer un produit de paiement avant même son premier mois.</p>
+  </div>
+
+  <div class="copy">
+    <div class="copy-bar"><span class="copy-lab">Post 6 · lundi 28.09 · L'objection</span><button class="copy-btn" type="button">Copier</button></div>
+<pre>« Mes clients vont devoir créer un compte ? Ils ne le feront jamais. »
+
+C'est la première question qu'on nous pose, et elle est légitime. Voilà la réponse honnête.
+
+Oui, ton client crée un compte. Ça lui prend trente secondes, au moment où il réserve, sans quitter la page.
+
+Et voilà ce que ça lui donne. Il retrouve ses séances passées et à venir au même endroit. Il a ses factures, téléchargeables quand il veut. Il peut t'écrire sans chercher ton numéro dans ses contacts. Il reçoit ses rappels automatiquement, donc il oublie moins de venir.
+
+Si tu ne veux pas de compte, la version sans compte existe déjà : c'est WhatsApp. Et tu sais ce que ça donne, parce que c'est ce que tu fais aujourd'hui.
+
+Trente secondes une seule fois, contre des allers retours à chaque séance. On a tranché, et on l'assume.
+
+Le lien est en bio, teste le toi même côté client avant de le donner à qui que ce soit.
+
+Un lien. Une séance. C'est tout.</pre>
+  </div>
+</section>
+<!-- ================= TOURNAGE ================= -->
+<section id="tournage">
+  <div class="sec-head stack g12">
+    <div class="sec-rule"></div>
+    <span class="eyebrow">04 · Liste de tournage</span>
+    <h2>Une matinée.<br>Deux semaines de contenu.</h2>
+  </div>
+
+  <div class="stack g16 prose" style="margin-top:26px">
+    <p class="lede">Samedi 29 août, 9h00 à 13h00. À 13h, tout ce qui alimente les publications du 31 août au 14 septembre est dans la boîte. Ce qui n'est pas tourné ce jour là ne sera pas tourné : c'est comme ça qu'un calendrier tient.</p>
+    <p class="small muted">Une seule contrainte de casting : il te faut un vrai coach et un vrai client pour les plans en situation. Si personne n'est disponible, tu filmes les mains et le buste, jamais les visages, et tu joues les deux rôles. Un plan de mains crédible vaut mieux qu'un plan de visage qui sonne faux.</p>
+  </div>
+
+  <h3 style="margin-top:44px">La veille, 28 août</h3>
+  <div class="tw" style="margin-top:14px">
+    <table>
+      <thead><tr><th style="width:26%">À préparer</th><th>Détail</th></tr></thead>
+      <tbody>
+        <tr><td>Le compte de démonstration</td><td>Un compte coach rempli pour de vrai : photo, trois prestations, tarifs, disponibilités sur la semaine, avis visibles. Rien de vide à l'écran, rien de « Lorem ». Un écran à moitié rempli se voit et décrédibilise tout le reste.</td></tr>
+        <tr><td>Le compte client</td><td>Un deuxième téléphone avec un compte client déjà créé, moyen de paiement enregistré, pour que la démo se déroule sans écran de saisie de carte.</td></tr>
+        <tr><td>Le mode nuit</td><td>Un coin de pièce avec volets fermables, une lampe de bureau, un tableur ouvert. Les plans de la vidéo 2 se tournent en plein jour dans le noir, pas à minuit.</td></tr>
+        <tr><td>Matériel</td><td>Téléphone en 4K 60 images par seconde, mode ne pas déranger activé, batterie pleine, 50 Go libres. Un micro cravate. Un trépied. Une lampe. Un chiffon pour les écrans.</td></tr>
+        <tr><td>Tenue</td><td>Noir uni, blanc uni ou gris chiné. Aucun logo, aucune couleur autre que le vert #CBFF03 s'il y en a. Le seul vert de l'image doit être le tien.</td></tr>
+        <tr><td>Voix off</td><td>Ne s'enregistre pas sur le tournage. Ce sera le dimanche, dans une pièce avec des rideaux, à l'écrit devant toi. Un plateau est toujours trop bruyant.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 style="margin-top:48px">La matinée, bloc par bloc</h3>
+  <div class="blocs" style="margin-top:16px">
+
+    <div class="bloc">
+      <div class="bloc-h"><h4>Installation et essais</h4><span class="bn">09:00 · 09:20 · 20 min</span></div>
+      <ol class="small">
+        <li>Nettoyer les deux écrans de téléphone. Une trace de doigt en gros plan tue un plan produit.</li>
+        <li>Régler la lumière sur le coin « écran » et faire un essai de 10 secondes que tu regardes en entier avant de continuer.</li>
+        <li>Vérifier le son du micro cravate sur une phrase complète, casque sur les oreilles.</li>
+        <li>Ouvrir cette liste sur un troisième écran et cocher au fur et à mesure.</li>
+      </ol>
+    </div>
+
+    <div class="bloc">
+      <div class="bloc-h"><h4>Captures d'écran du produit</h4><span class="bn">09:20 · 10:10 · 50 min</span></div>
+      <p class="small muted" style="margin-bottom:12px">Le bloc le plus important. C'est la matière des trois démos, et c'est celle qu'on ne peut pas rattraper au montage. Enregistrement d'écran natif, pas de caméra pointée sur un téléphone.</p>
+      <ol class="small">
+        <li>Le parcours complet des 4 clics, en une seule prise sans hésitation, du lien à la confirmation. Trois prises minimum.</li>
+        <li>Chacun des 4 clics isolé, en gros plan lent, avec le pouce visible qui appuie.</li>
+        <li>L'écran de paiement, avec le logo Stripe visible une seconde. Ne masque rien, c'est un argument de confiance.</li>
+        <li>L'écran de confirmation, puis la notification de facture qui arrive en haut de l'écran.</li>
+        <li>La facture ouverte en entier : numéro, nom, SIRET, mention de TVA. Zoom lent du haut vers le bas.</li>
+        <li>La liste des factures, puis le clic sur « Télécharger tout ».</li>
+        <li>La séance qui bascule sur l'état payé, en gros plan.</li>
+        <li>Le tableau de bord : revenus du mois, séances, clients actifs. Un panoramique lent.</li>
+        <li>La création d'une page coach, du début à la fin, sans coupe. Tu accéléreras au montage, ça donne le TikTok du 29 septembre.</li>
+        <li>Une annulation de séance et son remboursement, du début à la fin. C'est l'objection numéro deux, elle a besoin d'images.</li>
+        <li>Le rappel automatique reçu côté client, en notification.</li>
+        <li>Le lien coach collé dans une bio Instagram, filmé depuis Instagram. Meta, et c'est le post du 30 septembre.</li>
+      </ol>
+    </div>
+
+    <div class="bloc">
+      <div class="bloc-h"><h4>Le coach en situation</h4><span class="bn">10:10 · 11:10 · 60 min</span></div>
+      <ol class="small">
+        <li>Plan large : la séance en cours, le téléphone posé face contre la table. C'est le plan clé de la vidéo 1.</li>
+        <li>Le coach qui range son sac, salue son client, ne regarde pas son téléphone. Vidéo 3.</li>
+        <li>Le client qui sort son téléphone et réserve, filmé par dessus l'épaule.</li>
+        <li>Le coach qui regarde son téléphone et sourit en voyant « payé ». Une seule prise, sans surjeu.</li>
+        <li>Un fil WhatsApp qui déborde, notifications qui tombent, filmé en gros plan. Vidéo 1, seconde 0.</li>
+        <li>Le geste d'effacer un message de relance, le pouce qui hésite. Vidéo 3, seconde 0. Prends le temps, ce plan porte toute la vidéo.</li>
+        <li>Trois plans de coupe : les mains qui règlent un appareil, une bouteille posée, une porte de salle qui s'ouvre.</li>
+      </ol>
+    </div>
+
+    <div class="bloc">
+      <div class="bloc-h"><h4>Léonard face caméra</h4><span class="bn">11:10 · 11:50 · 40 min</span></div>
+      <p class="small muted" style="margin-bottom:12px">Six prises, une par publication de @leonaardb sur deux semaines. Pas de texte appris : tu as l'idée en tête, tu parles. Deux prises maximum par sujet, la troisième est toujours moins bonne.</p>
+      <ol class="small">
+        <li>« J'ai 22 ans, je suis alternant ingénieur, et je construis une app le soir. Voilà pourquoi. » 40 s. Publié le 1er septembre.</li>
+        <li>« Pourquoi j'annonce une date publique alors que rien n'est fini. » 45 s. Le 8 septembre.</li>
+        <li>« Ce qui a cassé cette semaine. » 40 s. Tourne le en laissant volontairement un blanc, tu le rempliras avec le vrai incident de la semaine du 10.</li>
+        <li>« Ce que j'ai appris en appelant des coachs. » 45 s, sans citer de chiffre : tu ajouteras le nombre réel en texte à l'écran au montage. Le 12 septembre.</li>
+        <li>Deux plans muets de toi devant l'écran, de dos et de trois quarts, pour habiller les posts photo du samedi.</li>
+        <li>La réaction du lancement : tourne le 14 au soir, pas maintenant. C'est le seul plan qu'on ne peut pas anticiper et le seul qui doit être vrai.</li>
+      </ol>
+    </div>
+
+    <div class="bloc">
+      <div class="bloc-h"><h4>Léo, objets et coin nuit</h4><span class="bn">11:50 · 12:35 · 45 min</span></div>
+      <ol class="small">
+        <li>Coin nuit, volets fermés, lampe allumée : le tableur ouvert, l'heure visible à l'écran. Vidéo 2, seconde 0.</li>
+        <li>Les mains qui recopient un numéro de facture d'une ligne à l'autre. Gros plan, lent.</li>
+        <li>Une pile de papiers qui se réduit, plan fixe, tu enlèveras les feuilles une par une entre deux prises. Ça donne l'animation de la vidéo 2.</li>
+        <li>Trois téléphones ou trois écrans côte à côte : messagerie, agenda, tableur. Panoramique. TikTok du 6 septembre.</li>
+        <li>Les plans de Léo : si Léo est une illustration, ce bloc devient de l'animation et se fait au montage. Note alors les quatre poses dont tu as besoin : Léo qui compte, Léo qui hausse les épaules, Léo bras croisés, Léo qui pointe le lien. Fais les valider avant le dimanche, ils bloquent trois montages.</li>
+      </ol>
+    </div>
+
+    <div class="bloc">
+      <div class="bloc-h"><h4>Sauvegarde et nommage</h4><span class="bn">12:35 · 13:00 · 25 min</span></div>
+      <ol class="small">
+        <li>Tout copier sur l'ordinateur, plus une deuxième copie dans le nuage. Vérifier qu'un fichier de chaque bloc s'ouvre vraiment avant de vider quoi que ce soit.</li>
+        <li>Nommer selon la convention : <span class="mono">MDG_2908_[bloc]_[plan]_[prise].mov</span>. Exemple : <span class="mono">MDG_2908_B_4clics_p3.mov</span>.</li>
+        <li>Repasser la liste ci dessus et cocher. Ce qui manque se retourne dans l'heure, pas la semaine suivante.</li>
+      </ol>
+    </div>
+
+  </div>
+
+  <div class="card" style="margin-top:28px; border-left:4px solid var(--accent-fill)">
+    <h4 style="margin-bottom:10px">Ce qui doit être dans la boîte à 13h00</h4>
+    <p class="small">Les trois démos en rushes complets. Douze captures d'écran produit. Sept plans de coach en situation. Cinq prises face caméra. Le coin nuit. Les plans d'objets. Si l'un de ces six ensembles manque, une publication du calendrier saute, et une publication qui saute avant un lancement, ça se voit.</p>
+    <p class="small muted" style="margin-top:10px">Le dimanche 30 : montage des trois démos, découpe des versions TikTok avec des accroches différentes, extraction des neuf stories, enregistrement des voix off. Lundi 31 à 12h30, le manifeste part.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="stack g8">
+    <span class="eyebrow">Madger · plan de lancement</span>
+    <span class="sig">Un lien. Une séance. C'est tout.</span>
+  </div>
+  <p class="xsmall faint" style="max-width:42ch">Audit établi le 27 août 2026. Les constats sur le site ont été vérifiés en direct ce jour là. L'audit du compte Instagram reste à compléter dès réception des six captures.</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  document.querySelectorAll(".copy-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var block = btn.closest(".copy");
+      var pre = block ? block.querySelector("pre") : null;
+      if(!pre) return;
+      var text = pre.innerText;
+      var done = function(){
+        btn.textContent = "Copié";
+        btn.setAttribute("data-state","done");
+        setTimeout(function(){ btn.textContent = "Copier"; btn.removeAttribute("data-state"); }, 1800);
+      };
+      var fallback = function(){
+        try{
+          var r = document.createRange();
+          r.selectNodeContents(pre);
+          var s = window.getSelection();
+          s.removeAllRanges(); s.addRange(r);
+          if(document.execCommand("copy")){ done(); return; }
+        }catch(e){}
+        btn.textContent = "Sélectionne et copie";
+        setTimeout(function(){ btn.textContent = "Copier"; }, 2600);
+      };
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(done).catch(fallback);
+      } else {
+        fallback();
+      }
+    });
+  });
+})();
+</script>
