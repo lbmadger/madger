@@ -48,14 +48,21 @@ export default function Navbar({ launched = false }: { launched?: boolean }) {
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
-  const glassStyle: React.CSSProperties = {
-    background: scrolled || open
-      ? "rgba(5,5,5,0.96)"
-      : "linear-gradient(to bottom, rgba(5,5,5,0.72), transparent)",
-    backdropFilter: scrolled || open ? "blur(28px) saturate(180%)" : "blur(8px)",
-    WebkitBackdropFilter: scrolled || open ? "blur(28px) saturate(180%)" : "blur(8px)",
-    boxShadow: scrolled && !open ? "0 1px 0 rgba(255,255,255,0.06), 0 12px 40px rgba(0,0,0,0.6)" : "none",
-    transition: "background 0.4s ease, box-shadow 0.4s ease, backdrop-filter 0.4s ease, transform 0.35s ease",
+  // Le header n'est plus un bandeau collé en haut : c'est une pilule
+  // flottante, détachée des bords. Le verre vit sur la pilule elle-même —
+  // l'en-tête, lui, reste transparent et ne sert plus qu'à la positionner.
+  // En haut de page elle se fait discrète ; au défilement elle se densifie
+  // pour rester lisible au-dessus du contenu qui passe dessous.
+  const pillStyle: React.CSSProperties = {
+    background: scrolled || open ? "rgba(10,10,10,0.88)" : "rgba(18,18,18,0.55)",
+    backdropFilter: "blur(24px) saturate(180%)",
+    WebkitBackdropFilter: "blur(24px) saturate(180%)",
+    border: `1px solid ${scrolled || open ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.07)"}`,
+    boxShadow: scrolled
+      ? "0 12px 40px rgba(0,0,0,0.6)"
+      : "0 6px 24px rgba(0,0,0,0.35)",
+    transition:
+      "background 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease",
   };
 
   // Traits du hamburger : transitions CSS pures (croix quand le menu est ouvert).
@@ -66,15 +73,32 @@ export default function Navbar({ launched = false }: { launched?: boolean }) {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 ${hidden && !open ? "-translate-y-full md:translate-y-0" : "translate-y-0"}`}
-      style={glassStyle}
+      className={`fixed top-0 left-0 right-0 z-50 px-3 pt-3 sm:px-5 sm:pt-4 ${hidden && !open ? "-translate-y-[150%] md:translate-y-0" : "translate-y-0"}`}
+      style={{ transition: "transform 0.35s ease" }}
     >
-      {/* ── Barre principale ── */}
-      <div className="max-w-6xl mx-auto px-5 sm:px-6 h-16 flex items-center justify-between">
+      {/* La pilule flotte : sans ce voile, le contenu qui défile serait
+          tranché net au bord haut de l'écran, dans le jeu qui l'entoure.
+          Le dégradé l'éteint juste avant. Inutile en haut de page. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-24"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(5,5,5,0.92), rgba(5,5,5,0))",
+          opacity: scrolled ? 1 : 0,
+          transition: "opacity 0.4s ease",
+        }}
+      />
+      <div className="mx-auto max-w-5xl">
+      {/* ── La pilule ── */}
+      <div
+        className="flex h-14 items-center justify-between gap-3 rounded-full pl-3 pr-3 sm:pl-4 sm:pr-4"
+        style={pillStyle}
+      >
 
         {/* Logo - square icon */}
         <a href="/" className="flex items-center flex-shrink-0" onClick={() => setOpen(false)}>
-          <MadgerLogo size={46} />
+          <MadgerLogo size={36} />
         </a>
 
         {/* Links desktop */}
@@ -165,17 +189,21 @@ export default function Navbar({ launched = false }: { launched?: boolean }) {
       <div
         id="mobile-menu"
         aria-hidden={!open}
-        className="grid transition-[grid-template-rows,opacity] duration-300 ease-out"
+        className="mt-2 grid overflow-hidden rounded-3xl transition-[grid-template-rows,opacity] duration-300 ease-out"
         style={{
           gridTemplateRows: open ? "1fr" : "0fr",
           opacity: open ? 1 : 0,
-          borderTop: open ? "1px solid rgba(255,255,255,0.06)" : "1px solid transparent",
           visibility: open ? "visible" : "hidden",
-          transitionProperty: "grid-template-rows, opacity, visibility",
+          background: open ? "rgba(10,10,10,0.92)" : "transparent",
+          backdropFilter: "blur(24px) saturate(180%)",
+          WebkitBackdropFilter: "blur(24px) saturate(180%)",
+          border: `1px solid ${open ? "rgba(255,255,255,0.10)" : "transparent"}`,
+          boxShadow: open ? "0 16px 48px rgba(0,0,0,0.6)" : "none",
+          transitionProperty: "grid-template-rows, opacity, visibility, background, border-color",
         }}
       >
         <div style={{ overflow: "hidden", minHeight: 0 }}>
-          <div className="px-5 pt-4 pb-8 flex flex-col gap-2">
+          <div className="flex flex-col gap-2 px-3 pb-4 pt-3">
 
             {/* Liens de navigation (léger décalage en cascade à l'ouverture) */}
             {LINKS.map((l, i) => (
@@ -243,6 +271,7 @@ export default function Navbar({ launched = false }: { launched?: boolean }) {
             )}
           </div>
         </div>
+      </div>
       </div>
     </header>
   );
