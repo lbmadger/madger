@@ -314,7 +314,9 @@ export default function BookingModal({
           }
           return;
         }
-        if (data.error === "too_soon") setError(t("booking.errors.tooSoon"));
+        if (data.error === "coach_billing_incomplete")
+          setError(t("booking.errors.coachBillingIncomplete"));
+        else if (data.error === "too_soon") setError(t("booking.errors.tooSoon"));
         else if (data.error === "slot_taken")
           setError(t("booking.errors.slotTaken"));
         else setError(t("booking.errors.generic"));

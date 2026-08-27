@@ -9,6 +9,7 @@ export default function SetupChecklist({
   profileDone = true,
   availabilityDone,
   servicesDone,
+  siretDone = false,
   stripeDone = false,
   clientDone,
   bookingDone,
@@ -16,6 +17,7 @@ export default function SetupChecklist({
   profileDone?: boolean;
   availabilityDone: boolean;
   servicesDone: boolean;
+  siretDone?: boolean;
   stripeDone?: boolean;
   // Étapes d'ACTIVATION : premier client, première réservation.
   clientDone?: boolean;
@@ -43,6 +45,12 @@ export default function SetupChecklist({
       labelKey: "overview.setupStripe",
       href: "/dashboard/paiements",
       done: stripeDone,
+    },
+    // Sans SIRET, l'encaissement est refusé : l'étape vaut celle de Stripe.
+    {
+      labelKey: "overview.setupSiret",
+      href: "/dashboard/reglages",
+      done: siretDone,
     },
     ...(clientDone !== undefined
       ? [

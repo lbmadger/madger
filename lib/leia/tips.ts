@@ -9,6 +9,7 @@ export type LeiaInput = {
   bioLength: number;
   hasCity: boolean;
   hasSport: boolean;
+  hasSiret: boolean;
   servicesCount: number;
   hasPack: boolean;
   availabilityCount: number;
@@ -44,6 +45,11 @@ export function computeLeiaTips(i: LeiaInput): LeiaTip[] {
   }
   if (!i.hasCity || !i.hasSport) {
     tips.push({ id: "activity", href: "/dashboard/reglages" });
+  }
+  // Sans SIRET, l'encaissement est refusé côté serveur (/api/stripe/checkout)
+  // : c'est le seul conseil de cette liste qui débloque de l'argent.
+  if (!i.hasSiret) {
+    tips.push({ id: "siret", href: "/dashboard/reglages" });
   }
 
   // ── Leviers de croissance ──────────────────────────────────────────────────

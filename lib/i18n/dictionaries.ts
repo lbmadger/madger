@@ -715,6 +715,7 @@ const fr = {
     setupAvailability: "Définir mes disponibilités",
     setupServices: "Créer mes prestations et forfaits",
     setupStripe: "Connecter Stripe pour encaisser",
+    setupSiret: "Ajouter mon SIRET (obligatoire pour facturer)",
     setupFirstClient: "Ajouter ton premier client",
     setupFirstBooking: "Recevoir ta première réservation",
   },
@@ -848,6 +849,8 @@ const fr = {
         "Ce créneau vient d'être pris par quelqu'un d'autre. Choisis-en un autre.",
       slotsUnavailable:
         "Les créneaux n'ont pas pu être chargés. Réessaie d'abord de les recharger.",
+      coachBillingIncomplete:
+        "Ce coach ne peut pas encore encaisser de paiement en ligne. Contacte-le directement pour réserver.",
       tooSoon:
         "Ce créneau est trop proche : le coach n'accepte plus de réservation à si court délai. Choisis un créneau plus tard.",
       paymentRequired:
@@ -1286,6 +1289,11 @@ const fr = {
         title: "Ouvre tes disponibilités",
         body: "Ton calendrier est vide, les clients ne voient aucun créneau. Ouvre tes horaires récurrents, tu pourras toujours ajuster après.",
         cta: "Ouvrir mes créneaux",
+      },
+      siret: {
+        title: "Ajoute ton SIRET",
+        body: "Sans lui, tes paiements sont refusés : chaque encaissement génère une facture, et une facture sans SIRET n'est pas conforme. C'est le seul réglage qui bloque de l'argent.",
+        cta: "Ajouter mon SIRET",
       },
       photo: {
         title: "Ajoute une photo de profil",
@@ -2077,6 +2085,7 @@ const en: Dictionary = {
     setupAvailability: "Set my availability",
     setupServices: "Create my services and packages",
     setupStripe: "Connect Stripe to get paid",
+    setupSiret: "Add my SIRET (required to invoice)",
     setupFirstClient: "Add your first client",
     setupFirstBooking: "Get your first booking",
   },
@@ -2209,6 +2218,8 @@ const en: Dictionary = {
         "This slot was just taken by someone else. Please pick another one.",
       slotsUnavailable:
         "Slots could not be loaded. Try reloading them first.",
+      coachBillingIncomplete:
+        "This coach cannot take online payments yet. Contact them directly to book.",
       tooSoon:
         "This slot is too close: the coach no longer accepts bookings on such short notice. Pick a later slot.",
       paymentRequired:
@@ -2640,6 +2651,11 @@ const en: Dictionary = {
         title: "Open your availability",
         body: "Your calendar is empty, clients see no slots. Open your recurring hours, you can always adjust later.",
         cta: "Open my slots",
+      },
+      siret: {
+        title: "Add your SIRET",
+        body: "Without it your payments are declined: every charge generates an invoice, and an invoice without a SIRET is not compliant. It is the only setting standing between you and getting paid.",
+        cta: "Add my SIRET",
       },
       photo: {
         title: "Add a profile photo",

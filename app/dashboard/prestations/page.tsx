@@ -44,6 +44,9 @@ export default async function ServicesPage() {
             </Link>
           </div>
         )}
+        {/* Le SIRET ne conditionne pas la création d'une offre — elle
+            n'engage rien. Il conditionne l'encaissement, bloqué côté serveur
+            dans /api/stripe/checkout : le bandeau prévient avant le mur. */}
         {stripeReady && !siretReady && (
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-warning/30 bg-warning/[0.06] px-4 py-3">
             <div className="min-w-0">
@@ -64,7 +67,7 @@ export default async function ServicesPage() {
         )}
         <ServicesView
           initialServices={(data ?? []) as Service[]}
-          canCreate={stripeReady && siretReady}
+          canCreate={stripeReady}
         />
       </main>
     </>

@@ -47,13 +47,24 @@ export async function POST(req: NextRequest) {
   const { data: coach } = await supabase
     .from("coaches")
     .select(
-      "id, stripe_account_id, stripe_charges_enabled, pro_until, booking_mode, min_notice_hours"
+      "id, siret, stripe_account_id, stripe_charges_enabled, pro_until, booking_mode, min_notice_hours"
     )
     .eq("slug", coach_slug)
     .eq("listed", true)
     .maybeSingle();
   if (!coach || !coach.stripe_charges_enabled || !coach.stripe_account_id) {
     return NextResponse.json({ error: "coach_cannot_charge" }, { status: 400 });
+  }
+  // Point de non-retour : tout encaissement génère une facture, et une
+  // facture sans SIRET n'est pas conforme (mentions obligatoires du vendeur).
+  // On refuse ici plutôt que d'émettre le document irrégulier. Le dashboard
+  // du coach prévient bien avant : checklist, conseils de Leia, bandeaux
+  // Prestations et Factures.
+  if (!String(coach.siret ?? "").trim()) {
+    return NextResponse.json(
+      { error: "coach_billing_incomplete" },
+      { status: 400 }
+    );
   }
 
   const { data: service } = await supabase

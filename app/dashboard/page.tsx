@@ -271,6 +271,7 @@ export default async function OverviewPage() {
   // prestations, paiements Stripe).
   const profileDone = Boolean(coach?.avatar_url && (coach?.bio ?? "").trim());
   const stripeDone = Boolean(coach?.stripe_charges_enabled);
+  const siretDone = Boolean(coach?.siret?.trim());
   const firstClientDone = clientsCount > 0;
   const firstBookingDone = (weeksRes.data ?? []).length > 0;
   const showChecklist =
@@ -278,6 +279,7 @@ export default async function OverviewPage() {
     !availabilityDone ||
     !servicesDone ||
     !stripeDone ||
+    !siretDone ||
     !firstClientDone ||
     !firstBookingDone;
 
@@ -546,6 +548,7 @@ export default async function OverviewPage() {
     bioLength: (coach?.bio ?? "").trim().length,
     hasCity: Boolean(coach?.city),
     hasSport: Boolean(coach?.sport),
+    hasSiret: Boolean(coach?.siret?.trim()),
     servicesCount: serviceRows.length,
     hasPack: serviceRows.some((s) => s.type === "pack"),
     availabilityCount: availRows.length,
@@ -1106,6 +1109,7 @@ export default async function OverviewPage() {
                 profileDone={profileDone}
                 availabilityDone={availabilityDone}
                 servicesDone={servicesDone}
+                siretDone={siretDone}
                 stripeDone={stripeDone}
                 clientDone={firstClientDone}
                 bookingDone={firstBookingDone}
