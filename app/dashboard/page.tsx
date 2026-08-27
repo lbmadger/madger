@@ -8,6 +8,7 @@ import SetupChecklist from "@/components/dashboard/SetupChecklist";
 import FirstBookingCard from "@/components/dashboard/FirstBookingCard";
 import GoalCard from "@/components/dashboard/GoalCard";
 import LeiaTips from "@/components/dashboard/LeiaTips";
+import Leo from "@/components/ui/Leo";
 import { SunIcon, MoonIcon, StarIcon } from "@/components/ui/icons";
 import ProStats, { type ProStatItem } from "@/components/dashboard/ProStats";
 import { computeLeiaTips, dailyTipIndex } from "@/lib/leia/tips";
@@ -973,7 +974,10 @@ export default async function OverviewPage() {
 
         <div className="mt-4 grid grid-cols-1 gap-4 sm:mt-5 lg:grid-cols-3">
           <div className="flex flex-col gap-4 lg:col-span-2">
-            <section className="rounded-2xl border border-border bg-bg-card p-5">
+            {/* flex-1 + flex-col : la carte s'étire pour que la colonne
+                gauche fasse la même hauteur que la droite. Sans séance, ce
+                serait sinon un trou noir sous la répartition des revenus. */}
+            <section className="flex flex-1 flex-col rounded-2xl border border-border bg-bg-card p-5">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold text-text-base">
                   {o.nextSessions}
@@ -987,9 +991,16 @@ export default async function OverviewPage() {
               </div>
 
               {upcoming.length === 0 ? (
-                <p className="mt-6 text-center text-sm text-text-dim">
-                  {o.noSessions}
-                </p>
+                <div className="flex flex-1 flex-col items-center justify-center gap-3 py-8 text-center">
+                  <Leo pose="ok" size={84} />
+                  <p className="text-sm text-text-dim">{o.noSessions}</p>
+                  <Link
+                    href="/dashboard/agenda"
+                    className="rounded-full border border-border-strong px-4 py-2 text-xs font-semibold text-text-muted transition-colors hover:border-accent hover:text-text-base"
+                  >
+                    {dict.agenda.add}
+                  </Link>
+                </div>
               ) : (
                 <ul className="mt-4 flex flex-col gap-2">
                   {upcoming.map((b) => (
