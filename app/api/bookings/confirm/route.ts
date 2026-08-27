@@ -5,6 +5,7 @@ import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
 import { requestReceivedClient } from "@/lib/email/templates";
+import { reviewLink } from "@/lib/reviews/token";
 import { googleCalendarUrl } from "@/lib/calendar/links";
 import { attachMeetToBooking } from "@/lib/google/calendar";
 
@@ -197,7 +198,7 @@ export async function POST(req: NextRequest) {
             }
           ),
           instant: true, // variante « confirmée »
-          reservationUrl: `${APP_URL}/reservation/${booking.id}`,
+          reservationUrl: reviewLink(APP_URL, booking.id as string),
           meetUrl,
           calendarUrl: googleCalendarUrl({
             title: `Séance avec ${coachName}`,

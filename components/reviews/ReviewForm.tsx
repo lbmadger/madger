@@ -16,9 +16,12 @@ import { inputClass, labelClass } from "@/lib/ui/styles";
 export default function ReviewForm({
   bookingId,
   clientEmail = null,
+  reviewToken = null,
 }: {
   bookingId: string;
   clientEmail?: string | null;
+  // Jeton signé reçu par email : requis par l'API pour authentifier le client.
+  reviewToken?: string | null;
 }) {
   const { t } = useI18n();
   const [rating, setRating] = useState(0);
@@ -51,7 +54,13 @@ export default function ReviewForm({
       const res = await fetch("/api/reviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ booking_id: bookingId, email, rating, comment }),
+        body: JSON.stringify({
+          booking_id: bookingId,
+          token: reviewToken,
+          email,
+          rating,
+          comment,
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {

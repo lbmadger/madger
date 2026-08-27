@@ -4,6 +4,7 @@ import { createClient as createAdmin } from "@supabase/supabase-js";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
 import { bookingRescheduledClient } from "@/lib/email/templates";
+import { reviewLink } from "@/lib/reviews/token";
 import {
   attachMeetToBooking,
   detachMeetFromBooking,
@@ -106,7 +107,7 @@ export async function POST(req: NextRequest) {
           "Ton coach",
         oldDateStr: fmt(oldStartsAt),
         dateStr: fmt(booking.starts_at as string),
-        reservationUrl: `${APP_URL}/reservation/${bookingId}`,
+        reservationUrl: reviewLink(APP_URL, bookingId),
       });
       await sendEmail({
         to: client.email,

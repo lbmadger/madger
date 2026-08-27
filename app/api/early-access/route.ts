@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { sendEmail } from "@/lib/email/resend";
+import { rateLimit, clientIp } from "@/lib/ratelimit";
 
 // Route dynamique : pas de mise en cache, le count doit être lu à chaque appel.
 export const dynamic = "force-dynamic";
@@ -36,23 +37,10 @@ function escapeHtml(value: string): string {
     .replaceAll("'", "&#39;");
 }
 
-// Rate limiting en mémoire par IP. Sur Vercel chaque instance a sa propre
-// Map : ce n'est pas étanche à 100 %, mais ça bloque l'abus évident
-// (boucle de POST = spam Resend + pollution de la base) sans dépendance.
-const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 h
-const RATE_MAX = 5; // 5 inscriptions / h / IP
-const rateMap = new Map<string, { count: number; start: number }>();
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const entry = rateMap.get(ip);
-  if (!entry || now - entry.start > RATE_WINDOW_MS) {
-    rateMap.set(ip, { count: 1, start: now });
-    return false;
-  }
-  entry.count += 1;
-  return entry.count > RATE_MAX;
-}
+// Rate limiting par IP, persistant en base (partagé entre instances Vercel) :
+// 5 inscriptions / h / IP. Repli mémoire si la base est indisponible.
+const RATE_MAX = 5;
+const RATE_WINDOW_S = 60 * 60;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PHONE_RE = /^\+?[0-9 .\-()]{6,20}$/;
@@ -95,11 +83,14 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const ip =
-      req.headers.get("x-real-ip") ??
-      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-      "unknown";
-    if (isRateLimited(ip)) {
+    const ip = clientIp(req);
+    const allowed = await rateLimit({
+      bucket: "early-access",
+      key: ip,
+      max: RATE_MAX,
+      windowSeconds: RATE_WINDOW_S,
+    });
+    if (!allowed) {
       return NextResponse.json({ error: "Trop de tentatives. Réessayez plus tard." }, { status: 429 });
     }
 

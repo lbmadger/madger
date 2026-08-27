@@ -8,6 +8,7 @@ import {
   onboardingNudgeCoachLater,
 } from "@/lib/email/templates";
 import { cronAuthorized } from "@/lib/cron/auth";
+import { reviewLink } from "@/lib/reviews/token";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -84,7 +85,7 @@ export async function GET(req: NextRequest) {
         dateStr,
         sameDay,
         online: b.location === "online",
-        reservationUrl: `${APP_URL}/reservation/${b.id}`,
+        reservationUrl: reviewLink(APP_URL, b.id as string),
         meetUrl:
           b.location === "online"
             ? (b.meeting_url as string | null) ?? undefined

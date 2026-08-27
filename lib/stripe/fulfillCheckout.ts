@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
+import { reviewLink } from "@/lib/reviews/token";
 import {
   bookingConfirmationClient,
   bookingNotificationCoach,
@@ -400,7 +401,7 @@ export async function fulfillCheckoutSession(
       : [coachRow?.gym_name, coachRow?.gym_address]
           .filter(Boolean)
           .join(" · ") || undefined;
-    const reservationUrl = `${APP_URL}/reservation/${result.bookingId}`;
+    const reservationUrl = reviewLink(APP_URL, result.bookingId);
     const calendarUrl = googleCalendarUrl({
       title: `Séance avec ${coachName}`,
       start: starts,

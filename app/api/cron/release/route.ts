@@ -13,6 +13,7 @@ import {
   founderAlert,
 } from "@/lib/email/templates";
 import { cronAuthorized } from "@/lib/cron/auth";
+import { reviewLink } from "@/lib/reviews/token";
 import { detachMeetFromBooking } from "@/lib/google/calendar";
 
 export const dynamic = "force-dynamic";
@@ -597,7 +598,7 @@ export async function GET(req: NextRequest) {
             coachName:
               [co?.first_name, co?.last_name].filter(Boolean).join(" ") ||
               "ton coach",
-            reservationUrl: `${APP_URL}/reservation/${bkId}`,
+            reservationUrl: reviewLink(APP_URL, bkId),
           });
           emailJobs.push(() =>
             sendEmail({ to: clEmail, subject: tpl.subject, html: tpl.html })

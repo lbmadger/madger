@@ -1,0 +1,33 @@
+name: CI
+
+# Contrôles automatiques sur chaque push et pull request : lint, typage et
+# tests unitaires (dont la logique d'argent / séquestre et les jetons d'avis).
+# Le build de production est assuré par Vercel avec les vraies variables d'env.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Tests
+        run: npm test

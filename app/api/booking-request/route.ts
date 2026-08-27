@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
+import { reviewLink } from "@/lib/reviews/token";
 import {
   requestReceivedClient,
   newRequestCoach,
@@ -219,7 +220,7 @@ export async function POST(req: NextRequest) {
           coachName,
           dateStr,
           instant,
-          reservationUrl: `${APP_URL}/reservation/${bookingId}`,
+          reservationUrl: reviewLink(APP_URL, bookingId),
           // Liens utiles seulement si la séance est déjà confirmée.
           meetUrl: instant ? meetUrl : undefined,
           calendarUrl: instant

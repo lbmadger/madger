@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_URL } from "@/lib/supabase/config";
+import { verifyReviewToken } from "@/lib/reviews/token";
+import { rateLimit, clientIp } from "@/lib/ratelimit";
 
 export const dynamic = "force-dynamic";
 
 // Dépôt d'un avis après une séance. Vérifications :
+//  - un jeton d'avis signé (reçu par email, propre au client) est valide ;
 //  - la séance existe, n'est pas annulée, et est TERMINÉE ;
 //  - l'email fourni correspond au client de la réservation.
 // Puis upsert sur (coach_id, client_id) : 1 client = 1 avis par coach — un
@@ -15,14 +18,33 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "server_error" }, { status: 500 });
   }
 
+  // Anti-abus : plafond par IP, persistant (partagé entre instances).
+  const ip = clientIp(req);
+  const allowed = await rateLimit({
+    bucket: "reviews",
+    key: ip,
+    max: 10,
+    windowSeconds: 3600,
+  });
+  if (!allowed) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+  }
+
   const body = await req.json().catch(() => ({}));
   const bookingId = body.booking_id as string | undefined;
+  const token = body.token as string | undefined;
   const email = (body.email as string | undefined)?.trim().toLowerCase();
   const rating = Math.round(Number(body.rating));
   const comment = (body.comment as string | undefined)?.trim().slice(0, 1000) || null;
 
   if (!bookingId || !email || !(rating >= 1 && rating <= 5)) {
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
+  }
+
+  // Jeton signé, lié à la réservation : seul le client (qui a reçu le lien par
+  // email) le détient. Empêche un coach de fabriquer des avis sur son profil.
+  if (!verifyReviewToken(bookingId, token)) {
+    return NextResponse.json({ error: "invalid_token" }, { status: 403 });
   }
 
   const supabase = createClient(SUPABASE_URL, serviceKey);

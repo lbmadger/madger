@@ -8,6 +8,7 @@ import ReportProblem from "@/components/booking/ReportProblem";
 import ReviewForm from "@/components/reviews/ReviewForm";
 import { VideoIcon, CalendarIcon } from "@/components/ui/icons";
 import { googleCalendarUrl } from "@/lib/calendar/links";
+import { verifyReviewToken } from "@/lib/reviews/token";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
@@ -84,11 +85,17 @@ export default async function ReservationPage({
   searchParams,
 }: {
   params: { id: string };
-  searchParams: { paid?: string };
+  searchParams: { paid?: string; r?: string };
 }) {
   const { locale, dict } = getServerDictionary();
   const r = dict.reservation;
   const booking = await getBooking(params.id);
+  // Jeton d'avis : présent uniquement dans le lien envoyé par email au client.
+  // Sans lui, le formulaire d'avis ne s'affiche pas (un coach qui ouvrirait
+  // cette page publique ne pourrait donc pas déposer d'avis à la place du
+  // client).
+  const reviewToken = searchParams.r ?? null;
+  const canReview = verifyReviewToken(params.id, reviewToken);
 
   const dateStr = booking
     ? new Date(booking.starts_at).toLocaleString(
@@ -244,13 +251,17 @@ export default async function ReservationPage({
                 </div>
               )}
 
-              {/* Avis après la séance (1 client = 1 avis par coach) */}
-              {booking.status !== "cancelled" &&
+              {/* Avis après la séance (1 client = 1 avis par coach).
+                  N'apparaît qu'avec un jeton d'avis valide (lien reçu par
+                  email par le client). */}
+              {canReview &&
+                booking.status !== "cancelled" &&
                 new Date(booking.ends_at).getTime() < Date.now() && (
                   <div className="mt-6 border-t border-border pt-6">
                     <ReviewForm
                       bookingId={params.id}
                       clientEmail={booking.client_email}
+                      reviewToken={reviewToken}
                     />
                   </div>
                 )}

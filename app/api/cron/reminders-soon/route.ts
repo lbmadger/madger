@@ -4,6 +4,7 @@ import { SUPABASE_URL } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
 import { sessionReminderSoonClient } from "@/lib/email/templates";
 import { cronAuthorized } from "@/lib/cron/auth";
+import { reviewLink } from "@/lib/reviews/token";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -79,7 +80,7 @@ export async function GET(req: NextRequest) {
           coachName,
           timeStr,
           online,
-          reservationUrl: `${APP_URL}/reservation/${b.id}`,
+          reservationUrl: reviewLink(APP_URL, b.id as string),
           meetUrl: online
             ? (b.meeting_url as string | null) ?? undefined
             : undefined,
