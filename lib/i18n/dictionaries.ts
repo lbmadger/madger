@@ -484,9 +484,13 @@ const fr = {
     connecting: "Ouverture de Stripe…",
     connectError:
       "La connexion à Stripe n'a pas pu démarrer. Réessaie dans un instant.",
-    connectedTitle: "Compte Stripe connecté",
-    connectedDesc:
-      "Tu peux recevoir des paiements de tes clients directement sur ton compte.",
+    connectedTitle: "Compte Stripe actif",
+    openStripe: "Voir mes virements",
+    opening: "Ouverture…",
+    heldTotalLabel: "En attente de versement",
+    heldNone: "Rien en attente pour le moment.",
+    paidThisMonthLabel: "Versé ce mois-ci",
+    paidThisMonthNone: "Aucun versement ce mois-ci.",
     pendingTitle: "Configuration à terminer",
     pendingDesc:
       "Ton compte Stripe existe mais la configuration n'est pas finie. Termine-la pour encaisser.",
@@ -1854,9 +1858,13 @@ const en: Dictionary = {
     connect: "Connect Stripe",
     connecting: "Opening Stripe…",
     connectError: "Stripe connection could not start. Try again in a moment.",
-    connectedTitle: "Stripe account connected",
-    connectedDesc:
-      "You can receive payments from your clients directly to your account.",
+    connectedTitle: "Stripe account active",
+    openStripe: "View my payouts",
+    opening: "Opening…",
+    heldTotalLabel: "Awaiting payout",
+    heldNone: "Nothing pending right now.",
+    paidThisMonthLabel: "Paid out this month",
+    paidThisMonthNone: "No payout this month.",
     pendingTitle: "Finish your setup",
     pendingDesc:
       "Your Stripe account exists but setup isn't complete. Finish it to get paid.",

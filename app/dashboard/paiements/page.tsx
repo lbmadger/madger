@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Topbar from "@/components/dashboard/Topbar";
 import StripeConnectButton from "@/components/dashboard/payments/StripeConnectButton";
+import StripeDashboardButton from "@/components/dashboard/payments/StripeDashboardButton";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getCoach } from "@/lib/coach/getCoach";
 import { createClient } from "@/lib/supabase/server";
@@ -49,6 +50,45 @@ export default async function PaymentsPage() {
 
   // Historique : encaissements, séquestres en cours, versements, litiges.
   const supabase = createClient();
+
+  // Deux chiffres, calculés sur TOUS les paiements et pas sur les 30 lignes
+  // affichées : ce qui est encaissé mais pas encore libéré, et ce qui est
+  // réellement tombé sur le compte ce mois-ci. Le reste est du détail.
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+
+  const [heldRes, releasedRes] = await Promise.all([
+    supabase
+      .from("payments")
+      .select("amount_cents, release_after")
+      .eq("escrow_status", "held")
+      .not("paid_at", "is", null),
+    supabase
+      .from("payments")
+      .select("payout_cents, commission_cents")
+      .eq("escrow_status", "released")
+      .gte("paid_at", monthStart.toISOString()),
+  ]);
+
+  const heldRows = heldRes.data ?? [];
+  const heldTotal = heldRows.reduce(
+    (sum, r) => sum + ((r.amount_cents as number) || 0),
+    0
+  );
+  // Prochaine libération : la plus proche échéance parmi les séquestres.
+  const nextRelease = heldRows
+    .map((r) => r.release_after as string | null)
+    .filter((d): d is string => Boolean(d))
+    .sort()[0];
+  const paidThisMonth = (releasedRes.data ?? []).reduce(
+    (sum, r) => sum + ((r.payout_cents as number) || 0),
+    0
+  );
+  const commissionThisMonth = (releasedRes.data ?? []).reduce(
+    (sum, r) => sum + ((r.commission_cents as number) || 0),
+    0
+  );
   const { data: history } = await supabase
     .from("payments")
     .select(
@@ -95,18 +135,51 @@ export default async function PaymentsPage() {
       <Topbar title={pay.title} />
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
         {state === "connected" ? (
-          <section className="rounded-2xl border border-accent/25 bg-accent/[0.05] p-6">
-            <div className="mb-2 flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent text-black">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 6L9 17l-5-5" />
-                </svg>
-              </span>
-              <h2 className="text-base font-semibold text-text-base">
+          /* Une fois Stripe branché, « compte connecté » n'apprend plus rien :
+             l'état se dit en une pastille, et la carte porte enfin ce que le
+             coach vient chercher — ce qui arrive, ce qui est tombé, et l'accès
+             à ses virements chez Stripe. */
+          <section className="rounded-2xl border border-border bg-bg-card p-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent">
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent text-black">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 6L9 17l-5-5" />
+                  </svg>
+                </span>
                 {pay.connectedTitle}
-              </h2>
+              </span>
+              <StripeDashboardButton />
             </div>
-            <p className="text-sm text-text-muted">{pay.connectedDesc}</p>
+
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="rounded-xl border border-border bg-bg-elevated p-4">
+                <p className="text-xs font-medium text-text-dim">
+                  {pay.heldTotalLabel}
+                </p>
+                <p className="mt-1 font-display text-2xl font-extrabold text-text-base">
+                  {euros(heldTotal)}
+                </p>
+                <p className="mt-1 text-xs text-text-muted">
+                  {nextRelease
+                    ? `${pay.releasePlanned} ${new Date(nextRelease).toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: "Europe/Paris" })}`
+                    : pay.heldNone}
+                </p>
+              </div>
+              <div className="rounded-xl border border-border bg-bg-elevated p-4">
+                <p className="text-xs font-medium text-text-dim">
+                  {pay.paidThisMonthLabel}
+                </p>
+                <p className="mt-1 font-display text-2xl font-extrabold text-accent">
+                  {euros(paidThisMonth)}
+                </p>
+                <p className="mt-1 text-xs text-text-muted">
+                  {commissionThisMonth > 0
+                    ? `${pay.commissionLabel} ${euros(commissionThisMonth)}`
+                    : pay.paidThisMonthNone}
+                </p>
+              </div>
+            </div>
           </section>
         ) : state === "pending" ? (
           <section className="rounded-2xl border border-border bg-bg-card p-6">

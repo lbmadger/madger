@@ -977,10 +977,16 @@ export default async function OverviewPage() {
 
         <div className="mt-4 grid grid-cols-1 gap-4 sm:mt-5 lg:grid-cols-3">
           <div className="flex flex-col gap-4 lg:col-span-2">
-            {/* flex-1 + flex-col : la carte s'étire pour que la colonne
-                gauche fasse la même hauteur que la droite. Sans séance, ce
-                serait sinon un trou noir sous la répartition des revenus. */}
-            <section className="flex flex-1 flex-col rounded-2xl border border-border bg-bg-card p-5">
+            {/* La carte s'étire (flex-1) pour égaliser la hauteur des deux
+                colonnes — mais SEULEMENT quand elle a des séances à montrer.
+                Étirer une carte vide ne comble pas le trou, ça le déplace à
+                l'intérieur d'une bordure, ce qui est bien pire. Sans séance
+                elle garde donc sa hauteur naturelle et la colonne s'arrête. */}
+            <section
+              className={`flex flex-col rounded-2xl border border-border bg-bg-card p-5 ${
+                upcoming.length > 0 ? "flex-1" : ""
+              }`}
+            >
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold text-text-base">
                   {o.nextSessions}
@@ -994,15 +1000,20 @@ export default async function OverviewPage() {
               </div>
 
               {upcoming.length === 0 ? (
-                <div className="flex flex-1 flex-col items-center justify-center gap-3 py-8 text-center">
-                  <Leo pose="ok" size={84} />
-                  <p className="text-sm text-text-dim">{o.noSessions}</p>
-                  <Link
-                    href="/dashboard/agenda"
-                    className="rounded-full border border-border-strong px-4 py-2 text-xs font-semibold text-text-muted transition-colors hover:border-accent hover:text-text-base"
-                  >
-                    {dict.agenda.add}
-                  </Link>
+                /* Léo pointe vers SA gauche : il est donc placé à droite,
+                   le doigt tombe sur le bouton. Et il pointe au lieu de
+                   lever le pouce — féliciter un agenda vide n'a aucun sens. */
+                <div className="mt-4 flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="text-sm text-text-dim">{o.noSessions}</p>
+                    <Link
+                      href="/dashboard/agenda"
+                      className="mt-2 inline-block rounded-full border border-border-strong px-4 py-2 text-xs font-semibold text-text-muted transition-colors hover:border-accent hover:text-text-base"
+                    >
+                      {dict.agenda.add}
+                    </Link>
+                  </div>
+                  <Leo pose="point" size={64} className="shrink-0" />
                 </div>
               ) : (
                 <ul className="mt-4 flex flex-col gap-2">
