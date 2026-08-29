@@ -115,29 +115,27 @@ export default function ReviewsManager({
     );
   }
 
-  // Résumé : moyenne sur les avis visibles (les masqués ne comptent pas).
-  const visible = reviews.filter((r) => !r.hidden);
+  // Résumé : la page ne reçoit que les avis visibles (les masqués par la
+  // modération sont filtrés côté serveur), la moyenne est donc directe.
   const avg =
-    visible.length > 0
-      ? Math.round(
-          (visible.reduce((s, r) => s + r.rating, 0) / visible.length) * 10
-        ) / 10
-      : null;
+    Math.round(
+      (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10
+    ) / 10;
 
   return (
     <div className="flex flex-col gap-4">
       {/* Bandeau résumé : la note en grand, le contexte en petit. */}
       <section className="flex items-center gap-5 rounded-2xl border border-border bg-bg-card p-5">
-        <div className="flex flex-col items-center">
+        <div className="flex shrink-0 flex-col items-center">
           <span className="font-display text-4xl font-extrabold tracking-tight text-text-base">
-            {avg !== null ? avg.toLocaleString(loc) : "–"}
+            {avg.toLocaleString(loc)}
           </span>
-          <Stars rating={Math.round(avg ?? 0)} size={13} />
+          <Stars rating={Math.round(avg)} size={13} />
         </div>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-text-base">
-            {visible.length}{" "}
-            {visible.length > 1
+            {reviews.length}{" "}
+            {reviews.length > 1
               ? t("coachReviews.countMany")
               : t("coachReviews.countOne")}
           </p>
@@ -181,11 +179,6 @@ export default function ReviewsManager({
                         month: "long",
                         year: "numeric",
                       })}
-                      {r.hidden && (
-                        <span className="ml-1.5 rounded-full border border-warning/40 px-1.5 py-px text-[10px] font-medium text-warning">
-                          {t("coachReviews.hiddenBadge")}
-                        </span>
-                      )}
                     </p>
                   </div>
                 </div>

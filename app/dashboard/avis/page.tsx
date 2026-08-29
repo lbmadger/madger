@@ -14,11 +14,15 @@ export default async function CoachReviewsPage() {
   const { dict } = getServerDictionary();
   const supabase = createClient();
 
+  // Un avis masqué par la modération disparaît PARTOUT, page du coach
+  // comprise : la modération a tranché, inutile de laisser une cicatrice.
+  // S'il est réaffiché depuis /admin/avis, il revient ici tel quel.
   const { data: reviews } = await supabase
     .from("reviews")
     .select(
       "id, rating, comment, created_at, reply, replied_at, hidden, clients(first_name, last_name)"
     )
+    .eq("hidden", false)
     .order("created_at", { ascending: false })
     .limit(200);
 
