@@ -39,6 +39,9 @@ export async function POST(req: NextRequest) {
     try {
       const tpl = founderAlert({
         context: "Client signalé par un coach",
+        eyebrow: "Signalement",
+        intro:
+          "Un coach vient de signaler un client. Prends contact avec le coach si besoin et juge s'il faut agir. Rien n'est automatique.",
         details: [
           `Client : ${[client.first_name, client.last_name].filter(Boolean).join(" ")} (${clientId})`,
           `Email client : ${(client.email as string | null) ?? "(aucun)"}`,

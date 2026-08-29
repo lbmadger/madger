@@ -39,7 +39,10 @@ export async function POST(req: NextRequest) {
   if (process.env.FOUNDER_EMAIL) {
     try {
       const tpl = founderAlert({
-        context: "Avis signalé par un coach (à trancher dans /admin/avis)",
+        context: "Avis signalé par un coach",
+        eyebrow: "Signalement",
+        intro:
+          "Un coach vient de signaler un avis reçu sur sa page. À toi de trancher dans /admin/avis : masquer l'avis ou le laisser en ligne. Rien n'est automatique.",
         details: [
           `Avis : ${reviewId}`,
           `Coach : ${user.email ?? user.id}`,

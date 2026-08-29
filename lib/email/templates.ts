@@ -1404,12 +1404,15 @@ export function cancellationNoRefundClient(p: {
   };
 }
 
-// ── Fondateur : alerte technique (échec de traitement monétaire) ────────────
-// Envoyée à FOUNDER_EMAIL quand un versement, remboursement ou webhook
-// Stripe échoue : mieux vaut le savoir avant le coach concerné.
+// ── Fondateur : alerte interne (panne monétaire, signalement…) ──────────────
+// Envoyée à FOUNDER_EMAIL. Par défaut l'intro parle d'un échec de traitement
+// monétaire (versements, webhooks) ; les signalements passent leur propre
+// intro/eyebrow pour ne pas parler de Stripe hors de propos.
 export function founderAlert(p: {
   context: string;
   details: string[];
+  eyebrow?: string;
+  intro?: string;
 }): { subject: string; html: string } {
   const esc = (s: string) =>
     s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -1417,9 +1420,10 @@ export function founderAlert(p: {
     subject: `⚠️ Madger : ${p.context}`,
     html: layout({
       preheader: p.context,
-      eyebrow: "Alerte technique",
+      eyebrow: p.eyebrow ?? "Alerte technique",
       title: p.context,
       intro:
+        p.intro ??
         "Un traitement lié à l'argent a échoué. À vérifier dans Stripe et dans les logs Vercel. Les lignes en échec sont retentées automatiquement au prochain passage.",
       blocks: [
         `<div style="margin:18px 0 0;padding:14px 16px;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:12px;">${p.details
