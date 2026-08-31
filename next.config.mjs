@@ -1,5 +1,12 @@
 /** @type {import("next").NextConfig} */
 const nextConfig = {
+  // Les polices des cartes story (/api/story) sont lues sur disque au
+  // runtime : on force leur inclusion dans le bundle serverless Vercel.
+  experimental: {
+    outputFileTracingIncludes: {
+      "/api/story": ["./assets/fonts/*.ttf"],
+    },
+  },
   images: {
     // Photos de profil servies depuis le Storage Supabase.
     remotePatterns: [

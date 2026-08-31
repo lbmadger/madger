@@ -44,6 +44,17 @@ const fr = {
     publicPage: "Ma page publique",
     subscription: "Abonnement",
   },
+  story: {
+    rating: "Partager ma note",
+    review: "Partager en story",
+    sessions: "Partager mes séances du mois",
+    fact: "Partager le fait du jour",
+    factTitle: "Le fait sport du jour",
+    factDesc:
+      "Un fait sport ou coaching, aux couleurs de ta page, prêt à poster. Il change chaque jour : partage-le en story pour animer ton compte.",
+    preparing: "Préparation…",
+    error: "Impossible de générer l'image. Réessaie.",
+  },
   coachReviews: {
     title: "Avis",
     summaryLabel: "Note moyenne",
@@ -1425,6 +1436,17 @@ const en: Dictionary = {
     settings: "Settings",
     publicPage: "My public page",
     subscription: "Subscription",
+  },
+  story: {
+    rating: "Share my rating",
+    review: "Share to story",
+    sessions: "Share this month's sessions",
+    fact: "Share today's fact",
+    factTitle: "Sport fact of the day",
+    factDesc:
+      "A sport or coaching fact, in your page's colors, ready to post. It changes daily: share it to your story to keep your account alive.",
+    preparing: "Preparing…",
+    error: "Could not generate the image. Try again.",
   },
   coachReviews: {
     title: "Reviews",

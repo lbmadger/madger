@@ -1,4 +1,5 @@
 import Topbar from "@/components/dashboard/Topbar";
+import ShareStoryButton from "@/components/dashboard/ShareStoryButton";
 import StatCard, { type Trend } from "@/components/dashboard/StatCard";
 import AreaChartCard from "@/components/dashboard/charts/AreaChartCard";
 import ChartCard from "@/components/dashboard/charts/ChartCard";
@@ -234,6 +235,25 @@ export default async function StatsPage() {
     <>
       <Topbar title={s.title} />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+        {/* Stories partageables : le coach poste SES chiffres (jamais
+            l'argent) et le fait sport du jour, aux couleurs de sa page, avec
+            son lien de résa. Chaque partage = visibilité pour lui et pour
+            Madger. */}
+        <section className="mb-4 flex flex-col gap-3 rounded-2xl border border-border bg-bg-card p-4 sm:mb-5 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+          <div className="min-w-0">
+            <h3 className="text-sm font-semibold text-text-base">
+              {dict.story.factTitle}
+            </h3>
+            <p className="mt-0.5 text-xs leading-relaxed text-text-dim">
+              {dict.story.factDesc}
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <ShareStoryButton type="fact" label={dict.story.fact} />
+            <ShareStoryButton type="sessions" label={dict.story.sessions} />
+          </div>
+        </section>
+
         {/* Ligne 1 */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <StatCard

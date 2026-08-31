@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
 import Leo from "@/components/ui/Leo";
+import ShareStoryButton from "@/components/dashboard/ShareStoryButton";
 import { StarIcon } from "@/components/ui/icons";
 
 // Gestion des avis côté coach, façon Vinted : réponse sous l'avis
@@ -142,6 +143,11 @@ export default function ReviewsManager({
           <p className="mt-0.5 text-xs leading-relaxed text-text-dim">
             {t("coachReviews.intro")}
           </p>
+          {/* La note est le chiffre le plus valorisant à partager : carte
+              story aux couleurs de sa page, lien de résa inclus. */}
+          <div className="mt-2.5">
+            <ShareStoryButton type="rating" label={t("story.rating")} />
+          </div>
         </div>
       </section>
 
@@ -294,6 +300,11 @@ export default function ReviewsManager({
                       ? t("coachReviews.editReply")
                       : t("coachReviews.reply")}
                   </button>
+                  <ShareStoryButton
+                    type="review"
+                    reviewId={r.id}
+                    label={t("story.review")}
+                  />
                   {reported.has(r.id) ? (
                     <span className="px-2 text-xs text-text-dim">
                       {t("coachReviews.reported")}
@@ -302,7 +313,7 @@ export default function ReviewsManager({
                     <button
                       type="button"
                       onClick={() => setReportingId(r.id)}
-                      className="rounded-full px-3 py-1.5 text-xs font-medium text-text-dim transition-colors hover:text-danger"
+                      className="ml-auto rounded-full px-3 py-1.5 text-xs font-medium text-text-dim transition-colors hover:text-danger"
                     >
                       {t("coachReviews.report")}
                     </button>
