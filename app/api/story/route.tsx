@@ -18,6 +18,10 @@ const BG = "#0A0A0A";
 const MUTED = "#9A9A9A";
 const DIM = "#6E6E6E";
 
+// Icône iOS de l'app (la même que apple-icon.tsx), embarquée en data URI.
+const LOGO_SVG = `<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="180" rx="40" fill="#111111"/><rect x="1.5" y="1.5" width="177" height="177" rx="38.5" stroke="rgba(255,255,255,0.14)" stroke-width="3" fill="none"/><path d="M 22 146 L 53 56 L 84 104 L 115 50 L 132 107 C 140 104 149 67 155 31" fill="none" stroke="#CBFF03" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><circle cx="155" cy="31" r="7.3" fill="#CBFF03"/></svg>`;
+const LOGO_SRC = `data:image/svg+xml;base64,${Buffer.from(LOGO_SVG).toString("base64")}`;
+
 async function loadFonts() {
   const dir = path.join(process.cwd(), "assets", "fonts");
   const [grotesk, inter, interSemi] = await Promise.all([
@@ -76,18 +80,29 @@ function Frame({
         alignItems: "center",
       }}
     >
-      {/* Branding discret : la story appartient au coach, pas à Madger.
-          Notre visibilité vit déjà dans le lien madger.app/slug du bas. */}
+      {/* Branding discret : l'icône iOS de l'app au-dessus du wordmark en
+          filigrane. La story appartient au coach, pas à Madger. */}
       <div
         style={{
           display: "flex",
-          fontFamily: "Grotesk",
-          fontSize: 28,
-          color: "rgba(255,255,255,0.32)",
-          letterSpacing: 8,
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 20,
         }}
       >
-        MADGER
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={LOGO_SRC} width={76} height={76} alt="" />
+        <div
+          style={{
+            display: "flex",
+            fontFamily: "Grotesk",
+            fontSize: 28,
+            color: "rgba(255,255,255,0.32)",
+            letterSpacing: 8,
+          }}
+        >
+          MADGER
+        </div>
       </div>
 
       <div
