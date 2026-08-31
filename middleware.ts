@@ -15,6 +15,10 @@ const PUBLIC_EXACT = new Set([
   // le lien reçu par email fonctionne dans n'importe quel navigateur.
   "/forgot-password",
   "/reset-password",
+  // Retours d'authentification : les liens reçus par email doivent aboutir
+  // dans n'importe quel navigateur, y compris sans cookie d'accès anticipé.
+  "/auth/confirm",
+  "/auth/callback",
   "/opengraph-image",
   "/robots.txt",
   "/sitemap.xml",
