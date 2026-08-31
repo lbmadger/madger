@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import ConversationList from "@/components/messaging/ConversationList";
 import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
@@ -45,6 +46,19 @@ export default async function ClientMessagesPage() {
     .select("*")
     .eq("client_id", user?.id ?? "")
     .order("last_message_at", { ascending: false });
+
+  // Piège du double rôle : un coach connecté qui atterrit ici (lien d'email
+  // ouvert dans le navigateur où vit sa session coach) verrait « aucune
+  // conversation » alors que sa messagerie coach est pleine. S'il n'a aucune
+  // conversation côté client mais un profil coach, sa place est au dashboard.
+  if ((data ?? []).length === 0 && user) {
+    const { data: coachRow } = await supabase
+      .from("coaches")
+      .select("id")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (coachRow) redirect("/dashboard/messages");
+  }
   const previews = await lastMessagePreviews(
     supabase,
     (data ?? []).map((c) => c.id as string),

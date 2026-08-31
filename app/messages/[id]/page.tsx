@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import MessageThread from "@/components/messaging/MessageThread";
 import { createClient } from "@/lib/supabase/server";
 import type { Conversation, Message } from "@/lib/messaging/types";
@@ -24,6 +24,14 @@ export default async function ClientThreadPage({
     notFound();
   }
   const conversation = conv as Conversation;
+
+  // Le coach participant qui ouvre le fil par la route CLIENT (lien d'email
+  // du client ouvert avec sa session coach) doit retrouver SON interface :
+  // sinon il voit le fil avec son propre nom en interlocuteur et une liste
+  // « aucun message » au retour.
+  if (user.id === conversation.coach_id) {
+    redirect(`/dashboard/messages/${conversation.id}`);
+  }
 
   // Les 100 derniers messages suffisent à l'affichage initial.
   const { data: msgs } = await supabase

@@ -297,10 +297,13 @@ export default function ClientOnboarding() {
                 <input type="number" inputMode="decimal" step="0.5" min={30} max={300} value={weightKg} onChange={(e) => setWeightKg(e.target.value)} className={inputClass} />
               </label>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            {/* Empilés sur mobile : sur iOS le champ date natif refuse de
+                rétrécir et chevauche la colonne voisine (même bug que dans
+                l'agenda coach). */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <label className="flex flex-col gap-1.5">
                 <span className={labelClass}>{t("clientOnboarding.birthDate")} <span className="font-normal text-text-dim">{t("common.optional")}</span></span>
-                <input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} className={inputClass} />
+                <input type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} className={`${inputClass} appearance-none [&::-webkit-date-and-time-value]:text-left`} />
               </label>
               <label className="flex flex-col gap-1.5">
                 <span className={labelClass}>

@@ -115,6 +115,19 @@ export default function ClientSpace({
     (b) => new Date(b.ends_at).getTime() < now || b.status === "cancelled"
   );
 
+  // Petites stats du client : séances réservées ce mois-ci (passées et à
+  // venir) et total, annulations exclues. Calculées sur les réservations
+  // déjà chargées : aucun aller-retour de plus.
+  const nowD = new Date();
+  const active = bookings.filter((b) => b.status !== "cancelled");
+  const monthCount = active.filter((b) => {
+    const d = new Date(b.starts_at);
+    return (
+      d.getFullYear() === nowD.getFullYear() && d.getMonth() === nowD.getMonth()
+    );
+  }).length;
+  const totalCount = active.length;
+
   function dateStr(iso: string): string {
     return new Date(iso).toLocaleString(loc, {
       weekday: "long",
@@ -223,6 +236,29 @@ export default function ClientSpace({
           {t("clientSpace.myProfile")}
         </Link>
       </div>
+
+      {/* Mini-stats : uniquement quand il y a de la matière, un espace vide
+          n'a pas besoin de compteurs à zéro. */}
+      {totalCount > 0 && (
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:max-w-sm">
+          <div className="rounded-2xl border border-border bg-bg-card px-4 py-3">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-text-dim">
+              {t("clientSpace.statsMonth")}
+            </p>
+            <p className="mt-1 font-display text-2xl font-extrabold tracking-tight text-text-base">
+              {monthCount}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-border bg-bg-card px-4 py-3">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-text-dim">
+              {t("clientSpace.statsTotal")}
+            </p>
+            <p className="mt-1 font-display text-2xl font-extrabold tracking-tight text-text-base">
+              {totalCount}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Deux colonnes sur grand écran : séances à gauche, abonnements et
           packs à droite. Une seule colonne sur mobile (ordre inchangé). */}
