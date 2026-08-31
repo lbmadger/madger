@@ -4,6 +4,7 @@ import { createClient as createAdmin } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
+import { notifyClient } from "@/lib/notifications/client";
 import { requestReceivedClient } from "@/lib/email/templates";
 import { googleCalendarUrl } from "@/lib/calendar/links";
 import { attachMeetToBooking } from "@/lib/google/calendar";
@@ -215,6 +216,13 @@ export async function POST(req: NextRequest) {
           }),
         });
         await sendEmail({ to: client.email, subject: tpl.subject, html: tpl.html });
+        await notifyClient(admin, {
+          email: client.email,
+          type: "accepted",
+          coachName,
+          startsAt: booking.starts_at as string,
+          bookingId: booking.id as string,
+        });
       }
     }
   } catch {

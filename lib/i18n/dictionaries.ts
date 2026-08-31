@@ -55,6 +55,16 @@ const fr = {
     preparing: "Préparation…",
     error: "Impossible de générer l'image. Réessaie.",
   },
+  clientNotifs: {
+    title: "Notifications",
+    empty: "Rien pour le moment. Les changements sur tes séances apparaîtront ici.",
+    types: {
+      cancelled: "Séance annulée",
+      declined: "Demande refusée",
+      rescheduled: "Séance déplacée",
+      accepted: "Demande acceptée",
+    },
+  },
   coachReviews: {
     title: "Avis",
     summaryLabel: "Note moyenne",
@@ -1450,6 +1460,16 @@ const en: Dictionary = {
       "Madger generates images in your colors with your booking link written on them: your rating, your month's sessions, or a sport fact that changes daily. Share them to your story: your followers see an active, professional coach, discover you take online bookings, and book in one tap. Zero editing: you tap, you share.",
     preparing: "Preparing…",
     error: "Could not generate the image. Try again.",
+  },
+  clientNotifs: {
+    title: "Notifications",
+    empty: "Nothing yet. Changes to your sessions will show up here.",
+    types: {
+      cancelled: "Session cancelled",
+      declined: "Request declined",
+      rescheduled: "Session rescheduled",
+      accepted: "Request accepted",
+    },
   },
   coachReviews: {
     title: "Reviews",

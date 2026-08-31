@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
+import ClientBell from "@/components/client/ClientBell";
 import { useConfirm } from "@/components/ui/useConfirm";
 import { TicketIcon, RepeatIcon, StarIcon } from "@/components/ui/icons";
 import {
@@ -241,6 +242,7 @@ export default function ClientSpace({
         >
           {t("clientSpace.myProfile")}
         </Link>
+        <ClientBell />
       </nav>
 
       {/* Mini-stats : uniquement quand il y a de la matière, un espace vide

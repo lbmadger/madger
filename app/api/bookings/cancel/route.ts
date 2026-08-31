@@ -7,6 +7,7 @@ import { computePayout } from "@/lib/stripe/escrow";
 import { refundCents, resolveRefundPolicy } from "@/lib/booking/cancellation";
 import { isPro } from "@/lib/subscription/plan";
 import { sendEmail } from "@/lib/email/resend";
+import { notifyClient } from "@/lib/notifications/client";
 import {
   refundClient,
   bookingCancelledClient,
@@ -149,6 +150,13 @@ export async function POST(req: NextRequest) {
           declined: true,
         });
         await sendEmail({ to: client.email, subject: tpl.subject, html: tpl.html });
+        await notifyClient(admin, {
+          email: client.email,
+          type: "declined",
+          coachName: [coach?.first_name, coach?.last_name].filter(Boolean).join(" "),
+          startsAt: booking.starts_at as string,
+          bookingId,
+        });
       }
     } catch {
       /* best-effort */
@@ -191,6 +199,13 @@ export async function POST(req: NextRequest) {
             to: client.email,
             subject: tpl.subject,
             html: tpl.html,
+          });
+          await notifyClient(admin, {
+            email: client.email,
+            type: wasPending ? "declined" : "cancelled",
+            coachName: [coach?.first_name, coach?.last_name].filter(Boolean).join(" "),
+            startsAt: booking.starts_at as string,
+            bookingId,
           });
         }
       }
@@ -342,6 +357,17 @@ export async function POST(req: NextRequest) {
                 }),
               });
         await sendEmail({ to: client.email, subject: tpl.subject, html: tpl.html });
+        // Cloche in-app : seulement quand le COACH annule (le client qui
+        // annule lui-même n'a pas besoin d'en être notifié).
+        if (by === "coach") {
+          await notifyClient(admin, {
+            email: client.email,
+            type: "cancelled",
+            coachName,
+            startsAt: booking.starts_at as string,
+            bookingId,
+          });
+        }
       }
     } catch {
       /* best-effort */

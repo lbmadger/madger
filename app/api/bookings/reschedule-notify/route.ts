@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
+import { notifyClient } from "@/lib/notifications/client";
 import { bookingRescheduledClient } from "@/lib/email/templates";
 import {
   attachMeetToBooking,
@@ -113,6 +114,14 @@ export async function POST(req: NextRequest) {
         subject: tpl.subject,
         html: tpl.html,
         replyTo: "contact@madger.app",
+      });
+      await notifyClient(admin, {
+        email: client.email,
+        type: "rescheduled",
+        coachName:
+          [coach?.first_name, coach?.last_name].filter(Boolean).join(" "),
+        startsAt: booking.starts_at as string,
+        bookingId,
       });
     }
   } catch {
