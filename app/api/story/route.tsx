@@ -76,13 +76,15 @@ function Frame({
         alignItems: "center",
       }}
     >
+      {/* Branding discret : la story appartient au coach, pas à Madger.
+          Notre visibilité vit déjà dans le lien madger.app/slug du bas. */}
       <div
         style={{
           display: "flex",
           fontFamily: "Grotesk",
-          fontSize: 52,
-          color: ACCENT,
-          letterSpacing: 10,
+          fontSize: 28,
+          color: "rgba(255,255,255,0.32)",
+          letterSpacing: 8,
         }}
       >
         MADGER
