@@ -93,6 +93,7 @@ export async function POST(req: NextRequest) {
 
   const tpl = newMessageNotif({
     locale: recipientLocale,
+    toCoach,
     senderName:
       (toCoach ? (conv.client_name as string) : (conv.coach_name as string)) ||
       (toCoach

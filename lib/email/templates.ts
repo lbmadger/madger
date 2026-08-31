@@ -477,8 +477,13 @@ export function newMessageNotif(p: {
   // Lien secondaire vers les séances (agenda côté coach, espace côté client).
   sessionsUrl?: string;
   locale?: EmailLocale;
+  // Le gabarit doit savoir à qui il parle : le libellé du lien secondaire
+  // (« Ouvrir mon agenda » vs « Voir mes séances ») et la phrase de fin
+  // (conseil business au coach vs simple invite au client) en dépendent.
+  toCoach?: boolean;
 }): Email {
   const locale = p.locale ?? "fr";
+  const toCoach = p.toCoach ?? false;
   const safe = p.preview
     .slice(0, 300)
     .replace(/&/g, "&amp;")
@@ -493,9 +498,10 @@ export function newMessageNotif(p: {
           intro: `<b style="color:${C.text};">${p.senderName}</b> wrote to you:`,
           boxTitle: "Message",
           cta: "Reply",
-          sessions: "View my sessions",
-          outro:
-            "Replying quickly makes all the difference: most clients pick the coach who answers first.",
+          sessions: toCoach ? "Open my calendar" : "View my sessions",
+          outro: toCoach
+            ? "Replying quickly makes all the difference: most clients pick the coach who answers first."
+            : "You can reply straight from your messages: your coach gets notified in turn.",
         }
       : {
           subject: `Nouveau message de ${p.senderName}`,
@@ -504,9 +510,10 @@ export function newMessageNotif(p: {
           intro: `<b style="color:${C.text};">${p.senderName}</b> t'a écrit :`,
           boxTitle: "Message",
           cta: "Répondre",
-          sessions: "Voir mes séances",
-          outro:
-            "Répondre vite fait toute la différence : la plupart des clients choisissent le coach qui répond en premier.",
+          sessions: toCoach ? "Ouvrir mon agenda" : "Voir mes séances",
+          outro: toCoach
+            ? "Répondre vite fait toute la différence : la plupart des clients choisissent le coach qui répond en premier."
+            : "Tu peux répondre directement depuis ta messagerie : ton coach est prévenu à son tour.",
         };
   return {
     subject: L.subject,
