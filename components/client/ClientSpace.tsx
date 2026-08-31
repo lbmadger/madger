@@ -219,27 +219,29 @@ export default function ClientSpace({
         {t("clientSpace.title")}
       </h1>
 
-      {/* Raccourcis */}
-      <div className="mt-4 flex flex-wrap gap-2">
-        <Link
-          href="/coachs"
-          className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+      {/* Navigation de l'espace client : pas de menu latéral ici, ces
+          onglets en tiennent lieu. « Trouver un coach » n'y figure pas :
+          il vit dans l'état vide et sur la marketplace, pas dans la nav. */}
+      <nav className="mt-5 flex gap-5 border-b border-border">
+        <span
+          aria-current="page"
+          className="-mb-px border-b-2 border-accent pb-2.5 text-sm font-semibold text-text-base"
         >
-          {t("clientSpace.findCoach")}
-        </Link>
+          {t("clientSpace.title")}
+        </span>
         <Link
           href="/messages"
-          className="rounded-full border border-border-strong px-4 py-2 text-sm font-medium text-text-muted transition-colors hover:text-text-base"
+          className="-mb-px border-b-2 border-transparent pb-2.5 text-sm font-medium text-text-muted transition-colors hover:text-text-base"
         >
           {t("clientSpace.messages")}
         </Link>
         <Link
           href="/onboarding-client"
-          className="rounded-full border border-border-strong px-4 py-2 text-sm font-medium text-text-muted transition-colors hover:text-text-base"
+          className="-mb-px border-b-2 border-transparent pb-2.5 text-sm font-medium text-text-muted transition-colors hover:text-text-base"
         >
           {t("clientSpace.myProfile")}
         </Link>
-      </div>
+      </nav>
 
       {/* Mini-stats : uniquement quand il y a de la matière, un espace vide
           n'a pas besoin de compteurs à zéro. */}
