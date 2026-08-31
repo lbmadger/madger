@@ -115,16 +115,20 @@ export default function ClientSpace({
     (b) => new Date(b.ends_at).getTime() < now || b.status === "cancelled"
   );
 
-  // Petites stats du client : séances réservées ce mois-ci (passées et à
-  // venir) et total, annulations exclues. Calculées sur les réservations
-  // déjà chargées : aucun aller-retour de plus.
+  // Petites stats du client : séances de la semaine en cours (lundi à
+  // dimanche, passées et à venir) et total, annulations exclues. Calculées
+  // sur les réservations déjà chargées : aucun aller-retour de plus.
   const nowD = new Date();
+  const weekStart = new Date(nowD);
+  weekStart.setHours(0, 0, 0, 0);
+  // getDay() : 0 = dimanche → reculer au lundi de la semaine en cours.
+  weekStart.setDate(nowD.getDate() - ((nowD.getDay() + 6) % 7));
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 7);
   const active = bookings.filter((b) => b.status !== "cancelled");
-  const monthCount = active.filter((b) => {
+  const weekCount = active.filter((b) => {
     const d = new Date(b.starts_at);
-    return (
-      d.getFullYear() === nowD.getFullYear() && d.getMonth() === nowD.getMonth()
-    );
+    return d >= weekStart && d < weekEnd;
   }).length;
   const totalCount = active.length;
 
@@ -243,10 +247,10 @@ export default function ClientSpace({
         <div className="mt-4 grid grid-cols-2 gap-2 sm:max-w-sm">
           <div className="rounded-2xl border border-border bg-bg-card px-4 py-3">
             <p className="text-[11px] font-medium uppercase tracking-wide text-text-dim">
-              {t("clientSpace.statsMonth")}
+              {t("clientSpace.statsWeek")}
             </p>
             <p className="mt-1 font-display text-2xl font-extrabold tracking-tight text-text-base">
-              {monthCount}
+              {weekCount}
             </p>
           </div>
           <div className="rounded-2xl border border-border bg-bg-card px-4 py-3">

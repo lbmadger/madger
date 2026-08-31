@@ -1150,7 +1150,7 @@ const fr = {
     doneDesc:
       "Ton coach verra ces infos dès votre premier échange. Tu peux les modifier à tout moment.",
     findCoach: "Trouver mon coach",
-    statsMonth: "Séances ce mois-ci",
+    statsWeek: "Séances cette semaine",
     statsTotal: "Séances au total",
     goMessages: "Voir mes messages",
     bmi: {
@@ -2538,7 +2538,7 @@ const en: Dictionary = {
     doneDesc:
       "Your coach will see this from your very first exchange. You can edit it anytime.",
     findCoach: "Find my coach",
-    statsMonth: "Sessions this month",
+    statsWeek: "Sessions this week",
     statsTotal: "Sessions overall",
     goMessages: "See my messages",
     bmi: {
