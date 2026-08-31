@@ -47,11 +47,11 @@ const fr = {
   story: {
     rating: "Partager ma note",
     review: "Partager en story",
-    sessions: "Partager mes séances du mois",
-    fact: "Partager le fait du jour",
-    factTitle: "Le fait sport du jour",
-    factDesc:
-      "Un fait sport ou coaching, aux couleurs de ta page, prêt à poster. Il change chaque jour : partage-le en story pour animer ton compte.",
+    sessions: "Mes séances du mois",
+    fact: "Le fait sport du jour",
+    studioTitle: "Tes stories, prêtes à poster",
+    studioDesc:
+      "Madger génère des images à tes couleurs avec ton lien de réservation écrit dessus : ta note, tes séances du mois, ou un fait sport qui change chaque jour. Partage-les en story : tes abonnés voient un coach actif et pro, découvrent que tu prends des réservations en ligne, et réservent en un clic. Zéro montage : tu appuies, tu partages.",
     preparing: "Préparation…",
     error: "Impossible de générer l'image. Réessaie.",
   },
@@ -1440,11 +1440,11 @@ const en: Dictionary = {
   story: {
     rating: "Share my rating",
     review: "Share to story",
-    sessions: "Share this month's sessions",
-    fact: "Share today's fact",
-    factTitle: "Sport fact of the day",
-    factDesc:
-      "A sport or coaching fact, in your page's colors, ready to post. It changes daily: share it to your story to keep your account alive.",
+    sessions: "My month's sessions",
+    fact: "Sport fact of the day",
+    studioTitle: "Your stories, ready to post",
+    studioDesc:
+      "Madger generates images in your colors with your booking link written on them: your rating, your month's sessions, or a sport fact that changes daily. Share them to your story: your followers see an active, professional coach, discover you take online bookings, and book in one tap. Zero editing: you tap, you share.",
     preparing: "Preparing…",
     error: "Could not generate the image. Try again.",
   },

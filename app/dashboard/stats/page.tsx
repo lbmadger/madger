@@ -29,7 +29,7 @@ export default async function StatsPage() {
   // Historique borné à 1 an : suffisant pour toutes les stats affichées.
   const yearAgo = new Date(nowMs - 366 * 86400000).toISOString();
 
-  const [clientsRes, bookingsRes, paymentsRes, rpcMonthlyRes, rpcWeeklyRes, svcRes] =
+  const [clientsRes, bookingsRes, paymentsRes, rpcMonthlyRes, rpcWeeklyRes, svcRes, storyCoachRes] =
     await Promise.all([
       supabase.from("clients").select("created_at"),
       supabase
@@ -52,7 +52,10 @@ export default async function StatsPage() {
         .eq("status", "paid")
         .gte("paid_at", yearAgo)
         .limit(2000),
+      // RLS coaches_select_own : renvoie uniquement la ligne du coach.
+      supabase.from("coaches").select("rating_count").maybeSingle(),
     ]);
+  const storyCoach = storyCoachRes.data as { rating_count: number | null } | null;
 
   const clients = (clientsRes.data ?? []) as ClientRow[];
   const bookings = (bookingsRes.data ?? []) as Booking[];
@@ -235,22 +238,23 @@ export default async function StatsPage() {
     <>
       <Topbar title={s.title} />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
-        {/* Stories partageables : le coach poste SES chiffres (jamais
-            l'argent) et le fait sport du jour, aux couleurs de sa page, avec
-            son lien de résa. Chaque partage = visibilité pour lui et pour
-            Madger. */}
-        <section className="mb-4 flex flex-col gap-3 rounded-2xl border border-border bg-bg-card p-4 sm:mb-5 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-          <div className="min-w-0">
-            <h3 className="text-sm font-semibold text-text-base">
-              {dict.story.factTitle}
-            </h3>
-            <p className="mt-0.5 text-xs leading-relaxed text-text-dim">
-              {dict.story.factDesc}
-            </p>
-          </div>
-          <div className="flex shrink-0 flex-wrap gap-2">
+        {/* Studio stories : le coach poste SES chiffres (jamais l'argent)
+            ou le fait sport du jour, aux couleurs de sa page, avec son lien
+            de résa. L'explication du POURQUOI est le cœur du bloc : sans
+            elle, personne ne clique. */}
+        <section className="mb-4 rounded-2xl border border-accent/20 bg-gradient-to-br from-accent/[0.06] to-transparent p-4 sm:mb-5 sm:p-5">
+          <h3 className="text-sm font-semibold text-text-base">
+            {dict.story.studioTitle}
+          </h3>
+          <p className="mt-1 max-w-2xl text-xs leading-relaxed text-text-muted">
+            {dict.story.studioDesc}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
             <ShareStoryButton type="fact" label={dict.story.fact} />
             <ShareStoryButton type="sessions" label={dict.story.sessions} />
+            {(storyCoach?.rating_count ?? 0) > 0 && (
+              <ShareStoryButton type="rating" label={dict.story.rating} />
+            )}
           </div>
         </section>
 
