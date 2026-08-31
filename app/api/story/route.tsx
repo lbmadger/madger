@@ -103,36 +103,36 @@ function Frame({
         {children}
       </div>
 
-      <div
-        style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 26 }}
-      >
-        {slug && (
-          <div
-            style={{
-              display: "flex",
-              backgroundColor: ACCENT,
-              color: "#000000",
-              fontFamily: "Grotesk",
-              fontSize: 46,
-              padding: "26px 54px",
-              borderRadius: 999,
-            }}
-          >
-            madger.app/{slug}
-          </div>
-        )}
+      {/* Pied discret : sur une story rien n'est cliquable, le réflexe
+          Instagram c'est le lien en bio (où vit déjà madger.app/slug). Pas
+          de grosse pastille : la carte reste celle du coach. */}
+      <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
         <div
           style={{
             display: "flex",
             fontFamily: "Inter",
             fontWeight: 600,
-            fontSize: 28,
+            fontSize: 27,
             color: DIM,
-            letterSpacing: 6,
+            letterSpacing: 5,
           }}
         >
-          {slug ? "RÉSERVE TA SÉANCE EN LIGNE" : "L'APP DES COACHS SPORTIFS"}
+          {slug ? "RÉSERVE TA SÉANCE ·" : "L'APP DES COACHS SPORTIFS"}
         </div>
+        {slug && (
+          <div
+            style={{
+              display: "flex",
+              fontFamily: "Inter",
+              fontWeight: 600,
+              fontSize: 27,
+              color: ACCENT,
+              letterSpacing: 5,
+            }}
+          >
+            LIEN EN BIO
+          </div>
+        )}
       </div>
     </div>
   );
