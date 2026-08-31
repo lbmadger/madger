@@ -82,6 +82,82 @@ export const STORY_FACTS: StoryFact[] = [
     kicker: "Le savais-tu ?",
     text: "Le renforcement musculaire est recommandé au moins deux fois par semaine par l'OMS, à tout âge.",
   },
+  {
+    kicker: "Le savais-tu ?",
+    text: "S'asseoir moins et bouger plus, même par petites touches, compte déjà : chaque mouvement est un point marqué contre la sédentarité.",
+  },
+  {
+    kicker: "Le savais-tu ?",
+    text: "La force protège au quotidien : porter, monter, se relever. On ne s'entraîne pas que pour l'été, on s'entraîne pour la vie.",
+  },
+  {
+    kicker: "Le savais-tu ?",
+    text: "Le meilleur programme du monde est celui que tu tiens. La perfection sur le papier ne brûle aucune calorie.",
+  },
+  {
+    kicker: "Le savais-tu ?",
+    text: "Les jambes sont le plus gros moteur du corps : les entraîner profite à tout le reste, posture, dos et souffle compris.",
+  },
+  {
+    kicker: "Le savais-tu ?",
+    text: "L'entraînement s'adapte à la forme du jour : une séance allégée un jour de fatigue vaut mieux qu'une séance sautée.",
+  },
+  {
+    kicker: "Le savais-tu ?",
+    text: "Noter ses séances change tout : on ne progresse bien que sur ce qu'on mesure.",
+  },
+  {
+    kicker: "Le savais-tu ?",
+    text: "La marche rapide est un vrai entraînement cardio, accessible partout, sans matériel et sans excuse.",
+  },
+  {
+    kicker: "Vrai ou faux ?",
+    text: "« On peut cibler la perte de graisse sur une zone » : faux. Le corps déstocke globalement, pas là où on fait des abdos.",
+  },
+  {
+    kicker: "Vrai ou faux ?",
+    text: "« Plus on s'entraîne, mieux c'est » : faux. Sans récupération, l'entraînement en trop devient de la fatigue en trop.",
+  },
+  {
+    kicker: "Vrai ou faux ?",
+    text: "« Le gainage, c'est juste pour les abdos » : faux. C'est le socle qui protège ton dos sur tous les mouvements.",
+  },
+  {
+    kicker: "Vrai ou faux ?",
+    text: "« Il faut finir épuisé pour que ça compte » : faux. Une bonne séance se termine fatigué, pas détruit.",
+  },
+  {
+    kicker: "Vrai ou faux ?",
+    text: "« Après 50 ans, la musculation c'est risqué » : faux. Bien encadrée, c'est justement l'un des meilleurs investissements santé.",
+  },
+  {
+    kicker: "Vrai ou faux ?",
+    text: "« Étirements avant la séance = moins de blessures » : pas si simple. Ce qui protège, c'est un échauffement progressif et adapté.",
+  },
+  {
+    kicker: "Côté coach",
+    text: "Ce que tu achètes avec un coach, ce n'est pas une séance : c'est des années d'erreurs que tu n'auras pas à faire.",
+  },
+  {
+    kicker: "Côté coach",
+    text: "Un coach voit ce que tu ne vois pas : la posture, la compensation, le mouvement qui te blessera dans six mois.",
+  },
+  {
+    kicker: "Côté coach",
+    text: "La motivation va et vient. Un rendez-vous avec quelqu'un qui t'attend, ça, ça reste.",
+  },
+  {
+    kicker: "Côté coach",
+    text: "Les progrès viennent rarement d'en faire plus. Ils viennent de faire mieux, et c'est le métier du coach.",
+  },
+  {
+    kicker: "Côté coach",
+    text: "Un objectif sans plan, c'est un souhait. Un objectif avec un coach, c'est un calendrier.",
+  },
+  {
+    kicker: "Côté coach",
+    text: "Le jour où tu n'as pas envie, c'est le jour où être attendu fait toute la différence.",
+  },
 ];
 
 // Fait « du jour » : déterministe (jour depuis l'époque), tout le monde voit
