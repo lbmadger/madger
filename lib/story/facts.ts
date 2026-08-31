@@ -158,6 +158,94 @@ export const STORY_FACTS: StoryFact[] = [
     kicker: "Côté coach",
     text: "Le jour où tu n'as pas envie, c'est le jour où être attendu fait toute la différence.",
   },
+  {
+    kicker: "Le savais-tu ?",
+    text: "Boire de l'eau régulièrement améliore déjà tes performances : la déshydratation se paie avant même d'avoir soif.",
+  },
+  {
+    kicker: "Le savais-tu ?",
+    text: "Le corps s'adapte à ce qu'on lui demande souvent : c'est la répétition qui transforme, pas l'exception.",
+  },
+  {
+    kicker: "Le savais-tu ?",
+    text: "La mobilité, c'est de la force dans l'amplitude : en travailler un peu chaque semaine rend toutes tes séances meilleures.",
+  },
+  {
+    kicker: "Le savais-tu ?",
+    text: "Bien dormir après l'entraînement, c'est le moment où la séance paie : la réparation musculaire se joue la nuit.",
+  },
+  {
+    kicker: "Le savais-tu ?",
+    text: "Commencer petit n'est pas un défaut : c'est la meilleure façon de durer.",
+  },
+  {
+    kicker: "Le savais-tu ?",
+    text: "Les protéines réparent le muscle après l'effort : en mettre à chaque repas aide ton corps à faire son travail.",
+  },
+  {
+    kicker: "Le savais-tu ?",
+    text: "Le sport est un anti-stress mécanique : bouger décharge ce que la journée a accumulé.",
+  },
+  {
+    kicker: "Le savais-tu ?",
+    text: "Ton corps ne connaît pas les lundis : la meilleure séance est celle que tu peux faire aujourd'hui.",
+  },
+  {
+    kicker: "Le savais-tu ?",
+    text: "Récupérer activement (marche, vélo tranquille) répare souvent mieux qu'un canapé : le mouvement doux fait circuler.",
+  },
+  {
+    kicker: "Le savais-tu ?",
+    text: "La constance paie des intérêts composés : chaque semaine tenue rend la suivante plus facile.",
+  },
+  {
+    kicker: "Vrai ou faux ?",
+    text: "« Le cardio fait fondre le muscle » : faux aux doses de la vraie vie. Bien dosés, cardio et muscu se renforcent.",
+  },
+  {
+    kicker: "Vrai ou faux ?",
+    text: "« Sans salle, pas de vrais résultats » : faux. Poids du corps, élastiques et régularité construisent déjà énormément.",
+  },
+  {
+    kicker: "Vrai ou faux ?",
+    text: "« La musculation, c'est pour les hommes » : faux et daté. La force est un allié santé, pour tout le monde.",
+  },
+  {
+    kicker: "Vrai ou faux ?",
+    text: "« Si la balance ne bouge pas, ça ne marche pas » : faux. Elle ne voit ni le muscle pris, ni le tour de taille perdu.",
+  },
+  {
+    kicker: "Vrai ou faux ?",
+    text: "« Trop tard pour commencer » : faux. Le corps répond à l'entraînement à tout âge.",
+  },
+  {
+    kicker: "Vrai ou faux ?",
+    text: "« Il faut souffrir pour mériter ses résultats » : faux. L'inconfort fait partie du jeu, la douleur est un signal d'arrêt.",
+  },
+  {
+    kicker: "Côté coach",
+    text: "Deux personnes, même programme, résultats différents : c'est exactement pour ça que le coaching existe.",
+  },
+  {
+    kicker: "Côté coach",
+    text: "Un coach ne compte pas que tes répétitions : il construit la version de toi qui n'abandonne pas.",
+  },
+  {
+    kicker: "Côté coach",
+    text: "Se blesser fait perdre des mois. Être bien encadré, c'est d'abord une assurance.",
+  },
+  {
+    kicker: "Côté coach",
+    text: "Le premier rendez-vous avec un coach n'engage à rien, sauf à savoir enfin par où commencer.",
+  },
+  {
+    kicker: "Côté coach",
+    text: "Ton coach a un plan pour tes semaines molles. C'est même là qu'il sert le plus.",
+  },
+  {
+    kicker: "Côté coach",
+    text: "Derrière une transformation durable, il y a rarement un exploit : il y a quelqu'un qui n'a pas lâché, et souvent quelqu'un qui l'accompagne.",
+  },
 ];
 
 // Fait « du jour » : déterministe (jour depuis l'époque), tout le monde voit
