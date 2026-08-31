@@ -23,6 +23,25 @@ export default function ConversationList({
   const { t, locale } = useI18n();
   const loc = locale === "fr" ? "fr-FR" : "en-GB";
 
+  // Horodatage façon WhatsApp : l'heure si le message date d'aujourd'hui,
+  // « hier » si c'est hier, la date sinon. Fuseau du navigateur : c'est le
+  // lecteur qui regarde sa liste.
+  function timeLabel(iso: string): string {
+    const d = new Date(iso);
+    const now = new Date();
+    const sameDay = (a: Date, b: Date) =>
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate();
+    if (sameDay(d, now)) {
+      return d.toLocaleTimeString(loc, { hour: "2-digit", minute: "2-digit" });
+    }
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    if (sameDay(d, yesterday)) return t("messages.yesterday");
+    return d.toLocaleDateString(loc, { day: "2-digit", month: "short" });
+  }
+
   // Conversation non lue : le dernier message vient de l'autre ET est plus
   // récent que ma dernière lecture (ou je n'ai jamais ouvert le fil).
   function isUnread(c: Conversation): boolean {
@@ -98,10 +117,7 @@ export default function ConversationList({
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1.5">
                 <span className="text-[11px] text-text-dim">
-                  {new Date(c.last_message_at).toLocaleDateString(loc, {
-                    day: "2-digit",
-                    month: "short",
-                  })}
+                  {timeLabel(c.last_message_at)}
                 </span>
                 {unread && (
                   <span
