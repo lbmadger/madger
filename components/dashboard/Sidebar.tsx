@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import MadgerLogo from "@/components/ui/MadgerLogo";
@@ -126,13 +127,25 @@ function NavLink({ item, unread = 0 }: { item: NavItem; unread?: number }) {
     <Link
       href={item.href}
       aria-current={active ? "page" : undefined}
-      className={`${base} ${
+      className={`${base} relative ${
         active
-          ? "bg-accent/10 text-accent"
+          ? "text-accent"
           : "text-text-muted hover:bg-bg-elevated hover:text-text-base"
       }`}
     >
-      {content}
+      {/* Surlignage qui glisse d'une entrée à l'autre (même mécanique que
+          la barre mobile : layoutId partagé + ressort framer-motion). */}
+      {active && (
+        <motion.span
+          layoutId="sidebar-pill"
+          transition={{ type: "spring", stiffness: 500, damping: 42 }}
+          className="absolute inset-0 rounded-lg bg-accent/10"
+          aria-hidden
+        />
+      )}
+      <span className="relative flex min-w-0 flex-1 items-center gap-3">
+        {content}
+      </span>
     </Link>
   );
 }

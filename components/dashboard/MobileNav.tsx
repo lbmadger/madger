@@ -1,21 +1,21 @@
 "use client";
 
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { isNavActive } from "@/lib/ui/nav";
 import { useUnreadCount } from "@/lib/messaging/useUnreadCount";
 
-// Barre d'onglets mobile, fixée en bas de l'écran (façon app native).
-// Visible < md uniquement ; le sidebar prend le relais en desktop. On y met
-// les entrées principales pour garder le pouce à portée. Les modules "soon"
-// sont grisés mais visibles pour montrer la trajectoire produit.
+// Barre d'onglets mobile flottante (façon app native) : capsule détachée du
+// bord, et une pastille accent qui GLISSE d'un onglet à l'autre au changement
+// de page (animation à ressort via framer-motion layoutId). Visible < md ;
+// le sidebar prend le relais en desktop avec la même mécanique.
 
 type Tab = {
   href: string;
   labelKey: string;
   icon: React.ReactNode;
-  soon?: boolean;
 };
 
 const TABS: Tab[] = [
@@ -56,68 +56,67 @@ export default function MobileNav() {
   if (/^\/dashboard\/messages\/./.test(pathname)) return null;
 
   return (
-    <nav
-      className="fixed inset-x-0 bottom-0 z-20 flex border-t border-border bg-bg-elevated/95 backdrop-blur md:hidden"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+    <div
+      className="fixed inset-x-0 bottom-0 z-20 px-3 md:hidden"
+      style={{ paddingBottom: "max(0.6rem, env(safe-area-inset-bottom))" }}
     >
-      {TABS.map((tab) => {
-        const active = isNavActive(pathname, tab.href, tab.href === "/dashboard");
-        const className = `flex min-w-0 flex-1 flex-col items-center gap-1 px-1 py-2.5 text-[10px] font-medium transition-colors ${
-          tab.soon
-            ? "text-text-dim"
-            : active
-            ? "text-accent"
-            : "text-text-muted"
-        }`;
-
-        const showBadge = tab.href === "/dashboard/messages" && unread > 0;
-        const inner = (
-          <>
-            <span className="relative">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                {tab.icon}
-              </svg>
-              {showBadge && (
-                <span
-                  className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[9px] font-bold text-black"
-                  aria-label={`${unread} ${t("messages.unread")}`}
-                >
-                  {unread > 9 ? "9+" : unread}
-                </span>
-              )}
-            </span>
-            <span className="max-w-full truncate">{t(tab.labelKey)}</span>
-          </>
-        );
-
-        if (tab.soon) {
+      <nav className="flex rounded-[26px] border border-border-strong bg-bg-elevated/95 p-1.5 shadow-[0_10px_36px_rgba(0,0,0,0.6)] backdrop-blur">
+        {TABS.map((tab) => {
+          const active = isNavActive(pathname, tab.href, tab.href === "/dashboard");
+          const showBadge = tab.href === "/dashboard/messages" && unread > 0;
           return (
-            <div key={tab.href} className={className} aria-disabled="true">
-              {inner}
-            </div>
+            <Link
+              key={tab.href}
+              href={tab.href}
+              aria-current={active ? "page" : undefined}
+              className="relative flex min-w-0 flex-1 flex-col items-center gap-0.5 px-1 py-2"
+            >
+              {/* La pastille glisse d'un onglet à l'autre : même layoutId,
+                  framer-motion anime le déplacement (ressort). */}
+              {active && (
+                <motion.span
+                  layoutId="mobilenav-pill"
+                  transition={{ type: "spring", stiffness: 500, damping: 42 }}
+                  className="absolute inset-0 rounded-[20px] bg-accent"
+                  aria-hidden
+                />
+              )}
+              <span className="relative">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={active ? 2 : 1.6}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={active ? "text-black" : "text-text-muted"}
+                >
+                  {tab.icon}
+                </svg>
+                {showBadge && (
+                  <span
+                    className={`absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold ${
+                      active ? "bg-black text-accent" : "bg-accent text-black"
+                    }`}
+                    aria-label={`${unread} ${t("messages.unread")}`}
+                  >
+                    {unread > 9 ? "9+" : unread}
+                  </span>
+                )}
+              </span>
+              <span
+                className={`relative max-w-full truncate text-[10px] ${
+                  active ? "font-bold text-black" : "font-medium text-text-muted"
+                }`}
+              >
+                {t(tab.labelKey)}
+              </span>
+            </Link>
           );
-        }
-
-        return (
-          <Link
-            key={tab.href}
-            href={tab.href}
-            aria-current={active ? "page" : undefined}
-            className={className}
-          >
-            {inner}
-          </Link>
-        );
-      })}
-    </nav>
+        })}
+      </nav>
+    </div>
   );
 }

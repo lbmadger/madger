@@ -17,7 +17,7 @@ export default function ContentPad({
       id="main"
       tabIndex={-1}
       className={`flex min-w-0 flex-1 flex-col md:pb-0 ${
-        inThread ? "pb-0" : "pb-20"
+        inThread ? "pb-0" : "pb-24"
       }`}
     >
       {children}
