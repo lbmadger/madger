@@ -290,6 +290,11 @@ export default function GallerySettings({ coachId }: { coachId: string }) {
         <span className="text-xs text-text-dim">
           {photos.length}/{MAX_PHOTOS} · {t("settings.galleryLimit")}
         </span>
+        {/* Rappel RGPD/droit à l'image : les avant/après montrent des
+            personnes, la responsabilité de l'accord appartient au coach. */}
+        <p className="text-xs leading-relaxed text-text-dim">
+          {t("settings.galleryConsent")}
+        </p>
         {error && (
           <p role="alert" className="text-sm text-danger">
             {t("settings.photoErr")}

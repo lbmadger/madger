@@ -955,6 +955,8 @@ const fr = {
     galleryUploading: "Envoi…",
     galleryCaption: "Légende (ex : -8 kg en 4 mois)",
     galleryLimit: "6 photos maximum.",
+    galleryConsent:
+      "Photos de clients : assure-toi d'avoir leur accord écrit avant de les publier.",
     galleryEmpty:
       "Aucune photo pour l'instant. Les pages qui montrent des résultats réels convainquent bien plus.",
     galleryDelete: "Supprimer la photo",
@@ -2358,6 +2360,8 @@ const en: Dictionary = {
     galleryUploading: "Uploading…",
     galleryCaption: "Caption (e.g. -8 kg in 4 months)",
     galleryLimit: "6 photos max.",
+    galleryConsent:
+      "Client photos: make sure you have their written consent before publishing.",
     galleryEmpty:
       "No photos yet. Pages that show real results convert far better.",
     galleryDelete: "Delete photo",
