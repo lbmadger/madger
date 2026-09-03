@@ -172,7 +172,11 @@ export default function CoachProfile({
   const instant = coach.booking_mode === "instant";
 
   function metaLine(s: PublicService): string {
-    const parts: string[] = [t(`services.types.${s.type}`)];
+    // « Séance » sous « Séance individuelle » n'apprend rien : pour une
+    // prestation simple, la durée seule suffit. Le type reste affiché pour
+    // les packs et abonnements, où il structure la lecture du prix.
+    const parts: string[] =
+      s.type === "single" ? [] : [t(`services.types.${s.type}`)];
     if (s.type === "pack" && s.pack_size) {
       parts.push(`${s.pack_size} ${t("services.sessionsLabel")}`);
       // Prix ramené à la séance : l'économie du pack devient visible.
@@ -334,18 +338,9 @@ export default function CoachProfile({
                 </span>
               )}
             </div>
-            {(coach.specialties ?? []).length > 0 && (
-              <div className="mt-2 flex flex-wrap justify-center gap-1.5 sm:justify-start">
-                {(coach.specialties ?? []).map((s) => (
-                  <span
-                    key={s}
-                    className="rounded-full border border-accent/25 px-2.5 py-1 text-xs text-text-muted"
-                  >
-                    {t(`clientOnboarding.goals.${s}`)}
-                  </span>
-                ))}
-              </div>
-            )}
+            {/* Les objectifs (perte de poids, etc.) ne s'affichent plus ici :
+                troisième ligne de pastilles pour redire ce que la bio raconte
+                mieux, l'en-tête reste sport + ville + lieux. */}
           </div>
         </div>
 
@@ -393,6 +388,17 @@ export default function CoachProfile({
                 </li>
               ))}
             </ul>
+            {/* Réassurance séquestre côté mobile : en desktop elle vit dans
+                la carte de réservation collante, invisible sous lg. C'est le
+                vrai différenciateur, le client doit le lire AVANT de payer. */}
+            {coach.stripe_charges_enabled && (
+              <p className="mt-3 flex items-start gap-1.5 text-xs leading-relaxed text-text-muted lg:hidden">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="mt-0.5 shrink-0 text-accent">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                {t("coachProfile.escrowTrust")}
+              </p>
+            )}
           </div>
         )}
 
@@ -636,7 +642,10 @@ export default function CoachProfile({
                 <span className="font-extrabold">
                   {formatPrice(fromService.price_cents, fromService.currency, locale)}
                 </span>
-                <span className="text-xs text-text-muted">
+                {/* Sur les écrans étroits, les deux boutons mangent la place :
+                    le prix seul suffit, l'unité s'efface plutôt que de finir
+                    tronquée en « / … ». */}
+                <span className="hidden text-xs text-text-muted sm:inline">
                   {" "}
                   {t("coachProfile.perSession")}
                 </span>
