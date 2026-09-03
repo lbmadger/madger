@@ -752,7 +752,7 @@ export default function CoachProfile({
           label={t("reviews.sectionTitle")}
           className="flex max-h-[85vh] w-full flex-col overflow-hidden rounded-t-2xl border border-border bg-bg-card sm:max-w-lg sm:rounded-2xl"
         >
-          <div className="relative z-10 flex items-center justify-between gap-3 border-b border-border bg-bg-card px-5 py-4">
+          <div className="relative z-10 flex shrink-0 items-center justify-between gap-3 border-b border-border bg-bg-card px-5 py-4">
             <h2 className="text-base font-semibold text-text-base">
               {t("reviews.sectionTitle")}{" "}
               <span className="text-text-dim">({reviews.length})</span>
@@ -769,8 +769,11 @@ export default function CoachProfile({
             </button>
           </div>
           {/* Fond opaque + z-index : sur iOS, la liste en dessous peint sinon
-              à travers la rangée de filtres pendant le rebond du scroll. */}
-          <div className="relative z-10 flex gap-1.5 overflow-x-auto border-b border-border bg-bg-card px-5 py-3">
+              à travers la rangée de filtres pendant le rebond du scroll.
+              shrink-0 : sans lui, la colonne flex écrase cette rangée quand la
+              liste déborde (overflow-x-auto annule sa hauteur minimale) et le
+              texte des pastilles sort de leur fond. */}
+          <div className="relative z-10 flex shrink-0 gap-1.5 overflow-x-auto border-b border-border bg-bg-card px-5 py-3">
             <button
               type="button"
               onClick={() => setStarFilter(null)}
