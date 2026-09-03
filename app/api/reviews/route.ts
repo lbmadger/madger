@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_URL } from "@/lib/supabase/config";
+import { sendEmail } from "@/lib/email/resend";
+import { newReviewCoach } from "@/lib/email/templates";
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
 export const dynamic = "force-dynamic";
 
@@ -51,6 +55,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "email_mismatch" }, { status: 403 });
   }
 
+  // Nouvel avis ou mise à jour ? (le coach n'est prévenu que d'un NOUVEL
+  // avis : une note retouchée ne mérite pas un email de plus)
+  const { data: existing } = await supabase
+    .from("reviews")
+    .select("id")
+    .eq("coach_id", booking.coach_id)
+    .eq("client_id", client.id)
+    .maybeSingle();
+
   // 1 client = 1 avis : upsert sur la contrainte (coach_id, client_id).
   const { error } = await supabase.from("reviews").upsert(
     {
@@ -65,6 +78,34 @@ export async function POST(req: NextRequest) {
   );
   if (error) {
     return NextResponse.json({ error: "db_error" }, { status: 500 });
+  }
+
+  // Prévient le coach (best-effort : l'avis est enregistré quoi qu'il
+  // arrive). C'est aussi le moment idéal pour suggérer le partage en story.
+  if (!existing) {
+    try {
+      // L'email du coach vit dans auth (la table coaches n'en a pas).
+      const [{ data: coachUser }, { data: cl }] = await Promise.all([
+        supabase.auth.admin.getUserById(booking.coach_id),
+        supabase
+          .from("clients")
+          .select("first_name")
+          .eq("id", client.id)
+          .maybeSingle(),
+      ]);
+      const coachEmail = coachUser?.user?.email;
+      if (coachEmail) {
+        const tpl = newReviewCoach({
+          clientFirstName: (cl?.first_name as string) || "Un client",
+          rating,
+          comment,
+          reviewsUrl: `${APP_URL}/dashboard/avis`,
+        });
+        await sendEmail({ to: coachEmail, subject: tpl.subject, html: tpl.html });
+      }
+    } catch {
+      /* jamais bloquant */
+    }
   }
 
   return NextResponse.json({ ok: true });

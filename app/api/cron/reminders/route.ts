@@ -6,6 +6,7 @@ import {
   sessionReminderClient,
   onboardingNudgeCoach,
   onboardingNudgeCoachLater,
+  reviewReminderClient,
 } from "@/lib/email/templates";
 import { cronAuthorized } from "@/lib/cron/auth";
 
@@ -170,5 +171,70 @@ export async function GET(req: NextRequest) {
     /* la relance ne doit jamais faire échouer les rappels de séance */
   }
 
-  return NextResponse.json({ sent, scanned, nudged });
+  // ── Relance d'avis unique à J+3 ───────────────────────────────────────────
+  // La demande initiale part du cron release à la libération du paiement.
+  // Ici : séance terminée depuis 3 à 10 jours, toujours aucun avis du client
+  // chez ce coach, jamais relancé (migration 0055). Une seule relance, jamais
+  // deux : la colonne est posée même quand un avis existe déjà, pour ne pas
+  // rescanner la ligne à chaque passage.
+  let reviewNudged = 0;
+  try {
+    const from = new Date(now - 10 * 86400000).toISOString();
+    const to = new Date(now - 3 * 86400000).toISOString();
+    const { data: candidates } = await supabase
+      .from("bookings")
+      .select(
+        "id, coach_id, client_id, clients(email), coaches(first_name, last_name)"
+      )
+      .eq("status", "completed")
+      .eq("is_block", false)
+      .is("review_reminder_sent_at", null)
+      .gte("ends_at", from)
+      .lte("ends_at", to)
+      .limit(100);
+    for (const b of candidates ?? []) {
+      if (Date.now() - startedAt > TIME_BUDGET_MS) break;
+      const cl = Array.isArray(b.clients) ? b.clients[0] : b.clients;
+      const co = Array.isArray(b.coaches) ? b.coaches[0] : b.coaches;
+      const email = cl?.email as string | undefined;
+
+      // Déjà noté ? (1 client = 1 avis par coach) → marqué, pas d'email.
+      let hasReview = false;
+      if (b.client_id) {
+        const { data: rev } = await supabase
+          .from("reviews")
+          .select("id")
+          .eq("coach_id", b.coach_id)
+          .eq("client_id", b.client_id)
+          .maybeSingle();
+        hasReview = Boolean(rev);
+      }
+
+      if (hasReview || !email) {
+        await supabase
+          .from("bookings")
+          .update({ review_reminder_sent_at: nowIso })
+          .eq("id", b.id);
+        continue;
+      }
+
+      const tpl = reviewReminderClient({
+        coachName:
+          [co?.first_name, co?.last_name].filter(Boolean).join(" ") ||
+          "ton coach",
+        reservationUrl: `${APP_URL}/reservation/${b.id}`,
+      });
+      if (await sendEmail({ to: email, subject: tpl.subject, html: tpl.html })) {
+        reviewNudged++;
+        await supabase
+          .from("bookings")
+          .update({ review_reminder_sent_at: nowIso })
+          .eq("id", b.id);
+      }
+    }
+  } catch {
+    /* colonne 0055 absente ou erreur : ne casse jamais les autres rappels */
+  }
+
+  return NextResponse.json({ sent, scanned, nudged, reviewNudged });
 }

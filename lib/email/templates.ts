@@ -811,6 +811,99 @@ export function reviewRequestClient(p: {
   };
 }
 
+// ── Coach : récap hebdo du lundi (rétention : le seul email récurrent) ──────
+export function weeklyRecapCoach(p: {
+  firstName: string | null;
+  sessionsDone: number;
+  collectedStr: string | null; // null = rien encaissé cette semaine
+  newClients: number;
+  newReviews: number;
+  statsUrl: string;
+}): Email {
+  const hello = p.firstName ? `${p.firstName}, voilà` : "Voilà";
+  const rows: DetailRow[] = [
+    {
+      label: "Séances effectuées",
+      value: String(p.sessionsDone),
+      accent: p.sessionsDone > 0,
+    },
+    ...(p.collectedStr
+      ? [{ label: "Encaissé", value: p.collectedStr, accent: true }]
+      : []),
+    ...(p.newClients > 0
+      ? [{ label: "Nouveaux clients", value: String(p.newClients) }]
+      : []),
+    ...(p.newReviews > 0
+      ? [{ label: "Avis reçus", value: `${p.newReviews} ⭐` }]
+      : []),
+  ];
+  return {
+    subject: "Ta semaine de coaching, en chiffres",
+    html: layout({
+      preheader: `${p.sessionsDone} séance(s) effectuée(s) la semaine dernière. Le détail est dans tes stats.`,
+      eyebrow: "Récap de la semaine",
+      title: `${hello} ta semaine`,
+      intro:
+        "Chaque lundi, Madger te résume la semaine écoulée. Le détail complet (tendances, répartition, objectifs) vit dans tes statistiques.",
+      blocks: [
+        detailsTable(rows),
+        infoBox(
+          "Montre ta régularité",
+          "Depuis tes stats, partage ta semaine en story Instagram en un geste : c'est ce genre de preuve qui amène les prochains clients."
+        ),
+      ],
+      cta: { label: "Voir mes stats", url: p.statsUrl },
+    }),
+  };
+}
+
+// ── Client : relance d'avis unique, 3 jours après la séance ─────────────────
+export function reviewReminderClient(p: {
+  coachName: string;
+  reservationUrl: string;
+}): Email {
+  return {
+    subject: `Un petit mot sur ta séance avec ${p.coachName} ?`,
+    html: layout({
+      preheader: `30 secondes pour noter ta séance, promis c'est la dernière relance.`,
+      eyebrow: "Ton avis compte",
+      title: "Ta séance mérite bien 30 secondes",
+      intro: `Tu n'as pas encore noté ta séance avec <b style="color:${C.text};">${p.coachName}</b>. Une note et un mot suffisent : c'est ce qui aide les autres à se lancer, et ton coach à progresser. Promis, on ne te relancera plus pour celle-ci.`,
+      cta: { label: "⭐ Noter ma séance", url: p.reservationUrl },
+    }),
+  };
+}
+
+// ── Coach : un nouvel avis vient d'être publié ──────────────────────────────
+export function newReviewCoach(p: {
+  clientFirstName: string;
+  rating: number;
+  comment: string | null;
+  reviewsUrl: string;
+}): Email {
+  const stars = "★".repeat(p.rating) + "☆".repeat(5 - p.rating);
+  return {
+    subject: `${p.clientFirstName} t'a laissé un avis ${"★".repeat(p.rating)}`,
+    html: layout({
+      preheader: `${p.clientFirstName} vient de noter sa séance ${p.rating}/5.`,
+      eyebrow: "Nouvel avis",
+      title: "Tu viens de recevoir un avis",
+      intro: `<b style="color:${C.text};">${p.clientFirstName}</b> vient de noter sa séance : <b style="color:${C.accent};">${stars}</b>${
+        p.comment
+          ? `<br/><br/><span style="color:${C.muted};font-style:italic;">« ${p.comment} »</span>`
+          : ""
+      }`,
+      blocks: [
+        infoBox(
+          "Fais-le travailler pour toi",
+          "Un bon avis est ta meilleure publicité : depuis ta page Avis, partage-le en story Instagram en un geste, aux couleurs de ta page."
+        ),
+      ],
+      cta: { label: "Voir mes avis", url: p.reviewsUrl },
+    }),
+  };
+}
+
 // ── Coach : le client a annulé sa séance ────────────────────────────────────
 export function bookingCancelledCoach(p: {
   clientName: string;

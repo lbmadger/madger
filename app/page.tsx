@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import MotionSettings from "@/components/ui/MotionSettings";
+import CtaClickTracker from "@/components/landing/CtaClickTracker";
 import Navbar from "@/components/Navbar";
 import HeroScrollExperience from "@/components/HeroScrollExperience";
 import TrustBar from "@/components/TrustBar";
@@ -47,6 +48,7 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
       <MotionSettings>
+        <CtaClickTracker />
         <ScrollBackground />
         <StickyMobileCTA launched={launched} />
         <main id="main" tabIndex={-1} className="bg-bg relative" style={{ zIndex: 1 }}>
