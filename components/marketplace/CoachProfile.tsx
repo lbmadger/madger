@@ -263,12 +263,17 @@ export default function CoachProfile({
                 </span>
               )}
               {coach.verified && (
-                <span className="inline-flex items-center gap-1 rounded-full border border-accent/30 px-2 py-[3px] align-middle text-[10px] font-medium leading-none text-accent">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                /* Icône seule, façon badge certifié : le libellé passe en
+                   title/aria pour rester accessible sans alourdir le nom. */
+                <span
+                  title={t("marketplace.verified")}
+                  aria-label={t("marketplace.verified")}
+                  className="inline-flex align-middle text-accent"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                     <path d="M9 12l2 2 4-4" />
                   </svg>
-                  {t("marketplace.verified")}
                 </span>
               )}
             </h1>
@@ -830,8 +835,18 @@ function ReviewItem({
   return (
     <li className="rounded-xl border border-border bg-bg-elevated p-3">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-sm font-medium text-text-base">
-          {review.client_first_name}
+        <span className="flex min-w-0 items-center gap-2.5">
+          {/* Avatar à l'initiale : les avis publics ne portent que le prénom
+              (pas de photo côté client), le rond suffit à humaniser. */}
+          <span
+            aria-hidden
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/10 text-[13px] font-bold text-accent"
+          >
+            {review.client_first_name.charAt(0).toUpperCase()}
+          </span>
+          <span className="truncate text-sm font-medium text-text-base">
+            {review.client_first_name}
+          </span>
         </span>
         <Stars value={review.rating} size={12} />
       </div>
