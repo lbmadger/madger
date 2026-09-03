@@ -329,7 +329,7 @@ export default function CoachProfile({
                   </span>
                 ))}
               {coach.accepts_online && (
-                <span className="rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent">
+                <span className="rounded-full border border-border-strong px-2.5 py-1 text-xs text-text-muted">
                   {t("coachProfile.onlineAvailable")}
                 </span>
               )}
