@@ -6,7 +6,7 @@ import { SUPABASE_URL } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
 import { notifyClient } from "@/lib/notifications/client";
 import { requestReceivedClient } from "@/lib/email/templates";
-import { googleCalendarUrl } from "@/lib/calendar/links";
+import { googleCalendarUrl, icsUrl } from "@/lib/calendar/links";
 import { attachMeetToBooking } from "@/lib/google/calendar";
 
 export const dynamic = "force-dynamic";
@@ -183,6 +183,20 @@ export async function POST(req: NextRequest) {
         const coachName =
           [me?.first_name, me?.last_name].filter(Boolean).join(" ") ||
           "Ton coach";
+        const calEvent = {
+          title: `Séance avec ${coachName}`,
+          start: new Date(booking.starts_at as string),
+          end: new Date(
+            (booking.ends_at as string) ?? (booking.starts_at as string)
+          ),
+          details: [
+            meetUrl ? `Visio : ${meetUrl}` : null,
+            `Ma réservation : ${APP_URL}/reservation/${booking.id}`,
+          ]
+            .filter(Boolean)
+            .join("\n"),
+          location: meetUrl,
+        };
         const tpl = requestReceivedClient({
           coachName,
           dateStr: new Date(booking.starts_at as string).toLocaleString(
@@ -200,20 +214,8 @@ export async function POST(req: NextRequest) {
           instant: true, // variante « confirmée »
           reservationUrl: `${APP_URL}/reservation/${booking.id}`,
           meetUrl,
-          calendarUrl: googleCalendarUrl({
-            title: `Séance avec ${coachName}`,
-            start: new Date(booking.starts_at as string),
-            end: new Date(
-              (booking.ends_at as string) ?? (booking.starts_at as string)
-            ),
-            details: [
-              meetUrl ? `Visio : ${meetUrl}` : null,
-              `Ma réservation : ${APP_URL}/reservation/${booking.id}`,
-            ]
-              .filter(Boolean)
-              .join("\n"),
-            location: meetUrl,
-          }),
+          calendarUrl: googleCalendarUrl(calEvent),
+          icsUrl: icsUrl(calEvent),
         });
         await sendEmail({ to: client.email, subject: tpl.subject, html: tpl.html });
         await notifyClient(admin, {

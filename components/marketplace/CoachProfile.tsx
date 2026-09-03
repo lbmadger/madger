@@ -752,7 +752,7 @@ export default function CoachProfile({
           label={t("reviews.sectionTitle")}
           className="flex max-h-[85vh] w-full flex-col overflow-hidden rounded-t-2xl border border-border bg-bg-card sm:max-w-lg sm:rounded-2xl"
         >
-          <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
+          <div className="relative z-10 flex items-center justify-between gap-3 border-b border-border bg-bg-card px-5 py-4">
             <h2 className="text-base font-semibold text-text-base">
               {t("reviews.sectionTitle")}{" "}
               <span className="text-text-dim">({reviews.length})</span>
@@ -768,7 +768,9 @@ export default function CoachProfile({
               </svg>
             </button>
           </div>
-          <div className="flex gap-1.5 overflow-x-auto border-b border-border px-5 py-3">
+          {/* Fond opaque + z-index : sur iOS, la liste en dessous peint sinon
+              à travers la rangée de filtres pendant le rebond du scroll. */}
+          <div className="relative z-10 flex gap-1.5 overflow-x-auto border-b border-border bg-bg-card px-5 py-3">
             <button
               type="button"
               onClick={() => setStarFilter(null)}
@@ -801,7 +803,7 @@ export default function CoachProfile({
               );
             })}
           </div>
-          <ul className="flex flex-col gap-2 overflow-y-auto p-5">
+          <ul className="flex min-h-0 flex-col gap-2 overflow-y-auto overscroll-contain p-5">
             {reviews
               .filter((r) => starFilter === null || r.rating === starFilter)
               .map((r) => (

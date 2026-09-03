@@ -6,7 +6,7 @@ import {
   requestReceivedClient,
   newRequestCoach,
 } from "@/lib/email/templates";
-import { googleCalendarUrl } from "@/lib/calendar/links";
+import { googleCalendarUrl, icsUrl } from "@/lib/calendar/links";
 import { attachMeetToBooking } from "@/lib/google/calendar";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
@@ -215,6 +215,20 @@ export async function POST(req: NextRequest) {
         const dateStr = fmtDate("fr");
 
         const starts = new Date(String(starts_at));
+        const calEvent = {
+          title: `Séance avec ${coachName}`,
+          start: starts,
+          end: new Date(
+            starts.getTime() + (Number(duration_min) || 60) * 60000
+          ),
+          details: [
+            meetUrl ? `Visio : ${meetUrl}` : null,
+            `Ma réservation : ${APP_URL}/reservation/${bookingId}`,
+          ]
+            .filter(Boolean)
+            .join("\n"),
+          location: meetUrl,
+        };
         const tplClient = requestReceivedClient({
           coachName,
           dateStr,
@@ -222,22 +236,8 @@ export async function POST(req: NextRequest) {
           reservationUrl: `${APP_URL}/reservation/${bookingId}`,
           // Liens utiles seulement si la séance est déjà confirmée.
           meetUrl: instant ? meetUrl : undefined,
-          calendarUrl: instant
-            ? googleCalendarUrl({
-                title: `Séance avec ${coachName}`,
-                start: starts,
-                end: new Date(
-                  starts.getTime() + (Number(duration_min) || 60) * 60000
-                ),
-                details: [
-                  meetUrl ? `Visio : ${meetUrl}` : null,
-                  `Ma réservation : ${APP_URL}/reservation/${bookingId}`,
-                ]
-                  .filter(Boolean)
-                  .join("\n"),
-                location: meetUrl,
-              })
-            : undefined,
+          calendarUrl: instant ? googleCalendarUrl(calEvent) : undefined,
+          icsUrl: instant ? icsUrl(calEvent) : undefined,
         });
         await sendEmail({
           to: String(email),

@@ -10,6 +10,7 @@ import {
   payoutReleasedCoach,
   disputeOpenedAdmin,
 } from "@/lib/email/templates";
+import { googleCalendarUrl, icsUrl } from "@/lib/calendar/links";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,17 @@ export async function POST(req: NextRequest) {
   const to = (body.to as string | undefined)?.trim() || user.email!;
 
   const dateStr = "jeudi 3 juillet à 18:00";
+  // Séance fictive demain 18h-19h : les boutons calendrier du test pointent
+  // sur un vrai événement ajoutable, pas sur une date passée.
+  const demoStart = new Date(Date.now() + 24 * 3600 * 1000);
+  demoStart.setHours(18, 0, 0, 0);
+  const demoEvent = {
+    title: "Séance avec Alex Martin",
+    start: demoStart,
+    end: new Date(demoStart.getTime() + 3600 * 1000),
+    details: `Ma réservation : ${APP_URL}/reservation/demo`,
+    location: "Basic-Fit Lyon Part-Dieu · 93 rue de la Villette, Lyon",
+  };
   const samples = [
     bookingConfirmationClient({
       coachName: "Alex Martin",
@@ -40,6 +52,11 @@ export async function POST(req: NextRequest) {
       priceStr: "50,00 €",
       online: false,
       reservationUrl: `${APP_URL}/reservation/demo`,
+      placeStr: "Basic-Fit Lyon Part-Dieu · 93 rue de la Villette, Lyon",
+      // Boutons calendrier avec une vraie séance de démo, pour tester
+      // l'ajout depuis l'email (Google + fichier .ics Apple/Outlook).
+      calendarUrl: googleCalendarUrl(demoEvent),
+      icsUrl: icsUrl(demoEvent),
     }),
     bookingNotificationCoach({
       clientName: "Camille Dupont",

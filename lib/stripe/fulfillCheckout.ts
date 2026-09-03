@@ -11,7 +11,7 @@ import {
   refundClient,
   firstPaymentCoach,
 } from "@/lib/email/templates";
-import { googleCalendarUrl } from "@/lib/calendar/links";
+import { googleCalendarUrl, icsUrl } from "@/lib/calendar/links";
 import { attachMeetToBooking } from "@/lib/google/calendar";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
@@ -401,7 +401,7 @@ export async function fulfillCheckoutSession(
           .filter(Boolean)
           .join(" · ") || undefined;
     const reservationUrl = `${APP_URL}/reservation/${result.bookingId}`;
-    const calendarUrl = googleCalendarUrl({
+    const calEvent = {
       title: `Séance avec ${coachName}`,
       start: starts,
       end: ends,
@@ -412,7 +412,9 @@ export async function fulfillCheckoutSession(
         .filter(Boolean)
         .join("\n"),
       location: meetUrl ?? placeStr,
-    });
+    };
+    const calendarUrl = googleCalendarUrl(calEvent);
+    const calendarIcsUrl = icsUrl(calEvent);
 
     const clientName =
       [m.first_name, m.last_name].filter(Boolean).join(" ") || "Client";
@@ -451,6 +453,7 @@ export async function fulfillCheckoutSession(
           reservationUrl,
           meetUrl,
           calendarUrl,
+          icsUrl: calendarIcsUrl,
           placeStr,
         });
         await sendEmail({ to: m.email, subject: t.subject, html: t.html });

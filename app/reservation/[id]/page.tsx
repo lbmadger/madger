@@ -7,7 +7,7 @@ import PublicHeader from "@/components/marketplace/PublicHeader";
 import ReportProblem from "@/components/booking/ReportProblem";
 import ReviewForm from "@/components/reviews/ReviewForm";
 import { VideoIcon, CalendarIcon } from "@/components/ui/icons";
-import { googleCalendarUrl } from "@/lib/calendar/links";
+import { googleCalendarUrl, icsUrl } from "@/lib/calendar/links";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
@@ -188,8 +188,8 @@ export default async function ReservationPage({
                         <VideoIcon size={13} className="mr-1.5 inline-block align-[-2px]" />{r.joinMeeting}
                       </a>
                     )}
-                    <a
-                      href={googleCalendarUrl({
+                    {(() => {
+                      const calEvent = {
                         title: `${r.calSession} ${booking.coach_name}`,
                         start: new Date(booking.starts_at),
                         end: new Date(booking.ends_at),
@@ -201,14 +201,27 @@ export default async function ReservationPage({
                         ]
                           .filter(Boolean)
                           .join("\n"),
-                        location: booking.meeting_url ?? booking.place ?? undefined,
-                      })}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="rounded-full border border-border-strong px-4 py-2 text-xs font-medium text-text-muted transition-colors hover:border-accent hover:text-text-base"
-                    >
-                      <CalendarIcon size={13} className="mr-1.5 inline-block align-[-2px]" />{r.addToCalendar}
-                    </a>
+                        location:
+                          booking.meeting_url ?? booking.place ?? undefined,
+                      };
+                      const chip =
+                        "rounded-full border border-border-strong px-4 py-2 text-xs font-medium text-text-muted transition-colors hover:border-accent hover:text-text-base";
+                      return (
+                        <>
+                          <a
+                            href={googleCalendarUrl(calEvent)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={chip}
+                          >
+                            <CalendarIcon size={13} className="mr-1.5 inline-block align-[-2px]" />Google Agenda
+                          </a>
+                          <a href={icsUrl(calEvent)} className={chip}>
+                            <CalendarIcon size={13} className="mr-1.5 inline-block align-[-2px]" />Apple / Outlook
+                          </a>
+                        </>
+                      );
+                    })()}
                   </div>
                 )}
 

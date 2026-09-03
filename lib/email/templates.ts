@@ -155,13 +155,20 @@ function linksBlock(links: { label: string; url: string }[]): string {
     .join("")}</td></tr></table>`;
 }
 
-// Liens visio + Google Calendar, seulement ceux qui existent.
-function meetCalLinks(meetUrl?: string, calendarUrl?: string): string[] {
+// Liens visio + calendrier, seulement ceux qui existent. Deux boutons
+// calendrier : Google Agenda (URL render) et Apple/Outlook (fichier .ics),
+// pour que l'ajout marche quel que soit le calendrier du client.
+function meetCalLinks(
+  meetUrl?: string,
+  calendarUrl?: string,
+  icsUrl?: string
+): string[] {
   const links = [
     ...(meetUrl ? [{ label: "🎥 Rejoindre la visio", url: meetUrl }] : []),
     ...(calendarUrl
-      ? [{ label: "📅 Ajouter à Google Calendar", url: calendarUrl }]
+      ? [{ label: "📅 Google Agenda", url: calendarUrl }]
       : []),
+    ...(icsUrl ? [{ label: "📅 Apple / Outlook", url: icsUrl }] : []),
   ];
   return links.length ? [linksBlock(links)] : [];
 }
@@ -175,6 +182,7 @@ export function bookingConfirmationClient(p: {
   reservationUrl: string;
   meetUrl?: string;
   calendarUrl?: string;
+  icsUrl?: string;
   // Lieu de la séance en présentiel (salle + adresse) : le client doit
   // savoir OÙ aller sans avoir à écrire au coach.
   placeStr?: string;
@@ -200,7 +208,7 @@ export function bookingConfirmationClient(p: {
           "Paiement sécurisé",
           `Ton paiement est sécurisé : il n'est versé au coach que <b style="color:${C.text};">24 h après la séance</b>. Un imprévu ? Tu peux signaler un problème depuis ta réservation, les fonds restent bloqués le temps qu'on tranche.`
         ),
-        ...meetCalLinks(p.meetUrl, p.calendarUrl),
+        ...meetCalLinks(p.meetUrl, p.calendarUrl, p.icsUrl),
       ],
       cta: { label: "Voir ma réservation", url: p.reservationUrl },
       outro:
@@ -287,6 +295,7 @@ export function requestReceivedClient(p: {
   reservationUrl: string;
   meetUrl?: string;
   calendarUrl?: string;
+  icsUrl?: string;
   // Empreinte bancaire (modèle Airbnb) : montant autorisé, débité seulement
   // si le coach accepte.
   authorizedPriceStr?: string;
@@ -299,7 +308,7 @@ export function requestReceivedClient(p: {
         eyebrow: "Réservation confirmée",
         title: "C'est réservé 💪",
         intro: `Ton créneau du <b style="color:${C.text};">${p.dateStr}</b> avec <b style="color:${C.text};">${p.coachName}</b> est confirmé.`,
-        blocks: meetCalLinks(p.meetUrl, p.calendarUrl),
+        blocks: meetCalLinks(p.meetUrl, p.calendarUrl, p.icsUrl),
         cta: { label: "Voir ma réservation", url: p.reservationUrl },
       }),
     };
