@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { startRouteProgress } from "@/components/ui/RouteProgress";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { slugify, isValidSlug } from "@/lib/utils/slug";
+import Image from "next/image";
 import Button from "@/components/ui/Button";
 import Leo from "@/components/ui/Leo";
 import AccountSwitchBar from "@/components/auth/AccountSwitchBar";
@@ -46,6 +47,13 @@ export default function OnboardingForm({
   // Étape 1 : qui tu es
   const [firstName, setFirstName] = useState(initialFirstName);
   const [lastName, setLastName] = useState(initialLastName);
+  // La photo, dès l'étape 1 : la vue publique l'exige (public_coaches filtre
+  // sur avatar_url), sans elle le lien renvoie une page introuvable. Elle
+  // reste non bloquante ici, mais l'écran final dit la vérité si elle manque.
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarErr, setAvatarErr] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [slug, setSlug] = useState(
     slugify(`${initialFirstName} ${initialLastName}`)
   );
@@ -67,6 +75,44 @@ export default function OnboardingForm({
   const [dayEnd, setDayEnd] = useState("18:00");
 
   const [copied, setCopied] = useState(false);
+
+  // Upload immédiat vers avatars/<uid>/avatar (même chemin que Réglages),
+  // puis écriture de l'URL sur la ligne coach. Best-effort : un échec ne
+  // bloque jamais la progression.
+  async function uploadAvatar(file: File) {
+    setAvatarErr(false);
+    if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
+      setAvatarErr(true);
+      return;
+    }
+    setAvatarUploading(true);
+    try {
+      const supabase = createClient();
+      const path = `${userId}/avatar`;
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) {
+        setAvatarErr(true);
+        return;
+      }
+      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+      const url = `${data.publicUrl}?v=${Date.now()}`;
+      const { error: dbErr } = await supabase
+        .from("coaches")
+        .update({ avatar_url: url })
+        .eq("id", userId);
+      if (dbErr) {
+        setAvatarErr(true);
+        return;
+      }
+      setAvatarUrl(url);
+    } catch {
+      setAvatarErr(true);
+    } finally {
+      setAvatarUploading(false);
+    }
+  }
 
   function syncNames(next: { first?: string; last?: string }) {
     const f = next.first ?? firstName;
@@ -238,11 +284,14 @@ export default function OnboardingForm({
     return (
       <div className="anim-scale-in rounded-2xl border border-border bg-bg-card p-6 text-center">
         <Leo size={56} className="mx-auto" />
+        {/* Pas de fausse victoire : le lien n'est réellement visible qu'avec
+            photo + paiements actifs (exigences de la vue publique). L'écran
+            liste ce qui reste au lieu d'annoncer une mise en ligne mensongère. */}
         <h1 className="mt-4 text-2xl font-extrabold tracking-tight text-text-base">
-          {t("onboarding.liveTitle")}
+          {t("onboarding.readyTitle")}
         </h1>
         <p className="mt-1 text-sm text-text-muted">
-          {t("onboarding.liveSubtitle")}
+          {t("onboarding.readySubtitle")}
         </p>
 
         {/* Le lien, en grand : c'est le produit. Il se copie en un geste. */}
@@ -272,23 +321,77 @@ export default function OnboardingForm({
           </button>
         </div>
 
+        {/* Les vraies étapes restantes avant la mise en ligne effective. */}
         <div className="mt-5 rounded-xl border border-border p-4 text-left">
-          <p className="text-sm font-semibold text-text-base">
-            {t("onboarding.stripeTitle")}
+          <p className="text-xs font-semibold uppercase tracking-wide text-text-dim">
+            {t("onboarding.remainTitle")}
           </p>
-          <p className="mt-1 text-xs text-text-muted">
-            {t("onboarding.stripeDesc")}
-          </p>
+
+          <div className="mt-3 flex items-center gap-2.5">
+            {avatarUrl ? (
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent text-black">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 6L9 17l-5-5" />
+                </svg>
+              </span>
+            ) : (
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-border-strong text-[10px] font-bold text-text-dim">
+                1
+              </span>
+            )}
+            <span className={`min-w-0 flex-1 text-sm ${avatarUrl ? "text-text-dim line-through" : "text-text-base"}`}>
+              {avatarUrl
+                ? t("onboarding.remainPhotoDone")
+                : t("onboarding.remainPhoto")}
+            </span>
+            {!avatarUrl && (
+              <button
+                type="button"
+                disabled={avatarUploading}
+                onClick={() => avatarInputRef.current?.click()}
+                className="shrink-0 rounded-full border border-border-strong px-3 py-1.5 text-xs font-semibold text-text-base transition-colors hover:border-accent disabled:opacity-60"
+              >
+                {avatarUploading ? "…" : t("onboarding.remainPhotoCta")}
+              </button>
+            )}
+          </div>
+          {avatarErr && (
+            <p role="alert" className="mt-1 pl-8 text-xs text-danger">
+              {t("settings.photoErr")}
+            </p>
+          )}
+
+          <div className="mt-3 flex items-center gap-2.5">
+            <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-border-strong text-[10px] font-bold text-text-dim">
+              {avatarUrl ? 1 : 2}
+            </span>
+            <span className="min-w-0 flex-1 text-sm text-text-base">
+              {t("onboarding.remainStripe")}
+            </span>
+          </div>
           <Button
             onClick={() => {
               startRouteProgress();
               router.push("/dashboard/paiements");
               router.refresh();
             }}
-            className="mt-3"
+            className="mt-3 w-full"
           >
             {t("onboarding.stripeCta")}
           </Button>
+
+          {/* L'input photo doit exister aussi dans ce rendu (retour anticipé). */}
+          <input
+            ref={avatarInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) uploadAvatar(f);
+              e.target.value = "";
+            }}
+          />
         </div>
 
         {/* Photo, bio et ville ont quitté le parcours : c'est ici qu'on les
@@ -405,6 +508,58 @@ export default function OnboardingForm({
                   className={inputClass}
                 />
               </label>
+            </div>
+
+            {/* La photo, tout de suite : la page publique l'exige pour être
+                visible. Non bloquante, mais présentée comme essentielle. */}
+            <div className="flex items-center gap-3 rounded-xl border border-border-strong p-3">
+              {avatarUrl ? (
+                <Image
+                  src={avatarUrl}
+                  alt=""
+                  width={56}
+                  height={56}
+                  className="h-14 w-14 shrink-0 rounded-full border border-border-strong object-cover"
+                />
+              ) : (
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-accent/10 text-lg font-bold text-accent">
+                  {(firstName.charAt(0) || "?").toUpperCase()}
+                </span>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className={labelClass}>{t("onboarding.photoLabel")}</p>
+                <p className="mt-0.5 text-xs leading-snug text-text-dim">
+                  {t("onboarding.photoHint")}
+                </p>
+                {avatarErr && (
+                  <p role="alert" className="mt-0.5 text-xs text-danger">
+                    {t("settings.photoErr")}
+                  </p>
+                )}
+              </div>
+              <button
+                type="button"
+                disabled={avatarUploading}
+                onClick={() => avatarInputRef.current?.click()}
+                className="shrink-0 rounded-full border border-border-strong px-3.5 py-2 text-xs font-semibold text-text-base transition-colors hover:border-accent disabled:opacity-60"
+              >
+                {avatarUploading
+                  ? "…"
+                  : avatarUrl
+                  ? t("onboarding.photoChange")
+                  : t("onboarding.photoAdd")}
+              </button>
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) uploadAvatar(f);
+                  e.target.value = "";
+                }}
+              />
             </div>
 
             {/* Le lien n'est pas un champ de plus : il se fabrique sous les

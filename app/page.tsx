@@ -60,7 +60,7 @@ export default function Home() {
           <CoachPagePreview />
           <Comparison launched={launched} />
           <Compliance2026 />
-          <Testimonials />
+          <Testimonials launched={launched} />
           <Pricing launched={launched} />
           <FAQ launched={launched} />
           {launched ? <LaunchCTA /> : <EarlyAccessForm />}

@@ -22,14 +22,41 @@ export function CopyLinkPill() {
   if (!slug) return null;
 
   const url = `madger.app/${slug}`;
+  const copy = () => {
+    navigator.clipboard.writeText(`https://${url}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
+  };
+
   return (
-    <button
+    <>
+      {/* Mobile : le partage du lien est LE geste produit, il ne peut pas
+          être réservé au desktop. Version compacte, à côté de la cloche. */}
+      <button
+        type="button"
+        onClick={copy}
+        aria-label={t("topbar.copyTitle")}
+        className={`flex h-9 w-9 items-center justify-center rounded-xl border transition-colors lg:hidden ${
+          copied
+            ? "border-accent bg-accent text-black"
+            : "border-accent/40 bg-accent/[0.05] text-accent"
+        }`}
+      >
+        {copied ? (
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+        ) : (
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+          </svg>
+        )}
+      </button>
+
+      <button
       type="button"
-      onClick={() => {
-        navigator.clipboard.writeText(`https://${url}`);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1800);
-      }}
+      onClick={copy}
       title={t("topbar.copyTitle")}
       className="hidden items-center gap-2 rounded-full border border-accent/25 bg-accent/[0.05] py-1.5 pl-3 pr-1.5 transition-colors hover:border-accent/50 lg:flex"
     >
@@ -54,7 +81,8 @@ export function CopyLinkPill() {
           </>
         )}
       </span>
-    </button>
+      </button>
+    </>
   );
 }
 

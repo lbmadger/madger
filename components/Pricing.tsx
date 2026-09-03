@@ -199,6 +199,15 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
           </div>
         </div>
 
+        {/* Le calcul honnête, écrit noir sur blanc : la page promet zéro
+            surprise, alors on donne le point de bascule entre les deux plans
+            au lieu de laisser le coach le découvrir sur ses encaissements. */}
+        <p className="mx-auto mt-8 max-w-xl text-center text-sm leading-relaxed text-text-muted">
+          Le bon calcul : en dessous d'environ 980 € encaissés par mois, le
+          Gratuit te coûte moins cher. Au-delà (une vingtaine de séances), les
+          5 % dépassent 49 € et le Pro devient le plan le plus rentable.
+        </p>
+
         {/* Bande vide : Léo se tient dans le noir sous les cartes, sans les chevaucher */}
         <div aria-hidden className="h-24 sm:h-52" />
       </div>

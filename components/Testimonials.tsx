@@ -6,7 +6,7 @@ import SectionLabel from "@/components/ui/SectionLabel";
 // Section "conviction" : remplace les anciens témoignages (le produit n'est
 // pas encore lancé, aucun vrai coach ne l'utilise). Mot honnête du fondateur,
 // à la première personne — aucune fausse identité, photo ou métrique.
-export default function Testimonials() {
+export default function Testimonials({ launched = false }: { launched?: boolean }) {
   return (
     <section className="py-20 sm:py-24 relative overflow-hidden">
       <div
@@ -143,15 +143,17 @@ export default function Testimonials() {
           </div>
 
           {/* Appel à rejoindre */}
+          {/* Même bascule que tous les CTA de la page : une fois le site
+              lancé, direction l'inscription, pas l'ancre du formulaire. */}
           <motion.a
-            href="#early-access"
+            href={launched ? "/signup" : "#early-access"}
             className="cta-shine flex items-center justify-center gap-2 w-full sm:w-auto sm:inline-flex text-black font-semibold text-sm px-7 py-3.5 rounded-full mt-8"
             style={{ background: "#CBFF03" }}
             whileHover={{ boxShadow: "0 0 30px rgba(203,255,3,0.4)" }}
             whileTap={{ scale: 0.98 }}
             transition={{ duration: 0.2 }}
           >
-            Rejoindre les premiers coachs
+            {launched ? "Créer mon compte gratuitement" : "Rejoindre les premiers coachs"}
             <span style={{ fontSize: 15 }}>→</span>
           </motion.a>
         </motion.div>

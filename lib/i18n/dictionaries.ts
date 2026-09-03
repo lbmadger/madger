@@ -203,6 +203,19 @@ const fr = {
     liveTitle: "Ton lien est en ligne",
     liveSubtitle:
       "Partage-le : tes clients réservent et paient seuls, sans créer de compte.",
+    readyTitle: "Ton lien est prêt",
+    readySubtitle:
+      "Il sera visible par tes clients dès que les étapes ci-dessous sont faites.",
+    remainTitle: "Avant que ta page soit visible",
+    remainPhoto: "Ajoute ta photo de profil",
+    remainPhotoDone: "Photo de profil ajoutée",
+    remainPhotoCta: "Ajouter",
+    remainStripe: "Active tes paiements (sécurisé par Stripe)",
+    photoLabel: "Ta photo",
+    photoHint:
+      "Ta page ne sera pas visible sans photo : les clients réservent un visage, pas un lien.",
+    photoAdd: "Ajouter ma photo",
+    photoChange: "Changer",
     copyLink: "Copier",
     copied: "Copié",
     profileTitle: "Complète ton profil public",
@@ -540,6 +553,13 @@ const fr = {
     netPaid: "Net versé :",
     commissionLabel: "Commission Madger :",
     refundedLabel: "Remboursé au client :",
+    siretTitle: "Ton numéro SIRET",
+    siretDesc:
+      "Obligatoire pour encaisser : il figure sur les factures de tes clients. Sans lui, le paiement est refusé au moment de réserver.",
+    siretPlaceholder: "14 chiffres",
+    siretSave: "Enregistrer",
+    siretSaved: "SIRET enregistré, tu peux encaisser.",
+    siretErr: "Un SIRET fait 14 chiffres. Vérifie et réessaie.",
   },
   stats: {
     title: "Statistiques",
@@ -1611,6 +1631,19 @@ const en: Dictionary = {
     liveTitle: "Your link is live",
     liveSubtitle:
       "Share it: clients book and pay on their own, no account needed.",
+    readyTitle: "Your link is ready",
+    readySubtitle:
+      "It becomes visible to your clients as soon as the steps below are done.",
+    remainTitle: "Before your page goes live",
+    remainPhoto: "Add your profile photo",
+    remainPhotoDone: "Profile photo added",
+    remainPhotoCta: "Add",
+    remainStripe: "Enable your payments (secured by Stripe)",
+    photoLabel: "Your photo",
+    photoHint:
+      "Your page will not be visible without a photo: clients book a face, not a link.",
+    photoAdd: "Add my photo",
+    photoChange: "Change",
     copyLink: "Copy",
     copied: "Copied",
     profileTitle: "Complete your public profile",
@@ -1946,6 +1979,13 @@ const en: Dictionary = {
     netPaid: "Net paid:",
     commissionLabel: "Madger commission:",
     refundedLabel: "Refunded to client:",
+    siretTitle: "Your SIRET number",
+    siretDesc:
+      "Required to get paid: it appears on your clients' invoices. Without it, payment is refused at booking time.",
+    siretPlaceholder: "14 digits",
+    siretSave: "Save",
+    siretSaved: "SIRET saved, you can get paid.",
+    siretErr: "A SIRET is 14 digits. Check and try again.",
   },
   stats: {
     title: "Statistics",

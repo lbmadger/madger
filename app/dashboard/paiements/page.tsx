@@ -2,6 +2,7 @@ import Link from "next/link";
 import Topbar from "@/components/dashboard/Topbar";
 import StripeConnectButton from "@/components/dashboard/payments/StripeConnectButton";
 import StripeDashboardButton from "@/components/dashboard/payments/StripeDashboardButton";
+import SiretForm from "@/components/dashboard/payments/SiretForm";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getCoach } from "@/lib/coach/getCoach";
 import { createClient } from "@/lib/supabase/server";
@@ -205,6 +206,12 @@ export default async function PaymentsPage() {
           <section className="rounded-2xl border border-border bg-bg-card p-10 text-center">
             <p className="text-sm text-text-muted">{pay.notConfigured}</p>
           </section>
+        )}
+
+        {/* SIRET manquant : le checkout refuse sans lui, mieux vaut le
+            réclamer ici que laisser un client du coach buter au paiement. */}
+        {coach && !coach.siret && state !== "not_configured" && (
+          <SiretForm coachId={coach.id} />
         )}
 
         {/* Historique des paiements et versements */}

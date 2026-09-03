@@ -131,6 +131,16 @@ export default function CoachPagePreview() {
               </p>
             </div>
           </div>
+
+          {/* La meilleure preuve n'est pas ce mockup, c'est le produit qui
+              tourne : /exemple est une vraie page coach servie par l'app. */}
+          <a
+            href="/exemple"
+            className="mt-5 flex items-center justify-center gap-2 text-sm font-semibold text-accent transition-opacity hover:opacity-80"
+          >
+            Explorer la page d'exemple en direct
+            <span aria-hidden>→</span>
+          </a>
         </motion.div>
       </div>
     </section>
