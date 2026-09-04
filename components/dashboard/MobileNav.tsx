@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { isNavActive } from "@/lib/ui/nav";
@@ -9,7 +8,7 @@ import { useUnreadCount } from "@/lib/messaging/useUnreadCount";
 
 // Barre d'onglets mobile flottante (façon app native) : capsule détachée du
 // bord, et une pastille accent qui GLISSE d'un onglet à l'autre au changement
-// de page (animation à ressort via framer-motion layoutId). Visible < md ;
+// de page (translation CSS calculée sur des onglets de largeur égale).
 // le sidebar prend le relais en desktop avec la même mécanique.
 
 type Tab = {
@@ -55,6 +54,15 @@ export default function MobileNav() {
   // saisie prend sa place et la conversation occupe tout l'écran.
   if (/^\/dashboard\/messages\/./.test(pathname)) return null;
 
+  // Pastille en PUR CSS : les 5 onglets font la même largeur, la position
+  // active est donc index * 100 % de translation. L'ancienne mécanique
+  // (framer-motion layoutId) mesurait des coordonnées de page, scroll
+  // compris : changer d'onglet en bas d'une page faisait surgir la pastille
+  // de sous la barre, décalée de la hauteur du scroll.
+  const activeIndex = TABS.findIndex((tab) =>
+    isNavActive(pathname, tab.href, tab.href === "/dashboard")
+  );
+
   return (
     <div
       className="fixed inset-x-0 bottom-0 z-20 px-3 md:hidden"
@@ -62,7 +70,18 @@ export default function MobileNav() {
     >
       {/* Fond opaque, sans backdrop-blur : le flou coûte très cher au GPU
           iOS pendant l'animation de la pastille et faisait saccader la barre. */}
-      <nav className="flex rounded-[26px] border border-border-strong bg-bg-elevated p-1.5 shadow-[0_10px_36px_rgba(0,0,0,0.6)]">
+      <nav className="relative flex rounded-[26px] border border-border-strong bg-bg-elevated p-1.5 shadow-[0_10px_36px_rgba(0,0,0,0.6)]">
+        {activeIndex >= 0 && (
+          <span
+            aria-hidden
+            className="absolute bottom-1.5 left-1.5 top-1.5 rounded-[20px] bg-accent transition-transform duration-300"
+            style={{
+              width: `calc((100% - 12px) / ${TABS.length})`,
+              transform: `translateX(${activeIndex * 100}%)`,
+              transitionTimingFunction: "cubic-bezier(0.3, 1.25, 0.4, 1)",
+            }}
+          />
+        )}
         {TABS.map((tab) => {
           const active = isNavActive(pathname, tab.href, tab.href === "/dashboard");
           const showBadge = tab.href === "/dashboard/messages" && unread > 0;
@@ -73,16 +92,6 @@ export default function MobileNav() {
               aria-current={active ? "page" : undefined}
               className="relative flex min-w-0 flex-1 flex-col items-center gap-0.5 px-1 py-2"
             >
-              {/* La pastille glisse d'un onglet à l'autre : même layoutId,
-                  framer-motion anime le déplacement (ressort). */}
-              {active && (
-                <motion.span
-                  layoutId="mobilenav-pill"
-                  transition={{ type: "spring", stiffness: 500, damping: 42 }}
-                  className="absolute inset-0 rounded-[20px] bg-accent"
-                  aria-hidden
-                />
-              )}
               <span className="relative">
                 <svg
                   width="20"

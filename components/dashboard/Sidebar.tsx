@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import MadgerLogo from "@/components/ui/MadgerLogo";
@@ -133,16 +132,6 @@ function NavLink({ item, unread = 0 }: { item: NavItem; unread?: number }) {
           : "text-text-muted hover:bg-bg-elevated hover:text-text-base"
       }`}
     >
-      {/* Surlignage qui glisse d'une entrée à l'autre (même mécanique que
-          la barre mobile : layoutId partagé + ressort framer-motion). */}
-      {active && (
-        <motion.span
-          layoutId="sidebar-pill"
-          transition={{ type: "spring", stiffness: 500, damping: 42 }}
-          className="absolute inset-0 rounded-lg bg-accent/10"
-          aria-hidden
-        />
-      )}
       <span className="relative flex min-w-0 flex-1 items-center gap-3">
         {content}
       </span>
@@ -152,6 +141,14 @@ function NavLink({ item, unread = 0 }: { item: NavItem; unread?: number }) {
 
 export default function Sidebar() {
   const unread = useUnreadCount();
+  const pathname = usePathname();
+  // Surlignage qui glisse en PUR CSS : entrées de hauteur fixe (36 px + 4 px
+  // de gap), la position active est une simple translation. L'ancien
+  // layoutId framer-motion mesurait des coordonnées scroll compris et
+  // faisait surgir le surlignage de travers quand la page était scrollée.
+  const activeIndex = NAV.findIndex((item) =>
+    isNavActive(pathname, item.href, item.href === "/dashboard")
+  );
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col overflow-y-auto border-r border-border bg-bg-elevated p-4 md:flex">
       <Link href="/dashboard" className="mb-8 flex items-center gap-2.5 px-2">
@@ -161,7 +158,17 @@ export default function Sidebar() {
         </span>
       </Link>
 
-      <nav className="flex flex-1 flex-col gap-1">
+      <nav className="relative flex flex-1 flex-col gap-1">
+        {activeIndex >= 0 && (
+          <span
+            aria-hidden
+            className="absolute left-0 right-0 top-0 h-9 rounded-lg bg-accent/10 transition-transform duration-300"
+            style={{
+              transform: `translateY(${activeIndex * 40}px)`,
+              transitionTimingFunction: "cubic-bezier(0.3, 1.25, 0.4, 1)",
+            }}
+          />
+        )}
         {NAV.map((item) => (
           <NavLink key={item.href} item={item} unread={unread} />
         ))}
