@@ -31,6 +31,9 @@ const fr = {
   },
   nav: {
     overview: "Vue d'ensemble",
+    // Barre mobile : 5 onglets se partagent l'écran, le libellé long ne
+    // rentre pas et finissait tronqué en « Vue d'ens… ».
+    overviewShort: "Accueil",
     clients: "Clients",
     schedule: "Agenda",
     availability: "Disponibilités",
@@ -1459,6 +1462,7 @@ const en: Dictionary = {
   },
   nav: {
     overview: "Dashboard",
+    overviewShort: "Home",
     clients: "Clients",
     schedule: "Schedule",
     availability: "Availability",

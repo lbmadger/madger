@@ -21,7 +21,7 @@ type Tab = {
 const TABS: Tab[] = [
   {
     href: "/dashboard",
-    labelKey: "nav.overview",
+    labelKey: "nav.overviewShort",
     icon: <path d="M3 3h7v7H3V3zm0 11h7v7H3v-7zm11-11h7v7h-7V3zm0 11h7v7h-7v-7z" />,
   },
   {
@@ -60,7 +60,9 @@ export default function MobileNav() {
       className="fixed inset-x-0 bottom-0 z-20 px-3 md:hidden"
       style={{ paddingBottom: "max(0.6rem, env(safe-area-inset-bottom))" }}
     >
-      <nav className="flex rounded-[26px] border border-border-strong bg-bg-elevated/95 p-1.5 shadow-[0_10px_36px_rgba(0,0,0,0.6)] backdrop-blur">
+      {/* Fond opaque, sans backdrop-blur : le flou coûte très cher au GPU
+          iOS pendant l'animation de la pastille et faisait saccader la barre. */}
+      <nav className="flex rounded-[26px] border border-border-strong bg-bg-elevated p-1.5 shadow-[0_10px_36px_rgba(0,0,0,0.6)]">
         {TABS.map((tab) => {
           const active = isNavActive(pathname, tab.href, tab.href === "/dashboard");
           const showBadge = tab.href === "/dashboard/messages" && unread > 0;
@@ -88,7 +90,7 @@ export default function MobileNav() {
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth={active ? 2 : 1.6}
+                  strokeWidth="1.8"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   className={active ? "text-black" : "text-text-muted"}
@@ -106,9 +108,12 @@ export default function MobileNav() {
                   </span>
                 )}
               </span>
+              {/* Graisse CONSTANTE : le passage en gras élargissait le texte
+                  en pleine animation (reflow à chaque frame = saccades) et
+                  tronquait les libellés justes. Seule la couleur change. */}
               <span
-                className={`relative max-w-full truncate text-[10px] ${
-                  active ? "font-bold text-black" : "font-medium text-text-muted"
+                className={`relative max-w-full truncate text-[10px] font-semibold ${
+                  active ? "text-black" : "text-text-muted"
                 }`}
               >
                 {t(tab.labelKey)}
