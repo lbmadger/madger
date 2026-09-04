@@ -30,7 +30,7 @@ const fr = {
     delete: "Supprimer",
   },
   nav: {
-    overview: "Vue d'ensemble",
+    overview: "Accueil",
     // Barre mobile : 5 onglets se partagent l'écran, le libellé long ne
     // rentre pas et finissait tronqué en « Vue d'ens… ».
     overviewShort: "Accueil",
@@ -241,7 +241,7 @@ const fr = {
     stripeDesc:
       "Compte Stripe sécurisé à ton nom : tes clients paient en ligne, tu es versé automatiquement après chaque séance.",
     stripeCta: "Activer les paiements",
-    goDashboard: "Plus tard, aller à ma vue d'ensemble",
+    goDashboard: "Plus tard, aller à mon accueil",
     firstName: "Prénom",
     lastName: "Nom",
     slugHint: "Lettres minuscules, chiffres et tirets uniquement.",
@@ -383,7 +383,7 @@ const fr = {
   goal: {
     title: "Objectif",
     settingsTitle: "Objectif du mois",
-    settingsDesc: "Revenus et séances visés, affichés en jauges sur ta vue d'ensemble.",
+    settingsDesc: "Revenus et séances visés, affichés en jauges sur ton accueil.",
     cta: "Définir dans les réglages",
     saved: "Objectif enregistré",
     edit: "Modifier l'objectif (dans les réglages)",
@@ -701,7 +701,7 @@ const fr = {
     },
   },
   overview: {
-    title: "Vue d'ensemble",
+    title: "Accueil",
     greeting: "Bonjour",
     greetingMorning: "Bonjour",
     greetingAfternoon: "Bon après-midi",

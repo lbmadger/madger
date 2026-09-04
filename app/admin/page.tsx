@@ -145,7 +145,7 @@ export default async function AdminOverview() {
 
   return (
     <>
-      <h1 className="text-2xl font-extrabold tracking-tight">Vue d'ensemble</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight">Accueil</h1>
       <p className="mt-1 text-sm text-text-muted">
         Suivi de l'activité Madger en temps réel.
       </p>

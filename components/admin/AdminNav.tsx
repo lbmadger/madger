@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 // Onglets groupés par thème : les gens (Coachs, Clients), le contrôle
 // (Vérifications, Litiges), puis les chiffres et outils.
 const LINKS = [
-  { href: "/admin", label: "Vue d'ensemble" },
+  { href: "/admin", label: "Accueil" },
   { href: "/admin/coachs", label: "Coachs" },
   { href: "/admin/clients", label: "Clients" },
   { href: "/admin/verifications", label: "Vérifications" },
