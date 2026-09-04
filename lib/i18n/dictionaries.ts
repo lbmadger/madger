@@ -597,6 +597,8 @@ const fr = {
     you: "Toi :",
     unread: "Non lu",
     yesterday: "hier",
+    fewHintCoach:
+      "Chaque client qui réserve ou t'écrit depuis ta page ouvre une conversation ici. Plus ton lien circule, plus ça discute.",
     title: "Messages",
     emptyTitle: "Aucune conversation",
     emptyDesc: "Tes échanges apparaîtront ici.",
@@ -2024,6 +2026,8 @@ const en: Dictionary = {
     you: "You:",
     unread: "Unread",
     yesterday: "yesterday",
+    fewHintCoach:
+      "Every client who books or writes from your page opens a conversation here. The more your link travels, the more it talks.",
     title: "Messages",
     emptyTitle: "No conversations",
     emptyDesc: "Your conversations will show up here.",

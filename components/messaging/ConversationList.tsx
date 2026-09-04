@@ -77,7 +77,17 @@ export default function ConversationList({
     );
   }
 
+  // Une liste d'une ou deux conversations laisse un grand vide sous elle :
+  // on le meuble d'un rappel discret qui pousse la bonne action (le lien).
+  const fewHint =
+    perspective === "coach" && conversations.length <= 2 ? (
+      <p className="mx-auto mt-6 max-w-sm text-center text-xs leading-relaxed text-text-dim">
+        {t("messages.fewHintCoach")}
+      </p>
+    ) : null;
+
   return (
+    <>
     <ul className="flex flex-col gap-2">
       {conversations.map((c) => {
         const name =
@@ -131,5 +141,7 @@ export default function ConversationList({
         );
       })}
     </ul>
+    {fewHint}
+    </>
   );
 }
