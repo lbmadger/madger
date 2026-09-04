@@ -67,7 +67,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
             }}>Aucune surprise au lancement.</span>
           </h2>
           <p className="text-text-muted text-lg max-w-lg mx-auto mb-6" style={{ lineHeight: 1.6 }}>
-            Gratuit pour démarrer, Pro à 49 € HT par mois quand tu veux aller plus loin. Et chaque nouveau compte démarre avec 14 jours de Pro offerts.
+            Gratuit pour démarrer, Pro à 49 € par mois quand tu veux aller plus loin. Et chaque nouveau compte démarre avec 14 jours de Pro offerts.
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8" style={{ background: "rgba(203,255,3,0.07)", border: "1px solid rgba(203,255,3,0.18)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-accent block" style={{ background: "#CBFF03" }} />
@@ -167,10 +167,10 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
 
               <div style={{ minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "center" }}>
                 <div className="font-extrabold text-white mb-1" style={{ fontSize: "clamp(22px, 5.5vw, 44px)", letterSpacing: "-0.04em", lineHeight: 1.05 }}>
-                  49 € HT<span style={{ fontSize: "0.45em", fontWeight: 700, color: "#9a9a9a" }}> / mois</span>
+                  49 €<span style={{ fontSize: "0.45em", fontWeight: 700, color: "#9a9a9a" }}> / mois</span>
                 </div>
                 <div className="text-text-muted text-sm pt-1">
-                  ou 490 € HT par an (2 mois offerts) · 14 jours d'essai offerts à l'inscription
+                  ou 490 € par an (2 mois offerts) · 14 jours d'essai offerts à l'inscription
                 </div>
               </div>
 
