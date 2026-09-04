@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { isNavActive } from "@/lib/ui/nav";
@@ -50,6 +51,12 @@ export default function MobileNav() {
   const { t } = useI18n();
   const unread = useUnreadCount();
 
+  // Optimiste : la pastille part À L'INSTANT du toucher, sans attendre que
+  // la nouvelle page soit rendue (sinon elle semble traîner du temps de
+  // chargement). L'arrivée de la vraie route confirme ou corrige.
+  const [pending, setPending] = useState<number | null>(null);
+  useEffect(() => setPending(null), [pathname]);
+
   // Dans un fil de discussion, la barre du bas disparaît : le champ de
   // saisie prend sa place et la conversation occupe tout l'écran.
   if (/^\/dashboard\/messages\/./.test(pathname)) return null;
@@ -59,9 +66,10 @@ export default function MobileNav() {
   // (framer-motion layoutId) mesurait des coordonnées de page, scroll
   // compris : changer d'onglet en bas d'une page faisait surgir la pastille
   // de sous la barre, décalée de la hauteur du scroll.
-  const activeIndex = TABS.findIndex((tab) =>
+  const routeIndex = TABS.findIndex((tab) =>
     isNavActive(pathname, tab.href, tab.href === "/dashboard")
   );
+  const activeIndex = pending ?? routeIndex;
 
   return (
     <div
@@ -79,17 +87,21 @@ export default function MobileNav() {
               width: `calc((100% - 12px) / ${TABS.length})`,
               transform: `translateX(${activeIndex * 100}%)`,
               transitionTimingFunction: "cubic-bezier(0.3, 1.25, 0.4, 1)",
+              // Couche GPU dédiée : la glissade reste fluide même pendant
+              // que le fil principal rend la page de destination.
+              willChange: "transform",
             }}
           />
         )}
-        {TABS.map((tab) => {
-          const active = isNavActive(pathname, tab.href, tab.href === "/dashboard");
+        {TABS.map((tab, i) => {
+          const active = i === activeIndex;
           const showBadge = tab.href === "/dashboard/messages" && unread > 0;
           return (
             <Link
               key={tab.href}
               href={tab.href}
-              aria-current={active ? "page" : undefined}
+              onClick={() => setPending(i)}
+              aria-current={i === routeIndex ? "page" : undefined}
               className="relative flex min-w-0 flex-1 flex-col items-center gap-0.5 px-1 py-2"
             >
               <span className="relative">

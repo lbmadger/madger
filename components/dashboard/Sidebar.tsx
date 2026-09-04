@@ -166,6 +166,7 @@ export default function Sidebar() {
             style={{
               transform: `translateY(${activeIndex * 40}px)`,
               transitionTimingFunction: "cubic-bezier(0.3, 1.25, 0.4, 1)",
+              willChange: "transform",
             }}
           />
         )}
