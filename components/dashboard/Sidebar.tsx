@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import MadgerLogo from "@/components/ui/MadgerLogo";
@@ -139,16 +140,38 @@ function NavLink({ item, unread = 0 }: { item: NavItem; unread?: number }) {
   );
 }
 
+// Dernière position du surlignage, hors composant (survit aux remontages).
+let lastRailIndex: number | null = null;
+
 export default function Sidebar() {
   const unread = useUnreadCount();
   const pathname = usePathname();
-  // Surlignage qui glisse en PUR CSS : entrées de hauteur fixe (36 px + 4 px
-  // de gap), la position active est une simple translation. L'ancien
-  // layoutId framer-motion mesurait des coordonnées scroll compris et
-  // faisait surgir le surlignage de travers quand la page était scrollée.
+  // Surlignage glissant : entrées de hauteur fixe (36 px + 4 px de gap), la
+  // position active est une simple translation. Animée par l'API Web
+  // Animations : une transition CSS peut être avalée pendant une navigation
+  // (ancien et nouveau style dans le même rafraîchissement = téléportation).
   const activeIndex = NAV.findIndex((item) =>
     isNavActive(pathname, item.href, item.href === "/dashboard")
   );
+  const railRef = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    const el = railRef.current;
+    if (!el || activeIndex < 0) return;
+    const from = lastRailIndex;
+    lastRailIndex = activeIndex;
+    if (from === null || from === activeIndex) return;
+    el.animate(
+      [
+        { transform: `translateY(${from * 40}px)` },
+        { transform: `translateY(${activeIndex * 40}px)` },
+      ],
+      {
+        duration: 320,
+        easing: "cubic-bezier(0.3, 1.25, 0.4, 1)",
+        fill: "forwards",
+      }
+    );
+  }, [activeIndex]);
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col overflow-y-auto border-r border-border bg-bg-elevated p-4 md:flex">
       <Link href="/dashboard" className="mb-8 flex items-center gap-2.5 px-2">
@@ -161,11 +184,11 @@ export default function Sidebar() {
       <nav className="relative flex flex-1 flex-col gap-1">
         {activeIndex >= 0 && (
           <span
+            ref={railRef}
             aria-hidden
-            className="absolute left-0 right-0 top-0 h-9 rounded-lg bg-accent/10 transition-transform duration-300"
+            className="absolute left-0 right-0 top-0 h-9 rounded-lg bg-accent/10"
             style={{
               transform: `translateY(${activeIndex * 40}px)`,
-              transitionTimingFunction: "cubic-bezier(0.3, 1.25, 0.4, 1)",
               willChange: "transform",
             }}
           />

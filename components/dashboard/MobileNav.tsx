@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { isNavActive } from "@/lib/ui/nav";
@@ -17,6 +17,10 @@ type Tab = {
   labelKey: string;
   icon: React.ReactNode;
 };
+
+// Dernière position de la pastille, HORS composant : survit aux remontages
+// pendant la navigation, l'animation repart toujours du bon onglet.
+let lastPillIndex: number | null = null;
 
 const TABS: Tab[] = [
   {
@@ -57,19 +61,39 @@ export default function MobileNav() {
   const [pending, setPending] = useState<number | null>(null);
   useEffect(() => setPending(null), [pathname]);
 
-  // Dans un fil de discussion, la barre du bas disparaît : le champ de
-  // saisie prend sa place et la conversation occupe tout l'écran.
-  if (/^\/dashboard\/messages\/./.test(pathname)) return null;
-
-  // Pastille en PUR CSS : les 5 onglets font la même largeur, la position
-  // active est donc index * 100 % de translation. L'ancienne mécanique
-  // (framer-motion layoutId) mesurait des coordonnées de page, scroll
-  // compris : changer d'onglet en bas d'une page faisait surgir la pastille
-  // de sous la barre, décalée de la hauteur du scroll.
+  const pillRef = useRef<HTMLSpanElement>(null);
   const routeIndex = TABS.findIndex((tab) =>
     isNavActive(pathname, tab.href, tab.href === "/dashboard")
   );
   const activeIndex = pending ?? routeIndex;
+
+  // Animation PILOTÉE (Web Animations API) plutôt qu'une transition CSS :
+  // pendant une navigation, Safari peut avaler l'ancien et le nouveau style
+  // dans le même rafraîchissement et la transition ne part jamais (pastille
+  // téléportée). animate() tourne sur le compositeur et part explicitement
+  // de la dernière position mémorisée, quoi qu'il arrive au DOM.
+  useEffect(() => {
+    const el = pillRef.current;
+    if (!el || activeIndex < 0) return;
+    const from = lastPillIndex;
+    lastPillIndex = activeIndex;
+    if (from === null || from === activeIndex) return;
+    el.animate(
+      [
+        { transform: `translateX(${from * 100}%)` },
+        { transform: `translateX(${activeIndex * 100}%)` },
+      ],
+      {
+        duration: 320,
+        easing: "cubic-bezier(0.3, 1.25, 0.4, 1)",
+        fill: "forwards",
+      }
+    );
+  }, [activeIndex]);
+
+  // Dans un fil de discussion, la barre du bas disparaît : le champ de
+  // saisie prend sa place et la conversation occupe tout l'écran.
+  if (/^\/dashboard\/messages\/./.test(pathname)) return null;
 
   return (
     <div
@@ -81,12 +105,14 @@ export default function MobileNav() {
       <nav className="relative flex rounded-[26px] border border-border-strong bg-bg-elevated p-1.5 shadow-[0_10px_36px_rgba(0,0,0,0.6)]">
         {activeIndex >= 0 && (
           <span
+            ref={pillRef}
             aria-hidden
-            className="absolute bottom-1.5 left-1.5 top-1.5 rounded-[20px] bg-accent transition-transform duration-300"
+            className="absolute bottom-1.5 left-1.5 top-1.5 rounded-[20px] bg-accent"
             style={{
               width: `calc((100% - 12px) / ${TABS.length})`,
+              // Position de départ (premier rendu) ; ensuite c'est animate()
+              // qui pilote, avec fill forwards.
               transform: `translateX(${activeIndex * 100}%)`,
-              transitionTimingFunction: "cubic-bezier(0.3, 1.25, 0.4, 1)",
               // Couche GPU dédiée : la glissade reste fluide même pendant
               // que le fil principal rend la page de destination.
               willChange: "transform",
