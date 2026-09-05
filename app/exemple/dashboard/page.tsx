@@ -10,7 +10,7 @@ import { StarIcon } from "@/components/ui/icons";
 import type { BarDatum } from "@/components/dashboard/charts/MiniBars";
 
 // Page VITRINE : le dashboard d'Emma Laurent, la même coach que /exemple
-// (45 € la séance, 4,9 sur 27 avis, Basic-Fit Lyon Part-Dieu). À montrer aux
+// (45 € la séance, 4,9 sur 27 avis, Basic-Fit Paris Rue de Rivoli). À montrer aux
 // futurs coachs : « voilà ton futur quotidien ». Contenu 100 % statique,
 // aucune donnée en base, mêmes composants visuels que le vrai dashboard.
 
@@ -40,8 +40,8 @@ function revenueByMonth(): BarDatum[] {
 
 // Prochaines séances : aujourd'hui + demain, heures de vraie journée coach.
 const UPCOMING = [
-  { time: "Aujourd'hui · 12:30", name: "Julie M.", service: "Séance individuelle", place: "Basic-Fit Lyon Part-Dieu" },
-  { time: "Aujourd'hui · 18:00", name: "Karim B.", service: "Séance individuelle", place: "Basic-Fit Lyon Part-Dieu" },
+  { time: "Aujourd'hui · 12:30", name: "Julie M.", service: "Séance individuelle", place: "Basic-Fit Paris Rue de Rivoli" },
+  { time: "Aujourd'hui · 18:00", name: "Karim B.", service: "Séance individuelle", place: "Basic-Fit Paris Rue de Rivoli" },
   { time: "Demain · 07:30", name: "Sarah L.", service: "Pack 10 séances (6/10)", place: "À domicile" },
   { time: "Demain · 12:30", name: "Thomas R.", service: "Séance individuelle", place: "En visio" },
 ];

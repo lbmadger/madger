@@ -31,10 +31,10 @@ const DEMO_COACH: PublicCoach = {
   bio: "Coach sportive diplômée d'État depuis 8 ans, je t'accompagne vers tes objectifs avec un programme sur mesure, en salle ou à domicile. Perte de poids, prise de masse ou simple remise en forme : on avance ensemble, à ton rythme, sans jamais te juger. Premier échange offert pour définir ton plan.",
   avatar_url:
     "https://images.unsplash.com/photo-1594381898411-846e7d193883?auto=format&fit=crop&w=400&q=80",
-  city: "Lyon",
+  city: "Paris",
   accepts_online: true,
-  lat: 45.764,
-  lng: 4.8357,
+  lat: 48.8592,
+  lng: 2.3417,
   stripe_charges_enabled: true,
   cancellation_policy: "moderate",
   refund_over_24h_pct: 100,
@@ -46,7 +46,7 @@ const DEMO_COACH: PublicCoach = {
   sport: "musculation",
   specialties: ["weight_loss", "muscle_gain", "fitness"],
   venues: ["coach_gym", "client_home", "outdoor"],
-  gym_name: "Basic-Fit Lyon Part-Dieu",
+  gym_name: "Basic-Fit Paris Rue de Rivoli",
   from_price_cents: 4500,
   verified: true,
 };
