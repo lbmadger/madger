@@ -25,6 +25,9 @@ const PUBLIC_EXACT = new Set([
   // Manifeste PWA : doit répondre sans cookie d'accès, sinon l'installation
   // sur l'écran d'accueil reçoit une redirection au lieu du manifeste.
   "/manifest.webmanifest",
+  // Icône Apple générée : servie sur /apple-icon SANS extension, donc pas
+  // exclue par le matcher. Verrouillée, iOS affichait une lettre en repli.
+  "/apple-icon",
 ]);
 const PUBLIC_PREFIXES = [
   // Blog : public même avant le lancement (référencement / contenu), pour
