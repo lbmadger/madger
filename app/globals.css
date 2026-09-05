@@ -35,7 +35,10 @@ body {
 
 /* Fondu d'entrée de page (app/template.tsx), en CSS pur. */
 .page-fade {
-  animation: page-fade-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* 0.2 s : assez pour adoucir l'arrivée, pas assez pour ralentir le
+     ressenti. À 0.45 s, chaque changement d'onglet de l'app payait une
+     demi-seconde de fondu par-dessus le temps de chargement réel. */
+  animation: page-fade-in 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 @keyframes page-fade-in {
   from {

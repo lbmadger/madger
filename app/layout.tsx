@@ -40,6 +40,13 @@ export const metadata: Metadata = {
   formatDetection: { telephone: false, address: false, email: false },
   title: "Madger · L'app préférée des coachs sportifs",
   description: "Ton lien de réservation, tes paiements sécurisés, tes factures automatiques. Tes clients réservent seuls, ton planning se remplit. Fait pour les coachs sportifs indépendants.",
+  // PWA iOS : ajoutée à l'écran d'accueil, l'app s'ouvre en plein écran
+  // sans le chrome Safari (la barre du bas ne bouge plus jamais).
+  appleWebApp: {
+    capable: true,
+    title: "Madger",
+    statusBarStyle: "black",
+  },
   keywords: ["réservation coach sportif", "coach sportif", "logiciel réservation sport", "prise de rendez-vous coach", "application coach sportif", "paiement en ligne coach", "facturation coach"],
   openGraph: {
     title: "Madger · L'app préférée des coachs sportifs",

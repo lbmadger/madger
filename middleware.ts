@@ -22,6 +22,9 @@ const PUBLIC_EXACT = new Set([
   "/opengraph-image",
   "/robots.txt",
   "/sitemap.xml",
+  // Manifeste PWA : doit répondre sans cookie d'accès, sinon l'installation
+  // sur l'écran d'accueil reçoit une redirection au lieu du manifeste.
+  "/manifest.webmanifest",
 ]);
 const PUBLIC_PREFIXES = [
   // Blog : public même avant le lancement (référencement / contenu), pour
