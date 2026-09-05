@@ -12,6 +12,7 @@ const fr = {
   demoCoach: {
     bannerTitle: "Ceci est une page d'exemple",
     bannerDesc: "Voilà à quoi ressemblera ta page de coach sur Madger.",
+    dashboardLink: "Voir son dashboard côté coach →",
     bannerCta: "Créer ma page",
     promptTitle: "Envie d'une page comme celle-ci ?",
     promptDesc: "Crée ta page de coach gratuitement en quelques minutes, et commence à recevoir des réservations.",
@@ -1445,6 +1446,7 @@ const en: Dictionary = {
   demoCoach: {
     bannerTitle: "This is an example page",
     bannerDesc: "Here is what your coach page on Madger will look like.",
+    dashboardLink: "See her coach dashboard →",
     bannerCta: "Create my page",
     promptTitle: "Want a page like this one?",
     promptDesc: "Create your coach page for free in a few minutes and start taking bookings.",

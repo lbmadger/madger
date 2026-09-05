@@ -8,9 +8,10 @@ import { ACCESS_COOKIE, getAccessCode } from "@/lib/access";
 const PUBLIC_EXACT = new Set([
   "/",
   "/acces",
-  // Page vitrine partageable (exemple de page coach), publique même
-  // avant le lancement pour la montrer aux futurs coachs.
+  // Pages vitrines partageables (exemple de page coach + son dashboard),
+  // publiques même avant le lancement pour les montrer aux futurs coachs.
   "/exemple",
+  "/exemple/dashboard",
   // Réinitialisation de mot de passe : accessible sans code d'accès pour que
   // le lien reçu par email fonctionne dans n'importe quel navigateur.
   "/forgot-password",

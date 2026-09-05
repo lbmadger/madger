@@ -207,7 +207,13 @@ export default function CoachProfile({
               {t("demoCoach.bannerTitle")}
             </p>
             <p className="mt-0.5 text-xs text-text-muted">
-              {t("demoCoach.bannerDesc")}
+              {t("demoCoach.bannerDesc")}{" "}
+              <Link
+                href="/exemple/dashboard"
+                className="text-accent hover:underline"
+              >
+                {t("demoCoach.dashboardLink")}
+              </Link>
             </p>
           </div>
           <Link
