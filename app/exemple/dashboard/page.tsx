@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { getServerDictionary } from "@/lib/i18n/server";
-import PublicHeader from "@/components/marketplace/PublicHeader";
+import { DemoTopbar, DemoMobileNav } from "@/components/exemple/DemoShell";
 import AnimatedStat from "@/components/dashboard/AnimatedStat";
 import AreaChartCard from "@/components/dashboard/charts/AreaChartCard";
 import { StarIcon } from "@/components/ui/icons";
@@ -55,8 +55,8 @@ export default function ExampleDashboardPage() {
   return (
     <I18nProvider locale={locale} dict={dict}>
       <div className="min-h-screen bg-bg text-text-base">
-        <PublicHeader />
-        <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6">
+        <DemoTopbar />
+        <main className="mx-auto w-full max-w-5xl px-4 py-6 pb-28 sm:px-6 sm:py-8">
           {/* Bandeau vitrine, même ADN que /exemple */}
           <div className="mb-6 flex flex-col items-start justify-between gap-3 rounded-2xl border border-accent/30 bg-accent/[0.06] px-5 py-4 sm:flex-row sm:items-center">
             <div>
@@ -233,6 +233,7 @@ export default function ExampleDashboardPage() {
             </Link>
           </div>
         </main>
+        <DemoMobileNav />
       </div>
     </I18nProvider>
   );
