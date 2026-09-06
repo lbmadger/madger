@@ -174,6 +174,10 @@ export default function ExampleDashboardPage() {
                     <span className="shrink-0 text-xs font-semibold text-text-muted">
                       {s.time}
                     </span>
+                    <span className="flex shrink-0 flex-col items-center gap-0.5 rounded-lg border border-accent/30 bg-accent/[0.05] px-2 py-1.5 text-[10px] font-semibold text-accent">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1.5" fill="currentColor" /></svg>
+                      Objectifs
+                    </span>
                   </li>
                 ))}
               </ul>

@@ -6,6 +6,8 @@ import { TicketIcon, RepeatIcon, HistoryIcon, ChevronDownIcon } from "@/componen
 import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
 import type { Client } from "@/lib/clients/types";
+import ClientSheet from "@/components/messaging/ClientSheet";
+import type { ClientProfile } from "@/lib/health/bmi";
 
 // Fiche d'un client. RLS garantit qu'on ne peut charger que ses propres
 // clients : une fiche inexistante ou appartenant à un autre coach → 404.
@@ -30,6 +32,26 @@ export default async function ClientDetailPage({
 
   const client = data as Client;
   const title = [client.first_name, client.last_name].filter(Boolean).join(" ");
+
+  // Fiche sportive (objectifs, niveau, mesures) : remplie par le client dans
+  // son espace, lisible par le coach via la conversation (client_crm_id).
+  let profile: ClientProfile | null = null;
+  {
+    const { data: conv } = await supabase
+      .from("conversations")
+      .select("client_id")
+      .eq("client_crm_id", params.id)
+      .limit(1)
+      .maybeSingle();
+    if (conv?.client_id) {
+      const { data: prof } = await supabase
+        .from("client_profiles")
+        .select("*")
+        .eq("id", conv.client_id as string)
+        .maybeSingle();
+      if (prof) profile = prof as ClientProfile;
+    }
+  }
 
   // Abonnements mensuels de ce client (RLS : seuls ceux du coach).
   const { data: subRows } = await supabase
@@ -157,6 +179,17 @@ export default async function ClientDetailPage({
                 </div>
               );
             })}
+          </div>
+        )}
+        {/* Objectifs et profil sportif du client, en tête : c'est ce que le
+            coach vient chercher avant une séance (lien « Objectifs » de
+            l'accueil). Ouvert par défaut quand on arrive par l'ancre. */}
+        {profile && (
+          <div
+            id="objectifs"
+            className="mb-4 overflow-hidden rounded-2xl border border-accent/30 bg-bg-card [&_details]:border-b-0 [&_details]:bg-transparent [&_summary]:py-3.5 [&_summary]:text-sm [&_summary]:font-semibold [&_summary]:text-text-base"
+          >
+            <ClientSheet profile={profile} />
           </div>
         )}
         <ClientDetail client={client} />

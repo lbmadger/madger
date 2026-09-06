@@ -21,6 +21,7 @@ import { getServerDictionary } from "@/lib/i18n/server";
 import { getCoach } from "@/lib/coach/getCoach";
 import { isPro, proDaysLeft } from "@/lib/subscription/plan";
 import type { Booking } from "@/lib/bookings/types";
+import type { ClientProfile } from "@/lib/health/bmi";
 
 // Vue d'ensemble — premier écran après connexion. KPI réels (revenus issus des
 // paiements encaissés, fonds en séquestre) + graphiques revenus/séances.
@@ -221,6 +222,38 @@ export default async function OverviewPage() {
       ? { text: `+${newClientsCount} ${o.newThisMonth}`, positive: true }
       : null;
   const upcoming = (upcomingRes.data ?? []) as Booking[];
+
+  // Fiche sportive des clients des prochaines séances (objectifs, niveau) :
+  // même chemin RLS que l'agenda, conversations du coach → client_profiles,
+  // client_crm_id faisant le pont. Best-effort : sans profil, pas de lien.
+  const profiles: Record<string, ClientProfile> = {};
+  if (upcoming.length > 0) {
+    const crmIds = Array.from(
+      new Set(upcoming.map((b) => b.client_id).filter(Boolean) as string[])
+    );
+    if (crmIds.length) {
+      const { data: convs } = await supabase
+        .from("conversations")
+        .select("client_id, client_crm_id")
+        .in("client_crm_id", crmIds);
+      const authIds = Array.from(
+        new Set((convs ?? []).map((c) => c.client_id as string))
+      );
+      if (authIds.length) {
+        const { data: profs } = await supabase
+          .from("client_profiles")
+          .select("*")
+          .in("id", authIds);
+        const byAuthId = new Map(
+          (profs ?? []).map((pr) => [pr.id as string, pr as ClientProfile])
+        );
+        for (const c of convs ?? []) {
+          const prof = byAuthId.get(c.client_id as string);
+          if (prof && c.client_crm_id) profiles[c.client_crm_id as string] = prof;
+        }
+      }
+    }
+  }
   const availRows = availRes.data ?? [];
   const availabilityDone = availRows.length > 0;
   const serviceRows = servicesRes.data ?? [];
@@ -1018,12 +1051,12 @@ export default async function OverviewPage() {
               ) : (
                 <ul className="mt-4 flex flex-col gap-2">
                   {upcoming.map((b) => (
-                    <li key={b.id}>
+                    <li key={b.id} className="flex items-stretch gap-2">
                       {/* Carte cliquable : ouvre la fiche de la séance dans
                           l'agenda (lien profond ?b=). */}
                       <Link
                         href={`/dashboard/agenda?b=${b.id}`}
-                        className="flex items-center gap-3 rounded-lg border border-border bg-bg-elevated p-3 transition-colors hover:border-accent/40"
+                        className="flex min-w-0 flex-1 items-center gap-3 rounded-lg border border-border bg-bg-elevated p-3 transition-colors hover:border-accent/40"
                       >
                         <div className="flex w-14 shrink-0 flex-col">
                           {/* Fuseau du coach : le serveur tourne en UTC,
@@ -1060,6 +1093,23 @@ export default async function OverviewPage() {
                           {dict.agenda.badge[b.location]}
                         </span>
                       </Link>
+                      {/* Objectifs du client : ouvre sa fiche (profil sportif
+                          en tête) pour préparer la séance. Seulement si le
+                          client a rempli son profil. */}
+                      {b.client_id && profiles[b.client_id] && (
+                        <Link
+                          href={`/dashboard/clients/${b.client_id}#objectifs`}
+                          title={o.goalsLink}
+                          className="flex shrink-0 flex-col items-center justify-center gap-1 rounded-lg border border-accent/30 bg-accent/[0.05] px-2.5 text-[10px] font-semibold text-accent transition-colors hover:bg-accent/10"
+                        >
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="9" />
+                            <circle cx="12" cy="12" r="5" />
+                            <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+                          </svg>
+                          {o.goalsLink}
+                        </Link>
+                      )}
                     </li>
                   ))}
                 </ul>
