@@ -425,10 +425,18 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
       ══════════════════════════════════════════════════════ */}
       <section
         ref={sectionRef}
-        id="fonctionnement"
         className="h-[350vh] lg:h-[500vh]"
         style={{ position: "relative" }}
       >
+        {/* Point d'ancrage « Fonctionnement » : un écran PLUS BAS que le
+            début de la section. En haut, l'animation pilotée par le scroll
+            n'a encore rien affiché (écran noir) ; ici le premier écran du
+            téléphone est déjà en place. */}
+        <span
+          id="fonctionnement"
+          aria-hidden
+          style={{ position: "absolute", top: "100vh", left: 0, width: 1, height: 1 }}
+        />
         <div
           ref={stickyRef}
           style={{

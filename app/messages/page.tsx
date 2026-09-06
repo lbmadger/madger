@@ -65,6 +65,27 @@ export default async function ClientMessagesPage() {
     user?.id
   );
 
+  // Photo du coach, depuis la vue publique (avatar_url), par conversation.
+  const avatars: Record<string, string> = {};
+  {
+    const coachIds = Array.from(
+      new Set((data ?? []).map((c) => c.coach_id as string))
+    );
+    if (coachIds.length) {
+      const { data: coaches } = await supabase
+        .from("public_coaches")
+        .select("id, avatar_url")
+        .in("id", coachIds);
+      const byId = new Map(
+        (coaches ?? []).map((c) => [c.id as string, c.avatar_url as string | null])
+      );
+      for (const c of data ?? []) {
+        const url = byId.get(c.coach_id as string);
+        if (url) avatars[c.id as string] = url;
+      }
+    }
+  }
+
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6">
       <h1 className="mb-5 text-xl font-extrabold tracking-tight text-text-base">
@@ -75,6 +96,7 @@ export default async function ClientMessagesPage() {
         perspective="client"
         basePath="/messages"
         previews={previews}
+        avatars={avatars}
       />
     </main>
   );

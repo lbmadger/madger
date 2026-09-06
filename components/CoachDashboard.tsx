@@ -18,7 +18,7 @@ export default function CoachDashboard() {
         style={{ background: "radial-gradient(ellipse 70% 50% at 50% 55%, rgba(203,255,3,0.05), transparent 70%)" }}
       />
 
-      <div id="dashboard" className="mx-auto max-w-6xl px-5 sm:px-6">
+      <div id="dashboard" className="mx-auto max-w-6xl scroll-mt-28 px-5 sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
           whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
@@ -77,7 +77,7 @@ export default function CoachDashboard() {
                     src="/landing/dashboard-desktop.png"
                     alt="Le dashboard Madger : revenus du mois, séances, clients, note et prochaines séances"
                     width={1440}
-                    height={900}
+                    height={1000}
                     sizes="(max-width: 1024px) 90vw, 896px"
                     className="block w-full"
                   />
@@ -91,7 +91,7 @@ export default function CoachDashboard() {
           </div>
 
           {/* iPhone en surimpression : la même app, dans la poche */}
-          <div className="absolute -bottom-6 right-0 hidden w-[190px] lg:block xl:right-6">
+          <div className="absolute -bottom-10 -right-2 hidden w-[250px] lg:block xl:right-0">
             <div
               className="rounded-[34px] p-[3px]"
               style={{ background: "linear-gradient(145deg,#3d3d40,#1c1c1e 40%,#0c0c0d 70%,#2a2a2c)", boxShadow: "0 30px 70px rgba(0,0,0,0.8)" }}
@@ -103,7 +103,7 @@ export default function CoachDashboard() {
                     alt="Le dashboard Madger sur mobile, avec sa navigation"
                     width={1179}
                     height={2556}
-                    sizes="190px"
+                    sizes="250px"
                     className="block w-full"
                   />
                 </div>

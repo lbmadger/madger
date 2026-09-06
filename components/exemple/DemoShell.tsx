@@ -14,6 +14,59 @@ const TABS = [
   { label: "Messages", d: "M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" },
 ];
 
+
+// Sidebar desktop, copie statique de la vraie (mêmes entrées, même
+// surlignage accent sur Accueil, profil en bas).
+const SIDE = [
+  { label: "Accueil", active: true, d: "M3 3h7v7H3V3zm0 11h7v7H3v-7zm11-11h7v7h-7V3zm0 11h7v7h-7v-7z" },
+  { label: "Clients", d: "M16 7a4 4 0 11-8 0 4 4 0 018 0zM3 21v-1a6 6 0 016-6h6a6 6 0 016 6v1" },
+  { label: "Agenda", d: "M7 3v3m10-3v3M3 9h18M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z" },
+  { label: "Prestations", d: "M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0l-8.1-8.1A2 2 0 012 11.2V4a2 2 0 012-2h7.2a2 2 0 011.4.6l8 8a2 2 0 010 2.8zM7.5 7.5h.01" },
+  { label: "Messages", badge: 2, d: "M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" },
+  { label: "Paiements", d: "M3 6h18a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V7a1 1 0 011-1zm0 4h20M7 15h3" },
+  { label: "Factures", d: "M7 3h10l3 3v15H4V3h3zm0 7h10M7 14h10M7 18h6" },
+  { label: "Avis", d: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" },
+  { label: "Statistiques", d: "M4 20V10m6 10V4m6 16v-6m6 6V8" },
+];
+
+export function DemoSidebar() {
+  return (
+    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col overflow-y-auto border-r border-border bg-bg-elevated p-4 md:flex">
+      <div className="mb-8 flex items-center gap-2.5 px-2">
+        <MadgerLogo size={30} />
+        <span className="text-xl font-extrabold tracking-tight text-text-base">Madger</span>
+      </div>
+      <nav className="flex flex-1 flex-col gap-1">
+        {SIDE.map((item) => (
+          <span
+            key={item.label}
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm ${
+              item.active ? "bg-accent/10 text-accent" : "text-text-muted"
+            }`}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+              <path d={item.d} />
+            </svg>
+            <span className="truncate">{item.label}</span>
+            {item.badge && (
+              <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[10px] font-bold text-black">
+                {item.badge}
+              </span>
+            )}
+          </span>
+        ))}
+      </nav>
+      <div className="mt-4 flex items-center gap-3 border-t border-border pt-3 px-2">
+        <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/10 text-sm font-bold text-accent">E</span>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-text-base">Emma Laurent</p>
+          <p className="text-[11px] text-accent">Madger Pro</p>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
 export function DemoTopbar() {
   return (
     <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-border bg-bg/80 px-4 backdrop-blur sm:px-6">

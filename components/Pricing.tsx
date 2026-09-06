@@ -39,7 +39,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
   return (
     <section
       id="tarifs"
-      className="py-20 sm:py-28 relative overflow-hidden"
+      className="py-20 sm:py-28 relative overflow-hidden scroll-mt-6"
       style={{
         background: "linear-gradient(180deg, transparent, rgba(255,255,255,0.01), transparent)",
       }}

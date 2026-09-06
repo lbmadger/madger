@@ -1,6 +1,8 @@
 import Topbar from "@/components/dashboard/Topbar";
 import ConversationList from "@/components/messaging/ConversationList";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdmin } from "@supabase/supabase-js";
+import { SUPABASE_URL } from "@/lib/supabase/config";
 import { getServerDictionary } from "@/lib/i18n/server";
 import type { Conversation } from "@/lib/messaging/types";
 
@@ -52,6 +54,28 @@ export default async function CoachMessagesPage() {
     user?.id
   );
 
+  // Photo de profil du client : elle vit dans Auth (compte Google → avatar),
+  // pas dans la base. Lecture via l'API admin, best-effort, initiale sinon.
+  const avatars: Record<string, string> = {};
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (serviceKey && (data ?? []).length > 0) {
+    const admin = createAdmin(SUPABASE_URL, serviceKey);
+    await Promise.all(
+      (data ?? []).slice(0, 40).map(async (c) => {
+        try {
+          const { data: u } = await admin.auth.admin.getUserById(
+            c.client_id as string
+          );
+          const meta = (u?.user?.user_metadata ?? {}) as Record<string, unknown>;
+          const url = (meta.avatar_url || meta.picture) as string | undefined;
+          if (url) avatars[c.id as string] = url;
+        } catch {
+          /* pas de photo : initiale */
+        }
+      })
+    );
+  }
+
   return (
     <>
       <Topbar title={dict.messages.title} />
@@ -61,6 +85,7 @@ export default async function CoachMessagesPage() {
           perspective="coach"
           basePath="/dashboard/messages"
           previews={previews}
+        avatars={avatars}
         />
       </main>
     </>

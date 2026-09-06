@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { getServerDictionary } from "@/lib/i18n/server";
-import { DemoTopbar, DemoMobileNav } from "@/components/exemple/DemoShell";
+import { DemoTopbar, DemoMobileNav, DemoSidebar } from "@/components/exemple/DemoShell";
 import AnimatedStat from "@/components/dashboard/AnimatedStat";
 import AreaChartCard from "@/components/dashboard/charts/AreaChartCard";
 import { StarIcon } from "@/components/ui/icons";
@@ -54,7 +54,9 @@ export default function ExampleDashboardPage() {
 
   return (
     <I18nProvider locale={locale} dict={dict}>
-      <div className="min-h-screen bg-bg text-text-base">
+      <div className="flex min-h-screen bg-bg text-text-base">
+        <DemoSidebar />
+        <div className="min-w-0 flex-1">
         <DemoTopbar />
         <main className="mx-auto w-full max-w-5xl px-4 py-6 pb-28 sm:px-6 sm:py-8">
           {/* Bandeau vitrine, même ADN que /exemple */}
@@ -140,6 +142,52 @@ export default function ExampleDashboardPage() {
               locale="fr-FR"
               mode="months"
             />
+          </div>
+
+          {/* Semaine, paiements, messages : la richesse du vrai accueil */}
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:mt-5 sm:grid-cols-3">
+            <section className="rounded-2xl border border-border bg-bg-card p-5">
+              <h3 className="text-base font-semibold">Cette semaine</h3>
+              <p className="mt-1 text-xs text-text-muted">12 séances · 3 créneaux libres</p>
+              <div className="mt-4 flex h-16 items-end gap-1.5">
+                {[3, 2, 3, 1, 2, 1, 0].map((n, i) => (
+                  <div key={i} className="flex flex-1 flex-col items-center gap-1">
+                    <div
+                      className={`w-full rounded-t ${n > 0 ? "bg-accent" : "bg-bg-elevated"}`}
+                      style={{ height: `${Math.max(6, n * 18)}px` }}
+                    />
+                    <span className="text-[10px] text-text-dim">{"LMMJVSD"[i]}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+            <section className="rounded-2xl border border-border bg-bg-card p-5">
+              <h3 className="text-base font-semibold">Paiements</h3>
+              <p className="mt-3 text-xs font-medium text-text-dim">Sous séquestre</p>
+              <p className="font-display text-xl font-extrabold">135 €</p>
+              <p className="mt-2 text-xs font-medium text-text-dim">Versé ce mois-ci</p>
+              <p className="font-display text-xl font-extrabold text-accent">1 890 €</p>
+            </section>
+            <section className="rounded-2xl border border-border bg-bg-card p-5">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-semibold">Messages</h3>
+                <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-black">2</span>
+              </div>
+              <ul className="mt-3 flex flex-col gap-2">
+                {[
+                  ["Julie M.", "On garde 12h30 demain ?"],
+                  ["Karim B.", "Merci pour le programme 🙏"],
+                ].map(([n, m]) => (
+                  <li key={n} className="flex items-center gap-2.5">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/10 text-xs font-semibold text-accent">{n.charAt(0)}</span>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{n}</p>
+                      <p className="truncate text-xs text-text-muted">{m}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
           </div>
 
           <div className="mt-4 grid grid-cols-1 gap-4 sm:mt-5 lg:grid-cols-3">
@@ -237,6 +285,7 @@ export default function ExampleDashboardPage() {
             </Link>
           </div>
         </main>
+        </div>
         <DemoMobileNav />
       </div>
     </I18nProvider>

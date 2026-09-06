@@ -13,12 +13,15 @@ export default function ConversationList({
   perspective,
   basePath,
   previews = {},
+  avatars = {},
 }: {
   conversations: Conversation[];
   perspective: "coach" | "client";
   basePath: string; // "/dashboard/messages" ou "/messages"
   // Dernier message par conversation : { corps, envoyé par moi ? }.
   previews?: Record<string, { body: string; mine: boolean }>;
+  // Photo de l'autre participant, par conversation (repli : initiale).
+  avatars?: Record<string, string>;
 }) {
   const { t, locale } = useI18n();
   const loc = locale === "fr" ? "fr-FR" : "en-GB";
@@ -101,9 +104,19 @@ export default function ConversationList({
               aria-label={unread ? `${name} · ${t("messages.unread")}` : name}
               className={`flex items-center gap-3 p-3 ${interactiveCardClass}`}
             >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent/10 text-sm font-semibold text-accent">
-                {initial}
-              </span>
+              {avatars[c.id] ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={avatars[c.id]}
+                  alt=""
+                  referrerPolicy="no-referrer"
+                  className="h-11 w-11 shrink-0 rounded-full border border-border-strong object-cover"
+                />
+              ) : (
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent/10 text-sm font-semibold text-accent">
+                  {initial}
+                </span>
+              )}
               <div className="min-w-0 flex-1">
                 <span
                   className={`block truncate text-sm ${
