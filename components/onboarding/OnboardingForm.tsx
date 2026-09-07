@@ -14,7 +14,7 @@ import { SPORT_KEYS, defaultServiceForSport } from "@/lib/coaches/taxonomy";
 import { WEEK_ORDER } from "@/lib/availability/types";
 import { track } from "@/lib/analytics/posthog";
 import { withTimeout } from "@/lib/utils/withTimeout";
-import AvatarCropper from "@/components/ui/AvatarCropper";
+import AvatarCropper, { fileFromUrl } from "@/components/ui/AvatarCropper";
 import Select from "@/components/ui/Select";
 import { SERVICE_DURATIONS, durationLabel } from "@/lib/services/durations";
 
@@ -90,6 +90,21 @@ export default function OnboardingForm({
       return;
     }
     setCropFile(file);
+  }
+
+  // Recadrer la photo déjà en ligne.
+  const [recropLoading, setRecropLoading] = useState(false);
+  async function recropCurrent() {
+    if (!avatarUrl) return;
+    setAvatarErr(false);
+    setRecropLoading(true);
+    const f = await fileFromUrl(avatarUrl);
+    setRecropLoading(false);
+    if (!f) {
+      setAvatarErr(true);
+      return;
+    }
+    setCropFile(f);
   }
 
   async function uploadAvatar(file: File) {
@@ -577,18 +592,31 @@ export default function OnboardingForm({
                   </p>
                 )}
               </div>
-              <button
-                type="button"
-                disabled={avatarUploading}
-                onClick={() => avatarInputRef.current?.click()}
-                className="shrink-0 rounded-full border border-border-strong px-3.5 py-2 text-xs font-semibold text-text-base transition-colors hover:border-accent disabled:opacity-60"
-              >
-                {avatarUploading
-                  ? "…"
-                  : avatarUrl
-                  ? t("onboarding.photoChange")
-                  : t("onboarding.photoAdd")}
-              </button>
+              <div className="flex shrink-0 flex-col items-end gap-1">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  loading={avatarUploading}
+                  onClick={() => avatarInputRef.current?.click()}
+                  className="text-text-base"
+                >
+                  {avatarUploading
+                    ? t("settings.photoUploading")
+                    : avatarUrl
+                    ? t("onboarding.photoChange")
+                    : t("onboarding.photoAdd")}
+                </Button>
+                {avatarUrl && !avatarUploading && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    loading={recropLoading}
+                    onClick={recropCurrent}
+                  >
+                    {t("settings.photoRecrop")}
+                  </Button>
+                )}
+              </div>
               <input
                 ref={avatarInputRef}
                 type="file"

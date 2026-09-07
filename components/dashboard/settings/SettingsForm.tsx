@@ -28,7 +28,7 @@ import {
   SparklesIcon,
 } from "@/components/ui/icons";
 import PolicyTiers from "@/components/booking/PolicyTiers";
-import AvatarCropper from "@/components/ui/AvatarCropper";
+import AvatarCropper, { fileFromUrl } from "@/components/ui/AvatarCropper";
 import Select from "@/components/ui/Select";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import { withTimeout } from "@/lib/utils/withTimeout";
@@ -156,6 +156,22 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
       return;
     }
     setCropFile(file);
+  }
+
+  // Recadrer la photo déjà en ligne : on la rapatrie puis on ouvre le
+  // recadrage comme pour une nouvelle photo.
+  const [recropLoading, setRecropLoading] = useState(false);
+  async function recropCurrent() {
+    if (!avatarUrl) return;
+    setAvatarError(null);
+    setRecropLoading(true);
+    const f = await fileFromUrl(avatarUrl);
+    setRecropLoading(false);
+    if (!f) {
+      setAvatarError(t("settings.photoErr"));
+      return;
+    }
+    setCropFile(f);
   }
 
   async function uploadAvatar(file: File) {
@@ -351,14 +367,27 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             </span>
           )}
           <div>
-            <button
-              type="button"
-              disabled={uploading}
-              onClick={() => fileRef.current?.click()}
-              className="rounded-full border border-border-strong px-4 py-2 text-sm font-medium text-text-base transition-colors hover:border-accent disabled:opacity-60"
-            >
-              {uploading ? t("settings.photoUploading") : t("settings.photoChange")}
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                loading={uploading}
+                onClick={() => fileRef.current?.click()}
+                className="text-text-base"
+              >
+                {uploading ? t("settings.photoUploading") : t("settings.photoChange")}
+              </Button>
+              {avatarUrl && !uploading && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  loading={recropLoading}
+                  onClick={recropCurrent}
+                >
+                  {t("settings.photoRecrop")}
+                </Button>
+              )}
+            </div>
             {avatarError && (
               <p role="alert" className="mt-1 text-xs text-danger">{avatarError}</p>
             )}

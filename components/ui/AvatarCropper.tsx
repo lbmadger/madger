@@ -13,6 +13,21 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 const OUT = 512; // taille de sortie, px
 const MAX_ZOOM = 4;
 
+// Recadrer une photo déjà en ligne : on la rapatrie en fichier local pour
+// la passer au recadrage comme une photo fraîchement choisie. Le stockage
+// Supabase autorise l'origine croisée, le canvas n'est donc pas « taché ».
+export async function fileFromUrl(url: string): Promise<File | null> {
+  try {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    if (!blob.type.startsWith("image/")) return null;
+    return new File([blob], "avatar", { type: blob.type });
+  } catch {
+    return null;
+  }
+}
+
 export default function AvatarCropper({
   file,
   onCancel,
@@ -191,8 +206,8 @@ export default function AvatarCropper({
         <Button variant="ghost" onClick={onCancel} disabled={busy}>
           {t("common.cancel")}
         </Button>
-        <Button onClick={confirm} disabled={!img || loadErr || busy}>
-          {busy ? "…" : t("avatarCrop.confirm")}
+        <Button onClick={confirm} disabled={!img || loadErr} loading={busy}>
+          {t("avatarCrop.confirm")}
         </Button>
       </div>
     </Dialog>
