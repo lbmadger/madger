@@ -30,6 +30,12 @@ const fr = {
     loading: "Chargement…",
     delete: "Supprimer",
   },
+  avatarCrop: {
+    title: "Cadre ta photo",
+    hint: "Glisse la photo pour la placer dans le rond, et agrandis-la avec le curseur.",
+    zoom: "Zoom",
+    confirm: "Valider",
+  },
   nav: {
     overview: "Accueil",
     // Barre mobile : 5 onglets se partagent l'écran, le libellé long ne
@@ -1663,6 +1669,12 @@ const en: Dictionary = {
     optional: "(optional)",
     loading: "Loading…",
     delete: "Delete",
+  },
+  avatarCrop: {
+    title: "Frame your photo",
+    hint: "Drag the photo to place it in the circle, and enlarge it with the slider.",
+    zoom: "Zoom",
+    confirm: "Confirm",
   },
   nav: {
     overview: "Dashboard",

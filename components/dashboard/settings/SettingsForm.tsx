@@ -27,7 +27,10 @@ import {
   SparklesIcon,
 } from "@/components/ui/icons";
 import PolicyTiers from "@/components/booking/PolicyTiers";
+import AvatarCropper from "@/components/ui/AvatarCropper";
+import Select from "@/components/ui/Select";
 import { inputClass, labelClass } from "@/lib/ui/styles";
+import { withTimeout } from "@/lib/utils/withTimeout";
 import AiBio from "@/components/ui/AiBio";
 import {
   resolveRefundPolicy,
@@ -134,6 +137,8 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   const [avatarUrl, setAvatarUrl] = useState(coach.avatar_url ?? "");
   const [uploading, setUploading] = useState(false);
   const [avatarError, setAvatarError] = useState<string | null>(null);
+  // Photo choisie, en attente de recadrage dans le rond.
+  const [cropFile, setCropFile] = useState<File | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
@@ -143,19 +148,27 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   const [feedbackFor, setFeedbackFor] = useState<string | null>(null);
 
   // Upload de la photo de profil vers le Storage (avatars/<uid>/avatar).
-  async function uploadAvatar(file: File) {
+  function pickAvatar(file: File) {
     setAvatarError(null);
-    if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
+    if (!file.type.startsWith("image/") || file.size > 10 * 1024 * 1024) {
       setAvatarError(t("settings.photoErr"));
       return;
     }
+    setCropFile(file);
+  }
+
+  async function uploadAvatar(file: File) {
+    setAvatarError(null);
     setUploading(true);
     try {
       const supabase = createClient();
       const path = `${coach.id}/avatar`;
-      const { error: upErr } = await supabase.storage
-        .from("avatars")
-        .upload(path, file, { upsert: true, contentType: file.type });
+      const { error: upErr } = await withTimeout(
+        supabase.storage
+          .from("avatars")
+          .upload(path, file, { upsert: true, contentType: file.type }),
+        30000
+      );
       if (upErr) {
         setAvatarError(t("settings.photoErr"));
         return;
@@ -163,10 +176,13 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
       const { data } = supabase.storage.from("avatars").getPublicUrl(path);
       // Cache-buster : l'URL est stable, on force le rafraîchissement.
       const url = `${data.publicUrl}?v=${Date.now()}`;
-      await supabase
-        .from("coaches")
-        .update({ avatar_url: url })
-        .eq("id", coach.id);
+      const { error: dbErr } = await withTimeout(
+        supabase.from("coaches").update({ avatar_url: url }).eq("id", coach.id)
+      );
+      if (dbErr) {
+        setAvatarError(t("settings.photoErr"));
+        return;
+      }
       setAvatarUrl(url);
       router.refresh();
     } catch {
@@ -353,10 +369,20 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             className="hidden"
             onChange={(e) => {
               const f = e.target.files?.[0];
-              if (f) uploadAvatar(f);
+              if (f) pickAvatar(f);
               e.target.value = "";
             }}
           />
+          {cropFile && (
+            <AvatarCropper
+              file={cropFile}
+              onCancel={() => setCropFile(null)}
+              onDone={(f) => {
+                setCropFile(null);
+                uploadAvatar(f);
+              }}
+            />
+          )}
         </div>
 
         <div className="mt-4 flex flex-col gap-3">
@@ -446,10 +472,9 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         <div className="flex flex-col gap-4">
           <label className="flex flex-col gap-1.5">
             <span className={labelClass}>{t("settings.sport")}</span>
-            <select
+            <Select
               value={sport}
-              onChange={(e) => {
-                const next = e.target.value;
+              onChange={(next) => {
                 setSport(next);
                 // Retire « compétition » si le nouveau sport ne le propose pas.
                 const allowed = specialtiesForSport(next);
@@ -457,15 +482,15 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
                   prev.filter((k) => allowed.includes(k as never))
                 );
               }}
-              className={inputClass}
-            >
-              <option value="">-</option>
-              {SPORT_KEYS.map((s) => (
-                <option key={s} value={s}>
-                  {t(`taxonomy.sports.${s}`)}
-                </option>
-              ))}
-            </select>
+              ariaLabel={t("settings.sport")}
+              options={[
+                { value: "", label: "-" },
+                ...SPORT_KEYS.map((s) => ({
+                  value: s,
+                  label: t(`taxonomy.sports.${s}`),
+                })),
+              ]}
+            />
           </label>
 
           <div>
@@ -627,17 +652,15 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         <div className="mt-4 border-t border-border pt-4">
           <label className="flex flex-col gap-1.5">
             <span className={labelClass}>{t("settings.minNotice")}</span>
-            <select
-              value={minNotice}
-              onChange={(e) => setMinNotice(Number(e.target.value))}
-              className={inputClass}
-            >
-              {[1, 2, 6, 12, 24, 48].map((h) => (
-                <option key={h} value={h}>
-                  {h} h {t("settings.minNoticeBefore")}
-                </option>
-              ))}
-            </select>
+            <Select
+              value={String(minNotice)}
+              onChange={(v) => setMinNotice(Number(v))}
+              ariaLabel={t("settings.minNotice")}
+              options={[1, 2, 6, 12, 24, 48].map((h) => ({
+                value: String(h),
+                label: `${h} h ${t("settings.minNoticeBefore")}`,
+              }))}
+            />
             <span className="text-xs text-text-dim">
               {t("settings.minNoticeHint")}
             </span>
@@ -722,19 +745,16 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             <span className="text-xs text-text-dim">
               {t("cancellation.overDesc")}
             </span>
-            <select
-              value={refundOver}
-              onChange={(e) => setRefundOver(Number(e.target.value))}
-              className={`${inputClass} mt-2`}
-              aria-label={t("cancellation.overLabelH").replace("{h}", String(cancelHours))}
-            >
-              {REFUND_PCT_CHOICES.map((p) => (
-                <option key={p} value={p}>
-                  {t("cancellation.youKeep")} {100 - p} % · {p} %{" "}
-                  {t("cancellation.refundedSuffix")}
-                </option>
-              ))}
-            </select>
+            <Select
+              value={String(refundOver)}
+              onChange={(v) => setRefundOver(Number(v))}
+              className="mt-2"
+              ariaLabel={t("cancellation.overLabelH").replace("{h}", String(cancelHours))}
+              options={REFUND_PCT_CHOICES.map((p) => ({
+                value: String(p),
+                label: `${t("cancellation.youKeep")} ${100 - p} % · ${p} % ${t("cancellation.refundedSuffix")}`,
+              }))}
+            />
           </label>
           <label className="flex flex-col gap-1.5 rounded-xl border border-border-strong p-4">
             <span className="text-sm font-semibold text-text-base">
@@ -743,19 +763,16 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             <span className="text-xs text-text-dim">
               {t("cancellation.underDesc")}
             </span>
-            <select
-              value={refundUnder}
-              onChange={(e) => setRefundUnder(Number(e.target.value))}
-              className={`${inputClass} mt-2`}
-              aria-label={t("cancellation.underLabelH").replace("{h}", String(cancelHours))}
-            >
-              {REFUND_PCT_CHOICES.map((p) => (
-                <option key={p} value={p}>
-                  {t("cancellation.youKeep")} {100 - p} % · {p} %{" "}
-                  {t("cancellation.refundedSuffix")}
-                </option>
-              ))}
-            </select>
+            <Select
+              value={String(refundUnder)}
+              onChange={(v) => setRefundUnder(Number(v))}
+              className="mt-2"
+              ariaLabel={t("cancellation.underLabelH").replace("{h}", String(cancelHours))}
+              options={REFUND_PCT_CHOICES.map((p) => ({
+                value: String(p),
+                label: `${t("cancellation.youKeep")} ${100 - p} % · ${p} % ${t("cancellation.refundedSuffix")}`,
+              }))}
+            />
           </label>
         </div>
 
@@ -914,17 +931,15 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         <div className="mt-5 border-t border-border pt-4">
           <label className="flex flex-col gap-1.5">
             <span className={labelClass}>{t("settings.timezone")}</span>
-            <select
+            <Select
               value={timezone}
-              onChange={(e) => setTimezone(e.target.value)}
-              className={inputClass}
-            >
-              {TIMEZONES.map((tz) => (
-                <option key={tz} value={tz}>
-                  {tz.replace(/_/g, " ")}
-                </option>
-              ))}
-            </select>
+              onChange={setTimezone}
+              ariaLabel={t("settings.timezone")}
+              options={TIMEZONES.map((tz) => ({
+                value: tz,
+                label: tz.replace(/_/g, " "),
+              }))}
+            />
             <span className="text-xs text-text-dim">
               {t("settings.timezoneHint")}
             </span>

@@ -79,6 +79,21 @@ body {
   animation: anim-fade-in 0.5s ease both;
 }
 
+/* Menu déroulant (Select maison) : apparition très courte. */
+@keyframes anim-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.anim-menu-in {
+  animation: anim-menu-in 0.14s ease both;
+}
+
 /* Apparition en zoom léger (logo de la page d'accès, confirmation). */
 @keyframes anim-scale-in {
   from {

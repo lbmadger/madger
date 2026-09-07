@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
 import Dialog from "@/components/ui/Dialog";
+import Select from "@/components/ui/Select";
+import { SERVICE_DURATIONS, durationLabel } from "@/lib/services/durations";
 import CancellationSummary from "@/components/booking/CancellationSummary";
 import { installmentsEligible } from "@/lib/stripe/installments";
 import { resolveRefundPolicy } from "@/lib/booking/cancellation";
@@ -14,7 +16,6 @@ import { inputClass, labelClass } from "@/lib/ui/styles";
 import type { PublicCoach } from "@/lib/coaches/public-types";
 import { type PublicService, formatPrice } from "@/lib/services/types";
 
-const DURATIONS = [30, 45, 60, 90];
 
 type Slot = { iso: string; label: string };
 type SlotDay = { date: string; slots: Slot[] };
@@ -490,18 +491,15 @@ export default function BookingModal({
               {paidServices.length > 0 && (
                 <label className="flex flex-col gap-1.5">
                   <span className={labelClass}>{t("booking.service")}</span>
-                  <select
+                  <Select
                     value={serviceId}
-                    onChange={(e) => setServiceId(e.target.value)}
-                    className={inputClass}
-                  >
-                    {paidServices.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name} ·{" "}
-                        {formatPrice(s.price_cents, s.currency, locale)}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setServiceId}
+                    ariaLabel={t("booking.service")}
+                    options={paidServices.map((s) => ({
+                      value: s.id,
+                      label: `${s.name} · ${formatPrice(s.price_cents, s.currency, locale)}`,
+                    }))}
+                  />
                 </label>
               )}
 
@@ -700,11 +698,15 @@ export default function BookingModal({
               {!selectedService && (
                 <label className="flex flex-col gap-1.5">
                   <span className={labelClass}>{t("booking.duration")}</span>
-                  <select value={duration} onChange={(e) => setDuration(Number(e.target.value))} className={inputClass}>
-                    {DURATIONS.map((d) => (
-                      <option key={d} value={d}>{d} min</option>
-                    ))}
-                  </select>
+                  <Select
+                    value={String(duration)}
+                    onChange={(v) => setDuration(Number(v))}
+                    ariaLabel={t("booking.duration")}
+                    options={SERVICE_DURATIONS.map((d) => ({
+                      value: String(d),
+                      label: durationLabel(d),
+                    }))}
+                  />
                 </label>
               )}
 

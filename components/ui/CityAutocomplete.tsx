@@ -110,7 +110,7 @@ export default function CityAutocomplete({
         <ul
           id={listId}
           role="listbox"
-          className="absolute z-30 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-border-strong bg-bg-elevated py-1 shadow-xl"
+          className="anim-menu-in absolute z-30 mt-1.5 max-h-64 w-full overflow-y-auto rounded-xl border border-accent/30 bg-bg-card p-1 shadow-[0_0_0_1px_rgba(203,255,3,0.12),0_24px_60px_rgba(0,0,0,0.6)]"
         >
           {suggestions.map((c, i) => (
             <li
@@ -124,8 +124,8 @@ export default function CityAutocomplete({
                 e.preventDefault();
                 choose(c);
               }}
-              className={`flex w-full cursor-pointer items-center justify-between gap-2 px-4 py-2 text-left text-sm text-text-base transition-colors hover:bg-bg-card ${
-                i === activeIdx ? "bg-bg-card" : ""
+              className={`flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-left text-sm transition-colors hover:bg-accent/10 hover:text-accent ${
+                i === activeIdx ? "bg-accent/10 text-accent" : "text-text-base"
               }`}
             >
               <span className="truncate">{c.name}</span>

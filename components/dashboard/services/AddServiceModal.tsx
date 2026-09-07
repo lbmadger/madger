@@ -5,10 +5,10 @@ import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
 import Dialog from "@/components/ui/Dialog";
+import Select from "@/components/ui/Select";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import type { Service, ServiceType, ServiceLocation } from "@/lib/services/types";
-
-const DURATIONS = [30, 45, 60, 90];
+import { SERVICE_DURATIONS, durationLabel } from "@/lib/services/durations";
 const TYPES: ServiceType[] = ["single", "pack", "subscription"];
 // Validité d'un pack, en jours (0 = sans limite) ; délai d'annulation en h.
 const VALIDITIES = [0, 30, 60, 90, 180, 365];
@@ -178,17 +178,15 @@ export default function AddServiceModal({
             ) : type === "single" ? (
               <label className="flex flex-col gap-1.5">
                 <span className={labelClass}>{t("services.form.duration")}</span>
-                <select
-                  value={duration}
-                  onChange={(e) => setDuration(Number(e.target.value))}
-                  className={inputClass}
-                >
-                  {DURATIONS.map((d) => (
-                    <option key={d} value={d}>
-                      {d} min
-                    </option>
-                  ))}
-                </select>
+                <Select
+                  value={String(duration)}
+                  onChange={(v) => setDuration(Number(v))}
+                  ariaLabel={t("services.form.duration")}
+                  options={(SERVICE_DURATIONS.includes(duration)
+                    ? SERVICE_DURATIONS
+                    : [...SERVICE_DURATIONS, duration].sort((a, b) => a - b)
+                  ).map((d) => ({ value: String(d), label: durationLabel(d) }))}
+                />
               </label>
             ) : (
               <div />
@@ -200,33 +198,30 @@ export default function AddServiceModal({
             <div className="grid grid-cols-2 gap-3">
               <label className="flex flex-col gap-1.5">
                 <span className={labelClass}>{t("services.form.validity")}</span>
-                <select
-                  value={validity}
-                  onChange={(e) => setValidity(Number(e.target.value))}
-                  className={inputClass}
-                >
-                  {VALIDITIES.map((d) => (
-                    <option key={d} value={d}>
-                      {d === 0
+                <Select
+                  value={String(validity)}
+                  onChange={(v) => setValidity(Number(v))}
+                  ariaLabel={t("services.form.validity")}
+                  options={VALIDITIES.map((d) => ({
+                    value: String(d),
+                    label:
+                      d === 0
                         ? t("services.form.validityNone")
-                        : `${Math.round(d / 30)} ${t("services.form.validityMonths")}`}
-                    </option>
-                  ))}
-                </select>
+                        : `${Math.round(d / 30)} ${t("services.form.validityMonths")}`,
+                  }))}
+                />
               </label>
               <label className="flex flex-col gap-1.5">
                 <span className={labelClass}>{t("services.form.cancelHours")}</span>
-                <select
-                  value={cancelHours}
-                  onChange={(e) => setCancelHours(Number(e.target.value))}
-                  className={inputClass}
-                >
-                  {CANCEL_HOURS.map((h) => (
-                    <option key={h} value={h}>
-                      {h} {t("services.form.cancelHoursUnit")}
-                    </option>
-                  ))}
-                </select>
+                <Select
+                  value={String(cancelHours)}
+                  onChange={(v) => setCancelHours(Number(v))}
+                  ariaLabel={t("services.form.cancelHours")}
+                  options={CANCEL_HOURS.map((h) => ({
+                    value: String(h),
+                    label: `${h} ${t("services.form.cancelHoursUnit")}`,
+                  }))}
+                />
               </label>
               <p className="col-span-2 text-xs leading-relaxed text-text-dim">
                 {t("services.form.validityHint")} {t("services.form.cancelHint")}

@@ -14,6 +14,9 @@ import { SPORT_KEYS, defaultServiceForSport } from "@/lib/coaches/taxonomy";
 import { WEEK_ORDER } from "@/lib/availability/types";
 import { track } from "@/lib/analytics/posthog";
 import { withTimeout } from "@/lib/utils/withTimeout";
+import AvatarCropper from "@/components/ui/AvatarCropper";
+import Select from "@/components/ui/Select";
+import { SERVICE_DURATIONS, durationLabel } from "@/lib/services/durations";
 
 // Onboarding en 3 étapes : qui tu es → ce que tu proposes → quand tu es
 // dispo. C'est le chemin le plus court vers le seul moment qui compte, le
@@ -26,7 +29,6 @@ import { withTimeout } from "@/lib/utils/withTimeout";
 // première prestation, et les disponibilités arrivent déjà cochées.
 
 const TOTAL_STEPS = 3;
-const DURATIONS = [30, 45, 60, 90];
 
 export default function OnboardingForm({
   userId,
@@ -53,6 +55,8 @@ export default function OnboardingForm({
   const [avatarUrl, setAvatarUrl] = useState("");
   const [avatarErr, setAvatarErr] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  // Photo choisie, en attente de recadrage dans le rond.
+  const [cropFile, setCropFile] = useState<File | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [slug, setSlug] = useState(
     slugify(`${initialFirstName} ${initialLastName}`)
@@ -79,12 +83,17 @@ export default function OnboardingForm({
   // Upload immédiat vers avatars/<uid>/avatar (même chemin que Réglages),
   // puis écriture de l'URL sur la ligne coach. Best-effort : un échec ne
   // bloque jamais la progression.
-  async function uploadAvatar(file: File) {
+  function pickAvatar(file: File) {
     setAvatarErr(false);
-    if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
+    if (!file.type.startsWith("image/") || file.size > 10 * 1024 * 1024) {
       setAvatarErr(true);
       return;
     }
+    setCropFile(file);
+  }
+
+  async function uploadAvatar(file: File) {
+    setAvatarErr(false);
     setAvatarUploading(true);
     // Aperçu local immédiat : la photo remplace l'initiale dès la sélection,
     // sans attendre le réseau. Remplacé par l'URL définitive à la fin.
@@ -412,10 +421,20 @@ export default function OnboardingForm({
             className="hidden"
             onChange={(e) => {
               const f = e.target.files?.[0];
-              if (f) uploadAvatar(f);
+              if (f) pickAvatar(f);
               e.target.value = "";
             }}
           />
+          {cropFile && (
+            <AvatarCropper
+              file={cropFile}
+              onCancel={() => setCropFile(null)}
+              onDone={(f) => {
+                setCropFile(null);
+                uploadAvatar(f);
+              }}
+            />
+          )}
         </div>
 
         {/* Photo, bio et ville ont quitté le parcours : c'est ici qu'on les
@@ -577,10 +596,20 @@ export default function OnboardingForm({
                 className="hidden"
                 onChange={(e) => {
                   const f = e.target.files?.[0];
-                  if (f) uploadAvatar(f);
+                  if (f) pickAvatar(f);
                   e.target.value = "";
                 }}
               />
+              {cropFile && (
+                <AvatarCropper
+                  file={cropFile}
+                  onCancel={() => setCropFile(null)}
+                  onDone={(f) => {
+                    setCropFile(null);
+                    uploadAvatar(f);
+                  }}
+                />
+              )}
             </div>
 
             {/* Le lien n'est pas un champ de plus : il se fabrique sous les
@@ -689,20 +718,18 @@ export default function OnboardingForm({
                     <span className={labelClass}>
                       {t("services.form.duration")}
                     </span>
-                    <select
-                      value={serviceDuration}
-                      onChange={(e) => {
+                    <Select
+                      value={String(serviceDuration)}
+                      onChange={(v) => {
                         setOfferTouched(true);
-                        setServiceDuration(Number(e.target.value));
+                        setServiceDuration(Number(v));
                       }}
-                      className={inputClass}
-                    >
-                      {DURATIONS.map((d) => (
-                        <option key={d} value={d}>
-                          {d} min
-                        </option>
-                      ))}
-                    </select>
+                      ariaLabel={t("services.form.duration")}
+                      options={SERVICE_DURATIONS.map((d) => ({
+                        value: String(d),
+                        label: durationLabel(d),
+                      }))}
+                    />
                   </label>
                 </div>
               </div>

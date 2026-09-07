@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import MadgerLogo from "@/components/ui/MadgerLogo";
+import Select from "@/components/ui/Select";
 import { track } from "@/lib/analytics/posthog";
 import { useEarlyAccessFull } from "@/components/ui/useEarlyAccessFull";
 
@@ -11,8 +12,6 @@ const inputBase = {
   border: "1px solid rgba(255,255,255,0.12)",
   color: "#fff",
 };
-
-const selectArrow = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%238A8A8A' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E")`;
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
@@ -333,29 +332,21 @@ export default function EarlyAccessForm() {
 
                 <label className="flex flex-col gap-1.5">
                   <Label>Type de coaching<Required /></Label>
-                  <select
+                  <Select
                     value={fields.type_coaching}
-                    onChange={set("type_coaching")}
-                    className={`${cls} appearance-none`}
-                    style={{
-                      ...inputBase,
-                      color: fields.type_coaching ? "#fff" : "var(--text-dim)",
-                      backgroundImage: selectArrow,
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "right 18px center",
-                      paddingRight: "44px",
-                    }}
-                    onFocus={focusOn}
-                    onBlur={focusOff}
-                  >
-                    <option value="" disabled style={{ color: "var(--text-dim)", background: "#141414" }}>Sélectionner</option>
-                    <option style={{ color: "#fff", background: "#141414" }}>Coach sportif / fitness</option>
-                    <option style={{ color: "#fff", background: "#141414" }}>Préparateur physique</option>
-                    <option style={{ color: "#fff", background: "#141414" }}>Coach bien-être</option>
-                    <option style={{ color: "#fff", background: "#141414" }}>Coach en développement personnel</option>
-                    <option style={{ color: "#fff", background: "#141414" }}>Coach business / accompagnement</option>
-                    <option style={{ color: "#fff", background: "#141414" }}>Autre</option>
-                  </select>
+                    onChange={(v) => setFields((prev) => ({ ...prev, type_coaching: v }))}
+                    ariaLabel="Type de coaching"
+                    placeholder="Sélectionner"
+                    className={`${cls} border-white/[0.12] bg-white/[0.03]`}
+                    options={[
+                      "Coach sportif / fitness",
+                      "Préparateur physique",
+                      "Coach bien-être",
+                      "Coach en développement personnel",
+                      "Coach business / accompagnement",
+                      "Autre",
+                    ].map((v) => ({ value: v, label: v }))}
+                  />
                 </label>
 
                 {error && <p role="alert" className="text-sm text-danger text-center">{error}</p>}
@@ -396,27 +387,17 @@ export default function EarlyAccessForm() {
                 />
                 <label className="flex flex-col gap-1.5">
                   <Label>Nombre de clients actifs<Required /></Label>
-                  <select
+                  <Select
                     value={fields.nb_clients}
-                    onChange={set("nb_clients")}
-                    className={`${cls} appearance-none`}
-                    style={{
-                      ...inputBase,
-                      color: fields.nb_clients ? "#fff" : "var(--text-dim)",
-                      backgroundImage: selectArrow,
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "right 18px center",
-                      paddingRight: "44px",
-                    }}
-                    onFocus={focusOn}
-                    onBlur={focusOff}
-                  >
-                    <option value="" disabled style={{ color: "var(--text-dim)", background: "#141414" }}>Sélectionner</option>
-                    <option style={{ color: "#fff", background: "#141414" }}>Moins de 5</option>
-                    <option style={{ color: "#fff", background: "#141414" }}>5 à 15</option>
-                    <option style={{ color: "#fff", background: "#141414" }}>15 à 30</option>
-                    <option style={{ color: "#fff", background: "#141414" }}>Plus de 30</option>
-                  </select>
+                    onChange={(v) => setFields((prev) => ({ ...prev, nb_clients: v }))}
+                    ariaLabel="Nombre de clients actifs"
+                    placeholder="Sélectionner"
+                    className={`${cls} border-white/[0.12] bg-white/[0.03]`}
+                    options={["Moins de 5", "5 à 15", "15 à 30", "Plus de 30"].map((v) => ({
+                      value: v,
+                      label: v,
+                    }))}
+                  />
                 </label>
 
                 <label className="flex flex-col gap-1.5">

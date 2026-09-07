@@ -129,7 +129,7 @@ export default function GymAutocomplete({
           id={listId}
           role="listbox"
           aria-label={t("settings.gymLabel")}
-          className="absolute z-30 mt-1 max-h-64 w-full overflow-auto rounded-xl border border-border-strong bg-bg-elevated py-1 shadow-xl"
+          className="anim-menu-in absolute z-30 mt-1.5 max-h-64 w-full overflow-auto rounded-xl border border-accent/30 bg-bg-card p-1 shadow-[0_0_0_1px_rgba(203,255,3,0.12),0_24px_60px_rgba(0,0,0,0.6)]"
         >
           {loading && gyms.length === 0 ? (
             <li className="px-3 py-2 text-xs text-text-dim">…</li>
@@ -148,10 +148,10 @@ export default function GymAutocomplete({
                 <button
                   type="button"
                   onClick={() => pick(g)}
-                  className={`block w-full px-3 py-2 text-left text-sm transition-colors ${
+                  className={`block w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
                     i === active
-                      ? "bg-accent/10 text-text-base"
-                      : "text-text-muted hover:bg-white/[0.04] hover:text-text-base"
+                      ? "bg-accent/10 text-accent"
+                      : "text-text-muted hover:bg-accent/10 hover:text-accent"
                   }`}
                 >
                   <span className="block font-medium text-text-base">

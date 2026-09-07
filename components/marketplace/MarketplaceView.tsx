@@ -7,6 +7,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
+import Select from "@/components/ui/Select";
 import CityAutocomplete from "@/components/ui/CityAutocomplete";
 import Stars from "@/components/reviews/Stars";
 import { geocodeCity, type City } from "@/lib/geo/cities";
@@ -280,28 +281,28 @@ export default function MarketplaceView({
           inputClassName="w-full rounded-full border border-border-strong bg-white/[0.03] px-4 py-2.5 text-base text-text-base outline-none transition-colors placeholder:text-text-dim focus:border-accent"
         />
         {/* Périmètre autour de la ville */}
-        <select
-          value={radiusKm}
-          onChange={(e) => {
-            const v = Number(e.target.value);
+        <Select
+          value={String(radiusKm)}
+          onChange={(s) => {
+            const v = Number(s);
             setRadiusKm(v);
             if (query.trim()) runSearch(query, coords, v);
           }}
           disabled={!query.trim()}
-          aria-label={t("marketplace.radiusLabel")}
-          className={`rounded-full border px-3 py-2.5 text-sm font-medium outline-none transition-colors disabled:opacity-40 ${
+          ariaLabel={t("marketplace.radiusLabel")}
+          className={`w-auto shrink-0 rounded-full px-3 py-2.5 text-sm font-medium ${
             radiusKm > 0
               ? "border-accent bg-accent/10 text-accent"
               : "border-border-strong bg-transparent text-text-muted"
           }`}
-        >
-          <option value={0}>{t("marketplace.exactCity")}</option>
-          {[10, 20, 30, 50].map((km) => (
-            <option key={km} value={km}>
-              + {km} {t("marketplace.km")}
-            </option>
-          ))}
-        </select>
+          options={[
+            { value: "0", label: t("marketplace.exactCity") },
+            ...[10, 20, 30, 50].map((km) => ({
+              value: String(km),
+              label: `+ ${km} ${t("marketplace.km")}`,
+            })),
+          ]}
+        />
         <Button type="submit" disabled={loading} className="px-6 py-2.5">
           {t("marketplace.search")}
         </Button>
@@ -361,40 +362,42 @@ export default function MarketplaceView({
                   : t("marketplace.filterOnline")}
               </button>
             ))}
-            <select
+            <Select
               value={sportFilter}
-              onChange={(e) => setSportFilter(e.target.value)}
-              aria-label={t("marketplace.filterSport")}
-              className={`rounded-full border px-3 py-1.5 text-sm font-medium outline-none transition-colors ${
+              onChange={setSportFilter}
+              ariaLabel={t("marketplace.filterSport")}
+              className={`w-auto rounded-full px-3 py-1.5 text-sm font-medium ${
                 sportFilter
                   ? "border-accent bg-accent/10 text-accent"
                   : "border-border-strong bg-transparent text-text-muted"
               }`}
-            >
-              <option value="">{t("marketplace.filterSport")}</option>
-              {SPORT_KEYS.map((s) => (
-                <option key={s} value={s}>
-                  {t(`taxonomy.sports.${s}`)}
-                </option>
-              ))}
-            </select>
-            <select
+              listClassName="w-56"
+              options={[
+                { value: "", label: t("marketplace.filterSport") },
+                ...SPORT_KEYS.map((s) => ({
+                  value: s,
+                  label: t(`taxonomy.sports.${s}`),
+                })),
+              ]}
+            />
+            <Select
               value={specialtyFilter}
-              onChange={(e) => setSpecialtyFilter(e.target.value)}
-              aria-label={t("marketplace.filterGoal")}
-              className={`rounded-full border px-3 py-1.5 text-sm font-medium outline-none transition-colors ${
+              onChange={setSpecialtyFilter}
+              ariaLabel={t("marketplace.filterGoal")}
+              className={`w-auto rounded-full px-3 py-1.5 text-sm font-medium ${
                 specialtyFilter
                   ? "border-accent bg-accent/10 text-accent"
                   : "border-border-strong bg-transparent text-text-muted"
               }`}
-            >
-              <option value="">{t("marketplace.filterGoal")}</option>
-              {SPECIALTY_KEYS.map((s) => (
-                <option key={s} value={s}>
-                  {t(`clientOnboarding.goals.${s}`)}
-                </option>
-              ))}
-            </select>
+              listClassName="w-56"
+              options={[
+                { value: "", label: t("marketplace.filterGoal") },
+                ...SPECIALTY_KEYS.map((s) => ({
+                  value: s,
+                  label: t(`clientOnboarding.goals.${s}`),
+                })),
+              ]}
+            />
           </div>
         </div>
       )}
@@ -471,16 +474,18 @@ export default function MarketplaceView({
               </p>
               <div className="flex items-center gap-2">
               {/* Tri des résultats affichés */}
-              <select
+              <Select
                 value={sort}
-                onChange={(e) => setSort(e.target.value as Sort)}
-                aria-label={t("marketplace.sortLabel")}
-                className="rounded-full border border-border-strong bg-transparent px-3 py-1 text-xs font-medium text-text-muted outline-none transition-colors focus:border-accent"
-              >
-                <option value="relevance">{t("marketplace.sortRelevance")}</option>
-                <option value="rating">{t("marketplace.sortRating")}</option>
-                <option value="price">{t("marketplace.sortPrice")}</option>
-              </select>
+                onChange={(v) => setSort(v as Sort)}
+                ariaLabel={t("marketplace.sortLabel")}
+                className="w-auto rounded-full bg-transparent px-3 py-1 text-xs font-medium text-text-muted"
+                listClassName="w-48"
+                options={[
+                  { value: "relevance", label: t("marketplace.sortRelevance") },
+                  { value: "rating", label: t("marketplace.sortRating") },
+                  { value: "price", label: t("marketplace.sortPrice") },
+                ]}
+              />
               <div className="inline-flex rounded-full border border-border-strong p-0.5">
                 {(["list", "map"] as const).map((v) => (
                   <button

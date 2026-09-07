@@ -37,13 +37,17 @@ export default function SettingsSection({
   return (
     <section
       id={id}
-      className="scroll-mt-24 overflow-hidden rounded-2xl border border-border bg-bg-card"
+      // Pas d'overflow-hidden : les listes déroulantes (ville, salle) qui
+      // s'ouvrent sous un champ doivent pouvoir dépasser du cadre.
+      className="scroll-mt-24 rounded-2xl border border-border bg-bg-card"
     >
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="flex w-full items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-white/[0.02] sm:px-5"
+        className={`flex w-full items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-white/[0.02] sm:px-5 ${
+          open ? "rounded-t-2xl" : "rounded-2xl"
+        }`}
       >
         <span
           aria-hidden

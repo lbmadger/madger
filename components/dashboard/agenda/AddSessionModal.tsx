@@ -6,9 +6,9 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import type { Booking, ClientOption, LocationKind } from "@/lib/bookings/types";
 import Button from "@/components/ui/Button";
 import Dialog from "@/components/ui/Dialog";
+import Select from "@/components/ui/Select";
 import { inputClass } from "@/lib/ui/styles";
-
-const DURATIONS = [30, 45, 60, 90];
+import { SERVICE_DURATIONS, durationLabel } from "@/lib/services/durations";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -57,9 +57,9 @@ export default function AddSessionModal({
   const [error, setError] = useState<string | null>(null);
 
   // Durée existante hors presets (ex. 75 min) : on l'ajoute aux options.
-  const durations = DURATIONS.includes(duration)
-    ? DURATIONS
-    : [...DURATIONS, duration].sort((a, b) => a - b);
+  const durations = SERVICE_DURATIONS.includes(duration)
+    ? SERVICE_DURATIONS
+    : [...SERVICE_DURATIONS, duration].sort((a, b) => a - b);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -184,19 +184,16 @@ export default function AddSessionModal({
               {t("agenda.form.client")}
               <span aria-hidden="true" className="ml-0.5 text-danger">*</span>
             </span>
-            <select
+            <Select
               value={clientId}
-              onChange={(e) => setClientId(e.target.value)}
-              required
-              className={fieldClass}
-            >
-              <option value="">{t("agenda.form.selectClient")}</option>
-              {clients.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {[c.first_name, c.last_name].filter(Boolean).join(" ")}
-                </option>
-              ))}
-            </select>
+              onChange={setClientId}
+              ariaLabel={t("agenda.form.client")}
+              placeholder={t("agenda.form.selectClient")}
+              options={clients.map((c) => ({
+                value: c.id,
+                label: [c.first_name, c.last_name].filter(Boolean).join(" "),
+              }))}
+            />
           </label>
 
           {/* Date + heure. EMPILÉS sur mobile : côte à côte, les sélecteurs
@@ -239,17 +236,15 @@ export default function AddSessionModal({
             <span className="text-xs font-medium text-text-muted">
               {t("agenda.form.duration")}
             </span>
-            <select
-              value={duration}
-              onChange={(e) => setDuration(Number(e.target.value))}
-              className={fieldClass}
-            >
-              {durations.map((d) => (
-                <option key={d} value={d}>
-                  {d} min
-                </option>
-              ))}
-            </select>
+            <Select
+              value={String(duration)}
+              onChange={(v) => setDuration(Number(v))}
+              ariaLabel={t("agenda.form.duration")}
+              options={durations.map((d) => ({
+                value: String(d),
+                label: durationLabel(d),
+              }))}
+            />
           </label>
 
           {/* Lieu : présentiel / visio */}

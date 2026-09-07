@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
 import AccountSwitchBar from "@/components/auth/AccountSwitchBar";
+import Select from "@/components/ui/Select";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import { bmi, bmiCategory, GOAL_KEYS } from "@/lib/health/bmi";
 import { nameFromMetadata } from "@/lib/auth/nameFromUser";
@@ -310,12 +311,17 @@ export default function ClientOnboarding() {
                   {t("clientOnboarding.sex")}{" "}
                   <span className="text-text-dim">{t("clientOnboarding.sexOptional")}</span>
                 </span>
-                <select value={sex} onChange={(e) => setSex(e.target.value as typeof sex)} className={inputClass}>
-                  <option value="">-</option>
-                  <option value="male">{t("clientOnboarding.sexes.male")}</option>
-                  <option value="female">{t("clientOnboarding.sexes.female")}</option>
-                  <option value="other">{t("clientOnboarding.sexes.other")}</option>
-                </select>
+                <Select
+                  value={sex}
+                  onChange={(v) => setSex(v as typeof sex)}
+                  ariaLabel={t("clientOnboarding.sex")}
+                  options={[
+                    { value: "", label: "-" },
+                    { value: "male", label: t("clientOnboarding.sexes.male") },
+                    { value: "female", label: t("clientOnboarding.sexes.female") },
+                    { value: "other", label: t("clientOnboarding.sexes.other") },
+                  ]}
+                />
               </label>
             </div>
 
