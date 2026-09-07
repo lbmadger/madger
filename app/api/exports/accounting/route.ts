@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { invoiceNumber } from "@/lib/invoices/utils";
+import {
+  displayInvoiceNumber,
+  creditNotesOf,
+  type InvoiceRow,
+} from "@/lib/invoices/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +29,7 @@ export async function GET(req: NextRequest) {
   const { data: payments, error } = await supabase
     .from("payments")
     .select(
-      "id, amount_cents, refunded_cents, commission_cents, stripe_fee_cents, payout_cents, escrow_status, paid_at, released_at, clients(first_name, last_name), services(name)"
+      "id, amount_cents, refunded_cents, commission_cents, stripe_fee_cents, payout_cents, escrow_status, paid_at, released_at, clients(first_name, last_name), services(name), invoices(number, kind, amount_cents, issued_at)"
     )
     .not("paid_at", "is", null)
     .gte("paid_at", from)
@@ -46,6 +50,7 @@ export async function GET(req: NextRequest) {
   const header = [
     "Date paiement",
     "Facture",
+    "Avoirs",
     "Client",
     "Prestation",
     "Montant TTC (EUR)",
@@ -64,7 +69,17 @@ export async function GET(req: NextRequest) {
       new Date(p.paid_at as string).toLocaleDateString("fr-FR", {
         timeZone: "Europe/Paris",
       }),
-      invoiceNumber(p.id as string, p.paid_at as string),
+      displayInvoiceNumber(
+        p.invoices as InvoiceRow[] | null,
+        p.id as string,
+        p.paid_at as string
+      ),
+      // Avoirs rattachés (numéro et montant), séparés par un espace.
+      cell(
+        creditNotesOf(p.invoices as InvoiceRow[] | null)
+          .map((cn) => `${cn.number} (${money(cn.amount_cents)})`)
+          .join(" ") || "-"
+      ),
       cell(
         [client?.first_name, client?.last_name].filter(Boolean).join(" ") ||
           "-"

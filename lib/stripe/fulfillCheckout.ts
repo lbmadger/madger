@@ -242,6 +242,12 @@ export async function fulfillCheckoutSession(
       escrow_status: authorized ? "authorized" : "held",
       release_after: releaseAfter.toISOString(),
       paid_at: authorized ? null : new Date().toISOString(),
+      // Acceptation des CGV : version figée au checkout, horodatage = moment
+      // où la session Stripe a été ouverte (le client a cliqué « payer »).
+      terms_accepted_at: new Date(
+        (session.created ?? Math.floor(Date.now() / 1000)) * 1000
+      ).toISOString(),
+      terms_version: m.terms_version || null,
     })
     .select("id")
     .single();
@@ -301,29 +307,27 @@ export async function fulfillCheckoutSession(
     svc = svcRow ?? null;
   }
 
-  // Achat d'un PACK : crée le solde de crédits (la séance réservée à l'achat
-  // compte pour 1) et rattache la séance au pack.
-  if (m.service_id && clientId) {
+  // Achat d'un PACK : ouverture du solde de crédits (migration 0056) avec
+  // l'instantané de l'offre, la date d'expiration et le journal. La séance
+  // réservée à l'achat consomme le premier crédit. Un pack est toujours
+  // débité à l'achat (jamais `authorized`), même chez un coach en mode
+  // approbation : ses crédits sont disponibles tout de suite.
+  if (m.service_id && clientId && payment) {
     if (svc?.type === "pack" && (svc.pack_size ?? 0) > 1) {
-      const { data: credit } = await supabase
-        .from("pack_credits")
-        .insert({
-          coach_id: m.coach_id,
-          client_id: clientId,
-          service_id: m.service_id,
-          payment_id: payment?.id ?? null,
-          total: svc.pack_size,
-          used: 1,
-        })
-        .select("id")
-        .single();
-      if (credit && booking) {
-        await supabase
-          .from("bookings")
-          .update({ pack_credit_id: credit.id })
-          .eq("id", booking.id);
-      }
+      await supabase.rpc("pack_credit_open", {
+        p_coach: m.coach_id,
+        p_client: clientId,
+        p_service: m.service_id,
+        p_payment: payment.id,
+        p_booking: booking.id,
+      });
     }
+  }
+
+  // Facture séquentielle (F-AAAA-0001) dès l'encaissement. En mode
+  // approbation (empreinte), elle est émise à la capture, dans /confirm.
+  if (!authorized && payment) {
+    await supabase.rpc("ensure_invoice", { p_payment: payment.id });
   }
 
   // Confirmation (mode instantané) : après le paiement, pour que le trigger

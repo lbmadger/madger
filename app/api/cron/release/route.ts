@@ -39,6 +39,17 @@ export async function GET(req: NextRequest) {
   const supabase = createClient(SUPABASE_URL, serviceKey);
   const nowIso = new Date().toISOString();
 
+  // ── Packs arrivés à expiration (migration 0056) ────────────────────────────
+  // Job quotidien journalisé : chaque pack expiré passe en 'expired' et un
+  // événement trace les crédits perdus. Best-effort, jamais bloquant.
+  let expiredPacks = 0;
+  try {
+    const { data: n } = await supabase.rpc("expire_pack_credits");
+    expiredPacks = (n as number | null) ?? 0;
+  } catch {
+    /* fonction absente ou panne : le prochain run rattrape */
+  }
+
   // ── Empreintes bancaires périmées (modèle Airbnb) ──────────────────────────
   // Demande jamais traitée par le coach (séance passée), réservation annulée
   // sans nettoyage, ou autorisation en fin de vie (les banques les libèrent
@@ -152,7 +163,7 @@ export async function GET(req: NextRequest) {
     const dueQuery = supabase
       .from("payments")
       .select(
-        "id, coach_id, booking_id, amount_cents, currency, paid_at, stripe_charge_id, stripe_fee_cents, refunded_cents, released_cents, commission_cents, bookings(status, clients(first_name, last_name, email), coaches(first_name, last_name))"
+        "id, coach_id, booking_id, amount_cents, currency, paid_at, stripe_charge_id, stripe_fee_cents, refunded_cents, released_cents, commission_cents, bookings(status, credit_lost, clients(first_name, last_name, email), coaches(first_name, last_name))"
       )
       .eq("escrow_status", "held")
       .lte("release_after", nowIso)
@@ -193,7 +204,7 @@ export async function GET(req: NextRequest) {
     // Packs du lot : un paiement de pack se libère séance par séance.
     const { data: packRows } = await supabase
       .from("pack_credits")
-      .select("id, payment_id, total, used")
+      .select("id, payment_id, total, used, status, expires_at")
       .in(
         "payment_id",
         batch.map((p) => p.id as string)
@@ -295,8 +306,28 @@ export async function GET(req: NextRequest) {
             .eq("status", "cancelled");
           throw e;
         }
-        // Remboursement parti : le client est prévenu (best-effort, différé
-        // après le lot comme les autres emails).
+        // Remboursement parti : pack clôturé s'il y en avait un (le coach n'a
+        // jamais accepté la première séance = pack refusé) et avoir émis.
+        try {
+          const pendingPack = packByPayment.get(p.id as string);
+          if (pendingPack && pendingPack.status === "active") {
+            await supabase.rpc("close_pack_credit", {
+              p_pack: pendingPack.id,
+              p_status: "refunded",
+              p_actor: "system",
+              p_note: "Première séance jamais acceptée par le coach",
+            });
+          }
+          await supabase.rpc("create_credit_note", {
+            p_payment: p.id,
+            p_total_refunded_cents: p.amount_cents,
+            p_reason: "Séance non confirmée par le coach",
+          });
+        } catch {
+          /* best-effort */
+        }
+        // Le client est prévenu (best-effort, différé après le lot comme les
+        // autres emails).
         {
           const cl = Array.isArray(bookingRow?.clients)
             ? bookingRow?.clients[0]
@@ -345,12 +376,17 @@ export async function GET(req: NextRequest) {
       // La part des séances consommées (passées depuis 24 h) part au coach,
       // le reste demeure sous séquestre (remboursable au prorata si le client
       // annule). Sécurité : libération totale 180 jours après l'achat.
+      // Un pack inactif (expiré, clôturé) ou dont la validité est dépassée
+      // libère tout : les crédits restants sont perdus pour le client.
       const pack = packByPayment.get(p.id as string);
       const packExpired =
         pack &&
-        p.paid_at &&
-        Date.now() - new Date(p.paid_at as string).getTime() >
-          180 * 86400000;
+        ((pack.status as string | null) !== "active" ||
+          (pack.expires_at &&
+            new Date(pack.expires_at as string).getTime() < Date.now()) ||
+          (p.paid_at &&
+            Date.now() - new Date(p.paid_at as string).getTime() >
+              180 * 86400000));
       // Un pack reste en mode progressif tant que toutes ses séances ne sont
       // pas MÛRES : `used` compte les séances RÉSERVÉES (le trigger incrémente
       // à la confirmation), pas effectuées. Un pack entièrement planifié
@@ -359,11 +395,13 @@ export async function GET(req: NextRequest) {
         // Séances liées au pack, non annulées, terminées depuis 24 h. La
         // séance de l'achat (p.booking_id, rattachée au pack par
         // fulfillCheckout) est exclue : elle est déjà comptée via selfUnit.
+        // Une séance annulée tard dont le crédit est perdu compte comme
+        // consommée : sa part revient au coach.
         let maturedQuery = supabase
           .from("bookings")
           .select("*", { count: "exact", head: true })
           .eq("pack_credit_id", pack.id)
-          .neq("status", "cancelled")
+          .or("status.neq.cancelled,credit_lost.eq.true")
           .lte(
             "ends_at",
             new Date(Date.now() - 24 * 3600 * 1000).toISOString()
@@ -375,7 +413,9 @@ export async function GET(req: NextRequest) {
         // La 1re séance (celle de l'achat) est portée par p.booking_id : son
         // release_after est dépassé puisque la ligne est dans le lot.
         const selfUnit =
-          p.booking_id && bookingRow && bookingRow.status !== "cancelled"
+          p.booking_id &&
+          bookingRow &&
+          (bookingRow.status !== "cancelled" || bookingRow.credit_lost)
             ? 1
             : 0;
         const units = Math.min(pack.total, (matured ?? 0) + selfUnit);
@@ -645,5 +685,5 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ released, refunded, expired, errors });
+  return NextResponse.json({ released, refunded, expired, expiredPacks, errors });
 }

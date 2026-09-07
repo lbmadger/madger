@@ -3,7 +3,11 @@ import Topbar from "@/components/dashboard/Topbar";
 import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getCoach } from "@/lib/coach/getCoach";
-import { invoiceNumber } from "@/lib/invoices/utils";
+import {
+  displayInvoiceNumber,
+  creditNotesOf,
+  type InvoiceRow,
+} from "@/lib/invoices/utils";
 import { DownloadIcon } from "@/components/ui/icons";
 
 export const dynamic = "force-dynamic";
@@ -21,34 +25,75 @@ export default async function InvoicesPage() {
   const { data: payments } = await supabase
     .from("payments")
     .select(
-      "id, amount_cents, currency, paid_at, refunded_cents, clients(first_name, last_name), services(name)"
+      "id, amount_cents, currency, paid_at, refunded_cents, clients(first_name, last_name), services(name), invoices(id, number, kind, amount_cents, issued_at)"
     )
     .not("paid_at", "is", null)
     .order("paid_at", { ascending: false })
     .limit(100);
 
-  const rows = (payments ?? []).map((p) => {
+  const fmtDate = (iso: string) =>
+    new Date(iso).toLocaleDateString(loc, {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+
+  type Row = {
+    id: string;
+    href: string;
+    number: string;
+    kind: "invoice" | "credit_note";
+    date: string;
+    sortKey: string;
+    client: string;
+    service: string;
+    amount: string;
+    refunded: boolean;
+    linkedNumber?: string;
+  };
+  const rows: Row[] = [];
+  for (const p of payments ?? []) {
     const client = Array.isArray(p.clients) ? p.clients[0] : p.clients;
     const service = Array.isArray(p.services) ? p.services[0] : p.services;
-    return {
+    const invs = p.invoices as InvoiceRow[] | null;
+    const currency = ((p.currency as string) || "eur").toUpperCase();
+    const money = (cents: number) =>
+      (cents / 100).toLocaleString(loc, { style: "currency", currency });
+    const clientName =
+      [client?.first_name, client?.last_name].filter(Boolean).join(" ") || "-";
+    const serviceName = (service?.name as string) ?? "-";
+    const number = displayInvoiceNumber(invs, p.id as string, p.paid_at as string);
+    rows.push({
       id: p.id as string,
-      number: invoiceNumber(p.id as string, p.paid_at as string),
-      date: new Date(p.paid_at as string).toLocaleDateString(loc, {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      }),
-      client:
-        [client?.first_name, client?.last_name].filter(Boolean).join(" ") ||
-        "-",
-      service: (service?.name as string) ?? "-",
-      amount: ((p.amount_cents as number) / 100).toLocaleString(loc, {
-        style: "currency",
-        currency: ((p.currency as string) || "eur").toUpperCase(),
-      }),
+      href: `/dashboard/factures/${p.id}`,
+      number,
+      kind: "invoice",
+      date: fmtDate(p.paid_at as string),
+      sortKey: p.paid_at as string,
+      client: clientName,
+      service: serviceName,
+      amount: money(p.amount_cents as number),
       refunded: ((p.refunded_cents as number) || 0) > 0,
-    };
-  });
+    });
+    // Avoirs (remboursements) : une pièce par remboursement, numérotée à part
+    // (AV-AAAA-0001), rattachée à la facture d'origine.
+    for (const cn of creditNotesOf(invs)) {
+      rows.push({
+        id: cn.id as string,
+        href: `/dashboard/factures/${p.id}?avoir=${cn.id}`,
+        number: cn.number as string,
+        kind: "credit_note",
+        date: fmtDate((cn.issued_at as string) ?? (p.paid_at as string)),
+        sortKey: (cn.issued_at as string) ?? (p.paid_at as string),
+        client: clientName,
+        service: serviceName,
+        amount: `- ${money((cn.amount_cents as number) ?? 0)}`,
+        refunded: false,
+        linkedNumber: number,
+      });
+    }
+  }
+  rows.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
 
   const year = new Date().getFullYear();
 
@@ -103,7 +148,7 @@ export default async function InvoicesPage() {
                     le petit bouton « Télécharger » laissait croire à un
                     téléchargement direct. */}
                 <Link
-                  href={`/dashboard/factures/${r.id}`}
+                  href={r.href}
                   className="flex items-center gap-3 rounded-2xl border border-border bg-bg-card p-4 transition-colors hover:border-accent/40"
                 >
                   <div className="min-w-0 flex-1">
@@ -111,18 +156,27 @@ export default async function InvoicesPage() {
                       <span className="text-sm font-semibold text-text-base">
                         {r.number}
                       </span>
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                          r.refunded
-                            ? "bg-danger/10 text-danger"
-                            : "bg-accent/10 text-accent"
-                        }`}
-                      >
-                        {r.refunded ? inv.statusRefunded : inv.statusPaid}
-                      </span>
+                      {r.kind === "credit_note" ? (
+                        <span className="rounded-full border border-border-strong px-2 py-0.5 text-[10px] font-semibold text-text-muted">
+                          {inv.creditNote}
+                        </span>
+                      ) : (
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                            r.refunded
+                              ? "bg-danger/10 text-danger"
+                              : "bg-accent/10 text-accent"
+                          }`}
+                        >
+                          {r.refunded ? inv.statusRefunded : inv.statusPaid}
+                        </span>
+                      )}
                     </p>
                     <p className="mt-0.5 truncate text-xs text-text-muted">
-                      {r.date} · {r.client} · {r.service}
+                      {r.date} · {r.client} ·{" "}
+                      {r.kind === "credit_note"
+                        ? `${inv.creditNoteFor} ${r.linkedNumber}`
+                        : r.service}
                     </p>
                   </div>
                   <span className="shrink-0 text-sm font-bold text-text-base">

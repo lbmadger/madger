@@ -356,6 +356,25 @@ export async function POST(req: NextRequest) {
             .eq("stripe_charge_id", ch.id)
             .in("escrow_status", ["held", "authorized"]);
         }
+        // Avoir pour la part remboursée (idempotent : la fonction n'émet que
+        // la différence avec les avoirs déjà émis, y compris ceux créés par
+        // nos propres routes d'annulation). Best-effort.
+        try {
+          const { data: payRow } = await supabase
+            .from("payments")
+            .select("id")
+            .eq("stripe_charge_id", ch.id)
+            .maybeSingle();
+          if (payRow && refunded > 0) {
+            await supabase.rpc("create_credit_note", {
+              p_payment: payRow.id,
+              p_total_refunded_cents: refunded,
+              p_reason: "Remboursement",
+            });
+          }
+        } catch {
+          /* la pièce comptable ne bloque pas la synchro */
+        }
         break;
       }
       case "invoice.paid": {

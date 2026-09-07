@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { isPro } from "@/lib/subscription/plan";
+import { TERMS_VERSION } from "@/lib/legal/terms";
 
 export const dynamic = "force-dynamic";
 
@@ -210,7 +211,12 @@ export async function POST(req: NextRequest) {
   // Modèle Airbnb : en mode approbation, la carte est seulement AUTORISÉE
   // (empreinte bancaire). Le débit ne part que si le coach accepte ; refus ou
   // non-réponse → l'autorisation est simplement libérée, rien n'est prélevé.
-  const approval = coach.booking_mode === "approval";
+  // Exception : un PACK est toujours débité à l'achat (ses crédits sont
+  // libérés tout de suite) ; seule la première séance reste à approuver.
+  // Si le coach refuse le pack, le client est remboursé intégralement, sur
+  // son moyen de paiement d'origine.
+  const approval =
+    coach.booking_mode === "approval" && service.type !== "pack";
 
   // Charge sur le compte plateforme (pas d'option stripeAccount) → séquestre.
   let session;
@@ -248,6 +254,9 @@ export async function POST(req: NextRequest) {
       duration_min: String((service.duration_min as number | null) ?? (Number(duration_min) || 60)),
       online: online ? "1" : "0",
       message: message ? String(message).slice(0, 500) : "",
+      // CGV acceptées en payant (mention affichée sous le bouton) : la
+      // version est figée ici, l'horodatage est posé au fulfillment.
+      terms_version: TERMS_VERSION,
     },
     });
   } catch (err) {

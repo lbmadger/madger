@@ -19,6 +19,9 @@ export type ClientPack = {
   used: number;
   service_name: string;
   coach_name: string;
+  // active | expired | refunded | closed (migration 0056).
+  status: string;
+  expires_at: string | null;
 };
 
 export type ClientSub = {
@@ -358,7 +361,19 @@ export default function ClientSpace({
           </h2>
           <ul className="mt-3 flex flex-col gap-2">
             {packs.map((p) => {
-              const left = Math.max(0, p.total - p.used);
+              // Un pack inactif (expiré, remboursé, clôturé) n'a plus de
+              // crédit utilisable, quel que soit son compteur.
+              const active = p.status === "active";
+              const left = active ? Math.max(0, p.total - p.used) : 0;
+              const pill = active
+                ? left > 0
+                  ? `${left} ${left === 1 ? t("packs.remainingOne") : t("packs.remainingMany")}`
+                  : t("packs.empty")
+                : p.status === "expired"
+                ? t("packs.expired")
+                : p.status === "refunded"
+                ? t("packs.refunded")
+                : t("packs.closed");
               return (
                 <li
                   key={p.id}
@@ -372,6 +387,9 @@ export default function ClientSpace({
                       <p className="mt-0.5 text-xs text-text-muted">
                         {t("packs.at")} {p.coach_name} · {p.used}{" "}
                         {t("packs.usedOf")} {p.total}
+                        {active && p.expires_at
+                          ? ` · ${t("packs.validUntil")} ${new Date(p.expires_at).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "short", year: "numeric" })}`
+                          : ""}
                       </p>
                     </div>
                     <span
@@ -381,9 +399,7 @@ export default function ClientSpace({
                           : "border border-border-strong text-text-dim"
                       }`}
                     >
-                      {left > 0
-                        ? `${left} ${left === 1 ? t("packs.remainingOne") : t("packs.remainingMany")}`
-                        : t("packs.empty")}
+                      {pill}
                     </span>
                   </div>
                   <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-bg-elevated">

@@ -52,6 +52,10 @@ export default function ServicesView({
     const parts: string[] = [t(`services.types.${s.type}`)];
     if (s.type === "pack" && s.pack_size)
       parts.push(`${s.pack_size} ${t("services.sessionsLabel")}`);
+    if (s.type === "pack" && s.validity_days)
+      parts.push(
+        `${t("services.validityShort")} ${Math.round(s.validity_days / 30)} ${t("services.form.validityMonths")}`
+      );
     if (s.duration_min) parts.push(`${s.duration_min} min`);
     return parts.join(" · ");
   }

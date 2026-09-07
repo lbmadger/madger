@@ -13,6 +13,10 @@ export type Service = {
   price_cents: number;
   currency: string;
   pack_size: number | null;
+  // Packs : validité en jours (null = sans limite) et délai d'annulation
+  // gratuite (12 / 24 / 48 h) avant la séance.
+  validity_days?: number | null;
+  cancel_hours?: number | null;
   active: boolean;
 };
 
@@ -28,6 +32,8 @@ export type PublicService = {
   price_cents: number;
   currency: string;
   pack_size: number | null;
+  validity_days?: number | null;
+  cancel_hours?: number | null;
 };
 
 // Formate un montant en centimes vers une devise lisible (ex: 5000 → "50 €").

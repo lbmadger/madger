@@ -141,6 +141,8 @@ export async function POST(req: NextRequest) {
           .update({ status: "paid", paid_at: new Date().toISOString() })
           .eq("id", payment.id);
       }
+      // Débit effectif : la facture séquentielle est émise maintenant.
+      await admin.rpc("ensure_invoice", { p_payment: payment.id });
     }
   }
 

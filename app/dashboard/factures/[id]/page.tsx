@@ -3,7 +3,11 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCoach } from "@/lib/coach/getCoach";
 import { getServerDictionary } from "@/lib/i18n/server";
-import { invoiceNumber } from "@/lib/invoices/utils";
+import {
+  displayInvoiceNumber,
+  creditNotesOf,
+  type InvoiceRow,
+} from "@/lib/invoices/utils";
 import PrintButton from "@/components/invoices/PrintButton";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 
@@ -11,10 +15,14 @@ export const dynamic = "force-dynamic";
 
 // Facture imprimable (→ « Enregistrer en PDF » du navigateur). Seule la zone
 // .invoice-print s'imprime, en noir sur blanc (cf. globals.css @media print).
+// Avec ?avoir=<id>, la même page rend l'AVOIR (remboursement) rattaché à
+// cette facture : même en-tête, montant en négatif, référence à l'origine.
 export default async function InvoicePage({
   params,
+  searchParams,
 }: {
   params: { id: string };
+  searchParams?: { avoir?: string };
 }) {
   const { dict, locale } = getServerDictionary();
   const inv = dict.invoices;
@@ -25,7 +33,7 @@ export default async function InvoicePage({
   const { data: p } = await supabase
     .from("payments")
     .select(
-      "id, amount_cents, currency, paid_at, refunded_cents, stripe_payment_intent_id, clients(first_name, last_name, email), services(name), bookings(starts_at)"
+      "id, amount_cents, currency, paid_at, refunded_cents, stripe_payment_intent_id, clients(first_name, last_name, email), services(name), bookings(starts_at), invoices(id, number, kind, amount_cents, issued_at, reason)"
     )
     .eq("id", params.id)
     .not("paid_at", "is", null)
@@ -36,8 +44,20 @@ export default async function InvoicePage({
   const client = Array.isArray(p.clients) ? p.clients[0] : p.clients;
   const service = Array.isArray(p.services) ? p.services[0] : p.services;
   const booking = Array.isArray(p.bookings) ? p.bookings[0] : p.bookings;
-  const number = invoiceNumber(p.id as string, p.paid_at as string);
-  const refunded = ((p.refunded_cents as number) || 0) > 0;
+  const invoiceRows = p.invoices as (InvoiceRow & { reason?: string | null })[] | null;
+  const invoiceNo = displayInvoiceNumber(invoiceRows, p.id as string, p.paid_at as string);
+  const creditNote = searchParams?.avoir
+    ? creditNotesOf(invoiceRows).find((cn) => cn.id === searchParams.avoir)
+    : undefined;
+  if (searchParams?.avoir && !creditNote) notFound();
+  const number = creditNote ? (creditNote.number as string) : invoiceNo;
+  const refunded = !creditNote && ((p.refunded_cents as number) || 0) > 0;
+  const docDate = creditNote
+    ? ((creditNote.issued_at as string) ?? (p.paid_at as string))
+    : (p.paid_at as string);
+  const docAmount = creditNote
+    ? -((creditNote.amount_cents as number) ?? 0)
+    : (p.amount_cents as number);
   const money = (cents: number) =>
     (cents / 100).toLocaleString(loc, {
       style: "currency",
@@ -76,12 +96,20 @@ export default async function InvoicePage({
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-2xl font-extrabold tracking-tight text-text-base">
-              {inv.title.slice(0, -1)}
+              {creditNote ? inv.creditNote : inv.title.slice(0, -1)}
             </p>
             <p className="mt-1 text-sm font-semibold text-text-muted">{number}</p>
             <p className="mt-0.5 text-xs text-text-dim">
-              {inv.issuedOn} {dateStr(p.paid_at as string)}
+              {inv.issuedOn} {dateStr(docDate)}
             </p>
+            {creditNote && (
+              <p className="mt-0.5 text-xs text-text-dim">
+                {inv.creditNoteFor} {invoiceNo}
+                {(creditNote as { reason?: string | null }).reason
+                  ? ` · ${(creditNote as { reason?: string | null }).reason}`
+                  : ""}
+              </p>
+            )}
           </div>
           {/* Marque : icône de l'app (imprime bien, fills SVG) + nom */}
           <div className="flex flex-col items-end gap-2 text-right">
@@ -163,7 +191,7 @@ export default async function InvoicePage({
                   : dateStr(p.paid_at as string)}
               </td>
               <td className="py-3 text-right font-semibold text-text-base">
-                {money(p.amount_cents as number)}
+                {money(docAmount)}
               </td>
             </tr>
           </tbody>
@@ -174,11 +202,13 @@ export default async function InvoicePage({
             <div className="flex items-center justify-between border-b border-border py-2 text-sm">
               <span className="text-text-muted">Total</span>
               <span className="text-lg font-extrabold text-text-base">
-                {money(p.amount_cents as number)}
+                {money(docAmount)}
               </span>
             </div>
             <p className="mt-2 text-right text-xs font-semibold text-accent">
-              {refunded
+              {creditNote
+                ? `${inv.creditNoteRefunded} ${dateStr(docDate)}`
+                : refunded
                 ? `${inv.statusRefunded} · ${money(p.refunded_cents as number)}`
                 : `✓ ${inv.statusPaid} le ${dateStr(p.paid_at as string)}`}
             </p>

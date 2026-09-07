@@ -60,7 +60,7 @@ export default async function ClientSpacePage() {
           admin
             .from("pack_credits")
             .select(
-              "id, total, used, services(name), coaches(first_name, last_name)"
+              "id, total, used, status, expires_at, service_name, services(name), coaches(first_name, last_name)"
             )
             .in("client_id", clientIds)
             .order("created_at", { ascending: false }),
@@ -95,7 +95,11 @@ export default async function ClientSpacePage() {
           id: c.id as string,
           total: c.total as number,
           used: c.used as number,
-          service_name: (svc?.name as string) ?? "Pack",
+          status: ((c.status as string | null) ?? "active"),
+          expires_at: (c.expires_at as string | null) ?? null,
+          // Instantané du nom à l'achat (l'offre peut être renommée après).
+          service_name:
+            (c.service_name as string | null) ?? (svc?.name as string) ?? "Pack",
           coach_name:
             [co?.first_name, co?.last_name].filter(Boolean).join(" ") || "-",
         });

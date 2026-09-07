@@ -93,7 +93,7 @@ export default async function ClientDetailPage({
   // Packs de séances achetés par ce client (RLS : seuls ceux du coach).
   const { data: packRows } = await supabase
     .from("pack_credits")
-    .select("id, total, used, services(name)")
+    .select("id, total, used, status, expires_at, service_name, services(name)")
     .eq("client_id", params.id)
     .order("created_at", { ascending: false });
   const packs = (packRows ?? []).map((p) => {
@@ -102,7 +102,12 @@ export default async function ClientDetailPage({
       id: p.id as string,
       total: p.total as number,
       used: p.used as number,
-      name: ((svc as { name?: string } | null)?.name as string) ?? "Pack",
+      status: ((p.status as string | null) ?? "active"),
+      expires_at: (p.expires_at as string | null) ?? null,
+      name:
+        (p.service_name as string | null) ??
+        ((svc as { name?: string } | null)?.name as string) ??
+        "Pack",
     };
   });
 
@@ -152,7 +157,17 @@ export default async function ClientDetailPage({
         {packs.length > 0 && (
           <div className="mb-4 flex flex-col gap-2">
             {packs.map((p) => {
-              const left = Math.max(0, p.total - p.used);
+              const active = p.status === "active";
+              const left = active ? Math.max(0, p.total - p.used) : 0;
+              const pill = active
+                ? left > 0
+                  ? `${left} ${left === 1 ? dict.packs.remainingOne : dict.packs.remainingMany}`
+                  : dict.packs.empty
+                : p.status === "expired"
+                ? dict.packs.expired
+                : p.status === "refunded"
+                ? dict.packs.refunded
+                : dict.packs.closed;
               return (
                 <div
                   key={p.id}
@@ -172,9 +187,7 @@ export default async function ClientDetailPage({
                         : "border border-border-strong text-text-dim"
                     }`}
                   >
-                    {left > 0
-                      ? `${left} ${left === 1 ? dict.packs.remainingOne : dict.packs.remainingMany}`
-                      : dict.packs.empty}
+                    {pill}
                   </span>
                 </div>
               );

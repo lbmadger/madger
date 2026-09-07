@@ -10,6 +10,9 @@ import type { Service, ServiceType, ServiceLocation } from "@/lib/services/types
 
 const DURATIONS = [30, 45, 60, 90];
 const TYPES: ServiceType[] = ["single", "pack", "subscription"];
+// Validité d'un pack, en jours (0 = sans limite) ; délai d'annulation en h.
+const VALIDITIES = [0, 30, 60, 90, 180, 365];
+const CANCEL_HOURS = [12, 24, 48];
 
 // Création ET édition : passer `service` pré-remplit le formulaire et
 // enregistre en UPDATE au lieu d'un INSERT.
@@ -31,6 +34,12 @@ export default function AddServiceModal({
   const [duration, setDuration] = useState(service?.duration_min ?? 60);
   const [packSize, setPackSize] = useState(
     service?.pack_size ? String(service.pack_size) : "10"
+  );
+  const [validity, setValidity] = useState<number>(
+    service?.validity_days ?? 90
+  );
+  const [cancelHours, setCancelHours] = useState<number>(
+    service?.cancel_hours ?? 24
   );
   const [location, setLocation] = useState<ServiceLocation>(
     service?.location ?? "in_person"
@@ -66,6 +75,10 @@ export default function AddServiceModal({
         price_cents: priceCents,
         currency: "eur",
         pack_size: type === "pack" ? Number(packSize) || null : null,
+        // Conditions du pack (migration 0056). Un pack déjà acheté garde
+        // les siennes : l'instantané est pris à l'achat.
+        validity_days: type === "pack" && validity > 0 ? validity : null,
+        cancel_hours: type === "pack" ? cancelHours : 24,
         active: true,
       };
 
@@ -76,7 +89,12 @@ export default function AddServiceModal({
             .insert({ coach_id: user.id, ...values });
 
       if (error) {
-        setError(t("services.errors.generic"));
+        // Trigger SQL : 3 packs actifs maximum par coach.
+        setError(
+          /pack_limit/.test(error.message ?? "")
+            ? t("services.errors.packLimit")
+            : t("services.errors.generic")
+        );
         return;
       }
       onCreated();
@@ -176,6 +194,45 @@ export default function AddServiceModal({
               <div />
             )}
           </div>
+
+          {/* Conditions du pack : validité et délai d'annulation gratuite */}
+          {type === "pack" && (
+            <div className="grid grid-cols-2 gap-3">
+              <label className="flex flex-col gap-1.5">
+                <span className={labelClass}>{t("services.form.validity")}</span>
+                <select
+                  value={validity}
+                  onChange={(e) => setValidity(Number(e.target.value))}
+                  className={inputClass}
+                >
+                  {VALIDITIES.map((d) => (
+                    <option key={d} value={d}>
+                      {d === 0
+                        ? t("services.form.validityNone")
+                        : `${Math.round(d / 30)} ${t("services.form.validityMonths")}`}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex flex-col gap-1.5">
+                <span className={labelClass}>{t("services.form.cancelHours")}</span>
+                <select
+                  value={cancelHours}
+                  onChange={(e) => setCancelHours(Number(e.target.value))}
+                  className={inputClass}
+                >
+                  {CANCEL_HOURS.map((h) => (
+                    <option key={h} value={h}>
+                      {h} {t("services.form.cancelHoursUnit")}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <p className="col-span-2 text-xs leading-relaxed text-text-dim">
+                {t("services.form.validityHint")} {t("services.form.cancelHint")}
+              </p>
+            </div>
+          )}
 
           {/* Lieu */}
           <div className="flex flex-col gap-1.5">

@@ -221,7 +221,7 @@ export async function POST(req: NextRequest) {
   // (la séance annulée comprise) et le pack est clôturé après annulation.
   const { data: pack } = await admin
     .from("pack_credits")
-    .select("id, total, used")
+    .select("id, total, used, status")
     .eq("payment_id", payment.id)
     .maybeSingle();
   const baseAmount = pack
@@ -314,12 +314,33 @@ export async function POST(req: NextRequest) {
       .update({ status: "cancelled" })
       .eq("id", bookingId);
 
-    // Pack clôturé : plus aucun crédit utilisable après remboursement.
-    if (pack) {
-      await admin
-        .from("pack_credits")
-        .update({ used: pack.total })
-        .eq("id", pack.id);
+    // Pack clôturé (journalisé) : plus aucun crédit utilisable après
+    // remboursement. Avoir émis pour la part remboursée (best-effort : la
+    // pièce comptable ne doit jamais annuler un remboursement déjà parti).
+    try {
+      if (pack && pack.status === "active") {
+        await admin.rpc("close_pack_credit", {
+          p_pack: pack.id,
+          p_status: "refunded",
+          p_actor: "coach",
+          p_note:
+            by === "coach"
+              ? "Pack refusé ou annulé par le coach"
+              : "Pack annulé à la demande du client",
+        });
+      }
+      if (refund > 0) {
+        await admin.rpc("create_credit_note", {
+          p_payment: payment.id,
+          p_total_refunded_cents: totalRefunded,
+          p_reason:
+            by === "coach"
+              ? "Annulation par le coach"
+              : "Annulation à la demande du client",
+        });
+      }
+    } catch {
+      /* best-effort */
     }
 
     // Email au client (best-effort) : remboursement s'il y a lieu, sinon

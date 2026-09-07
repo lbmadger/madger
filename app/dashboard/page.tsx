@@ -15,7 +15,7 @@ import { computeLeiaTips, dailyTipIndex } from "@/lib/leia/tips";
 import ChartCard from "@/components/dashboard/charts/ChartCard";
 import AreaChartCard from "@/components/dashboard/charts/AreaChartCard";
 import { type BarDatum } from "@/components/dashboard/charts/MiniBars";
-import { invoiceNumber } from "@/lib/invoices/utils";
+import { displayInvoiceNumber, type InvoiceRow } from "@/lib/invoices/utils";
 import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getCoach } from "@/lib/coach/getCoach";
@@ -129,7 +129,7 @@ export default async function OverviewPage() {
       supabase
         .from("payments")
         .select(
-          "id, amount_cents, currency, paid_at, clients(first_name, last_name)"
+          "id, amount_cents, currency, paid_at, clients(first_name, last_name), invoices(number, kind)"
         )
         .not("paid_at", "is", null)
         .order("paid_at", { ascending: false })
@@ -1364,7 +1364,11 @@ export default async function OverviewPage() {
                         >
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-xs font-semibold text-text-base">
-                              {invoiceNumber(p.id as string, p.paid_at as string)}
+                              {displayInvoiceNumber(
+                                p.invoices as InvoiceRow[] | null,
+                                p.id as string,
+                                p.paid_at as string
+                              )}
                             </p>
                             <p className="truncate text-[11px] text-text-dim">
                               {[cl?.first_name, cl?.last_name]

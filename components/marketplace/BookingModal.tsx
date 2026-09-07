@@ -174,6 +174,10 @@ export default function BookingModal({
   const payMode = !!selectedService;
   // Abonnement mensuel : souscription récurrente, aucun créneau à choisir.
   const isSubscription = selectedService?.type === "subscription";
+  // Un pack est toujours débité à l'achat (crédits disponibles tout de
+  // suite), même chez un coach en mode validation : seule la première séance
+  // reste à approuver, remboursement intégral si le coach refuse.
+  const chargedNow = instant || selectedService?.type === "pack";
   // Prestation choisie = durée imposée par la prestation (60 min par défaut) :
   // le client ne choisit jamais la durée d'une prestation payante.
   const effectiveDuration = selectedService
@@ -712,15 +716,15 @@ export default function BookingModal({
                       <rect x="3" y="11" width="18" height="11" rx="2" />
                       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                     </svg>
-                    {instant
+                    {chargedNow
                       ? t("booking.escrowTitle")
                       : t("booking.authTitle")}
                   </p>
-                  {/* Un seul message selon le mode : séquestre (instant) OU
-                      empreinte (validation). Les deux ensemble sèment le
-                      doute sur ce qui est réellement débité. */}
+                  {/* Un seul message selon le mode : séquestre (instant ou
+                      pack) OU empreinte (validation). Les deux ensemble
+                      sèment le doute sur ce qui est réellement débité. */}
                   <p className="mt-1 text-xs text-text-muted">
-                    {instant ? t("booking.escrowDesc") : t("booking.authNote")}
+                    {chargedNow ? t("booking.escrowDesc") : t("booking.authNote")}
                   </p>
                   <div className="mt-3 border-t border-border pt-3">
                     <CancellationSummary
@@ -820,7 +824,7 @@ export default function BookingModal({
               </div>
               {/* Mode validation : rappel que rien n'est débité avant
                   l'acceptation, juste sous le bouton qui affiche un prix. */}
-              {payMode && !isSubscription && !instant && (
+              {payMode && !isSubscription && !chargedNow && (
                 <p className="text-center text-[11px] text-text-dim">
                   {t("booking.chargedOnAccept")}
                 </p>
