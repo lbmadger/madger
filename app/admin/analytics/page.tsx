@@ -142,7 +142,7 @@ export default async function AdminAnalytics() {
       admin
         .from("coaches")
         .select("subscription_plan")
-        .in("subscription_status", ["active", "trialing"])
+        .in("subscription_status", ["active", "trialing", "canceling"])
         .limit(2000),
       admin.from("coaches").select("created_at").gte("created_at", since).limit(2000),
       admin.from("early_access").select("created_at").gte("created_at", since).limit(2000),

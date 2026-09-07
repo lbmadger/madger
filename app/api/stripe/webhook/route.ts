@@ -64,15 +64,28 @@ export async function POST(req: NextRequest) {
         .eq("id", coachId)
         .is("pro_trial_used_at", null);
     }
+    // « canceling » : encore actif mais arrêt programmé en fin de période
+    // (réactivable depuis l'app).
+    const canceling = !!sub.cancel_at_period_end && sub.status === "active";
     await supabase.rpc("apply_pro_subscription", {
       p_coach_id: coachId,
       p_customer_id:
         typeof sub.customer === "string" ? sub.customer : sub.customer?.id ?? null,
       p_subscription_id: sub.id,
-      p_status: sub.status,
+      p_status: canceling ? "canceling" : sub.status,
       p_plan: sub.metadata?.plan ?? null,
       p_period_end: periodEnd,
     });
+    await supabase
+      .from("coaches")
+      .update({
+        subscription_cancel_at: canceling
+          ? sub.cancel_at
+            ? new Date(sub.cancel_at * 1000).toISOString()
+            : periodEnd
+          : null,
+      })
+      .eq("id", coachId);
   }
 
   // Récompense un coach d'un mois de Pro : crédit de 49 € sur son solde Stripe
@@ -86,7 +99,8 @@ export async function POST(req: NextRequest) {
       .maybeSingle();
     const active =
       c?.subscription_status === "active" ||
-      c?.subscription_status === "trialing";
+      c?.subscription_status === "trialing" ||
+      c?.subscription_status === "canceling";
     if (c?.stripe_customer_id && active && stripe) {
       try {
         await stripe.customers.createBalanceTransaction(c.stripe_customer_id, {

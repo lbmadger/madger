@@ -175,6 +175,21 @@ export default async function SubscriptionPage({
               <ManageSubscription
                 savedStr={savedStr}
                 plan={coach?.subscription_plan ?? null}
+                canceling={coach?.subscription_status === "canceling"}
+                cancelAtStr={
+                  coach?.subscription_cancel_at
+                    ? new Date(coach.subscription_cancel_at).toLocaleDateString(
+                        locale === "fr" ? "fr-FR" : "en-GB",
+                        { day: "numeric", month: "long", year: "numeric" }
+                      )
+                    : untilStr
+                }
+                offerAvailable={
+                  !coach?.retention_offer_used_at &&
+                  ["active", "trialing", "canceling"].includes(
+                    coach?.subscription_status ?? ""
+                  )
+                }
               />
             </div>
           )}

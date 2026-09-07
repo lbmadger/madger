@@ -37,6 +37,9 @@ export type Coach = {
   stripe_subscription_id: string | null;
   // Essai Pro de 7 jours déjà consommé (migration 0062).
   pro_trial_used_at?: string | null;
+  // Parcours de résiliation (migration 0063).
+  retention_offer_used_at?: string | null;
+  subscription_cancel_at?: string | null;
   subscription_status: string | null;
   subscription_plan: string | null;
   // Politique d'annulation (migration 0016) : flexible | moderate | strict.

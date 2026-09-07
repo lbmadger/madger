@@ -905,7 +905,7 @@ export default async function OverviewPage() {
         {/* Essai Pro offert en cours (Pro actif SANS abonnement payant) :
             rappel doux du temps restant, vers la page Abonnement. */}
         {pro &&
-          !["active", "trialing"].includes(coach?.subscription_status ?? "") && (
+          !["active", "trialing", "canceling"].includes(coach?.subscription_status ?? "") && (
             <Link
               href="/dashboard/abonnement"
               className="mb-6 flex items-center justify-between gap-3 rounded-2xl border border-accent/25 bg-accent/[0.05] px-4 py-3 transition-colors hover:border-accent/40"

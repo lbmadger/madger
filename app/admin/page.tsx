@@ -59,7 +59,7 @@ export default async function AdminOverview() {
       admin
         .from("coaches")
         .select("subscription_status, subscription_plan")
-        .in("subscription_status", ["active", "trialing"])
+        .in("subscription_status", ["active", "trialing", "canceling"])
         .limit(2000),
       // Paiements récents : commissions du mois (datées du versement) et
       // volume encaissé 30 jours. Fenêtre large, filtrage précis en JS.
