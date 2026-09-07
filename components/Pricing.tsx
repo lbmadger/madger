@@ -89,7 +89,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 max-w-3xl mx-auto pt-6" style={{ overflow: "visible" }}>
+        <div className="grid grid-cols-2 gap-4 sm:gap-8 max-w-3xl mx-auto pt-6" style={{ overflow: "visible" }}>
 
           {/* ── Free ── */}
           <motion.div
