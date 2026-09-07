@@ -183,7 +183,7 @@ const fr = {
       generic: "Une erreur est survenue. Réessaie.",
       invalidCredentials: "Email ou mot de passe incorrect.",
       emailTaken:
-        "Un compte existe déjà avec cet email. Connecte-toi (ou utilise « Mot de passe oublié »).",
+        "Un compte existe déjà avec cet email. Connecte‑toi, ou utilise « Mot de passe oublié ».",
       passwordWeak: "Le mot de passe ne respecte pas tous les critères.",
       phoneInvalid: "Numéro invalide (format +33…).",
       invalidCode: "Code incorrect ou expiré.",
