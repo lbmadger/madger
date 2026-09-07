@@ -32,6 +32,7 @@ import AiBio from "@/components/ui/AiBio";
 import {
   resolveRefundPolicy,
   REFUND_PCT_CHOICES,
+  CANCEL_HOURS_CHOICES,
 } from "@/lib/booking/cancellation";
 
 // Fuseaux proposés : France métropolitaine + DOM-TOM + grandes villes
@@ -85,6 +86,8 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   const [refundUnder, setRefundUnder] = useState<number>(
     initialRefund.underPct
   );
+  // Délai de bascule (12 / 24 / 48 h avant la séance), migration 0058.
+  const [cancelHours, setCancelHours] = useState<number>(initialRefund.hours);
   const [bookingMode, setBookingMode] = useState<"instant" | "approval">(
     coach.booking_mode === "instant" ? "instant" : "approval"
   );
@@ -213,6 +216,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
       cancellation: {
         refund_over_24h_pct: refundOver,
         refund_under_24h_pct: refundUnder,
+        cancel_hours: cancelHours,
       },
       billing: {
         business_name: businessName.trim() || null,
@@ -650,10 +654,34 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         title={t("cancellation.title")}
         desc={t("cancellation.subtitle")}
       >
+        {/* Délai de bascule : 12, 24 ou 48 h avant la séance. */}
+        <div className="mb-3 flex flex-col gap-1.5 rounded-xl border border-border-strong p-4">
+          <span className="text-sm font-semibold text-text-base">
+            {t("cancellation.hoursLabel")}
+          </span>
+          <span className="text-xs text-text-dim">{t("cancellation.hoursDesc")}</span>
+          <div className="mt-2 flex gap-2">
+            {CANCEL_HOURS_CHOICES.map((h) => (
+              <button
+                key={h}
+                type="button"
+                aria-pressed={cancelHours === h}
+                onClick={() => setCancelHours(h)}
+                className={`flex-1 rounded-full border px-3 py-2 text-sm font-medium transition-colors ${
+                  cancelHours === h
+                    ? "border-accent bg-accent/10 text-accent"
+                    : "border-border-strong text-text-muted hover:text-text-base"
+                }`}
+              >
+                {h} h
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1.5 rounded-xl border border-border-strong p-4">
             <span className="text-sm font-semibold text-text-base">
-              {t("cancellation.overLabel")}
+              {t("cancellation.overLabelH").replace("{h}", String(cancelHours))}
             </span>
             <span className="text-xs text-text-dim">
               {t("cancellation.overDesc")}
@@ -662,7 +690,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
               value={refundOver}
               onChange={(e) => setRefundOver(Number(e.target.value))}
               className={`${inputClass} mt-2`}
-              aria-label={t("cancellation.overLabel")}
+              aria-label={t("cancellation.overLabelH").replace("{h}", String(cancelHours))}
             >
               {REFUND_PCT_CHOICES.map((p) => (
                 <option key={p} value={p}>
@@ -674,7 +702,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           </label>
           <label className="flex flex-col gap-1.5 rounded-xl border border-border-strong p-4">
             <span className="text-sm font-semibold text-text-base">
-              {t("cancellation.underLabel")}
+              {t("cancellation.underLabelH").replace("{h}", String(cancelHours))}
             </span>
             <span className="text-xs text-text-dim">
               {t("cancellation.underDesc")}
@@ -683,7 +711,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
               value={refundUnder}
               onChange={(e) => setRefundUnder(Number(e.target.value))}
               className={`${inputClass} mt-2`}
-              aria-label={t("cancellation.underLabel")}
+              aria-label={t("cancellation.underLabelH").replace("{h}", String(cancelHours))}
             >
               {REFUND_PCT_CHOICES.map((p) => (
                 <option key={p} value={p}>
@@ -697,7 +725,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
 
         {/* Aperçu : exactement ce que verront les clients avant de payer. */}
         <div className="mt-4 max-w-sm rounded-xl border border-border bg-bg-elevated p-4">
-          <PolicyTiers policy={{ overPct: refundOver, underPct: refundUnder }} />
+          <PolicyTiers policy={{ overPct: refundOver, underPct: refundUnder, hours: cancelHours }} />
         </div>
 
         <Link

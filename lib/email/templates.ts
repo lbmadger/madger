@@ -1720,6 +1720,66 @@ export function cancellationNoRefundClient(p: {
   };
 }
 
+// ── Client : annulation d'une séance sur pack (crédit rendu ou perdu) ───────
+export function creditCancellationClient(p: {
+  coachName: string;
+  dateStr: string;
+  restored: boolean;
+  hours: number;
+  spaceUrl: string;
+}): Email {
+  return {
+    subject: p.restored
+      ? "Séance annulée, ton crédit est rendu"
+      : "Séance annulée, décomptée de ton pack",
+    html: layout({
+      preheader: p.restored
+        ? "La séance est de retour sur ton pack."
+        : `Annulation à moins de ${p.hours} h : la séance est décomptée.`,
+      eyebrow: "Annulation",
+      title: p.restored ? "Crédit rendu sur ton pack" : "Séance décomptée",
+      intro: `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> du <b style="color:${C.text};">${p.dateStr}</b> est bien annulée.`,
+      blocks: [
+        infoBox(
+          p.restored ? "Ton pack" : "Pourquoi la séance est décomptée ?",
+          p.restored
+            ? "Tu as annulé dans le délai du pack : la séance est de retour sur ton solde, tu peux la replacer quand tu veux depuis ton espace."
+            : `Le pack de ${p.coachName} prévoit une annulation gratuite jusqu'à ${p.hours} h avant la séance. Passé ce délai, la séance est décomptée comme si elle avait eu lieu.`
+        ),
+      ],
+      cta: { label: "Voir mes séances", url: p.spaceUrl },
+      outro:
+        "Une question ? Réponds simplement à cet email, on est là pour aider.",
+    }),
+  };
+}
+
+// ── Client : remboursement du reste d'un pack (décision du coach) ───────────
+export function packRefundClient(p: {
+  coachName: string;
+  refundStr: string;
+  remaining: number;
+  spaceUrl: string;
+}): Email {
+  return {
+    subject: `Ton pack est remboursé : ${p.refundStr} en route 💸`,
+    html: layout({
+      preheader: `${p.coachName} a remboursé les ${p.remaining} séance${p.remaining > 1 ? "s" : ""} restante${p.remaining > 1 ? "s" : ""} de ton pack.`,
+      eyebrow: "Remboursement",
+      title: "Le reste de ton pack est remboursé",
+      intro: `<b style="color:${C.text};">${p.coachName}</b> a remboursé les <b style="color:${C.text};">${p.remaining} séance${p.remaining > 1 ? "s" : ""}</b> restante${p.remaining > 1 ? "s" : ""} de ton pack. Le pack est clôturé, l'avoir arrive dans un email séparé.`,
+      blocks: [
+        detailsTable([
+          { label: "Coach", value: p.coachName },
+          { label: "Montant remboursé", value: p.refundStr, accent: true },
+          { label: "Délai bancaire", value: "2 à 7 jours ouvrés" },
+        ]),
+      ],
+      cta: { label: "Voir mes séances", url: p.spaceUrl },
+    }),
+  };
+}
+
 // ── Fondateur : alerte interne (panne monétaire, signalement…) ──────────────
 // Envoyée à FOUNDER_EMAIL. Par défaut l'intro parle d'un échec de traitement
 // monétaire (versements, webhooks) ; les signalements passent leur propre

@@ -1124,6 +1124,16 @@ const fr = {
     tiersTitle: "Remboursement au client",
     tierEarly: "Le client annule plus de 24 h avant le début de la séance",
     tierLate: "Le client annule moins de 24 h avant le début de la séance",
+    tierEarlyH: "Le client annule plus de {h} h avant le début de la séance",
+    tierLateH: "Le client annule moins de {h} h avant le début de la séance",
+    hoursLabel: "Délai d'annulation",
+    hoursDesc:
+      "Jusqu'à combien d'heures avant la séance une annulation compte comme « tôt » ? Pour les packs, c'est le délai de chaque pack qui s'applique (Prestations).",
+    overLabelH: "Annulation plus de {h} h avant la séance",
+    underLabelH: "Annulation moins de {h} h avant la séance",
+    freeOverH: "Annulation gratuite jusqu'à {h} h avant la séance",
+    moreThanH: "Plus de {h} h avant",
+    lessThanH: "Moins de {h} h avant",
     overLabel: "Annulation plus de 24 h avant la séance",
     overDesc:
       "Le client annule tôt (la veille ou avant). Quelle part du prix gardes-tu ?",
@@ -1347,6 +1357,10 @@ const fr = {
     proposalChoose: "Choisir un autre créneau",
     proposalDone: "Nouvel horaire confirmé.",
     proposalMoved: "Séance déplacée sur le créneau choisi. Le coach est prévenu.",
+    creditCancelFree:
+      "Si tu annules avant le {date}, ta séance est rendue sur ton pack. Après, elle est décomptée.",
+    creditCancelLost:
+      "Délai d'annulation dépassé : si tu annules maintenant, la séance est décomptée de ton pack.",
   },
   creditBooking: {
     title: "Placer une séance",
@@ -1401,6 +1415,14 @@ const fr = {
     hideLog: "Masquer l'historique",
     errNegative: "Impossible : le pack n'a plus de séance à retirer.",
     errGeneric: "Une erreur est survenue. Réessaie.",
+    refundRest: "Rembourser le reste",
+    refundTitle: "Rembourser le reste du pack ?",
+    refundDesc:
+      "Les {n} séance(s) non utilisée(s) sont remboursées au client au prorata du prix payé, sur son moyen de paiement d'origine. Le pack est clôturé et un avoir lui est envoyé. Ce que tu as déjà touché n'est pas concerné.",
+    refundConfirm: "Rembourser",
+    refundDone: "Remboursement de {amount} émis, pack clôturé.",
+    refundNothing: "Rien à rembourser : les fonds de ce pack t'ont déjà été versés.",
+    refundErr: "Le remboursement n'a pas pu partir. Réessaie ou contacte le support.",
     reasons: {
       purchase: "Achat du pack",
       booking: "Séance réservée",
@@ -2630,6 +2652,16 @@ const en: Dictionary = {
     tiersTitle: "Refund to the client",
     tierEarly: "Client cancels more than 24h before the session starts",
     tierLate: "Client cancels less than 24h before the session starts",
+    tierEarlyH: "Client cancels more than {h}h before the session starts",
+    tierLateH: "Client cancels less than {h}h before the session starts",
+    hoursLabel: "Cancellation notice",
+    hoursDesc:
+      "Up to how many hours before the session does a cancellation count as early? For packs, each pack's own notice applies (Services).",
+    overLabelH: "Cancellation more than {h}h before the session",
+    underLabelH: "Cancellation less than {h}h before the session",
+    freeOverH: "Free cancellation up to {h}h before the session",
+    moreThanH: "More than {h}h before",
+    lessThanH: "Less than {h}h before",
     overLabel: "Cancellation more than 24h before the session",
     overDesc:
       "The client cancels early (the day before or sooner). What share of the price do you keep?",
@@ -2850,6 +2882,10 @@ const en: Dictionary = {
     proposalChoose: "Pick another slot",
     proposalDone: "New time confirmed.",
     proposalMoved: "Session moved to the slot you picked. The coach has been notified.",
+    creditCancelFree:
+      "Cancel before {date} and the session goes back on your pack. After that, it is deducted.",
+    creditCancelLost:
+      "Cancellation notice passed: if you cancel now, the session is deducted from your pack.",
   },
   creditBooking: {
     title: "Book a session",
@@ -2904,6 +2940,14 @@ const en: Dictionary = {
     hideLog: "Hide history",
     errNegative: "Not possible: this pack has no session left to remove.",
     errGeneric: "Something went wrong. Please try again.",
+    refundRest: "Refund the rest",
+    refundTitle: "Refund the rest of the pack?",
+    refundDesc:
+      "The {n} unused session(s) are refunded to the client pro rata of the price paid, to their original payment method. The pack is closed and a credit note is sent. What you already received is not affected.",
+    refundConfirm: "Refund",
+    refundDone: "Refund of {amount} issued, pack closed.",
+    refundNothing: "Nothing to refund: this pack's funds were already paid out to you.",
+    refundErr: "The refund could not go through. Try again or contact support.",
     reasons: {
       purchase: "Pack purchase",
       booking: "Session booked",

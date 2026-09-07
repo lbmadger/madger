@@ -4,13 +4,19 @@ import { createClient as createAdmin } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { computePayout } from "@/lib/stripe/escrow";
-import { refundCents, resolveRefundPolicy } from "@/lib/booking/cancellation";
+import {
+  refundCents,
+  resolveRefundPolicy,
+  clampCancelHours,
+  creditRestoredIfCancelled,
+} from "@/lib/booking/cancellation";
 import { isPro } from "@/lib/subscription/plan";
 import { sendEmail } from "@/lib/email/resend";
 import {
   refundClient,
   bookingCancelledCoach,
   cancellationNoRefundClient,
+  creditCancellationClient,
 } from "@/lib/email/templates";
 import { detachMeetFromBooking } from "@/lib/google/calendar";
 import { emailInvoice } from "@/lib/invoices/send";
@@ -50,7 +56,7 @@ export async function POST(req: NextRequest) {
 
   const { data: booking } = await admin
     .from("bookings")
-    .select("id, coach_id, client_id, starts_at, status")
+    .select("id, coach_id, client_id, starts_at, status, pack_credit_id")
     .eq("id", bookingId)
     .maybeSingle();
   if (!booking || booking.status === "cancelled") {
@@ -122,10 +128,70 @@ export async function POST(req: NextRequest) {
   const { data: coach } = await admin
     .from("coaches")
     .select(
-      "stripe_account_id, pro_until, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, first_name, last_name, locale, timezone"
+      "stripe_account_id, pro_until, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, cancel_hours, first_name, last_name, locale, timezone"
     )
     .eq("id", booking.coach_id)
     .maybeSingle();
+
+  // ── Séance sur PACK (crédit, ou séance d'achat du pack) ──────────────────
+  // Lot 2 : aucun remboursement quand le CLIENT annule, le pack continue.
+  // Avant le délai du pack, le crédit est rendu ; après, il est perdu
+  // (journalisé). Le paiement du pack reste sous séquestre et se libère
+  // séance par séance comme d'habitude.
+  if (booking.pack_credit_id) {
+    const { data: pack } = await admin
+      .from("pack_credits")
+      .select("id, cancel_hours, status")
+      .eq("id", booking.pack_credit_id)
+      .maybeSingle();
+    const hours = clampCancelHours(pack?.cancel_hours);
+    const restored = creditRestoredIfCancelled(hours, new Date(booking.starts_at));
+    if (!restored) {
+      // Crédit perdu : posé AVANT l'annulation pour que le trigger SQL ne
+      // le restitue pas.
+      await admin.rpc("pack_credit_restore", {
+        p_booking: bookingId,
+        p_actor: "client",
+        p_lost: true,
+        p_note: `Annulation à moins de ${hours} h`,
+      });
+    }
+    await detachMeetFromBooking(admin, bookingId);
+    const { data: cancelled } = await admin
+      .from("bookings")
+      .update({ status: "cancelled" })
+      .eq("id", bookingId)
+      .neq("status", "cancelled")
+      .select("id");
+    if (!cancelled?.length) {
+      return NextResponse.json({ error: "already_processed" }, { status: 409 });
+    }
+    // Email au client : crédit rendu ou séance décomptée (best-effort).
+    try {
+      const coachName =
+        [coach?.first_name, coach?.last_name].filter(Boolean).join(" ") ||
+        "Ton coach";
+      const tpl = creditCancellationClient({
+        coachName,
+        dateStr: new Date(booking.starts_at).toLocaleString("fr-FR", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZone: coach?.timezone || "Europe/Paris",
+        }),
+        restored,
+        hours,
+        spaceUrl: `${APP_URL}/espace`,
+      });
+      await sendEmail({ to: user.email, subject: tpl.subject, html: tpl.html });
+    } catch {
+      /* best-effort */
+    }
+    await notifyCoachCancelled(0, 0);
+    return NextResponse.json({ ok: true, refunded_cents: 0, credit_restored: restored });
+  }
 
   const { data: payment } = await admin
     .from("payments")

@@ -12,6 +12,7 @@ import SlotPickerModal from "@/components/client/SlotPickerModal";
 import {
   refundCents,
   resolveRefundPolicy,
+  creditRestoredIfCancelled,
 } from "@/lib/booking/cancellation";
 
 export type ClientPack = {
@@ -50,6 +51,11 @@ export type ClientBooking = {
   coach_name: string;
   coach_slug: string | null;
   cancellation_policy: string;
+  cancel_hours: number | null;
+  // Séance réglée avec un crédit de pack (ou séance d'achat du pack) : pas
+  // de remboursement, le crédit est rendu ou perdu selon le délai du pack.
+  on_credit: boolean;
+  credit_cancel_hours: number | null;
   refund_over_24h_pct: number | null;
   refund_under_24h_pct: number | null;
   escrow_status: string | null;
@@ -786,7 +792,26 @@ export default function ClientSpace({
                 {cancelId === b.id ? (
                   <div className="flex w-full flex-col gap-2">
                     <p className="text-xs text-text-muted">
-                      {b.escrow_status === "held" && b.amount_cents
+                      {b.on_credit
+                        ? creditRestoredIfCancelled(
+                            b.credit_cancel_hours ?? 24,
+                            new Date(b.starts_at)
+                          )
+                          ? t("clientSpace.creditCancelFree").replace(
+                              "{date}",
+                              new Date(
+                                new Date(b.starts_at).getTime() -
+                                  (b.credit_cancel_hours ?? 24) * 3_600_000
+                              ).toLocaleString(loc, {
+                                weekday: "long",
+                                day: "numeric",
+                                month: "long",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            )
+                          : t("clientSpace.creditCancelLost")
+                        : b.escrow_status === "held" && b.amount_cents
                         ? `${t("clientSpace.cancelRefund")} ${(refundNow(b) / 100).toLocaleString(loc, { style: "currency", currency: "EUR" })} (${Math.round((refundNow(b) / Math.max(1, b.amount_cents ?? 0)) * 100)}%).`
                         : t("clientSpace.cancelFree")}
                     </p>

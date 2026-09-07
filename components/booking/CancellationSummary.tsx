@@ -6,8 +6,8 @@ import type { RefundPolicy } from "@/lib/booking/cancellation";
 // Résumé d'annulation façon Airbnb, affiché au moment de réserver/payer.
 // Concret et daté quand le créneau est choisi : « Annulation gratuite jusqu'au
 // mercredi 12 juin à 14:00. Ensuite, remboursement de 50 %. » Le point de
-// bascule = 24 h avant le début de la séance. Framing côté client (ce qu'il
-// récupère), comme Airbnb côté voyageur.
+// bascule = le délai choisi par le coach (12, 24 ou 48 h) avant le début.
+// Framing côté client (ce qu'il récupère), comme Airbnb côté voyageur.
 export default function CancellationSummary({
   policy,
   startsAt,
@@ -21,9 +21,10 @@ export default function CancellationSummary({
   const { t } = useI18n();
   const loc = locale === "fr" ? "fr-FR" : "en-GB";
   const free = policy.overPct >= 100;
+  const h = String(policy.hours || 24);
 
   const cutoff = startsAt
-    ? new Date(startsAt.getTime() - 24 * 3_600_000)
+    ? new Date(startsAt.getTime() - (policy.hours || 24) * 3_600_000)
     : null;
   const cutoffLabel = cutoff
     ? cutoff.toLocaleString(loc, {
@@ -59,7 +60,7 @@ export default function CancellationSummary({
             <span>
               {cutoffLabel
                 ? `${t("cancellation.freeUntil")} ${cutoffLabel}`
-                : t("cancellation.freeOver24")}
+                : t("cancellation.freeOverH").replace("{h}", h)}
             </span>
           </p>
           <p className="mt-1 pl-[1.4rem] text-xs text-text-muted">
@@ -72,9 +73,9 @@ export default function CancellationSummary({
         <p className="mt-1.5 text-xs text-text-muted">
           {/* « 80 % » tout seul était ambigu au moment de payer : on dit
               explicitement que c'est la part remboursée. */}
-          {t("cancellation.moreThan24")} : {policy.overPct} %{" "}
+          {t("cancellation.moreThanH").replace("{h}", h)} : {policy.overPct} %{" "}
           {t("cancellation.refundedSuffix")}.{" "}
-          {t("cancellation.lessThan24")} : {policy.underPct} %{" "}
+          {t("cancellation.lessThanH").replace("{h}", h)} : {policy.underPct} %{" "}
           {t("cancellation.refundedSuffix")}.
         </p>
       )}

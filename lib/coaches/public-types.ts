@@ -18,6 +18,8 @@ export type PublicCoach = {
   // le client annule plus / moins de 24 h avant la séance.
   refund_over_24h_pct: number | null;
   refund_under_24h_pct: number | null;
+  // Délai de bascule 12 / 24 / 48 h (migration 0058), absent = 24.
+  cancel_hours?: number | null;
   booking_mode: "instant" | "approval";
   created_at: string;
   // Avis (vue public_coaches, migration 0020)

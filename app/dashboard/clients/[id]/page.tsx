@@ -96,7 +96,7 @@ export default async function ClientDetailPage({
   // Packs de séances achetés par ce client (RLS : seuls ceux du coach).
   const { data: packRows } = await supabase
     .from("pack_credits")
-    .select("id, total, used, status, expires_at, service_name, services(name)")
+    .select("id, total, used, status, expires_at, service_name, payment_id, services(name)")
     .eq("client_id", params.id)
     .order("created_at", { ascending: false });
   const packs = (packRows ?? []).map((p) => {
@@ -105,6 +105,7 @@ export default async function ClientDetailPage({
       id: p.id as string,
       total: p.total as number,
       used: p.used as number,
+      refundable: !!p.payment_id,
       status: ((p.status as string | null) ?? "active"),
       expires_at: (p.expires_at as string | null) ?? null,
       name:
@@ -232,6 +233,7 @@ export default async function ClientDetailPage({
                       packId={p.id}
                       remaining={left}
                       events={eventsByPack.get(p.id) ?? []}
+                      refundable={p.refundable}
                     />
                   )}
                 </div>

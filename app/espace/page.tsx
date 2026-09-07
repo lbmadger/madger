@@ -67,7 +67,7 @@ export default async function ClientSpacePage() {
           admin
             .from("bookings")
             .select(
-              "id, starts_at, ends_at, status, location, location_text, reschedule_pending_until, rescheduled_from, coaches(first_name, last_name, slug, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, gym_name, gym_address)"
+              "id, starts_at, ends_at, status, location, location_text, reschedule_pending_until, rescheduled_from, pack_credit_id, pack_credits(cancel_hours), coaches(first_name, last_name, slug, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, cancel_hours, gym_name, gym_address)"
             )
             .in("client_id", clientIds)
             .order("starts_at", { ascending: false })
@@ -154,6 +154,13 @@ export default async function ClientSpacePage() {
           cancellation_policy:
             (co?.cancellation_policy as ClientBooking["cancellation_policy"]) ??
             "moderate",
+          cancel_hours: (co?.cancel_hours as number | null) ?? null,
+          // Séance sur pack (crédit) : l'annulation suit le délai du pack.
+          on_credit: !!b.pack_credit_id,
+          credit_cancel_hours: (() => {
+            const pc = Array.isArray(b.pack_credits) ? b.pack_credits[0] : b.pack_credits;
+            return (pc?.cancel_hours as number | null) ?? null;
+          })(),
           refund_over_24h_pct: (co?.refund_over_24h_pct as number) ?? null,
           refund_under_24h_pct: (co?.refund_under_24h_pct as number) ?? null,
           escrow_status: (pay?.escrow_status as string) ?? null,

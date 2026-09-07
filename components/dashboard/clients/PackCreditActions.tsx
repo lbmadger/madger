@@ -23,10 +23,13 @@ export default function PackCreditActions({
   packId,
   remaining,
   events,
+  refundable,
 }: {
   packId: string;
   remaining: number;
   events: CreditEvent[];
+  // Pack payé en ligne : le coach peut rembourser le reste (lot 2).
+  refundable: boolean;
 }) {
   const { t, locale } = useI18n();
   const loc = locale === "fr" ? "fr-FR" : "en-GB";
@@ -37,6 +40,42 @@ export default function PackCreditActions({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showLog, setShowLog] = useState(false);
+  const [refundOpen, setRefundOpen] = useState(false);
+  const [refundMsg, setRefundMsg] = useState<string | null>(null);
+
+  async function refundRest() {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/packs/refund", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pack_id: packId }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(
+          (j as { error?: string }).error === "nothing_refundable"
+            ? t("packActions.refundNothing")
+            : t("packActions.refundErr")
+        );
+        return;
+      }
+      setRefundOpen(false);
+      setRefundMsg(
+        t("packActions.refundDone").replace(
+          "{amount}",
+          (((j as { refunded_cents?: number }).refunded_cents ?? 0) / 100).toLocaleString(loc, {
+            style: "currency",
+            currency: "EUR",
+          })
+        )
+      );
+      router.refresh();
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function apply() {
     setBusy(true);
@@ -89,6 +128,15 @@ export default function PackCreditActions({
             {t("packActions.remove")}
           </button>
         )}
+        {refundable && remaining > 0 && (
+          <button
+            type="button"
+            onClick={() => setRefundOpen(true)}
+            className="rounded-full border border-border-strong px-3 py-1 text-[11px] font-semibold text-text-muted transition-colors hover:border-accent hover:text-text-base"
+          >
+            {t("packActions.refundRest")}
+          </button>
+        )}
         {events.length > 0 && (
           <button
             type="button"
@@ -99,6 +147,41 @@ export default function PackCreditActions({
           </button>
         )}
       </div>
+
+      {refundMsg && (
+        <p role="status" className="mt-2 text-xs text-accent">
+          {refundMsg}
+        </p>
+      )}
+
+      {refundOpen && (
+        <div className="mt-2 rounded-xl border border-warning/30 bg-warning/[0.06] p-3">
+          <p className="text-xs font-semibold text-text-base">
+            {t("packActions.refundTitle")}
+          </p>
+          <p className="mt-1 text-xs text-text-muted">
+            {t("packActions.refundDesc").replace("{n}", String(remaining))}
+          </p>
+          {error && <p className="mt-1 text-xs text-danger">{error}</p>}
+          <div className="mt-2 flex gap-2">
+            <button
+              type="button"
+              onClick={() => setRefundOpen(false)}
+              className="flex-1 rounded-full border border-border-strong px-3 py-1.5 text-xs font-medium text-text-muted"
+            >
+              {t("common.cancel")}
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={refundRest}
+              className="flex-1 rounded-full bg-danger/15 px-3 py-1.5 text-xs font-semibold text-danger transition-colors hover:bg-danger/25 disabled:opacity-50"
+            >
+              {busy ? t("common.loading") : t("packActions.refundConfirm")}
+            </button>
+          </div>
+        </div>
+      )}
 
       {open && (
         <div className="mt-2 rounded-xl border border-border bg-bg-elevated p-3">

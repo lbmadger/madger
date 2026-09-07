@@ -1,28 +1,37 @@
-// Politique d'annulation d'un coach : DEUX pourcentages indépendants, réglés
-// dans Réglages → Politique d'annulation.
-//  - overPct  : % du prix remboursé au client s'il annule PLUS de 24 h avant
-//    le début de la séance ;
-//  - underPct : % remboursé s'il annule MOINS de 24 h avant le début.
+// Politique d'annulation d'un coach : un DÉLAI (12, 24 ou 48 h avant la
+// séance, réglé dans Réglages → Politique d'annulation) et DEUX pourcentages
+// indépendants.
+//  - overPct  : % du prix remboursé au client s'il annule AVANT le délai ;
+//  - underPct : % remboursé s'il annule APRÈS (moins de N h avant le début).
 // Après le début de la séance (absence), remboursement 0. Si c'est le COACH
 // qui annule, le client est toujours remboursé à 100 % (géré côté routes).
+// Séances sur pack : le délai est celui du pack ; avant, le crédit est rendu,
+// après, il est perdu (lot 2).
 //
 // Source de vérité côté produit ET juridique (cf. page /charte-paiement).
 
 export type RefundPolicy = {
-  overPct: number; // annulation plus de 24 h avant la séance
-  underPct: number; // annulation moins de 24 h avant la séance
+  overPct: number; // annulation plus de `hours` h avant la séance
+  underPct: number; // annulation moins de `hours` h avant la séance
+  hours: number; // 12 | 24 | 48
 };
+
+export const CANCEL_HOURS_CHOICES = [12, 24, 48] as const;
+export const DEFAULT_CANCEL_HOURS = 24;
 
 // Ancien système : formules toutes faites. Conservé uniquement pour convertir
 // les lignes qui n'ont pas encore leurs pourcentages (et d'anciens payloads).
 export type CancellationPolicy = "flexible" | "moderate" | "strict";
-const PRESET_PCTS: Record<CancellationPolicy, RefundPolicy> = {
+const PRESET_PCTS: Record<CancellationPolicy, Omit<RefundPolicy, "hours">> = {
   flexible: { overPct: 100, underPct: 50 },
   moderate: { overPct: 75, underPct: 0 },
   strict: { overPct: 50, underPct: 0 },
 };
 
-export const DEFAULT_REFUND_POLICY: RefundPolicy = PRESET_PCTS.moderate;
+export const DEFAULT_REFUND_POLICY: RefundPolicy = {
+  ...PRESET_PCTS.moderate,
+  hours: DEFAULT_CANCEL_HOURS,
+};
 
 // Valeurs proposées dans les réglages (sélecteurs).
 export const REFUND_PCT_CHOICES = [100, 75, 50, 25, 0] as const;
@@ -33,27 +42,36 @@ function clampPct(v: unknown): number | null {
   return Math.min(100, Math.max(0, Math.round(n)));
 }
 
+export function clampCancelHours(v: unknown): number {
+  const n = typeof v === "number" ? v : Number(v);
+  return n === 12 || n === 24 || n === 48 ? n : DEFAULT_CANCEL_HOURS;
+}
+
 // Résout la politique d'un coach à partir de ses colonnes : les deux
 // pourcentages explicites priment ; à défaut, l'ancienne formule est
-// convertie ; à défaut, la politique par défaut (75 / 0).
+// convertie ; à défaut, la politique par défaut (75 / 0, 24 h).
 export function resolveRefundPolicy(
   src:
     | {
         refund_over_24h_pct?: unknown;
         refund_under_24h_pct?: unknown;
         cancellation_policy?: unknown;
+        cancel_hours?: unknown;
       }
     | null
     | undefined
 ): RefundPolicy {
+  const hours = clampCancelHours(src?.cancel_hours);
   const over = clampPct(src?.refund_over_24h_pct);
   const under = clampPct(src?.refund_under_24h_pct);
-  if (over !== null && under !== null) return { overPct: over, underPct: under };
+  if (over !== null && under !== null) {
+    return { overPct: over, underPct: under, hours };
+  }
   const preset = src?.cancellation_policy;
   if (preset === "flexible" || preset === "moderate" || preset === "strict") {
-    return PRESET_PCTS[preset];
+    return { ...PRESET_PCTS[preset], hours };
   }
-  return DEFAULT_REFUND_POLICY;
+  return { ...DEFAULT_REFUND_POLICY, hours };
 }
 
 // Fraction remboursée au client (0 → 1) pour une annulation `now` d'une séance
@@ -65,7 +83,10 @@ export function refundFraction(
 ): number {
   const hoursBefore = (startsAt.getTime() - now.getTime()) / 3_600_000;
   if (hoursBefore <= 0) return 0; // séance passée / no-show
-  const pct = hoursBefore >= 24 ? policy.overPct : policy.underPct;
+  const pct =
+    hoursBefore >= (policy.hours || DEFAULT_CANCEL_HOURS)
+      ? policy.overPct
+      : policy.underPct;
   return Math.min(100, Math.max(0, pct)) / 100;
 }
 
@@ -79,13 +100,25 @@ export function refundCents(
   return Math.round(amountCents * refundFraction(policy, startsAt, now));
 }
 
+// Séance sur pack : le crédit est-il rendu si le client annule `now` ?
+// Vrai tant qu'on est à plus de `hours` h du début.
+export function creditRestoredIfCancelled(
+  hours: number,
+  startsAt: Date,
+  now: Date = new Date()
+): boolean {
+  const hoursBefore = (startsAt.getTime() - now.getTime()) / 3_600_000;
+  return hoursBefore >= clampCancelHours(hours);
+}
+
 // Paliers exposables à l'UI (profil coach, modale de réservation, réglages).
 // Triés du plus lointain au plus proche, même contrat qu'avant.
 export function policyTiers(
   policy: RefundPolicy
 ): { minHoursBefore: number; refund: number }[] {
+  const h = policy.hours || DEFAULT_CANCEL_HOURS;
   return [
-    { minHoursBefore: 24, refund: policy.overPct / 100 },
+    { minHoursBefore: h, refund: policy.overPct / 100 },
     { minHoursBefore: 0, refund: policy.underPct / 100 },
   ];
 }

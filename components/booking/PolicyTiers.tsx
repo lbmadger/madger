@@ -32,9 +32,10 @@ export default function PolicyTiers({
               className="flex items-center justify-between gap-3 rounded-lg bg-white/[0.04] px-2.5 py-2 text-xs"
             >
               <span className="text-text-muted">
-                {i === 0
-                  ? t("cancellation.tierEarly")
-                  : t("cancellation.tierLate")}
+                {(i === 0
+                  ? t("cancellation.tierEarlyH")
+                  : t("cancellation.tierLateH")
+                ).replace("{h}", String(policy.hours || 24))}
               </span>
               <span
                 className={`shrink-0 font-bold tabular-nums ${
