@@ -67,13 +67,13 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
             }}>Aucune surprise au lancement.</span>
           </h2>
           <p className="text-text-muted text-lg max-w-lg mx-auto mb-6" style={{ lineHeight: 1.6 }}>
-            Gratuit pour démarrer, Pro à 49 € par mois quand tu veux aller plus loin. Et chaque nouveau compte démarre avec 7 jours de Pro offerts.
+            Gratuit pour démarrer, Pro à 49 € par mois quand tu veux aller plus loin. Et le Pro s'essaie 7 jours gratuitement, sans engagement.
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8" style={{ background: "rgba(203,255,3,0.07)", border: "1px solid rgba(203,255,3,0.18)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-accent block" style={{ background: "#CBFF03" }} />
             <span style={{ color: "#CBFF03", fontSize: 12, fontWeight: 600 }}>
               {launched
-                ? "7 jours de Pro offerts à chaque nouveau compte · Sans carte bancaire"
+                ? "Pro : 7 jours d'essai gratuits, puis 49 € par mois · Résiliable à tout moment"
                 : "Accès anticipé · Madger Pro offert 1 mois pour les premiers membres"}
             </span>
           </div>
@@ -170,7 +170,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
                   49 €<span style={{ fontSize: "0.45em", fontWeight: 700, color: "#9a9a9a" }}> / mois</span>
                 </div>
                 <div className="text-text-muted text-sm pt-1">
-                  ou 490 € par an (2 mois offerts) · 7 jours d'essai offerts à l'inscription
+                  ou 490 € par an (2 mois offerts) · 7 jours d'essai gratuits
                 </div>
               </div>
 

@@ -54,7 +54,7 @@ export default function CGV() {
               n&apos;est ajouté et le prix hors taxes correspond au prix payé. Si Madger devient
               redevable de la TVA, celle-ci s&apos;ajoutera au tarif hors taxes en vigueur.
               Les prestations des coachs sont affichées au prix fixé par chaque coach, toutes taxes comprises.
-              Chaque nouveau compte coach bénéficie de Madger Pro offert pendant 7 jours à l&apos;inscription.
+              Le premier abonnement Madger Pro d&apos;un coach débute par 7 jours d&apos;essai gratuit ; sauf résiliation avant la fin de l&apos;essai, il se poursuit automatiquement au tarif choisi.
               Les membres inscrits en accès anticipé bénéficient de Madger Pro offert pendant 1 mois au lancement.
               Madger se réserve le droit de modifier ses tarifs avec un préavis de 30 jours.
             </p>

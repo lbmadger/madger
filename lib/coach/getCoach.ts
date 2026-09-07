@@ -35,6 +35,8 @@ export type Coach = {
   // Abonnement Pro Stripe (migration 0015) — le coach paie Madger
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
+  // Essai Pro de 7 jours déjà consommé (migration 0062).
+  pro_trial_used_at?: string | null;
   subscription_status: string | null;
   subscription_plan: string | null;
   // Politique d'annulation (migration 0016) : flexible | moderate | strict.

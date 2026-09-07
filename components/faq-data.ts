@@ -7,7 +7,7 @@ export function getFaqs(launched: boolean) {
   return [
     {
       q: "Comment démarrer avec Madger ?",
-      a: "Tu crées ton compte gratuitement, tu configures ta page en quelques minutes (prestations, disponibilités, paiement) et tu partages ton lien. Chaque nouveau compte démarre avec 7 jours de Pro offerts, sans engagement et sans carte bancaire.",
+      a: "Tu crées ton compte gratuitement, tu configures ta page en quelques minutes (prestations, disponibilités, paiement) et tu partages ton lien. Le plan Gratuit suffit pour démarrer. Envie du Pro ? Tu l'essaies 7 jours gratuitement : tu enregistres ta carte, rien n'est débité pendant l'essai, et tu arrêtes quand tu veux depuis ton abonnement.",
     },
     ...faqs.slice(1),
   ];

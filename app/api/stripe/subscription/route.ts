@@ -33,12 +33,17 @@ export async function POST(req: NextRequest) {
 
   const { data: coach } = await supabase
     .from("coaches")
-    .select("id, stripe_customer_id")
+    .select("id, stripe_customer_id, stripe_subscription_id, pro_trial_used_at")
     .eq("id", user.id)
     .maybeSingle();
   if (!coach) {
     return NextResponse.json({ error: "not_a_coach" }, { status: 403 });
   }
+
+  // Essai de 7 jours : carte enregistrée, rien débité pendant l'essai, puis
+  // renouvellement automatique par Stripe sauf résiliation. Une seule fois
+  // par coach (jamais d'abonnement auparavant, essai jamais consommé).
+  const trial = !coach.stripe_subscription_id && !coach.pro_trial_used_at;
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
@@ -56,7 +61,13 @@ export async function POST(req: NextRequest) {
         quantity: 1,
       },
     ],
-    subscription_data: { metadata: { coach_id: coach.id, plan } },
+    subscription_data: {
+      metadata: { coach_id: coach.id, plan },
+      ...(trial ? { trial_period_days: 7 } : {}),
+    },
+    // Carte demandée même pendant l'essai : c'est ce qui permet le
+    // renouvellement automatique sans action du coach.
+    payment_method_collection: "always",
     metadata: { coach_id: coach.id, plan },
     // Paiement EMBARQUÉ : le formulaire s'affiche dans /paiement.
     ui_mode: "embedded_page",
@@ -64,5 +75,5 @@ export async function POST(req: NextRequest) {
     allow_promotion_codes: true,
   });
 
-  return NextResponse.json({ client_secret: session.client_secret });
+  return NextResponse.json({ client_secret: session.client_secret, trial });
 }

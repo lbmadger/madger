@@ -473,6 +473,11 @@ const fr = {
       "Support prioritaire",
     ],
     upgrade: "Passer à Pro",
+    trialButton: "Essayer Pro 7 jours gratuits",
+    trialNoteMonthly:
+      "Rien n'est débité pendant 7 jours, puis 49 € par mois. Tu arrêtes quand tu veux depuis cette page, en un clic.",
+    trialNoteAnnual:
+      "Rien n'est débité pendant 7 jours, puis 490 € pour l'année. Tu arrêtes quand tu veux pendant l'essai, en un clic.",
     upgradeSoon: "Paiement bientôt disponible",
     upgradeError: "Paiement indisponible pour le moment. Réessaie plus tard.",
     manage: "Gérer mon abonnement",
@@ -2025,6 +2030,11 @@ const en: Dictionary = {
       "Priority support",
     ],
     upgrade: "Upgrade to Pro",
+    trialButton: "Try Pro free for 7 days",
+    trialNoteMonthly:
+      "Nothing is charged for 7 days, then 49 € per month. Stop whenever you want from this page, in one click.",
+    trialNoteAnnual:
+      "Nothing is charged for 7 days, then 490 € for the year. Stop whenever you want during the trial, in one click.",
     upgradeSoon: "Payment coming soon",
     upgradeError: "Payment unavailable right now. Please try again later.",
     manage: "Manage subscription",

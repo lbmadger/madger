@@ -27,7 +27,14 @@ export async function GET(req: NextRequest) {
     const coachId = session.metadata?.coach_id;
     const plan = session.metadata?.plan ?? null;
 
-    if (session.payment_status === "paid" && coachId && session.subscription) {
+    // Essai de 7 jours : Stripe marque la session « no_payment_required »
+    // (rien débité aujourd'hui) ; l'abonnement existe bel et bien.
+    if (
+      (session.payment_status === "paid" ||
+        session.payment_status === "no_payment_required") &&
+      coachId &&
+      session.subscription
+    ) {
       const sub: Stripe.Subscription =
         typeof session.subscription === "string"
           ? await stripe.subscriptions.retrieve(session.subscription)
@@ -39,6 +46,13 @@ export async function GET(req: NextRequest) {
       const periodEnd = subPeriodEnd(sub);
 
       const supabase = createClient(SUPABASE_URL, serviceKey);
+      if (sub.status === "trialing") {
+        await supabase
+          .from("coaches")
+          .update({ pro_trial_used_at: new Date().toISOString() })
+          .eq("id", coachId)
+          .is("pro_trial_used_at", null);
+      }
       await supabase.rpc("apply_pro_subscription", {
         p_coach_id: coachId,
         p_customer_id: customerId,

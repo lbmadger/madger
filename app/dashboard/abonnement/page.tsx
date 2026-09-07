@@ -184,6 +184,9 @@ export default async function SubscriptionPage({
         <PricingPlans
           currentPlan={pro ? "pro" : "free"}
           commission90dCents={commission90d}
+          trialEligible={
+            !coach?.stripe_subscription_id && !coach?.pro_trial_used_at
+          }
         />
 
         {/* Parrainage : 1 mois de Pro offert pour chaque coach parrainé qui

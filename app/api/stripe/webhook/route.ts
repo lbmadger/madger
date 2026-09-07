@@ -56,6 +56,14 @@ export async function POST(req: NextRequest) {
     const coachId = sub.metadata?.coach_id;
     if (!coachId) return;
     const periodEnd = subPeriodEnd(sub);
+    // Essai de 7 jours consommé : un seul par coach (migration 0062).
+    if (sub.status === "trialing") {
+      await supabase
+        .from("coaches")
+        .update({ pro_trial_used_at: new Date().toISOString() })
+        .eq("id", coachId)
+        .is("pro_trial_used_at", null);
+    }
     await supabase.rpc("apply_pro_subscription", {
       p_coach_id: coachId,
       p_customer_id:
@@ -150,8 +158,38 @@ export async function POST(req: NextRequest) {
           );
           await fulfillSubscriptionSession(s.id);
         } else if (s.mode === "subscription" && s.metadata?.coach_id) {
-          // Souscription initiale au plan Pro : récompense de parrainage
-          // éventuelle (filleul + parrain, une seule fois).
+          const subId =
+            typeof s.subscription === "string"
+              ? s.subscription
+              : s.subscription?.id ?? null;
+          // Lu AVANT d'appliquer l'abonnement : une subscription déjà
+          // enregistrée sur le coach signifie une redélivrance Stripe de ce
+          // même événement (pas de second email de bienvenue).
+          const { data: coachPrefs } = await supabase
+            .from("coaches")
+            .select("locale, stripe_subscription_id")
+            .eq("id", s.metadata.coach_id)
+            .maybeSingle();
+          const alreadyProcessed =
+            !!subId && coachPrefs?.stripe_subscription_id === subId;
+
+          // Souscription initiale au plan Pro : l'abonnement est appliqué
+          // ICI aussi (pro_until, statut, essai consommé), pour ne pas
+          // dépendre du retour navigateur du coach.
+          try {
+            if (subId && stripe) {
+              const sub = await stripe.subscriptions.retrieve(subId);
+              if (!sub.metadata?.coach_id) {
+                sub.metadata = { ...sub.metadata, coach_id: s.metadata.coach_id, plan: s.metadata.plan ?? "" };
+              }
+              await applyFromSubscription(sub);
+            }
+          } catch {
+            /* le retour navigateur et subscription.updated rattrapent */
+          }
+          if (alreadyProcessed) break;
+          // Récompense de parrainage éventuelle (filleul + parrain, une
+          // seule fois).
           await maybeRewardReferral(s.metadata.coach_id);
           // Puis email de bienvenue au coach (les renouvellements passent par
           // invoice.paid, sans re-email).
@@ -162,21 +200,6 @@ export async function POST(req: NextRequest) {
             if (coachAuth?.user?.email) {
               const { proWelcomeCoach } = await import("@/lib/email/templates");
               const { sendEmail } = await import("@/lib/email/resend");
-              const { data: coachPrefs } = await supabase
-                .from("coaches")
-                .select("locale, stripe_subscription_id")
-                .eq("id", s.metadata.coach_id)
-                .maybeSingle();
-              // Redélivrance Stripe : la subscription déjà enregistrée sur
-              // le coach signifie que ce même événement a déjà été traité,
-              // on ne renvoie pas l'email de bienvenue.
-              const subId =
-                typeof s.subscription === "string"
-                  ? s.subscription
-                  : s.subscription?.id ?? null;
-              if (subId && coachPrefs?.stripe_subscription_id === subId) {
-                break;
-              }
               const tpl = proWelcomeCoach({
                 locale: coachPrefs?.locale === "en" ? "en" : "fr",
                 dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL || "https://madger.app"}/dashboard`,

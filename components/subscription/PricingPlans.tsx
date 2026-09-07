@@ -10,11 +10,15 @@ import PromoCode from "@/components/subscription/PromoCode";
 export default function PricingPlans({
   currentPlan,
   commission90dCents = 0,
+  trialEligible = true,
 }: {
   currentPlan: "free" | "pro";
   // Commission Madger réellement prélevée sur les 90 derniers jours : sert
   // à l'argument chiffré personnalisé (« en Pro tu aurais économisé X € »).
   commission90dCents?: number;
+  // Premier abonnement : 7 jours d'essai, rien débité, puis renouvellement
+  // automatique (migration 0062). Faux si l'essai a déjà été consommé.
+  trialEligible?: boolean;
 }) {
   const { t, dict, locale } = useI18n();
   const p = dict.plans;
@@ -177,8 +181,17 @@ export default function PricingPlans({
               disabled={loading}
               className="mt-5 w-full rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-60"
             >
-              {loading ? t("plans.upgrading") : t("plans.upgrade")}
+              {loading
+                ? t("plans.upgrading")
+                : trialEligible
+                ? t("plans.trialButton")
+                : t("plans.upgrade")}
             </button>
+            {trialEligible && (
+              <p className="mt-2 text-center text-[11px] leading-relaxed text-text-dim">
+                {period === "annual" ? p.trialNoteAnnual : p.trialNoteMonthly}
+              </p>
+            )}
             {error && (
               <p role="alert" className="mt-2 text-center text-sm text-danger">{error}</p>
             )}
