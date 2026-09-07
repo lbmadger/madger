@@ -108,17 +108,17 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
                   Essentiel
                 </div>
               </div>
-              <div style={{ minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                <div className="font-extrabold text-white mb-1" style={{ fontSize: "clamp(22px, 5.5vw, 44px)", letterSpacing: "-0.04em", lineHeight: 1.05 }}>
+              <div className="flex flex-col gap-2 pt-2 pb-6 sm:pb-8">
+                <div className="font-extrabold text-white" style={{ fontSize: "clamp(22px, 5.5vw, 44px)", letterSpacing: "-0.04em", lineHeight: 1.05 }}>
                   0 €<span style={{ fontSize: "0.45em", fontWeight: 700, color: "#9a9a9a" }}> / mois</span>
                 </div>
-                <div className="text-white text-sm pt-1">
+                <div className="text-white text-sm">
                   5 % de frais de transaction, tout compris.
                 </div>
               </div>
               <a
                 href={ctaHref}
-                className="block w-full text-center text-white text-xs sm:text-sm font-semibold py-2.5 sm:py-3 rounded-full mb-5 sm:mb-7 transition-all duration-200 whitespace-nowrap"
+                className="block w-full text-center text-white text-xs sm:text-sm font-semibold py-2.5 sm:py-3 rounded-full transition-all duration-200 whitespace-nowrap"
                 style={{ border: "1px solid rgba(255,255,255,0.12)" }}
                 onMouseEnter={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.25)")}
                 onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)")}
@@ -175,8 +175,8 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
                 </div>
               </div>
 
-              <div style={{ minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                <div className="font-extrabold text-white mb-1 flex flex-wrap items-end gap-x-2" style={{ fontSize: "clamp(22px, 5.5vw, 44px)", letterSpacing: "-0.04em", lineHeight: 1.05 }}>
+              <div className="flex flex-col gap-2 pt-2">
+                <div className="font-extrabold text-white flex flex-wrap items-end gap-x-2" style={{ fontSize: "clamp(22px, 5.5vw, 44px)", letterSpacing: "-0.04em", lineHeight: 1.05 }}>
                   <span>49 €</span>
                   {launchOfferActive() && (
                     <span
@@ -193,22 +193,22 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
                     <span style={{ color: "#F87171" }}>{LAUNCH_OFFER.regularMonthlyCents / 100} €</span> tarif à partir du {launchOfferRegularFromLabel("fr")}
                   </div>
                 )}
-                <div className="text-white text-sm pt-1">
+                <div className="text-white text-sm">
                   3 % de frais de transaction, tout compris.
                 </div>
-                <div className="text-text-muted text-xs pt-1">
+                <div className="text-text-muted text-xs">
                   ou 490 € par an (2 mois offerts) · 7 jours d'essai gratuits
                 </div>
-                {launchOfferActive() && (
-                  <div className="mt-2 inline-flex items-center gap-1.5 self-start rounded-full px-2.5 py-1 text-[11px] font-semibold" style={{ background: "rgba(203,255,3,0.08)", border: "1px solid rgba(203,255,3,0.25)", color: "#CBFF03" }}>
-                    {launchOfferDaysLeft() <= 1 ? "Dernier jour" : `Plus que ${launchOfferDaysLeft()} jours`} pour bloquer 49 € à vie · garanti tant que tu restes abonné
-                  </div>
-                )}
               </div>
+              {launchOfferActive() && (
+                <div className="mt-4 mb-6 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold leading-snug sm:mb-8" style={{ background: "rgba(203,255,3,0.08)", border: "1px solid rgba(203,255,3,0.25)", color: "#CBFF03" }}>
+                  {launchOfferDaysLeft() <= 1 ? "Dernier jour" : `Plus que ${launchOfferDaysLeft()} jours`} pour bloquer 49 € à vie · garanti tant que tu restes abonné
+                </div>
+              )}
 
               <motion.a
                 href={ctaHref}
-                className="block w-full text-center text-black text-xs sm:text-sm font-semibold py-2.5 sm:py-3 rounded-full mb-5 sm:mb-7 whitespace-nowrap"
+                className="block w-full text-center text-black text-xs sm:text-sm font-semibold py-2.5 sm:py-3 rounded-full whitespace-nowrap"
                 style={{ background: "#CBFF03" }}
                 whileHover={{ boxShadow: "0 0 30px rgba(203,255,3,0.5), 0 0 60px rgba(203,255,3,0.2)" }}
                 transition={{ duration: 0.2 }}
@@ -217,7 +217,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
                 <span className="hidden sm:inline">{launched ? "Essayer Pro 7 jours →" : "Rejoindre l'accès anticipé →"}</span>
               </motion.a>
               {/* Le seul argument chiffré de la carte Pro. */}
-              <p className="-mt-3 mb-5 text-center text-[11px] sm:text-xs font-semibold sm:-mt-5 sm:mb-7" style={{ color: "#CBFF03" }}>
+              <p className="mt-3 text-center text-[11px] sm:text-xs font-semibold" style={{ color: "#CBFF03" }}>
                 Un no-show évité par mois et Pro est remboursé.
               </p>
 
