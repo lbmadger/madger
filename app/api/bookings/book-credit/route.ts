@@ -271,15 +271,8 @@ export async function POST(req: NextRequest) {
       startsAt: booked[0].starts_at,
       bookingId: booked[0].id,
     });
-    if (remaining <= 2) {
-      await notifyClient(admin, {
-        email: user.email,
-        type: remaining === 0 ? "pack_empty" : "pack_low",
-        coachName,
-        startsAt: null,
-        bookingId: null,
-      });
-    }
+    // Les relances « plus que 2 » / « pack épuisé » partent du cron
+    // quotidien (email + cloche, une seule fois par pack).
 
     const { data: coachAuth } = await admin.auth.admin.getUserById(coachId);
     const coachEmail = coachAuth?.user?.email;

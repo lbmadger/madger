@@ -1780,6 +1780,118 @@ export function packRefundClient(p: {
   };
 }
 
+// ── Client : plus que 2 séances sur le pack ─────────────────────────────────
+export function packLowClient(p: {
+  coachName: string;
+  remaining: number;
+  expiresStr?: string | null;
+  spaceUrl: string;
+}): Email {
+  return {
+    subject: `Plus que ${p.remaining} séance${p.remaining > 1 ? "s" : ""} sur ton pack`,
+    html: layout({
+      preheader: `Ton pack chez ${p.coachName} arrive au bout : place tes dernières séances.`,
+      eyebrow: "Ton pack",
+      title: `Plus que ${p.remaining} séance${p.remaining > 1 ? "s" : ""}`,
+      intro: `Ton pack chez <b style="color:${C.text};">${p.coachName}</b> arrive au bout. Place tes dernières séances dès maintenant pour garder le rythme${p.expiresStr ? `, le pack est valable jusqu'au <b style="color:${C.text};">${p.expiresStr}</b>` : ""}.`,
+      cta: { label: "Placer une séance", url: p.spaceUrl },
+      outro:
+        "Envie de continuer après ? Tu pourras reprendre un pack directement depuis la page de ton coach.",
+    }),
+  };
+}
+
+// ── Client : pack épuisé ────────────────────────────────────────────────────
+export function packEmptyClient(p: {
+  coachName: string;
+  coachUrl: string;
+}): Email {
+  return {
+    subject: `Ton pack chez ${p.coachName} est terminé`,
+    html: layout({
+      preheader: "Toutes les séances sont placées. On continue ?",
+      eyebrow: "Ton pack",
+      title: "Pack terminé, bravo pour la régularité 💪",
+      intro: `Toutes les séances de ton pack chez <b style="color:${C.text};">${p.coachName}</b> sont placées. Pour continuer sans coupure, reprends un pack ou réserve une séance à l'unité en deux clics.`,
+      cta: { label: "Reprendre un pack", url: p.coachUrl },
+      outro:
+        "Un doute sur la suite ? Écris à ton coach depuis ton espace, il te conseillera la formule adaptée.",
+    }),
+  };
+}
+
+// ── Client : pack qui expire dans 7 jours ───────────────────────────────────
+export function packExpiringClient(p: {
+  coachName: string;
+  remaining: number;
+  expiresStr: string;
+  spaceUrl: string;
+}): Email {
+  return {
+    subject: `Ton pack expire le ${p.expiresStr} : ${p.remaining} séance${p.remaining > 1 ? "s" : ""} à placer`,
+    html: layout({
+      preheader: `Il te reste ${p.remaining} séance(s) à utiliser avant le ${p.expiresStr}.`,
+      eyebrow: "Ton pack expire bientôt",
+      title: `${p.remaining} séance${p.remaining > 1 ? "s" : ""} à placer avant le ${p.expiresStr}`,
+      intro: `Ton pack chez <b style="color:${C.text};">${p.coachName}</b> arrive à sa date de fin. Les séances non utilisées après le <b style="color:${C.text};">${p.expiresStr}</b> seront perdues : place-les maintenant.`,
+      cta: { label: "Placer mes séances", url: p.spaceUrl },
+      outro:
+        "Un empêchement ? Écris à ton coach depuis ton espace : il peut te faire un geste sur la validité.",
+    }),
+  };
+}
+
+// ── Coach : clients à relancer (churn, packs qui expirent) ──────────────────
+export type FollowUpItem = {
+  clientName: string;
+  kind: "inactive" | "pack_expiring";
+  detail: string; // « 21 jours sans séance », « expire le 14 sept., 3 séances restantes »
+};
+export function clientsFollowUpCoach(p: {
+  firstName: string | null;
+  items: FollowUpItem[];
+  clientsUrl: string;
+  locale?: EmailLocale;
+}): Email {
+  const en = p.locale === "en";
+  const hello = p.firstName
+    ? en ? `${p.firstName}, ` : `${p.firstName}, `
+    : "";
+  const rows: DetailRow[] = p.items.slice(0, 12).map((it) => ({
+    label: it.clientName,
+    value: it.detail,
+    accent: it.kind === "pack_expiring",
+  }));
+  return {
+    subject: en
+      ? `${p.items.length} client${p.items.length > 1 ? "s" : ""} to follow up`
+      : `${p.items.length} client${p.items.length > 1 ? "s" : ""} à relancer`,
+    html: layout({
+      locale: p.locale,
+      preheader: en
+        ? "Clients who have not booked for 14 days or whose pack expires soon."
+        : "Clients sans réservation depuis 14 jours ou dont le pack expire bientôt.",
+      eyebrow: en ? "Follow-ups" : "À relancer",
+      title: en
+        ? `${hello}${p.items.length} client${p.items.length > 1 ? "s" : ""} to check on`
+        : `${hello}${p.items.length} client${p.items.length > 1 ? "s" : ""} à relancer`,
+      intro: en
+        ? "A short message now keeps them going. Here is who to write to today:"
+        : "Un petit message maintenant, et ils reprennent le rythme. Voilà à qui écrire aujourd'hui :",
+      blocks: [
+        detailsTable(rows),
+        infoBox(
+          en ? "Tip" : "Astuce",
+          en
+            ? "One line is enough: how are you doing, when is your next session? Open the client's sheet to message them in one tap."
+            : "Une ligne suffit : comment ça va, on cale ta prochaine séance ? Ouvre la fiche du client pour lui écrire en un geste."
+        ),
+      ],
+      cta: { label: en ? "See my clients" : "Voir mes clients", url: p.clientsUrl },
+    }),
+  };
+}
+
 // ── Fondateur : alerte interne (panne monétaire, signalement…) ──────────────
 // Envoyée à FOUNDER_EMAIL. Par défaut l'intro parle d'un échec de traitement
 // monétaire (versements, webhooks) ; les signalements passent leur propre

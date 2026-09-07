@@ -7,7 +7,12 @@ import {
   onboardingNudgeCoach,
   onboardingNudgeCoachLater,
   reviewReminderClient,
+  packLowClient,
+  packEmptyClient,
+  packExpiringClient,
+  clientsFollowUpCoach,
 } from "@/lib/email/templates";
+import { notifyClient } from "@/lib/notifications/client";
 import { cronAuthorized } from "@/lib/cron/auth";
 
 export const dynamic = "force-dynamic";
@@ -236,5 +241,223 @@ export async function GET(req: NextRequest) {
     /* colonne 0055 absente ou erreur : ne casse jamais les autres rappels */
   }
 
-  return NextResponse.json({ sent, scanned, nudged, reviewNudged });
+  // ── Relances packs côté client (lot 3, migration 0059) ────────────────────
+  // Une fois par pack et par seuil : plus que 2 séances, pack épuisé, pack
+  // qui expire dans les 7 jours. Email + cloche de l'espace client.
+  let packNudged = 0;
+  try {
+    const in7d = new Date(now + 7 * 86400000).toISOString();
+    const { data: packs } = await supabase
+      .from("pack_credits")
+      .select(
+        "id, coach_id, client_id, total, used, expires_at, low_notified_at, empty_notified_at, expiring_notified_at, clients(email, first_name), coaches(first_name, last_name, slug)"
+      )
+      .eq("status", "active")
+      .limit(500);
+    for (const pk of packs ?? []) {
+      if (Date.now() - startedAt > TIME_BUDGET_MS) break;
+      const cl = Array.isArray(pk.clients) ? pk.clients[0] : pk.clients;
+      const co = Array.isArray(pk.coaches) ? pk.coaches[0] : pk.coaches;
+      const email = cl?.email as string | undefined;
+      const coachName =
+        [co?.first_name, co?.last_name].filter(Boolean).join(" ") || "ton coach";
+      const remaining = Math.max(0, (pk.total as number) - (pk.used as number));
+      const expiresAt = pk.expires_at as string | null;
+      const expiresStr = expiresAt
+        ? new Date(expiresAt).toLocaleDateString("fr-FR", {
+            day: "numeric",
+            month: "long",
+            timeZone: "Europe/Paris",
+          })
+        : null;
+      const mark = async (col: string) =>
+        supabase.from("pack_credits").update({ [col]: nowIso }).eq("id", pk.id);
+
+      if (!email) {
+        // Sans adresse : marqué pour ne pas rescanner.
+        if (remaining <= 2 && !pk.low_notified_at) await mark("low_notified_at");
+        if (remaining === 0 && !pk.empty_notified_at) await mark("empty_notified_at");
+        continue;
+      }
+
+      // Épuisé (prioritaire sur « plus que 2 »).
+      if (remaining === 0 && !pk.empty_notified_at) {
+        const tpl = packEmptyClient({
+          coachName,
+          coachUrl: co?.slug ? `${APP_URL}/${co.slug}` : `${APP_URL}/coachs`,
+        });
+        if (await sendEmail({ to: email, subject: tpl.subject, html: tpl.html })) {
+          packNudged++;
+          await mark("empty_notified_at");
+          if (!pk.low_notified_at) await mark("low_notified_at");
+          await notifyClient(supabase, { email, type: "pack_empty", coachName });
+        }
+        continue;
+      }
+      // Plus que 2 séances (ou 1).
+      if (remaining > 0 && remaining <= 2 && !pk.low_notified_at) {
+        const tpl = packLowClient({
+          coachName,
+          remaining,
+          expiresStr,
+          spaceUrl: `${APP_URL}/espace`,
+        });
+        if (await sendEmail({ to: email, subject: tpl.subject, html: tpl.html })) {
+          packNudged++;
+          await mark("low_notified_at");
+          await notifyClient(supabase, { email, type: "pack_low", coachName });
+        }
+      }
+      // Expire dans 7 jours avec des séances restantes.
+      if (
+        remaining > 0 &&
+        expiresAt &&
+        expiresStr &&
+        expiresAt <= in7d &&
+        expiresAt > nowIso &&
+        !pk.expiring_notified_at
+      ) {
+        const tpl = packExpiringClient({
+          coachName,
+          remaining,
+          expiresStr,
+          spaceUrl: `${APP_URL}/espace`,
+        });
+        if (await sendEmail({ to: email, subject: tpl.subject, html: tpl.html })) {
+          packNudged++;
+          await mark("expiring_notified_at");
+          await notifyClient(supabase, { email, type: "pack_expiring", coachName });
+        }
+      }
+    }
+  } catch {
+    /* colonnes 0059 absentes ou erreur : ne casse jamais les rappels */
+  }
+
+  // ── Alertes churn pour le coach (lot 3) ──────────────────────────────────
+  // Un email par coach et par jour, listant : clients sans séance depuis 14
+  // jours (dernière séance entre 14 et 90 jours, aucune à venir, pas encore
+  // alertés depuis cette dernière séance) et packs qui expirent sous 7 jours
+  // avec des séances restantes.
+  let coachAlerted = 0;
+  try {
+    const in7d = new Date(now + 7 * 86400000).toISOString();
+    const since90 = new Date(now - 90 * 86400000).toISOString();
+    const cutoff14 = new Date(now - 14 * 86400000).toISOString();
+
+    type Item = { clientId: string; clientName: string; kind: "inactive" | "pack_expiring"; detail: string; packId?: string };
+    const byCoach = new Map<string, Item[]>();
+
+    // Packs qui expirent (non encore signalés au coach).
+    const { data: expPacks } = await supabase
+      .from("pack_credits")
+      .select("id, coach_id, client_id, total, used, expires_at, clients(first_name, last_name)")
+      .eq("status", "active")
+      .is("expiring_coach_notified_at", null)
+      .not("expires_at", "is", null)
+      .lte("expires_at", in7d)
+      .gt("expires_at", nowIso)
+      .limit(300);
+    for (const pk of expPacks ?? []) {
+      const remaining = Math.max(0, (pk.total as number) - (pk.used as number));
+      if (remaining === 0) {
+        await supabase.from("pack_credits").update({ expiring_coach_notified_at: nowIso }).eq("id", pk.id);
+        continue;
+      }
+      const cl = Array.isArray(pk.clients) ? pk.clients[0] : pk.clients;
+      const list = byCoach.get(pk.coach_id as string) ?? [];
+      list.push({
+        clientId: pk.client_id as string,
+        packId: pk.id as string,
+        clientName: [cl?.first_name, cl?.last_name].filter(Boolean).join(" ") || "Client",
+        kind: "pack_expiring",
+        detail: `pack expire le ${new Date(pk.expires_at as string).toLocaleDateString("fr-FR", { day: "numeric", month: "short", timeZone: "Europe/Paris" })} · ${remaining} séance${remaining > 1 ? "s" : ""} restante${remaining > 1 ? "s" : ""}`,
+      });
+      byCoach.set(pk.coach_id as string, list);
+    }
+
+    // Clients inactifs : dernière séance (non annulée) terminée il y a 14 à
+    // 90 jours, rien à venir, et pas encore alertés depuis cette séance.
+    const { data: recent } = await supabase
+      .from("bookings")
+      .select("coach_id, client_id, ends_at, status")
+      .eq("is_block", false)
+      .neq("status", "cancelled")
+      .not("client_id", "is", null)
+      .gte("ends_at", since90)
+      .order("ends_at", { ascending: false })
+      .limit(5000);
+    const lastEnd = new Map<string, { coach: string; end: string }>();
+    const hasFuture = new Set<string>();
+    for (const b of recent ?? []) {
+      const key = b.client_id as string;
+      if ((b.ends_at as string) > nowIso) {
+        hasFuture.add(key);
+        continue;
+      }
+      if (!lastEnd.has(key)) lastEnd.set(key, { coach: b.coach_id as string, end: b.ends_at as string });
+    }
+    const inactiveIds = Array.from(lastEnd.entries())
+      .filter(([id, v]) => !hasFuture.has(id) && v.end <= cutoff14)
+      .map(([id]) => id);
+    if (inactiveIds.length > 0) {
+      const { data: cls } = await supabase
+        .from("clients")
+        .select("id, coach_id, first_name, last_name, churn_alerted_at")
+        .in("id", inactiveIds.slice(0, 500));
+      for (const c of cls ?? []) {
+        const last = lastEnd.get(c.id as string);
+        if (!last) continue;
+        const alerted = c.churn_alerted_at as string | null;
+        if (alerted && alerted >= last.end) continue; // déjà alerté pour cette période
+        const days = Math.floor((now - new Date(last.end).getTime()) / 86400000);
+        const list = byCoach.get(c.coach_id as string) ?? [];
+        list.push({
+          clientId: c.id as string,
+          clientName: [c.first_name, c.last_name].filter(Boolean).join(" ") || "Client",
+          kind: "inactive",
+          detail: `${days} jours sans séance`,
+        });
+        byCoach.set(c.coach_id as string, list);
+      }
+    }
+
+    for (const [coachId, items] of Array.from(byCoach.entries())) {
+      if (Date.now() - startedAt > TIME_BUDGET_MS) break;
+      if (items.length === 0) continue;
+      const [{ data: u }, { data: co }] = await Promise.all([
+        supabase.auth.admin.getUserById(coachId),
+        supabase.from("coaches").select("first_name, locale").eq("id", coachId).maybeSingle(),
+      ]);
+      const email = u?.user?.email;
+      const markAll = async () => {
+        const packIds = items.filter((i) => i.packId).map((i) => i.packId as string);
+        if (packIds.length) {
+          await supabase.from("pack_credits").update({ expiring_coach_notified_at: nowIso }).in("id", packIds);
+        }
+        const clientIds = items.filter((i) => i.kind === "inactive").map((i) => i.clientId);
+        if (clientIds.length) {
+          await supabase.from("clients").update({ churn_alerted_at: nowIso }).in("id", clientIds);
+        }
+      };
+      if (!email) {
+        await markAll();
+        continue;
+      }
+      const tpl = clientsFollowUpCoach({
+        firstName: (co?.first_name as string | null) ?? null,
+        items: items.map((i) => ({ clientName: i.clientName, kind: i.kind, detail: i.detail })),
+        clientsUrl: `${APP_URL}/dashboard/clients`,
+        locale: co?.locale === "en" ? "en" : "fr",
+      });
+      if (await sendEmail({ to: email, subject: tpl.subject, html: tpl.html })) {
+        coachAlerted++;
+        await markAll();
+      }
+    }
+  } catch {
+    /* best-effort */
+  }
+
+  return NextResponse.json({ sent, scanned, nudged, reviewNudged, packNudged, coachAlerted });
 }
