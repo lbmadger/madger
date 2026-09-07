@@ -885,10 +885,14 @@ export default async function OverviewPage() {
             >
               <div className="min-w-0">
                 <p className="text-sm font-semibold text-text-base">
-                  {dict.plans.trialTitle}
+                  {proDaysLeft(coach?.pro_until) <= 1
+                    ? dict.plans.trialTitleLast
+                    : dict.plans.trialTitle.replace(
+                        "{n}",
+                        String(proDaysLeft(coach?.pro_until))
+                      )}
                 </p>
-                <p className="truncate text-xs text-text-muted">
-                  {proDaysLeft(coach?.pro_until)} {dict.plans.daysLeft} ·{" "}
+                <p className="text-xs leading-snug text-text-muted">
                   {dict.plans.trialDesc}
                 </p>
               </div>

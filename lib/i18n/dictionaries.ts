@@ -462,9 +462,11 @@ const fr = {
     feesPro: "3 % de frais de transaction, tout compris.",
     proNoShow: "Un no-show évité par mois et Pro est remboursé.",
     upgrading: "Ouverture du paiement sécurisé…",
-    trialTitle: "Ton accès Pro offert est actif",
-    trialDesc: "Toutes les fonctionnalités Pro pendant l'essai.",
-    trialCta: "Voir mon abonnement",
+    trialTitle: "Il te reste {n} jours de Pro offert",
+    trialTitleLast: "Dernier jour de Pro offert",
+    trialDesc:
+      "Packs, annulation automatique, relances, écran encaissements et alertes churn sont actifs. Bloque 49 € par mois avant la fin pour ne rien perdre.",
+    trialCta: "Garder Pro à 49 €",
     featuresFree: [
       "Lien public personnalisé",
       "Réservations et paiements illimités",
@@ -2122,9 +2124,11 @@ const en: Dictionary = {
     feesPro: "3% transaction fees, all inclusive.",
     proNoShow: "One no-show avoided per month and Pro pays for itself.",
     upgrading: "Opening secure payment…",
-    trialTitle: "Your free Pro access is active",
-    trialDesc: "Every Pro feature during the trial.",
-    trialCta: "View my subscription",
+    trialTitle: "{n} days of free Pro left",
+    trialTitleLast: "Last day of free Pro",
+    trialDesc:
+      "Packs, automatic cancellation, reminders, payments screen and churn alerts are on. Lock 49 € per month before it ends so you lose nothing.",
+    trialCta: "Keep Pro at 49 €",
     featuresFree: [
       "Personalized public link",
       "Unlimited bookings and payments",
