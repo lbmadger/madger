@@ -26,15 +26,11 @@ const REASONS = [
 type Reason = (typeof REASONS)[number];
 
 export default function ManageSubscription({
-  savedStr,
   plan,
   canceling = false,
   cancelAtStr = null,
   offerAvailable = false,
 }: {
-  // Commission évitée sur 90 jours grâce à Pro, déjà formatée ("124,50 €"),
-  // ou null si rien d'encaissé.
-  savedStr?: string | null;
   // Plan actuel ("monthly" | "annual" | null) : la bascule annuelle n'est
   // proposée qu'aux mensuels.
   plan?: string | null;
@@ -154,11 +150,6 @@ export default function ManageSubscription({
         <p className="mt-2 text-sm text-text-muted">
           {reason ? r.offerIntro[reason] : r.intro}
         </p>
-        {savedStr && (
-          <p className="mt-3 rounded-xl border border-accent/30 bg-accent/[0.06] px-4 py-3 text-sm text-text-base">
-            <strong className="font-bold text-accent">{savedStr}</strong> {r.savedLine}
-          </p>
-        )}
         <div className="mt-4 flex flex-col gap-2">
           {offerAvailable && (
             <Button onClick={acceptOffer} disabled={loading !== null} className="w-full">

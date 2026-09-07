@@ -275,7 +275,7 @@ export default function ExampleDashboardPage() {
             </h2>
             <p className="mx-auto mt-1 max-w-md text-sm text-text-muted">
               Ta page de réservation, tes paiements sécurisés et tes chiffres,
-              réunis au même endroit. Gratuit pour commencer.
+              réunis au même endroit. Essentiel à 0 € par mois pour commencer.
             </p>
             <Link
               href={ctaHref}

@@ -244,7 +244,7 @@ export function bookingNotificationCoach(p: {
           inPerson: "In person",
           amount: "Session amount",
           payoutTitle: "Payout",
-          payoutBody: `Your money is released <b style="color:${C.text};">24 hours after the session</b> and lands automatically on your Stripe account, minus the Madger commission and bank fees. The exact breakdown will arrive with your payout email.`,
+          payoutBody: `Your money is released <b style="color:${C.text};">24 hours after the session</b> and lands automatically on your Stripe account, minus the Madger transaction fees. The exact breakdown will arrive with your payout email.`,
           cta: "Open my calendar",
         }
       : {
@@ -261,7 +261,7 @@ export function bookingNotificationCoach(p: {
           inPerson: "En présentiel",
           amount: "Montant de la séance",
           payoutTitle: "Versement",
-          payoutBody: `Ton argent est débloqué <b style="color:${C.text};">24 h après la séance</b> et arrive automatiquement sur ton compte Stripe, déduction faite de la commission Madger et des frais bancaires. Le détail exact arrive avec l'email de versement.`,
+          payoutBody: `Ton argent est débloqué <b style="color:${C.text};">24 h après la séance</b> et arrive automatiquement sur ton compte Stripe, déduction faite des frais de transaction Madger. Le détail exact arrive avec l'email de versement.`,
           cta: "Ouvrir mon agenda",
         };
   return {
@@ -931,9 +931,10 @@ export function payoutReleasedCoach(p: {
   clientName: string;
   payoutStr: string;
   dashboardUrl: string;
-  // Commission Madger prélevée sur ce versement (coachs Gratuit) : ligne
-  // dédiée + rappel « 0 % en Pro ». Absente = pas de ligne (coach Pro).
+  // Frais de transaction Madger prélevés sur ce versement (taux du plan).
   commissionStr?: string;
+  // Frais du paiement en 3 fois à la charge du coach (Klarna, Alma).
+  providerFeeStr?: string;
   locale?: EmailLocale;
 }): Email {
   const locale = p.locale ?? "fr";
@@ -947,12 +948,10 @@ export function payoutReleasedCoach(p: {
           intro: `Your session with <b style="color:${C.text};">${p.clientName}</b> went smoothly: your share has been transferred to your Stripe account.`,
           client: "Client",
           amount: "Amount paid out",
-          commission: "Madger commission",
+          commission: "Madger transaction fees",
+          providerFee: "Instalment payment fees",
           availability: "Availability",
           availabilityValue: "Per your Stripe payout schedule",
-          boxTitle: "With Pro, this commission would be 0",
-          boxBody:
-            "The Pro plan drops the Madger commission from 5% to 0% on every session you get paid for. If you get paid regularly, it pays for itself.",
           cta: "View my payments",
         }
       : {
@@ -963,12 +962,10 @@ export function payoutReleasedCoach(p: {
           intro: `La séance avec <b style="color:${C.text};">${p.clientName}</b> est passée sans encombre : ta part a été transférée vers ton compte Stripe.`,
           client: "Client",
           amount: "Montant versé",
-          commission: "Commission Madger",
+          commission: "Frais de transaction Madger",
+          providerFee: "Frais du paiement en 3 fois",
           availability: "Disponibilité",
           availabilityValue: "Selon ton calendrier Stripe",
-          boxTitle: "En Pro, cette commission serait de 0 €",
-          boxBody:
-            "Le plan Pro passe la commission Madger de 5 % à 0 % sur chaque séance encaissée. Si tu encaisses régulièrement, il se rembourse tout seul.",
           cta: "Voir mes paiements",
         };
   return {
@@ -986,9 +983,11 @@ export function payoutReleasedCoach(p: {
           ...(p.commissionStr
             ? [{ label: L.commission, value: p.commissionStr }]
             : []),
+          ...(p.providerFeeStr
+            ? [{ label: L.providerFee, value: p.providerFeeStr }]
+            : []),
           { label: L.availability, value: L.availabilityValue },
         ]),
-        ...(p.commissionStr ? [infoBox(L.boxTitle, L.boxBody)] : []),
       ],
       cta: { label: L.cta, url: p.dashboardUrl },
     }),
@@ -1305,24 +1304,24 @@ export function proWelcomeCoach(p: {
   const L =
     locale === "en"
       ? {
-          subject: "Welcome to Pro: 0% commission starting now 🎉",
+          subject: "Welcome to Pro 🎉",
           preheader:
-            "Your Pro plan is active: 0% commission, advanced stats unlocked.",
+            "Your Pro plan is active: packs, automatic cancellation, reminders, payments screen, churn alerts.",
           eyebrow: "Pro plan",
           title: "Your Pro plan is active",
-          intro: `From now on, <b style="color:${C.text};">you keep 100% of what you earn</b>: the Madger commission drops to 0% on all your sessions. Your advanced stats are unlocked on your dashboard.`,
+          intro: `From now on you can <b style="color:${C.text};">sell session packs</b>, let automatic cancellation apply your rules, send renewal reminders, track payments per client and spot clients drifting away. Your advanced stats are unlocked on your dashboard.`,
           boxTitle: "Your invoice",
           boxBody:
             "Stripe sends you the receipt for your subscription. You can manage your subscription at any time from the Subscription page.",
           cta: "View my stats",
         }
       : {
-          subject: "Bienvenue en Pro : 0 % de commission dès maintenant 🎉",
+          subject: "Bienvenue en Pro 🎉",
           preheader:
-            "Ton plan Pro est actif : 0 % de commission, stats avancées débloquées.",
+            "Ton plan Pro est actif : packs, annulation automatique, relances, encaissements, alertes churn.",
           eyebrow: "Plan Pro",
           title: "Ton plan Pro est actif",
-          intro: `À partir de maintenant, <b style="color:${C.text};">tu gardes 100 % de ce que tu encaisses</b> : la commission Madger passe à 0 % sur toutes tes séances. Tes statistiques avancées sont débloquées sur ton dashboard.`,
+          intro: `À partir de maintenant, tu peux <b style="color:${C.text};">vendre des packs de séances</b>, laisser l'annulation automatique appliquer tes règles, relancer les renouvellements, suivre tes encaissements par client et repérer les clients qui décrochent. Tes statistiques avancées sont débloquées sur ton dashboard.`,
           boxTitle: "Ta facture",
           boxBody:
             "Le reçu de ton abonnement t'est envoyé par Stripe. Tu peux gérer ton abonnement à tout moment depuis la page Abonnement.",
@@ -1560,8 +1559,7 @@ export function disputeResolvedClient(p: {
 export function subscriptionPaymentCoach(p: {
   clientName: string;
   amountStr: string;
-  // Commission Madger prélevée sur cette échéance (coachs Gratuit). Absente =
-  // pas de ligne (coach Pro, 0 %).
+  // Frais de transaction Madger prélevés sur cette échéance (taux du plan).
   commissionStr?: string;
   dashboardUrl: string;
   locale?: EmailLocale;
@@ -1577,7 +1575,7 @@ export function subscriptionPaymentCoach(p: {
           intro: `<b style="color:${C.text};">${p.clientName}</b>'s monthly subscription payment went through. The amount is paid straight to your Stripe account.`,
           client: "Client",
           amount: "Amount collected",
-          commission: "Madger commission",
+          commission: "Madger transaction fees",
           cta: "View my payments",
         }
       : {
@@ -1588,7 +1586,7 @@ export function subscriptionPaymentCoach(p: {
           intro: `Le prélèvement mensuel de l'abonnement de <b style="color:${C.text};">${p.clientName}</b> est bien passé. Le montant est versé directement sur ton compte Stripe.`,
           client: "Client",
           amount: "Montant encaissé",
-          commission: "Commission Madger",
+          commission: "Frais de transaction Madger",
           cta: "Voir mes paiements",
         };
   return {
@@ -1649,13 +1647,13 @@ export function proCancelledCoach(p: {
       ? {
           subject: "Your Pro plan has ended",
           preheader:
-            "Your account is back on plan Gratuit. You can reactivate Pro anytime.",
+            "Your account is back on the Essential plan. You can reactivate Pro anytime.",
           eyebrow: "Pro plan",
-          title: "Back to plan Gratuit",
-          intro: `Your Pro subscription has ended and your account is back on <b style="color:${C.text};">plan Gratuit</b>. Nothing else changes: your calendar, clients and payments keep working exactly the same. The only difference is that the <b style="color:${C.text};">5% Madger commission</b> applies again to your sessions.`,
+          title: "Back to the Essential plan",
+          intro: `Your Pro subscription has ended and your account is back on the <b style="color:${C.text};">Essential plan</b>. Your calendar, clients and payments keep working exactly the same. Pro features (packs, automatic cancellation, renewal reminders, payments screen, churn alerts) are paused and the <b style="color:${C.text};">Essential transaction fees</b> apply to your new payments.`,
           boxTitle: "Come back whenever you want",
           boxBody:
-            "Reactivate Pro in two clicks to get back to 0% commission and your advanced stats. Your data is right where you left it.",
+            "Reactivate Pro in two clicks to get your packs, reminders and advanced stats back. Your data is right where you left it.",
           cta: "Reactivate Pro",
           outro:
             "Thanks for having tried Pro. If something did not fit, just reply to this email: your feedback really helps us improve.",
@@ -1663,13 +1661,13 @@ export function proCancelledCoach(p: {
       : {
           subject: "Ton plan Pro est terminé",
           preheader:
-            "Ton compte repasse au plan Gratuit. Tu peux réactiver Pro à tout moment.",
+            "Ton compte repasse au plan Essentiel. Tu peux réactiver Pro à tout moment.",
           eyebrow: "Plan Pro",
-          title: "Retour au plan Gratuit",
-          intro: `Ton abonnement Pro est arrivé à son terme : ton compte repasse en <b style="color:${C.text};">plan Gratuit</b>. Rien d'autre ne change : ton agenda, tes clients et tes paiements continuent de fonctionner exactement pareil. Seule différence : la <b style="color:${C.text};">commission Madger de 5 %</b> s'applique de nouveau sur tes séances.`,
+          title: "Retour au plan Essentiel",
+          intro: `Ton abonnement Pro est arrivé à son terme : ton compte repasse en <b style="color:${C.text};">plan Essentiel</b>. Ton agenda, tes clients et tes paiements continuent de fonctionner exactement pareil. Les fonctionnalités Pro (packs, annulation automatique, relances, écran encaissements, alertes churn) sont mises en pause et les <b style="color:${C.text};">frais de transaction Essentiel</b> s'appliquent à tes nouveaux encaissements.`,
           boxTitle: "Tu peux revenir quand tu veux",
           boxBody:
-            "Réactive Pro en deux clics pour retrouver 0 % de commission et tes statistiques avancées. Tes données sont restées exactement là où tu les as laissées.",
+            "Réactive Pro en deux clics pour retrouver tes packs, tes relances et tes statistiques avancées. Tes données sont restées exactement là où tu les as laissées.",
           cta: "Réactiver Pro",
           outro:
             "Merci d'avoir essayé Pro. Si quelque chose ne t'a pas convenu, réponds simplement à cet email : ton retour nous aide vraiment à progresser.",

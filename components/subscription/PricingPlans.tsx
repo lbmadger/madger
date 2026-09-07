@@ -14,13 +14,9 @@ import LaunchPrice from "@/components/subscription/LaunchPrice";
 // le paiement d'abonnement Stripe (mensuel ou annuel).
 export default function PricingPlans({
   currentPlan,
-  commission90dCents = 0,
   trialEligible = true,
 }: {
   currentPlan: "free" | "pro";
-  // Commission Madger réellement prélevée sur les 90 derniers jours : sert
-  // à l'argument chiffré personnalisé (« en Pro tu aurais économisé X € »).
-  commission90dCents?: number;
   // Premier abonnement : 7 jours d'essai, rien débité, puis renouvellement
   // automatique (migration 0062). Faux si l'essai a déjà été consommé.
   trialEligible?: boolean;
@@ -88,7 +84,13 @@ export default function PricingPlans({
           )}
         </div>
         <p className="mt-0.5 text-sm text-text-muted">{p.freeDesc}</p>
-        <p className="mt-3 text-2xl font-extrabold text-text-base">{p.priceFree}</p>
+        <p className="mt-3 text-2xl font-extrabold text-text-base">
+          {p.priceFree}
+          <span className="text-sm font-medium text-text-muted"> {p.perMonth}</span>
+        </p>
+        {/* Frais de transaction du plan, tout compris : la seule mention de
+            frais, sans comparaison entre plans. */}
+        <p className="mt-1 text-sm text-text-base">{p.feesFree}</p>
         <ul className="mt-4 flex flex-col gap-2">
           {p.featuresFree.map((f) => (
             <Feature key={f} label={f} />
@@ -162,31 +164,8 @@ export default function PricingPlans({
             {p.offerLocked}
           </p>
         )}
+        <p className="mt-1 text-sm text-text-base">{p.feesPro}</p>
         <p className="mt-1 text-xs text-text-dim">{p.proNote}</p>
-
-        {/* Argument chiffré personnalisé : ce que le coach a réellement payé
-            en commission sur 90 jours, face au prix du Pro. */}
-        {currentPlan === "free" && commission90dCents > 0 && (
-          <p className="mt-3 rounded-xl border border-accent/25 bg-accent/[0.06] px-3.5 py-2.5 text-xs leading-relaxed text-text-base">
-            {p.savingsIntro}{" "}
-            <strong className="text-accent">
-              {(commission90dCents / 100).toLocaleString(
-                locale === "fr" ? "fr-FR" : "en-GB",
-                { style: "currency", currency: "EUR", maximumFractionDigits: 0 }
-              )}
-            </strong>{" "}
-            {p.savingsOutro}
-            {/* Projection annuelle : rend le choix de l'annuel évident. */}{" "}
-            {p.savingsProj1}{" "}
-            <strong className="text-accent">
-              {((commission90dCents * 4) / 100).toLocaleString(
-                locale === "fr" ? "fr-FR" : "en-GB",
-                { style: "currency", currency: "EUR", maximumFractionDigits: 0 }
-              )}
-            </strong>{" "}
-            {p.savingsProj2}
-          </p>
-        )}
 
         <ul className="mt-4 flex flex-col gap-2">
           {p.featuresPro.map((f) => (
@@ -208,6 +187,10 @@ export default function PricingPlans({
                 ? t("plans.trialButton")
                 : t("plans.upgrade")}
             </button>
+            {/* Le seul argument chiffré autorisé sous le bouton Pro. */}
+            <p className="mt-2 text-center text-xs font-semibold text-accent">
+              {p.proNoShow}
+            </p>
             {trialEligible && (
               <p className="mt-2 text-center text-[11px] leading-relaxed text-text-dim">
                 {period === "annual" ? p.trialNoteAnnual : p.trialNoteMonthly}

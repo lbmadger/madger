@@ -235,8 +235,8 @@ export default async function AdminOverview() {
           Finances
         </h2>
         <p className="mt-0.5 text-xs text-text-muted">
-          Revenus Madger (HT) : abonnements + commissions. Le volume traité
-          transite par les coachs, seule la commission est à toi.
+          Revenus Madger (HT) : abonnements + frais de transaction. Le volume
+          traité transite par les coachs, seuls les frais sont à toi.
         </p>
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
           <AnimatedStat
@@ -256,7 +256,7 @@ export default async function AdminOverview() {
               mrrCents + commissionPrevMonthCents,
               "vs mois dernier"
             )}
-            info="MRR + commissions rattachées à ce mois. C'est un chiffre de pilotage, pas de la comptabilité : la compta officielle vit dans Stripe et tes factures."
+            info="MRR + frais de transaction rattachés à ce mois. C'est un chiffre de pilotage, pas de la comptabilité : la compta officielle vit dans Stripe et tes factures."
           />
           <AnimatedStat
             label="Run-rate annuel"
@@ -266,12 +266,12 @@ export default async function AdminOverview() {
             info="Projection : ce que ferait l'année si ce mois se répétait 12 fois à l'identique. Utile pour la trajectoire, à ne jamais présenter comme un CA réel."
           />
           <AnimatedStat
-            label="Commissions ce mois-ci"
+            label="Frais de transaction ce mois-ci"
             value={commissionMonthCents}
             kind="currency"
             index={3}
             trend={pctTrend(commissionMonthCents, commissionPrevMonthCents, "vs mois dernier")}
-            info="Les 5 % prélevés sur les coachs Gratuit, comptés le jour du versement au coach (pas le jour du paiement client) : c'est à ce moment que la commission naît, même règle que tes factures."
+            info="Frais de transaction prélevés (5 % Essentiel, 3 % Pro), comptés le jour du versement au coach (pas le jour du paiement client) : c'est à ce moment qu'ils naissent, même règle que tes factures."
           />
           <AnimatedStat
             label="Volume traité (30 j)"
@@ -279,10 +279,10 @@ export default async function AdminOverview() {
             kind="currency"
             index={4}
             trend={pctTrend(gmv30Cents, gmvPrev30Cents, "vs 30 j précédents")}
-            info="Le GMV : tout ce que les clients ont payé aux coachs via Madger sur 30 jours. Cet argent transite, il ne t'appartient pas. Ton revenu = commissions + abonnements."
+            info="Le GMV : tout ce que les clients ont payé aux coachs via Madger sur 30 jours. Cet argent transite, il ne t'appartient pas. Ton revenu = frais de transaction + abonnements."
           />
           <AnimatedStat
-            label="Commissions totales"
+            label="Frais de transaction totaux"
             value={commission}
             kind="currency"
             index={5}
@@ -376,7 +376,7 @@ export default async function AdminOverview() {
             </span>
             <span className="flex items-center gap-1.5">
               <span className="h-2.5 w-2.5 rounded-full bg-accent/50" />
-              Gratuit ({Math.max(0, points.length - proCount)})
+              Essentiel ({Math.max(0, points.length - proCount)})
             </span>
             {coaches - points.length > 0 && (
               <span className="text-text-dim">

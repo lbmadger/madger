@@ -536,6 +536,10 @@ export async function GET(req: NextRequest) {
                 targetCommission - prevCommission > 0
                   ? eurosStr(targetCommission - prevCommission)
                   : undefined,
+              providerFeeStr:
+                targetProviderFee - prevProviderFee > 0
+                  ? eurosStr(targetProviderFee - prevProviderFee)
+                  : undefined,
             });
             emailJobs.push(() =>
               sendEmail({
@@ -601,8 +605,8 @@ export async function GET(req: NextRequest) {
         }
       }
 
-      // Prévient le coach du versement (avec la commission prélevée et le
-      // rappel « 0 % en Pro » pour les coachs Gratuit). Différé après le lot.
+      // Prévient le coach du versement (frais de transaction prélevés, frais
+      // du 3x le cas échéant). Différé après le lot.
       if (finalTransfer > 0) {
         const coachEmail = coachEmailById.get(p.coach_id as string);
         if (coachEmail) {
@@ -630,6 +634,10 @@ export async function GET(req: NextRequest) {
             commissionStr:
               breakdown.commissionCents > 0
                 ? eurosStr(breakdown.commissionCents)
+                : undefined,
+            providerFeeStr:
+              breakdown.providerFeeCents > 0
+                ? eurosStr(breakdown.providerFeeCents)
                 : undefined,
           });
           emailJobs.push(() =>

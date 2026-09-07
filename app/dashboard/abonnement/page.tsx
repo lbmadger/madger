@@ -23,41 +23,6 @@ export default async function SubscriptionPage({
   const pro = isPro(coach?.pro_until);
   const daysLeft = proDaysLeft(coach?.pro_until);
 
-  // Commission réellement prélevée sur 90 jours : l'argument chiffré de la
-  // carte Pro. Datée du versement (released_at, ou résolution de litige),
-  // pas de l'encaissement : c'est au versement que la commission naît.
-  let commission90d = 0;
-  // Pour un coach PRO : commission qu'il AURAIT payée en Gratuit (5 % des
-  // montants versés sur 90 jours). Argument central de l'écran de rétention.
-  let avoided90d = 0;
-  {
-    const supabase = createClient();
-    const { data } = await supabase
-      .from("payments")
-      .select("amount_cents, commission_cents, released_at, resolved_at, paid_at")
-      // paid_at précède toujours le versement : 210 jours couvrent largement
-      // la fenêtre de 90 jours, sans rapatrier tout l'historique.
-      .gte("paid_at", new Date(Date.now() - 210 * 86400000).toISOString())
-      .in("escrow_status", ["released", "canceled"])
-      .limit(2000);
-    const since = Date.now() - 90 * 86400000;
-    for (const r of data ?? []) {
-      const at =
-        (r.released_at as string | null) ??
-        (r.resolved_at as string | null) ??
-        (r.paid_at as string | null);
-      if (!at || new Date(at).getTime() < since) continue;
-      commission90d += (r.commission_cents as number) || 0;
-      avoided90d += Math.round(((r.amount_cents as number) || 0) * 0.05);
-    }
-  }
-  const savedStr =
-    pro && avoided90d > 0
-      ? (avoided90d / 100).toLocaleString(locale === "fr" ? "fr-FR" : "en-GB", {
-          style: "currency",
-          currency: "EUR",
-        })
-      : null;
   // Parrainage : lien du coach + compteurs (filleuls inscrits, récompenses).
   let referred = 0;
   let rewarded = 0;
@@ -173,7 +138,6 @@ export default async function SubscriptionPage({
           {coach?.stripe_customer_id && (
             <div className="mt-4 border-t border-border pt-4">
               <ManageSubscription
-                savedStr={savedStr}
                 plan={coach?.subscription_plan ?? null}
                 canceling={coach?.subscription_status === "canceling"}
                 cancelAtStr={
@@ -198,7 +162,6 @@ export default async function SubscriptionPage({
         {/* Offres */}
         <PricingPlans
           currentPlan={pro ? "pro" : "free"}
-          commission90dCents={commission90d}
           trialEligible={
             !coach?.stripe_subscription_id && !coach?.pro_trial_used_at
           }

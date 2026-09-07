@@ -368,20 +368,6 @@ export default async function OverviewPage() {
   // ── Revenus par mois (depuis le premier encaissement, 12 mois min, 24 max) ─
   const payments = paymentsRes.data ?? [];
 
-  // Commission Madger réellement prélevée sur les 30 derniers jours, datée
-  // du versement (released_at) : c'est là que la commission naît. Alimente
-  // la bannière Pro chiffrée et évite le doublon avec le conseil Leia.
-  const commission30d = payments.reduce((s, p) => {
-    const c = ((p as { commission_cents?: number | null }).commission_cents ??
-      0) as number;
-    if (c <= 0) return s;
-    const at =
-      ((p as { released_at?: string | null }).released_at as string | null) ??
-      (p.paid_at as string | null);
-    if (!at || new Date(at).getTime() < now.getTime() - 30 * 86400000)
-      return s;
-    return s + c;
-  }, 0);
   // Agrégat SQL prioritaire (exact à tout volume) ; repli sur les lignes
   // brutes tant que la migration 0040 n'est pas passée.
   const rpcMonths = !rpcMonthlyRes.error
@@ -591,11 +577,7 @@ export default async function OverviewPage() {
     bookings30d,
     isPro: pro,
     paidCount: payments.length,
-  }).filter(
-    // La bannière Pro chiffrée dit déjà « 0 % de commission » : on ne
-    // répète pas le même argument dans les conseils Leia.
-    (tip) => !(tip.id === "pro" && commission30d > 0)
-  );
+  });
   const leiaDailyIndex = dailyTipIndex(now);
 
 
@@ -872,9 +854,8 @@ export default async function OverviewPage() {
         {/* Conseils de Leia : bande fine dépliable, tout en haut */}
         <LeiaTips tips={leiaTips} dailyIndex={leiaDailyIndex} />
 
-        {/* Relance vers l'offre Pro (coachs en Free uniquement). Chiffrée dès
-            que de la commission a été prélevée sur 30 jours : le coach voit
-            SON argent, pas un slogan. */}
+        {/* Relance vers l'offre Pro (coachs Essentiel uniquement) : Pro se
+            vend sur ses fonctionnalités, jamais sur une économie de frais. */}
         {!pro && (
           <Link
             href="/dashboard/abonnement"
@@ -882,18 +863,10 @@ export default async function OverviewPage() {
           >
             <div className="min-w-0">
               <p className="text-sm font-semibold text-text-base">
-                {commission30d > 0
-                  ? `${dict.plans.upsellComputedTitle} ${euros(commission30d)}`
-                  : dict.plans.upsellTitle}
+                {dict.plans.upsellTitle}
               </p>
               <p className="truncate text-xs text-text-muted">
-                {/* Au-delà du prix du Pro, on affiche le gain NET : c'est le
-                    chiffre qui déclenche la décision. */}
-                {commission30d > 4900
-                  ? `${dict.plans.upsellNetIntro} ${euros(commission30d - 4900)}.`
-                  : commission30d > 0
-                  ? dict.plans.upsellComputedDesc
-                  : dict.plans.upsellDesc}
+                {dict.plans.upsellDesc}
               </p>
             </div>
             <span className="shrink-0 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-black">

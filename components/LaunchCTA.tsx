@@ -57,7 +57,7 @@ export default function LaunchCTA() {
           className="anim-fade-in mt-5 text-sm"
           style={{ animationDelay: "0.28s", color: "var(--text-dim)" }}
         >
-          Gratuit pour commencer · Pro essayable 7 jours · Sans engagement
+          Essentiel à 0 € par mois · Pro essayable 7 jours · Sans engagement
         </p>
       </div>
     </section>

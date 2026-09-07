@@ -15,7 +15,7 @@ import ProUpsellCard from "@/components/subscription/ProUpsellCard";
 export const dynamic = "force-dynamic";
 
 // Page Paiements : connexion Stripe du coach. La note de frais dépend du plan
-// réel : Pro = 0 % de commission Madger, Gratuit = 5 %.
+// réel : frais de transaction au taux du plan (5 % Essentiel, 3 % Pro).
 export default async function PaymentsPage() {
   const { dict, locale } = getServerDictionary();
   const loc = locale === "fr" ? "fr-FR" : "en-GB";

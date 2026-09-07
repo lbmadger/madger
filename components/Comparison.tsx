@@ -209,7 +209,7 @@ export default function Comparison({ launched = false }: { launched?: boolean })
               }}
             >
               <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
-                ✓ Gratuit pour commencer · 0 % commission en Pro
+                ✓ Essentiel à 0 € par mois pour commencer
               </div>
               {cols.map(({ key, label, highlight }) => (
                 <div

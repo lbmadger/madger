@@ -1,5 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { installmentFeeLabel } from "@/lib/stripe/installments";
+
+const INSTALLMENT_FEE_LABEL = installmentFeeLabel("fr");
 
 export const metadata: Metadata = {
   alternates: { canonical: "/charte-paiement" },
@@ -84,13 +87,26 @@ export default function ChartePaiement() {
               2. Annulation d'une séance à l'unité
             </h2>
             <p>
-              Chaque coach définit lui-même{" "}
+              Le client peut toujours annuler une séance depuis son espace,
+              quel que soit le plan du coach ; seule la conséquence financière
+              dépend des règles du coach, affichées sur sa page publique et au
+              moment de la réservation, avant tout paiement.
+            </p>
+            <p className="mt-3">
+              <strong className="text-white">Coach Essentiel</strong> : règle
+              fixe, non modifiable. Annulation plus de 24 heures avant la
+              séance : remboursement intégral. Annulation à moins de 24 heures :
+              aucun remboursement, le montant reste acquis au coach.
+            </p>
+            <p className="mt-3">
+              <strong className="text-white">Coach Pro</strong> : le coach
+              définit lui-même{" "}
               <strong className="text-white">un délai d'annulation</strong> (12, 24
               ou 48 heures avant le début de la séance) et{" "}
               <strong className="text-white">deux pourcentages de
-              remboursement</strong>, affichés sur sa page publique et au moment
-              de la réservation, avant tout paiement. Ces règles s'appliquent
-              lorsqu'un <strong className="text-white">client</strong> annule :
+              remboursement</strong>. Ces règles s'appliquent automatiquement,
+              sans intervention du coach, lorsqu'un{" "}
+              <strong className="text-white">client</strong> annule :
             </p>
             <ul className="mt-3 flex flex-col gap-2" style={{ paddingLeft: 20, listStyleType: "disc" }}>
               <li>
@@ -109,9 +125,9 @@ export default function ChartePaiement() {
               </li>
             </ul>
             <p className="mt-3">
-              La part non remboursée revient au coach (moins frais et
-              commission). Tout remboursement donne lieu à un avoir envoyé au
-              client par email.
+              La part non remboursée revient au coach, déduction faite des
+              frais de transaction Madger. Tout remboursement donne lieu à un
+              avoir envoyé au client par email.
             </p>
             <p className="mt-3">
               Si c'est le <strong className="text-white">coach</strong> qui annule
@@ -229,26 +245,30 @@ export default function ChartePaiement() {
 
           <section>
             <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>
-              6. Frais et commissions
+              6. Frais de transaction
             </h2>
             <p>
-              Sur chaque séance ou pack payé, les{" "}
-              <strong className="text-white">frais de traitement du paiement</strong>{" "}
-              (Stripe, et le cas échéant Klarna ou Alma pour un paiement en
-              plusieurs fois) sont à la charge du coach et déduits de son
-              versement. La{" "}
-              <strong className="text-white">commission Madger</strong> est de 0 %
-              pour un coach Pro et de 5 % pour un coach Gratuit,
-              prélevée sur la part effectivement conservée par le coach.
+              Sur chaque séance, pack ou échéance d'abonnement payé, Madger
+              prélève des{" "}
+              <strong className="text-white">frais de transaction, tout compris</strong>,
+              sur la part effectivement conservée par le coach : 5 % pour un
+              coach Essentiel, 3 % pour un coach Pro. Les frais de traitement
+              du paiement par carte sont inclus dans ce taux et supportés par
+              Madger. Le taux applicable est celui du plan du coach au moment
+              du paiement ; il reste attaché à ce paiement même si le coach
+              change de plan ensuite.
             </p>
             <p className="mt-3">
               <strong className="text-white">Paiement en plusieurs fois</strong> :
               lorsque le coach l'a activé, un pack de 120 € ou plus peut être réglé
-              en trois fois via Klarna ou Alma. Le coach reçoit l'intégralité
-              selon le circuit de séquestre habituel ; l'échéancier relève du
-              contrat entre le client et l'organisme choisi, qui applique ses
-              propres conditions. Les remboursements repartent vers ce même
-              organisme.
+              en trois fois via Klarna ou Alma. Les frais de ce mode de paiement
+              (grille Stripe en vigueur, {INSTALLMENT_FEE_LABEL} par transaction)
+              sont à la charge du coach qui a activé l'option et déduits de son
+              versement, en plus des frais de transaction Madger. Le coach reçoit
+              le solde selon le circuit de séquestre habituel ; l'échéancier
+              relève du contrat entre le client et l'organisme choisi, qui
+              applique ses propres conditions. Les remboursements repartent vers
+              ce même organisme.
             </p>
           </section>
 
@@ -273,7 +293,7 @@ export default function ChartePaiement() {
               .
             </p>
             <p style={{ fontSize: 13, color: "#3A3A3A", marginTop: 8 }}>
-              Dernière mise à jour : septembre 2026
+              Dernière mise à jour : septembre 2026, version 2026-09b
             </p>
           </section>
         </div>

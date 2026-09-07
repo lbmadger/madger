@@ -45,8 +45,8 @@ export default function CGV() {
             <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>Offres et tarifs</h2>
             <p>Madger propose deux formules :</p>
             <ul className="mt-3 flex flex-col gap-2" style={{ paddingLeft: 20, listStyleType: "disc" }}>
-              <li><strong className="text-white">« Gratuit »</strong> : 0 €, 5 % de commission par séance encaissée</li>
-              <li><strong className="text-white">Madger Pro</strong> : 49 € par mois ou 490 € par an, 0 % de commission</li>
+              <li><strong className="text-white">Essentiel</strong> : 0 € par mois, 5 % de frais de transaction sur chaque paiement encaissé, tout compris</li>
+              <li><strong className="text-white">Madger Pro</strong> : 49 € par mois ou 490 € par an, 3 % de frais de transaction sur chaque paiement encaissé, tout compris</li>
             </ul>
             <p className="mt-3">
               TVA non applicable à ce jour, art. 293 B du CGI : tant que cette franchise
@@ -161,7 +161,14 @@ export default function CGV() {
               à une date déterminée (art. L.221-28 12° du Code de la consommation).
               Les conditions d&apos;annulation et de remboursement applicables sont celles de la{" "}
               <Link href="/charte-paiement" style={{ color: "#CBFF03" }}>charte de paiement</Link>,
-              affichées avant tout paiement.
+              affichées avant tout paiement. Le client peut toujours annuler depuis son
+              espace ; seule la conséquence financière dépend du plan du coach. Chez un
+              coach <strong className="text-white">Essentiel</strong>, la règle est fixe :
+              remboursement intégral si l&apos;annulation intervient plus de 24 heures avant la
+              séance, aucun remboursement en deçà. Chez un coach{" "}
+              <strong className="text-white">Pro</strong>, le coach définit son délai (12, 24
+              ou 48 heures) et les pourcentages remboursés, appliqués automatiquement. Dans
+              les deux cas, le coach peut décider d&apos;un remboursement manuel supplémentaire.
             </p>
             <p className="mt-3">
               Pour l&apos;achat d&apos;un <strong className="text-white">pack de séances</strong>, dont les
@@ -196,7 +203,7 @@ export default function CGV() {
           </section>
 
           <p style={{ fontSize: 13, color: "#3A3A3A", marginTop: 8 }}>
-            Dernière mise à jour : septembre 2026
+            Dernière mise à jour : septembre 2026, version 2026-09b
           </p>
         </div>
       </div>

@@ -11,6 +11,7 @@ import {
   launchOfferRegularFromLabel,
 } from "@/lib/subscription/offer";
 
+// Cinq lignes par colonne, sans chiffre : Pro se vend sur ses fonctionnalités.
 const freeFeatures = [
   "Lien public personnalisé",
   "Réservations et paiements illimités",
@@ -20,11 +21,11 @@ const freeFeatures = [
 ];
 
 const proFeatures = [
-  "Tout le plan Gratuit",
-  "0 % de commission : chaque euro encaissé est à toi",
-  "Prix de lancement bloqué tant que tu restes abonné",
-  "Statistiques avancées et objectifs",
-  "Support prioritaire",
+  "Packs de séances",
+  "Annulation automatique",
+  "Relances de renouvellement",
+  "Écran encaissements",
+  "Alerte churn",
 ];
 
 const handleSpotlight = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -74,7 +75,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
             }}>Aucune surprise au lancement.</span>
           </h2>
           <p className="text-text-muted text-lg max-w-lg mx-auto mb-6" style={{ lineHeight: 1.6 }}>
-            Gratuit pour démarrer, avec 5 % sur chaque séance encaissée. Pro à 49 € par mois pour garder 100 % de tes encaissements. 7 jours d'essai, sans engagement.
+            Essentiel pour démarrer. Pro pour vendre des packs, automatiser tes annulations et garder tes clients. 7 jours d'essai, sans engagement.
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8" style={{ background: "rgba(203,255,3,0.07)", border: "1px solid rgba(203,255,3,0.18)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-accent block" style={{ background: "#CBFF03" }} />
@@ -104,15 +105,15 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
               <div className="flex items-center gap-2.5 mb-3">
                 <MadgerLogo size={28} />
                 <div className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#8A8A8A", letterSpacing: "0.1em" }}>
-                  Gratuit
+                  Essentiel
                 </div>
               </div>
               <div style={{ minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                <div className="font-extrabold text-white mb-1" style={{ fontSize: "clamp(24px, 6.5vw, 52px)", letterSpacing: "-0.04em", lineHeight: 1 }}>
-                  0 €
+                <div className="font-extrabold text-white mb-1" style={{ fontSize: "clamp(22px, 5.5vw, 44px)", letterSpacing: "-0.04em", lineHeight: 1.05 }}>
+                  0 €<span style={{ fontSize: "0.45em", fontWeight: 700, color: "#9a9a9a" }}> / mois</span>
                 </div>
-                <div className="text-text-muted text-sm pt-1">
-                  pour toujours · 5 % de commission par séance encaissée en ligne
+                <div className="text-white text-sm pt-1">
+                  5 % de frais de transaction, tout compris.
                 </div>
               </div>
               <a
@@ -123,7 +124,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
                 onMouseLeave={e => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)")}
               >
                 <span className="sm:hidden">{launched ? "Commencer →" : "Rejoindre →"}</span>
-                <span className="hidden sm:inline">{launched ? "Commencer gratuitement →" : "Rejoindre l'accès anticipé →"}</span>
+                <span className="hidden sm:inline">{launched ? "Commencer avec Essentiel →" : "Rejoindre l'accès anticipé →"}</span>
               </a>
               <div className="my-5 sm:my-7" style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
               <ul className="flex flex-col gap-2 sm:gap-3">
@@ -192,7 +193,10 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
                     <span style={{ color: "#F87171" }}>{LAUNCH_OFFER.regularMonthlyCents / 100} €</span> tarif à partir du {launchOfferRegularFromLabel("fr")}
                   </div>
                 )}
-                <div className="text-text-muted text-sm pt-1">
+                <div className="text-white text-sm pt-1">
+                  3 % de frais de transaction, tout compris.
+                </div>
+                <div className="text-text-muted text-xs pt-1">
                   ou 490 € par an (2 mois offerts) · 7 jours d'essai gratuits
                 </div>
                 {launchOfferActive() && (
@@ -212,6 +216,10 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
                 <span className="sm:hidden">{launched ? "Essayer Pro →" : "Rejoindre →"}</span>
                 <span className="hidden sm:inline">{launched ? "Essayer Pro 7 jours →" : "Rejoindre l'accès anticipé →"}</span>
               </motion.a>
+              {/* Le seul argument chiffré de la carte Pro. */}
+              <p className="-mt-3 mb-5 text-center text-[11px] sm:text-xs font-semibold sm:-mt-5 sm:mb-7" style={{ color: "#CBFF03" }}>
+                Un no-show évité par mois et Pro est remboursé.
+              </p>
 
               <div className="my-5 sm:my-7" style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />
               <ul className="flex flex-col gap-2 sm:gap-3">
@@ -226,16 +234,6 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
           </motion.div>
           </div>
         </div>
-
-        {/* Le calcul honnête, écrit noir sur blanc : la page promet zéro
-            surprise, alors on donne le point de bascule entre les deux plans
-            au lieu de laisser le coach le découvrir sur ses encaissements. */}
-        <p className="mx-auto mt-8 max-w-xl text-center text-sm leading-relaxed text-text-muted">
-          Le bon calcul : une séance à 50 € en Gratuit, c'est 2,50 € pour
-          Madger. Dès une vingtaine de séances par mois (environ 980 €
-          encaissés), les 5 % dépassent 49 € et le Pro devient le plan le plus
-          rentable. En dessous, le Gratuit reste le bon choix.
-        </p>
 
         {/* Bande vide : Léo se tient dans le noir sous les cartes, sans les chevaucher */}
         <div aria-hidden className="h-24 sm:h-52" />

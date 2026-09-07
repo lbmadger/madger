@@ -13,12 +13,12 @@ const items = [
     desc: "Chaque séance encaissée produit une facture numérotée avec tes mentions légales : SIRET, adresse, mention TVA. Zéro saisie.",
   },
   {
-    title: "Une facture de commission par mois",
-    desc: "Madger t'adresse chaque mois une facture claire pour sa commission. Ta comptabilité est carrée, des deux côtés.",
+    title: "Une facture de frais par mois",
+    desc: "Madger t'adresse chaque mois une facture claire pour ses frais de transaction. Ta comptabilité est carrée, des deux côtés.",
   },
   {
     title: "Export comptable en un clic",
-    desc: "Toute ton année (encaissements, remboursements, commissions, net versé) au format CSV, prête pour ton expert-comptable.",
+    desc: "Toute ton année (encaissements, remboursements, frais de transaction, net versé) au format CSV, prête pour ton expert-comptable.",
   },
   {
     title: "Factur-X automatique",

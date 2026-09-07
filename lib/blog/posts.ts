@@ -137,7 +137,7 @@ const POSTS: Post[] = [
       { t: "h2", text: "Salle de sport ou indépendant ?" },
       {
         t: "p",
-        text: "En salle, tu es souvent salarié ou tu reverses une commission importante. En indépendant, tu gardes tout ton chiffre, mais tu gères la prospection, les paiements et l'administratif. Le bon compromis pour beaucoup : rester indépendant et s'appuyer sur des outils qui automatisent la gestion.",
+        text: "En salle, tu es souvent salarié ou tu reverses une part importante de ton chiffre à la salle. En indépendant, tu gardes tout ton chiffre, mais tu gères la prospection, les paiements et l'administratif. Le bon compromis pour beaucoup : rester indépendant et s'appuyer sur des outils qui automatisent la gestion.",
       },
       { t: "h2", text: "Les leviers pour gagner plus" },
       {

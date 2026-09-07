@@ -320,7 +320,7 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
             <span className="w-1.5 h-1.5 rounded-full bg-accent glow-dot block" />
             <span style={{ color: "#CBFF03", fontSize: 11, letterSpacing: "0.06em" }}>
               {launched
-                ? "Inscriptions ouvertes · Gratuit pour commencer"
+                ? "Inscriptions ouvertes · Essentiel à 0 € par mois"
                 : "Inscriptions ouvertes · Accès anticipé gratuit"}
             </span>
           </motion.div>

@@ -7,7 +7,7 @@ export function getFaqs(launched: boolean) {
   return [
     {
       q: "Comment démarrer avec Madger ?",
-      a: "Tu crées ton compte gratuitement, tu configures ta page en quelques minutes (prestations, disponibilités, paiement) et tu partages ton lien. Le plan Gratuit suffit pour démarrer. Envie du Pro ? Tu l'essaies 7 jours gratuitement : tu enregistres ta carte, rien n'est débité pendant l'essai, et tu arrêtes quand tu veux depuis ton abonnement.",
+      a: "Tu crées ton compte gratuitement, tu configures ta page en quelques minutes (prestations, disponibilités, paiement) et tu partages ton lien. Le plan Essentiel suffit pour démarrer. Envie du Pro ? Tu l'essaies 7 jours gratuitement : tu enregistres ta carte, rien n'est débité pendant l'essai, et tu arrêtes quand tu veux depuis ton abonnement.",
     },
     ...faqs.slice(1),
   ];
@@ -40,7 +40,7 @@ export const faqs = [
   },
   {
     q: "Suis-je prêt pour la facturation électronique obligatoire ?",
-    a: "Oui. Chaque séance encaissée génère une facture numérotée avec tes mentions légales (SIRET, TVA), Madger t'adresse une facture mensuelle pour sa commission, et ta comptabilité s'exporte en un clic pour ton expert-comptable. Le passage au format Factur-X prévu par la réforme française de la facturation électronique se fera automatiquement, sans rien changer de ton côté.",
+    a: "Oui. Chaque séance encaissée génère une facture numérotée avec tes mentions légales (SIRET, TVA), Madger t'adresse une facture mensuelle pour ses frais de transaction, et ta comptabilité s'exporte en un clic pour ton expert-comptable. Le passage au format Factur-X prévu par la réforme française de la facturation électronique se fera automatiquement, sans rien changer de ton côté.",
   },
   {
     q: "Puis-je gérer plusieurs types de séances ?",
