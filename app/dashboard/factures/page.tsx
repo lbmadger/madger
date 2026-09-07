@@ -9,6 +9,8 @@ import {
   type InvoiceRow,
 } from "@/lib/invoices/utils";
 import { DownloadIcon } from "@/components/ui/icons";
+import { isPro } from "@/lib/subscription/plan";
+import ProUpsellCard from "@/components/subscription/ProUpsellCard";
 
 export const dynamic = "force-dynamic";
 
@@ -189,6 +191,19 @@ export default async function InvoicesPage() {
               </li>
             ))}
           </ul>
+        )}
+
+        {coach && !isPro(coach.pro_until) && rows.length > 0 && (
+          <ProUpsellCard
+            className="mt-5"
+            locale={locale}
+            title={dict.plans.upsellInvoicesTitle}
+            desc={dict.plans.upsellInvoicesDesc}
+            cta={dict.plans.upsellCardCta}
+            offerLine={dict.plans.offerLine}
+            offerKeep={dict.plans.offerKeep}
+            offerBadge={dict.plans.offerBadge}
+          />
         )}
 
         {/* Les factures Madger (commission de service) sont sur la page

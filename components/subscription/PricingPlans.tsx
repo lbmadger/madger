@@ -3,6 +3,11 @@
 import { useState } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import PromoCode from "@/components/subscription/PromoCode";
+import {
+  LAUNCH_OFFER,
+  launchOfferActive,
+  launchOfferUntilLabel,
+} from "@/lib/subscription/offer";
 
 // Cartes d'offres Free / Pro, réutilisées à l'onboarding et sur la page
 // Abonnement. `currentPlan` met en avant l'offre active. Le bouton Pro lance
@@ -140,6 +145,28 @@ export default function PricingPlans({
         </div>
         {period === "annual" && (
           <p className="text-xs text-text-muted">{p.annualMonthlyEq}</p>
+        )}
+        {/* Offre de lancement : prix garanti tant que le coach reste abonné,
+            date de fin et tarif suivant annoncés (jamais de faux prix barré). */}
+        {launchOfferActive() && (
+          <p className="mt-2 rounded-xl border border-accent/25 bg-accent/[0.06] px-3 py-2 text-xs leading-relaxed text-text-base">
+            <span className="font-bold text-accent">{p.offerBadge}</span> ·{" "}
+            {(period === "annual" ? p.offerLineAnnual : p.offerLine)
+              .replace(
+                "{regular}",
+                (
+                  (period === "annual"
+                    ? LAUNCH_OFFER.regularAnnualCents
+                    : LAUNCH_OFFER.regularMonthlyCents) / 100
+                ).toLocaleString(locale === "fr" ? "fr-FR" : "en-GB", {
+                  style: "currency",
+                  currency: "EUR",
+                  maximumFractionDigits: 0,
+                })
+              )
+              .replace("{date}", launchOfferUntilLabel(locale))}{" "}
+            {period === "annual" ? p.offerKeepAnnual : p.offerKeep}
+          </p>
         )}
         <p className="mt-1 text-xs text-text-dim">{p.proNote}</p>
 

@@ -6,6 +6,9 @@ import ChartCard from "@/components/dashboard/charts/ChartCard";
 import { type BarDatum } from "@/components/dashboard/charts/MiniBars";
 import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
+import { getCoach } from "@/lib/coach/getCoach";
+import { isPro } from "@/lib/subscription/plan";
+import ProUpsellCard from "@/components/subscription/ProUpsellCard";
 
 type Status = "pending" | "confirmed" | "completed" | "cancelled";
 type Booking = { starts_at: string; ends_at: string; status: Status };
@@ -20,6 +23,8 @@ export default async function StatsPage() {
   const loc = locale === "fr" ? "fr-FR" : "en-GB";
   const s = dict.stats;
   const supabase = createClient();
+  const { coach: statsCoach } = await getCoach();
+  const statsPro = isPro(statsCoach?.pro_until);
 
   const now = new Date();
   const nowMs = now.getTime();
@@ -238,6 +243,18 @@ export default async function StatsPage() {
     <>
       <Topbar title={s.title} />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+        {!statsPro && (
+          <ProUpsellCard
+            className="mb-5"
+            locale={locale}
+            title={dict.plans.upsellStatsTitle}
+            desc={dict.plans.upsellStatsDesc}
+            cta={dict.plans.upsellCardCta}
+            offerLine={dict.plans.offerLine}
+            offerKeep={dict.plans.offerKeep}
+            offerBadge={dict.plans.offerBadge}
+          />
+        )}
         {/* Studio stories : le coach poste SES chiffres (jamais l'argent)
             ou le fait sport du jour, aux couleurs de sa page, avec son lien
             de résa. L'explication du POURQUOI est le cœur du bloc : sans

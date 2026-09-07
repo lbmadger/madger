@@ -10,6 +10,7 @@ import { createClient as createAdmin } from "@supabase/supabase-js";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { getStripe } from "@/lib/stripe/server";
 import { isPro } from "@/lib/subscription/plan";
+import ProUpsellCard from "@/components/subscription/ProUpsellCard";
 
 export const dynamic = "force-dynamic";
 
@@ -441,6 +442,18 @@ export default async function PaymentsPage() {
           <p className="mt-8 text-center text-[11px] leading-relaxed text-text-dim/80">
             {feesNote}
           </p>
+        )}
+        {!isPro(coach?.pro_until) && (
+          <ProUpsellCard
+            className="mt-4"
+            locale={locale}
+            title={dict.plans.upsellPaymentsTitle}
+            desc={dict.plans.upsellPaymentsDesc}
+            cta={dict.plans.upsellCardCta}
+            offerLine={dict.plans.offerLine}
+            offerKeep={dict.plans.offerKeep}
+            offerBadge={dict.plans.offerBadge}
+          />
         )}
       </main>
     </>

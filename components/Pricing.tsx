@@ -4,6 +4,11 @@ import { motion } from "framer-motion";
 import SectionLabel from "@/components/ui/SectionLabel";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 import CoachAside from "@/components/ui/CoachAside";
+import {
+  LAUNCH_OFFER,
+  launchOfferActive,
+  launchOfferUntilLabel,
+} from "@/lib/subscription/offer";
 
 const freeFeatures = [
   "Lien public personnalisé",
@@ -172,6 +177,11 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
                 <div className="text-text-muted text-sm pt-1">
                   ou 490 € par an (2 mois offerts) · 7 jours d'essai gratuits
                 </div>
+                {launchOfferActive() && (
+                  <div className="mt-2 inline-flex items-center gap-1.5 self-start rounded-full px-2.5 py-1 text-[11px] font-semibold" style={{ background: "rgba(203,255,3,0.08)", border: "1px solid rgba(203,255,3,0.25)", color: "#CBFF03" }}>
+                    Prix de lancement jusqu'au {launchOfferUntilLabel("fr")}, puis {LAUNCH_OFFER.regularMonthlyCents / 100} € · garanti tant que tu restes abonné
+                  </div>
+                )}
               </div>
 
               <motion.a

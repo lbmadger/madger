@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { SessionProvider } from "@/lib/auth/SessionProvider";
+import ProUpsellModal from "@/components/subscription/ProUpsellModal";
 import { createClient } from "@/lib/supabase/server";
 import { getCoach } from "@/lib/coach/getCoach";
 import { isPro } from "@/lib/subscription/plan";
@@ -69,6 +70,9 @@ export default async function DashboardLayout({
           <Sidebar />
           <ContentPad>{children}</ContentPad>
           <MobileNav />
+          {/* Fenêtre Pro pour les coachs en Gratuit (fermable, revient au
+              plus tôt 7 jours plus tard). */}
+          <ProUpsellModal />
         </div>
       </SessionProvider>
     </I18nProvider>
