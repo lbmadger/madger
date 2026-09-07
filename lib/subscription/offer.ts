@@ -2,11 +2,11 @@
 // date ci-dessous, puis le tarif normal ci-dessous. Le coach abonné avant la
 // date GARDE 49 € tant qu'il reste abonné.
 //
-// Cadre légal (pratiques commerciales, DGCCRF) : on n'affiche jamais un
-// « ancien prix » barré qui n'a jamais été pratiqué. On annonce un PRIX DE
-// LANCEMENT avec sa date de fin et le tarif qui s'appliquera ensuite. Le
-// tarif normal doit donc réellement entrer en vigueur à cette date (ou
-// l'offre doit être prolongée en changeant `until`).
+// Cadre légal (pratiques commerciales, DGCCRF) : le prix barré n'est jamais
+// présenté comme un « ancien prix » (il n'a pas été pratiqué). C'est le
+// TARIF À VENIR, toujours accompagné de sa date d'entrée en vigueur, à côté
+// d'un PRIX DE LANCEMENT daté. Le tarif normal doit donc réellement entrer
+// en vigueur à cette date (ou l'offre doit être prolongée via `until`).
 export const LAUNCH_OFFER = {
   enabled: true,
   // Fin de l'offre (incluse), heure de Paris.
@@ -30,6 +30,18 @@ export function launchOfferUntilLabel(locale: string): string {
     locale === "fr" ? "fr-FR" : "en-GB",
     { day: "numeric", month: "long", year: "numeric" }
   );
+}
+
+// Premier jour du tarif normal (lendemain de la fin de l'offre), pour
+// étiqueter le prix barré : « tarif à partir du 1er janvier 2027 ».
+export function launchOfferRegularFromLabel(locale: string): string {
+  const d = new Date(`${LAUNCH_OFFER.until}T12:00:00+02:00`);
+  d.setDate(d.getDate() + 1);
+  return d.toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 }
 
 export function launchOfferDaysLeft(now: Date = new Date()): number {

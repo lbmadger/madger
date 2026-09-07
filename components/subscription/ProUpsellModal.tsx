@@ -8,9 +8,9 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import Dialog from "@/components/ui/Dialog";
 import {
   launchOfferActive,
-  launchOfferUntilLabel,
-  LAUNCH_OFFER,
+  launchOfferDaysLeft,
 } from "@/lib/subscription/offer";
+import LaunchPrice from "@/components/subscription/LaunchPrice";
 
 const STORAGE_KEY = "madger_pro_modal_until";
 const SNOOZE_DAYS = 7;
@@ -53,12 +53,7 @@ export default function ProUpsellModal() {
 
   if (!open) return null;
   const offer = launchOfferActive();
-  const euros = (c: number) =>
-    (c / 100).toLocaleString(locale === "fr" ? "fr-FR" : "en-GB", {
-      style: "currency",
-      currency: "EUR",
-      maximumFractionDigits: 0,
-    });
+  const daysLeft = launchOfferDaysLeft();
 
   return (
     <Dialog
@@ -91,18 +86,17 @@ export default function ProUpsellModal() {
       </p>
 
       <div className="mt-4 rounded-2xl border border-border bg-bg-elevated p-4">
-        <div className="flex items-end gap-2">
-          <span className="font-display text-3xl font-extrabold text-text-base">
-            {euros(LAUNCH_OFFER.launchMonthlyCents)}
-          </span>
-          <span className="mb-1 text-sm text-text-muted">{t("plans.perMonth")}</span>
-        </div>
+        <LaunchPrice
+          locale={locale}
+          suffix={t("plans.perMonth")}
+          fromLabel={t("plans.offerFrom")}
+        />
         {offer ? (
-          <p className="mt-1 text-xs text-text-muted">
-            {t("plans.offerLine")
-              .replace("{regular}", euros(LAUNCH_OFFER.regularMonthlyCents))
-              .replace("{date}", launchOfferUntilLabel(locale))}{" "}
-            <span className="font-semibold text-text-base">{t("plans.offerKeep")}</span>
+          <p className="mt-2 text-xs font-semibold text-accent">
+            {daysLeft <= 1
+              ? t("plans.offerLastDay")
+              : t("plans.offerDaysLeft").replace("{n}", String(daysLeft))}
+            <span className="block font-normal text-text-muted">{t("plans.offerLocked")}</span>
           </p>
         ) : (
           <p className="mt-1 text-xs text-text-muted">{t("plans.proNote")}</p>

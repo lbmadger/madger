@@ -4,10 +4,10 @@ import { useState } from "react";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import PromoCode from "@/components/subscription/PromoCode";
 import {
-  LAUNCH_OFFER,
   launchOfferActive,
-  launchOfferUntilLabel,
+  launchOfferDaysLeft,
 } from "@/lib/subscription/offer";
+import LaunchPrice from "@/components/subscription/LaunchPrice";
 
 // Cartes d'offres Free / Pro, réutilisées à l'onboarding et sur la page
 // Abonnement. `currentPlan` met en avant l'offre active. Le bouton Pro lance
@@ -133,39 +133,33 @@ export default function PricingPlans({
           ))}
         </div>
 
-        <div className="mt-3 flex items-end gap-2">
-          <p className="text-2xl font-extrabold text-text-base">
-            {period === "annual" ? p.priceProAnnual : p.pricePro}
-          </p>
+        <div className="mt-3 flex flex-wrap items-start gap-2">
+          <LaunchPrice
+            period={period}
+            locale={locale}
+            suffix={period === "annual" ? p.perYear : p.perMonth}
+            fromLabel={p.offerFrom}
+          />
           {period === "annual" && (
-            <span className="mb-1 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-semibold text-accent">
+            <span className="mt-1.5 rounded-full bg-accent/10 px-2 py-0.5 text-[10px] font-semibold text-accent">
               {p.annualSave}
             </span>
           )}
         </div>
         {period === "annual" && (
-          <p className="text-xs text-text-muted">{p.annualMonthlyEq}</p>
+          <p className="mt-1 text-xs text-text-muted">{p.annualMonthlyEq}</p>
         )}
-        {/* Offre de lancement : prix garanti tant que le coach reste abonné,
-            date de fin et tarif suivant annoncés (jamais de faux prix barré). */}
+        {/* Offre de lancement : le tarif à venir est barré à côté du prix,
+            avec sa date. Compte à rebours réel, prix bloqué tant que le coach
+            reste abonné. */}
         {launchOfferActive() && (
           <p className="mt-2 rounded-xl border border-accent/25 bg-accent/[0.06] px-3 py-2 text-xs leading-relaxed text-text-base">
-            <span className="font-bold text-accent">{p.offerBadge}</span> ·{" "}
-            {(period === "annual" ? p.offerLineAnnual : p.offerLine)
-              .replace(
-                "{regular}",
-                (
-                  (period === "annual"
-                    ? LAUNCH_OFFER.regularAnnualCents
-                    : LAUNCH_OFFER.regularMonthlyCents) / 100
-                ).toLocaleString(locale === "fr" ? "fr-FR" : "en-GB", {
-                  style: "currency",
-                  currency: "EUR",
-                  maximumFractionDigits: 0,
-                })
-              )
-              .replace("{date}", launchOfferUntilLabel(locale))}{" "}
-            {period === "annual" ? p.offerKeepAnnual : p.offerKeep}
+            <span className="font-bold text-accent">
+              {launchOfferDaysLeft() <= 1
+                ? p.offerLastDay
+                : p.offerDaysLeft.replace("{n}", String(launchOfferDaysLeft()))}
+            </span>{" "}
+            {p.offerLocked}
           </p>
         )}
         <p className="mt-1 text-xs text-text-dim">{p.proNote}</p>

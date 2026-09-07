@@ -1,9 +1,9 @@
 import Link from "next/link";
 import {
   launchOfferActive,
-  launchOfferUntilLabel,
-  LAUNCH_OFFER,
+  launchOfferDaysLeft,
 } from "@/lib/subscription/offer";
+import LaunchPrice from "@/components/subscription/LaunchPrice";
 
 // Carte Pro compacte, glissée dans les pages du dashboard quand le coach est
 // en Gratuit (Paiements, Statistiques, Factures). Rendue côté serveur :
@@ -13,30 +13,29 @@ export default function ProUpsellCard({
   desc,
   cta,
   locale,
-  offerLine,
-  offerKeep,
   offerBadge,
+  perMonth,
+  offerFrom,
+  offerDaysLeft,
+  offerLastDay,
   className = "",
 }: {
   title: string;
   desc: string;
   cta: string;
   locale: string;
-  offerLine: string; // avec {regular} et {date}
-  offerKeep: string;
   offerBadge: string;
+  perMonth: string;
+  offerFrom: string; // avec {date}
+  offerDaysLeft: string; // avec {n}
+  offerLastDay: string;
   className?: string;
 }) {
   const offer = launchOfferActive();
-  const euros = (c: number) =>
-    (c / 100).toLocaleString(locale === "fr" ? "fr-FR" : "en-GB", {
-      style: "currency",
-      currency: "EUR",
-      maximumFractionDigits: 0,
-    });
+  const days = launchOfferDaysLeft();
   return (
     <div
-      className={`flex flex-col gap-3 rounded-2xl border border-accent/25 bg-accent/[0.05] p-4 sm:flex-row sm:items-center sm:justify-between ${className}`}
+      className={`flex flex-col gap-4 rounded-2xl border border-accent/25 bg-accent/[0.05] p-4 sm:flex-row sm:items-center sm:justify-between ${className}`}
     >
       <div className="min-w-0">
         {offer && (
@@ -45,21 +44,22 @@ export default function ProUpsellCard({
           </span>
         )}
         <p className="text-sm font-semibold text-text-base">{title}</p>
-        <p className="mt-0.5 text-xs leading-relaxed text-text-muted">
-          {desc}
-          {offer
-            ? ` ${offerLine
-                .replace("{regular}", euros(LAUNCH_OFFER.regularMonthlyCents))
-                .replace("{date}", launchOfferUntilLabel(locale))} ${offerKeep}`
-            : ""}
-        </p>
+        <p className="mt-0.5 text-xs leading-relaxed text-text-muted">{desc}</p>
       </div>
-      <Link
-        href="/dashboard/abonnement"
-        className="shrink-0 rounded-full bg-accent px-4 py-2 text-center text-xs font-semibold text-black transition-opacity hover:opacity-90"
-      >
-        {cta}
-      </Link>
+      <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
+        <LaunchPrice locale={locale} suffix={perMonth} fromLabel={offerFrom} size="sm" />
+        {offer && (
+          <p className="text-[11px] font-semibold text-accent">
+            {days <= 1 ? offerLastDay : offerDaysLeft.replace("{n}", String(days))}
+          </p>
+        )}
+        <Link
+          href="/dashboard/abonnement"
+          className="rounded-full bg-accent px-4 py-2 text-center text-xs font-semibold text-black transition-opacity hover:opacity-90"
+        >
+          {cta}
+        </Link>
+      </div>
     </div>
   );
 }

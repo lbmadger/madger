@@ -7,7 +7,8 @@ import CoachAside from "@/components/ui/CoachAside";
 import {
   LAUNCH_OFFER,
   launchOfferActive,
-  launchOfferUntilLabel,
+  launchOfferDaysLeft,
+  launchOfferRegularFromLabel,
 } from "@/lib/subscription/offer";
 
 const freeFeatures = [
@@ -20,8 +21,9 @@ const freeFeatures = [
 
 const proFeatures = [
   "Tout le plan Gratuit",
-  "0 % de commission Madger",
-  "Statistiques avancées",
+  "0 % de commission : chaque euro encaissé est à toi",
+  "Prix de lancement bloqué tant que tu restes abonné",
+  "Statistiques avancées et objectifs",
   "Support prioritaire",
 ];
 
@@ -72,13 +74,15 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
             }}>Aucune surprise au lancement.</span>
           </h2>
           <p className="text-text-muted text-lg max-w-lg mx-auto mb-6" style={{ lineHeight: 1.6 }}>
-            Gratuit pour démarrer, Pro à 49 € par mois quand tu veux aller plus loin. Et le Pro s'essaie 7 jours gratuitement, sans engagement.
+            Gratuit pour démarrer, avec 5 % sur chaque séance encaissée. Pro à 49 € par mois pour garder 100 % de tes encaissements. 7 jours d'essai, sans engagement.
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8" style={{ background: "rgba(203,255,3,0.07)", border: "1px solid rgba(203,255,3,0.18)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-accent block" style={{ background: "#CBFF03" }} />
             <span style={{ color: "#CBFF03", fontSize: 12, fontWeight: 600 }}>
               {launched
-                ? "Pro : 7 jours d'essai gratuits, puis 49 € par mois · Résiliable à tout moment"
+                ? launchOfferActive()
+                  ? `Prix de lancement : ${launchOfferDaysLeft() <= 1 ? "dernier jour" : `plus que ${launchOfferDaysLeft()} jours`} pour bloquer 49 € à vie`
+                  : "Pro : 7 jours d'essai gratuits, puis 49 € par mois · Résiliable à tout moment"
                 : "Accès anticipé · Madger Pro offert 1 mois pour les premiers membres"}
             </span>
           </div>
@@ -171,15 +175,29 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
               </div>
 
               <div style={{ minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                <div className="font-extrabold text-white mb-1" style={{ fontSize: "clamp(22px, 5.5vw, 44px)", letterSpacing: "-0.04em", lineHeight: 1.05 }}>
-                  49 €<span style={{ fontSize: "0.45em", fontWeight: 700, color: "#9a9a9a" }}> / mois</span>
+                <div className="font-extrabold text-white mb-1 flex flex-wrap items-end gap-x-2" style={{ fontSize: "clamp(22px, 5.5vw, 44px)", letterSpacing: "-0.04em", lineHeight: 1.05 }}>
+                  <span>49 €</span>
+                  {launchOfferActive() && (
+                    <span
+                      aria-label={`${LAUNCH_OFFER.regularMonthlyCents / 100} € à partir du ${launchOfferRegularFromLabel("fr")}`}
+                      style={{ fontSize: "0.5em", fontWeight: 700, color: "#EF4444", textDecoration: "line-through", textDecorationThickness: "2px", marginBottom: "0.1em" }}
+                    >
+                      {LAUNCH_OFFER.regularMonthlyCents / 100} €
+                    </span>
+                  )}
+                  <span style={{ fontSize: "0.45em", fontWeight: 700, color: "#9a9a9a" }}>/ mois</span>
                 </div>
+                {launchOfferActive() && (
+                  <div className="text-[11px]" style={{ color: "#8C8C8C" }}>
+                    <span style={{ color: "#F87171" }}>{LAUNCH_OFFER.regularMonthlyCents / 100} €</span> tarif à partir du {launchOfferRegularFromLabel("fr")}
+                  </div>
+                )}
                 <div className="text-text-muted text-sm pt-1">
                   ou 490 € par an (2 mois offerts) · 7 jours d'essai gratuits
                 </div>
                 {launchOfferActive() && (
                   <div className="mt-2 inline-flex items-center gap-1.5 self-start rounded-full px-2.5 py-1 text-[11px] font-semibold" style={{ background: "rgba(203,255,3,0.08)", border: "1px solid rgba(203,255,3,0.25)", color: "#CBFF03" }}>
-                    Prix de lancement jusqu'au {launchOfferUntilLabel("fr")}, puis {LAUNCH_OFFER.regularMonthlyCents / 100} € · garanti tant que tu restes abonné
+                    {launchOfferDaysLeft() <= 1 ? "Dernier jour" : `Plus que ${launchOfferDaysLeft()} jours`} pour bloquer 49 € à vie · garanti tant que tu restes abonné
                   </div>
                 )}
               </div>
@@ -213,9 +231,10 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
             surprise, alors on donne le point de bascule entre les deux plans
             au lieu de laisser le coach le découvrir sur ses encaissements. */}
         <p className="mx-auto mt-8 max-w-xl text-center text-sm leading-relaxed text-text-muted">
-          Le bon calcul : en dessous d'environ 980 € encaissés par mois, le
-          Gratuit te coûte moins cher. Au-delà (une vingtaine de séances), les
-          5 % dépassent 49 € et le Pro devient le plan le plus rentable.
+          Le bon calcul : une séance à 50 € en Gratuit, c'est 2,50 € pour
+          Madger. Dès une vingtaine de séances par mois (environ 980 €
+          encaissés), les 5 % dépassent 49 € et le Pro devient le plan le plus
+          rentable. En dessous, le Gratuit reste le bon choix.
         </p>
 
         {/* Bande vide : Léo se tient dans le noir sous les cartes, sans les chevaucher */}

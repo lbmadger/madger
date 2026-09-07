@@ -450,9 +450,11 @@ export default async function PaymentsPage() {
             title={dict.plans.upsellPaymentsTitle}
             desc={dict.plans.upsellPaymentsDesc}
             cta={dict.plans.upsellCardCta}
-            offerLine={dict.plans.offerLine}
-            offerKeep={dict.plans.offerKeep}
             offerBadge={dict.plans.offerBadge}
+            perMonth={dict.plans.perMonth}
+            offerFrom={dict.plans.offerFrom}
+            offerDaysLeft={dict.plans.offerDaysLeft}
+            offerLastDay={dict.plans.offerLastDay}
           />
         )}
       </main>

@@ -250,9 +250,11 @@ export default async function StatsPage() {
             title={dict.plans.upsellStatsTitle}
             desc={dict.plans.upsellStatsDesc}
             cta={dict.plans.upsellCardCta}
-            offerLine={dict.plans.offerLine}
-            offerKeep={dict.plans.offerKeep}
             offerBadge={dict.plans.offerBadge}
+            perMonth={dict.plans.perMonth}
+            offerFrom={dict.plans.offerFrom}
+            offerDaysLeft={dict.plans.offerDaysLeft}
+            offerLastDay={dict.plans.offerLastDay}
           />
         )}
         {/* Studio stories : le coach poste SES chiffres (jamais l'argent)
