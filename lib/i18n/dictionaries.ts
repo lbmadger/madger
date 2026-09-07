@@ -512,7 +512,7 @@ const fr = {
   },
   promo: {
     title: "Code d'accès anticipé",
-    desc: "Membre de l'accès anticipé ? Entre ton code pour 3 mois de Pro offerts.",
+    desc: "Membre de l'accès anticipé ? Entre ton code pour 1 mois de Pro offert.",
     placeholder: "Ton code",
     redeem: "Valider",
     redeeming: "Validation…",
@@ -2064,7 +2064,7 @@ const en: Dictionary = {
   },
   promo: {
     title: "Early access code",
-    desc: "Early access member? Enter your code for 3 months of Pro, free.",
+    desc: "Early access member? Enter your code for 1 month of Pro, free.",
     placeholder: "Your code",
     redeem: "Apply",
     redeeming: "Applying…",

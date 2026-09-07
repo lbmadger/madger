@@ -392,7 +392,7 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
           >
             <span className="flex items-center gap-1.5"><Check />Sans engagement</span>
             <span className="hidden sm:flex items-center gap-1.5"><Check />{launched ? "Paiements sécurisés par Stripe" : "Accès sélectionné manuellement"}</span>
-            <span className="flex items-center gap-1.5"><Check />{launched ? "14 jours de Pro offerts" : full ? "Accès anticipé complet" : "Plan Pro offert 3 mois"}</span>
+            <span className="flex items-center gap-1.5"><Check />{launched ? "7 jours de Pro offerts" : full ? "Accès anticipé complet" : "Plan Pro offert 1 mois"}</span>
           </motion.div>
         </div>
 

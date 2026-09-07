@@ -174,7 +174,7 @@ export default function EarlyAccessForm() {
           <p className="text-text-muted leading-relaxed mb-4" style={{ fontSize: 16 }}>
             {full
               ? "Les places fondateurs sont parties. Inscris-toi pour être prévenu en priorité de la prochaine vague."
-              : "Les premiers membres accèdent au plan Pro offert 3 mois."}
+              : "Les premiers membres accèdent au plan Pro offert 1 mois."}
           </p>
 
           {/* Value highlight / état des places */}
@@ -188,7 +188,7 @@ export default function EarlyAccessForm() {
             <span style={{ fontSize: 12, color: "#CBFF03", fontWeight: 600 }}>
               {full
                 ? "Accès anticipé complet · liste d'attente ouverte"
-                : "Plan Pro offert 3 mois · places limitées"}
+                : "Plan Pro offert 1 mois · places limitées"}
             </span>
           </div>
 

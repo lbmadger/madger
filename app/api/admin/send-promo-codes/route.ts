@@ -22,9 +22,9 @@ function emailHtml(code: string): string {
       <table width="100%" style="max-width:480px;background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:16px;">
         <tr><td style="padding:32px;">
           <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#CBFF03;letter-spacing:0.08em;text-transform:uppercase;">Accès anticipé</p>
-          <h1 style="margin:0 0 12px;font-size:24px;color:#fff;">Ton Pro offert 3 mois 🎉</h1>
+          <h1 style="margin:0 0 12px;font-size:24px;color:#fff;">Ton Pro offert 1 mois 🎉</h1>
           <p style="margin:0 0 20px;font-size:14px;color:#9a9a9a;line-height:1.7;">
-            Madger est ouvert. En tant que membre early access, tu bénéficies de <b style="color:#fff;">3 mois de Pro offerts</b>. Voici ton code personnel :
+            Madger est ouvert. En tant que membre early access, tu bénéficies de <b style="color:#fff;">1 mois de Pro offert</b>. Voici ton code personnel :
           </p>
           <div style="text-align:center;margin:0 0 20px;padding:16px;border:1px dashed rgba(203,255,3,0.4);border-radius:12px;background:rgba(203,255,3,0.05);">
             <span style="font-size:22px;font-weight:800;letter-spacing:2px;color:#CBFF03;">${code}</span>
@@ -46,7 +46,7 @@ function emailHtml(code: string): string {
 function sendPromoCode(to: string, code: string): Promise<boolean> {
   return sendEmail({
     to,
-    subject: "Ton accès Pro Madger · 3 mois offerts 🎉",
+    subject: "Ton accès Pro Madger · 1 mois offert 🎉",
     html: emailHtml(code),
   });
 }

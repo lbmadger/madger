@@ -72,7 +72,7 @@ export default async function AdminEmails() {
             },
             {
               key: "promo",
-              title: "Email 3 · Lancement : codes promo 3 mois Pro",
+              title: "Email 3 · Lancement : codes promo 1 mois Pro",
               desc: "Chaque inscrit reçoit SON code personnel. À déclencher LE JOUR du lancement.",
               remaining: promoLeft,
               endpoint: "/api/admin/send-promo-codes",

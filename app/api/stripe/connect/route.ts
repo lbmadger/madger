@@ -50,6 +50,12 @@ export async function POST(req: NextRequest) {
         transfers: { requested: true },
         card_payments: { requested: true },
       },
+      // Virements vers la banque du coach chaque lundi : Stripe facture
+      // 0,10 € par virement à la plateforme, l'hebdomadaire en divise le
+      // nombre par cinq sans faire attendre le coach plus d'une semaine.
+      settings: {
+        payouts: { schedule: { interval: "weekly", weekly_anchor: "monday" } },
+      },
     });
     await admin
       .from("coaches")
@@ -63,6 +69,18 @@ export async function POST(req: NextRequest) {
     const hadAccount = !!accountId;
     if (!accountId) {
       accountId = await createAccount();
+    } else {
+      // Compte créé avant le passage en hebdomadaire : aligné au passage
+      // (best-effort, ne bloque jamais l'ouverture de Stripe).
+      try {
+        await stripe.accounts.update(accountId, {
+          settings: {
+            payouts: { schedule: { interval: "weekly", weekly_anchor: "monday" } },
+          },
+        });
+      } catch {
+        /* best-effort */
+      }
     }
 
     let link;

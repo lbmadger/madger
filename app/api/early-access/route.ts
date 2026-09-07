@@ -19,7 +19,7 @@ function getSupabase() {
   return _supabase;
 }
 
-// Nombre de places "fondateur" (plan Pro offert 3 mois). Au-delà, les
+// Nombre de places "fondateur" (plan Pro offert 1 mois). Au-delà, les
 // inscriptions basculent automatiquement en liste d'attente. Réglable via
 // la variable d'env FOUNDER_CAP sans redéploiement de code.
 const FOUNDER_CAP = Number(process.env.FOUNDER_CAP ?? 50);
@@ -210,8 +210,8 @@ export async function POST(req: NextRequest) {
       : `${safe.prenom}, tu fais partie<br>des premiers.`;
     const badgeLabel = waitlist ? "Ta place sur la prochaine vague" : "Ton accès fondateur";
     const badgeText = waitlist
-      ? `Les places fondateurs (plan Pro offert 3 mois) sont déjà toutes prises. Mais tu es <strong style="color:#ffffff;">prioritaire</strong> sur la prochaine vague d'ouverture. On te contacte dès qu'une place se libère.`
-      : `Plan Pro offert <strong style="color:#ffffff;">3 mois</strong> dès le lancement, réservé aux membres fondateurs. Tu fais partie des premiers coachs sélectionnés. On te contacte directement dès que ton accès est prêt.`;
+      ? `Les places fondateurs (plan Pro offert 1 mois) sont déjà toutes prises. Mais tu es <strong style="color:#ffffff;">prioritaire</strong> sur la prochaine vague d'ouverture. On te contacte dès qu'une place se libère.`
+      : `Plan Pro offert <strong style="color:#ffffff;">1 mois</strong> dès le lancement, réservé aux membres fondateurs. Tu fais partie des premiers coachs sélectionnés. On te contacte directement dès que ton accès est prêt.`;
 
     await sendEmail({
       to: normalizedEmail,

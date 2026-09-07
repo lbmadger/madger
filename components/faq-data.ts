@@ -7,7 +7,7 @@ export function getFaqs(launched: boolean) {
   return [
     {
       q: "Comment démarrer avec Madger ?",
-      a: "Tu crées ton compte gratuitement, tu configures ta page en quelques minutes (prestations, disponibilités, paiement) et tu partages ton lien. Chaque nouveau compte démarre avec 14 jours de Pro offerts, sans engagement et sans carte bancaire.",
+      a: "Tu crées ton compte gratuitement, tu configures ta page en quelques minutes (prestations, disponibilités, paiement) et tu partages ton lien. Chaque nouveau compte démarre avec 7 jours de Pro offerts, sans engagement et sans carte bancaire.",
     },
     ...faqs.slice(1),
   ];
@@ -16,7 +16,7 @@ export function getFaqs(launched: boolean) {
 export const faqs = [
   {
     q: "Quand Madger sera-t-il disponible ?",
-    a: "Madger est en phase d'accès anticipé. Les coachs qui s'inscrivent maintenant sont sélectionnés manuellement et accèdent en priorité au lancement, avec le plan Pro offert pendant 3 mois. On te contacte directement dès que ton accès est prêt.",
+    a: "Madger est en phase d'accès anticipé. Les coachs qui s'inscrivent maintenant sont sélectionnés manuellement et accèdent en priorité au lancement, avec le plan Pro offert pendant 1 mois. On te contacte directement dès que ton accès est prêt.",
   },
   {
     q: "Comment fonctionne le lien coach ?",

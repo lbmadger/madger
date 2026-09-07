@@ -183,7 +183,7 @@ export default function PricingPlans({
               <p role="alert" className="mt-2 text-center text-sm text-danger">{error}</p>
             )}
             {/* Code d'accès anticipé : proposé UNIQUEMENT ici, dans la carte
-                Madger Pro (c'est un code qui offre 3 mois de Pro). */}
+                Madger Pro (c'est un code qui offre 1 mois de Pro). */}
             <div className="mt-3">
               <PromoCode compact />
             </div>
