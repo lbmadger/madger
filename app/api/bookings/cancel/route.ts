@@ -23,6 +23,7 @@ import {
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 import { detachMeetFromBooking } from "@/lib/google/calendar";
 import { emailInvoice } from "@/lib/invoices/send";
+import { ensureStripeFee } from "@/lib/stripe/fees";
 
 export const dynamic = "force-dynamic";
 // Refund + transfert Stripe + agenda Google + email en série : la limite de
@@ -338,9 +339,14 @@ export async function POST(req: NextRequest) {
   );
   const totalRefunded = alreadyRefunded + refund;
 
+  const feeCents = await ensureStripeFee(admin, stripe, {
+    id: payment.id as string,
+    stripe_charge_id: payment.stripe_charge_id as string | null,
+    stripe_fee_cents: payment.stripe_fee_cents as number | null,
+  });
   const breakdown = computePayout(
     amount,
-    payment.stripe_fee_cents ?? 0,
+    feeCents,
     isPro(coach?.pro_until),
     totalRefunded
   );

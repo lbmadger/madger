@@ -15,6 +15,7 @@ import {
 import { cronAuthorized } from "@/lib/cron/auth";
 import { detachMeetFromBooking } from "@/lib/google/calendar";
 import { emailInvoice } from "@/lib/invoices/send";
+import { ensureStripeFee } from "@/lib/stripe/fees";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -365,9 +366,16 @@ export async function GET(req: NextRequest) {
         return;
       }
 
+      // Frais Stripe relus chez Stripe s'ils manquent : le coach les porte
+      // toujours, Pro ou pas.
+      const feeCents = await ensureStripeFee(supabase, stripe, {
+        id: p.id as string,
+        stripe_charge_id: p.stripe_charge_id as string | null,
+        stripe_fee_cents: p.stripe_fee_cents as number | null,
+      });
       const breakdown = computePayout(
         p.amount_cents,
-        p.stripe_fee_cents ?? 0,
+        feeCents,
         isPro(coach.pro_until as string | null),
         alreadyRefunded
       );
