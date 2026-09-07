@@ -1140,6 +1140,9 @@ const fr = {
     businessName: "Nom commercial ou raison sociale",
     siretLabel: "SIRET",
     billingAddress: "Adresse de facturation",
+    billingAddressPlaceholder: "12 rue de Rivoli, Paris",
+    billingAddressHint:
+      "Tape le début de ton adresse et choisis-la dans la liste : numéro, rue, code postal et ville se remplissent d'un coup. Elle figure sur tes factures.",
     vatNumber: "Numéro de TVA intracommunautaire",
     vatHint:
       "Laisse vide si tu es en franchise de TVA (micro-entreprise) : la mention « TVA non applicable, art. 293 B du CGI » est ajoutée automatiquement sur tes factures.",
@@ -2772,6 +2775,9 @@ const en: Dictionary = {
     businessName: "Trade name or company name",
     siretLabel: "SIRET",
     billingAddress: "Billing address",
+    billingAddressPlaceholder: "12 rue de Rivoli, Paris",
+    billingAddressHint:
+      "Type the start of your address and pick it from the list: number, street, postcode and city are filled in at once. It appears on your invoices.",
     vatNumber: "EU VAT number",
     vatHint:
       "Leave empty if you are VAT-exempt (French micro-enterprise): the mention \"TVA non applicable, art. 293 B du CGI\" is added automatically to your invoices.",

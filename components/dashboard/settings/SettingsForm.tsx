@@ -10,6 +10,7 @@ import { slugify, isValidSlug } from "@/lib/utils/slug";
 import Button from "@/components/ui/Button";
 import { useConfirm } from "@/components/ui/useConfirm";
 import CityAutocomplete from "@/components/ui/CityAutocomplete";
+import AddressAutocomplete from "@/components/ui/AddressAutocomplete";
 import GymAutocomplete, { type GymPlace } from "@/components/ui/GymAutocomplete";
 import LanguagePicker from "@/components/settings/LanguagePicker";
 import SettingsSection from "./SettingsSection";
@@ -830,11 +831,19 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
               />
             </label>
           </div>
-          <Field
-            label={t("settings.billingAddress")}
-            value={billingAddress}
-            onChange={setBillingAddress}
-          />
+          <label className="flex flex-col gap-1.5">
+            <span className={labelClass}>{t("settings.billingAddress")}</span>
+            <AddressAutocomplete
+              value={billingAddress}
+              onChange={setBillingAddress}
+              placeholder={t("settings.billingAddressPlaceholder")}
+              inputClassName={inputClass}
+              ariaLabel={t("settings.billingAddress")}
+            />
+            <span className="text-xs text-text-dim">
+              {t("settings.billingAddressHint")}
+            </span>
+          </label>
           <label className="flex flex-col gap-1.5">
             <span className={labelClass}>{t("settings.vatNumber")}</span>
             <input

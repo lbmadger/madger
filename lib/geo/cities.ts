@@ -17,28 +17,50 @@ type Commune = {
   departement?: { code?: string };
 };
 
-// Suggestions pour l'autocomplétion (triées par population).
+// « Paris 15e Arrondissement » → « Paris 15e » : plus court, et c'est ce
+// que tout le monde tape.
+function shortName(nom: string): string {
+  return nom.replace(/\s+Arrondissement$/i, "");
+}
+
+function norm(s: string): string {
+  return s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+// Suggestions pour l'autocomplétion (triées par population). Les
+// arrondissements de Paris, Lyon et Marseille sont inclus : un coach du 15e
+// n'est pas « à Paris » au sens de l'annuaire, il est dans le 15e.
 export async function searchCities(query: string): Promise<City[]> {
   const q = query.trim();
   if (q.length < 2) return [];
   try {
     const res = await fetch(
-      `${ENDPOINT}?nom=${encodeURIComponent(q)}&fields=nom,centre,departement&boost=population&limit=7`
+      `${ENDPOINT}?nom=${encodeURIComponent(q)}&fields=nom,centre,departement&type=commune-actuelle,arrondissement-municipal&boost=population&limit=12`
     );
     if (!res.ok) return [];
     const data: Commune[] = await res.json();
-    return (Array.isArray(data) ? data : [])
+    const list = (Array.isArray(data) ? data : [])
       .map((c): City | null => {
         const coords = c?.centre?.coordinates;
         if (!coords) return null;
         return {
-          name: c.nom,
+          name: shortName(c.nom),
           lat: coords[1],
           lng: coords[0],
           dept: c?.departement?.code ?? null,
         };
       })
       .filter((c): c is City => c !== null);
+    // « paris 15 » doit proposer Paris 15e en premier, pas Paris puis dix
+    // autres communes : ce qui commence par la saisie passe devant.
+    const nq = norm(q);
+    const starts = list.filter((c) => norm(c.name).startsWith(nq));
+    const rest = list.filter((c) => !norm(c.name).startsWith(nq));
+    return [...starts, ...rest].slice(0, 8);
   } catch {
     return [];
   }
