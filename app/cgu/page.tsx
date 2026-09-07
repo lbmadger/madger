@@ -52,8 +52,14 @@ export default function CGU() {
             <p className="mt-3">
               La réservation d'une séance par un client nécessite la création d'un compte
               client (email et mot de passe). Ce compte permet au client de suivre ses séances,
-              d'annuler selon la formule d'annulation du coach, d'accéder à ses factures et
-              d'échanger avec son coach.
+              de placer les séances de ses packs, d'annuler selon les conditions du coach,
+              de répondre à un report de séance, de recevoir ses factures et d'échanger avec
+              son coach.
+            </p>
+            <p className="mt-3">
+              Le coach est responsable de l'exactitude des informations de facturation qu'il
+              renseigne (raison sociale, SIRET, TVA, adresse) : elles figurent telles quelles
+              sur les factures et avoirs émis en son nom.
             </p>
           </section>
 
@@ -69,14 +75,15 @@ export default function CGU() {
           <section>
             <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>Résiliation et droit applicable</h2>
             <p>
-              L'utilisateur peut résilier son compte à tout moment via{" "}
+              L'abonnement Madger Pro se résilie depuis l'espace Abonnement. L'utilisateur
+              peut demander la suppression de son compte à tout moment via{" "}
               <a href="mailto:contact@madger.app" style={{ color: "#CBFF03" }}>contact@madger.app</a>.
               Les présentes CGU sont soumises au droit français.
             </p>
           </section>
 
           <p style={{ fontSize: 13, color: "#3A3A3A", marginTop: 8 }}>
-            Dernière mise à jour : juillet 2026
+            Dernière mise à jour : septembre 2026
           </p>
         </div>
       </div>

@@ -47,7 +47,19 @@ export default function PolitiqueCookies() {
             </p>
             <p className="mt-3">
               Les pages de paiement utilisent des cookies <strong className="text-white">Stripe</strong> à des
-              fins de sécurisation des transactions.
+              fins de sécurisation des transactions. Si vous choisissez un paiement en plusieurs fois,
+              <strong className="text-white"> Klarna</strong> ou <strong className="text-white">Alma</strong> peuvent
+              déposer leurs propres cookies sur leurs pages, selon leur politique.
+            </p>
+            <p className="mt-3">
+              La mesure d&apos;audience (PostHog, hébergé dans l&apos;Union européenne) fonctionne{" "}
+              <strong className="text-white">sans cookie</strong> : aucun identifiant n&apos;est enregistré sur
+              votre appareil, la session est oubliée à la fermeture de la page.
+            </p>
+            <p className="mt-3">
+              Le stockage local du navigateur (localStorage) mémorise quelques préférences d&apos;affichage
+              sans valeur d&apos;identification : onglet ou filtre choisi, fenêtre d&apos;information déjà fermée.
+              Ces données ne quittent jamais votre appareil.
             </p>
           </section>
 
@@ -60,7 +72,7 @@ export default function PolitiqueCookies() {
           </section>
 
           <p style={{ fontSize: 13, color: "#3A3A3A", marginTop: 8 }}>
-            Dernière mise à jour : juin 2026
+            Dernière mise à jour : septembre 2026
           </p>
         </div>
       </div>

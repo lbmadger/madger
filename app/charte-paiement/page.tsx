@@ -5,12 +5,14 @@ export const metadata: Metadata = {
   alternates: { canonical: "/charte-paiement" },
   title: "Madger · Charte de paiement & annulation",
   description:
-    "Comment Madger sécurise les paiements : séquestre, délais de versement, formules d'annulation et résolution des litiges.",
+    "Comment Madger sécurise les paiements : séquestre, délais de versement, formules d'annulation, packs de séances et résolution des litiges.",
 };
 
-// Charte de paiement — page statique (FR), même style que les pages légales.
+// Charte de paiement : page statique (FR), même style que les pages légales.
 // Décrit précisément les droits du client et du coach : séquestre des fonds,
-// libération, formules d'annulation, signalement et résolution des litiges.
+// libération, délais d'annulation, packs de séances, signalement et
+// résolution des litiges. Doit rester alignée sur le code (routes
+// d'annulation, cron de versement, fonctions SQL des crédits).
 export default function ChartePaiement() {
   return (
     <main className="min-h-screen bg-bg text-white">
@@ -34,7 +36,7 @@ export default function ChartePaiement() {
         </h1>
         <p className="mb-10" style={{ color: "var(--text-dim)", fontSize: 14 }}>
           Cette charte définit les droits du client et du coach sur les séances
-          payées via Madger. Elle complète les CGV.
+          et les packs payés via Madger. Elle complète les CGV.
         </p>
 
         <div className="flex flex-col gap-10" style={{ color: "var(--text-muted)", fontSize: 15, lineHeight: 1.8 }}>
@@ -52,7 +54,8 @@ export default function ChartePaiement() {
                 séance
               </strong>
               , sauf annulation ou signalement d'un problème par le client dans ce
-              délai.
+              délai. Le coach reçoit ensuite ses fonds sur son compte bancaire par
+              virement hebdomadaire.
             </p>
             <p className="mt-3">
               <strong className="text-white">Réservation avec validation du coach</strong> :
@@ -64,14 +67,26 @@ export default function ChartePaiement() {
               demande acceptée, le paiement est débité et suit le circuit de
               séquestre décrit ci-dessus.
             </p>
+            <p className="mt-3">
+              <strong className="text-white">Pack de séances</strong> : un pack est
+              toujours débité au moment de l'achat, y compris chez un coach qui
+              valide ses demandes à la main. Seule la première séance, choisie à
+              l'achat, reste à valider. Si le coach la refuse, le pack est
+              intégralement remboursé. Les fonds d'un pack sont libérés au coach
+              séance par séance, 24 heures après chaque séance effectuée, le reste
+              demeurant sous séquestre. À l'expiration du pack, ou au plus tard 180
+              jours après l'achat, le solde est versé au coach.
+            </p>
           </section>
 
           <section>
             <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>
-              2. Formules d'annulation
+              2. Annulation d'une séance à l'unité
             </h2>
             <p>
               Chaque coach définit lui-même{" "}
+              <strong className="text-white">un délai d'annulation</strong> (12, 24
+              ou 48 heures avant le début de la séance) et{" "}
               <strong className="text-white">deux pourcentages de
               remboursement</strong>, affichés sur sa page publique et au moment
               de la réservation, avant tout paiement. Ces règles s'appliquent
@@ -79,15 +94,14 @@ export default function ChartePaiement() {
             </p>
             <ul className="mt-3 flex flex-col gap-2" style={{ paddingLeft: 20, listStyleType: "disc" }}>
               <li>
-                <strong className="text-white">Le client annule plus de 24 heures
-                avant le début de la séance</strong> (la veille ou avant) : il est
-                remboursé du pourcentage choisi par le coach pour ce cas.
+                <strong className="text-white">Le client annule avant le délai
+                du coach</strong> : il est remboursé du pourcentage choisi par le
+                coach pour ce cas.
               </li>
               <li>
-                <strong className="text-white">Le client annule moins de 24 heures
-                avant le début de la séance</strong> (le jour même) : il est
-                remboursé du pourcentage, généralement plus bas, choisi par le
-                coach pour ce cas.
+                <strong className="text-white">Le client annule après ce délai</strong> :
+                il est remboursé du pourcentage, généralement plus bas, choisi par
+                le coach pour ce cas.
               </li>
               <li>
                 <strong className="text-white">Absence à la séance (no-show)</strong> :
@@ -96,7 +110,8 @@ export default function ChartePaiement() {
             </ul>
             <p className="mt-3">
               La part non remboursée revient au coach (moins frais et
-              commission).
+              commission). Tout remboursement donne lieu à un avoir envoyé au
+              client par email.
             </p>
             <p className="mt-3">
               Si c'est le <strong className="text-white">coach</strong> qui annule
@@ -104,11 +119,67 @@ export default function ChartePaiement() {
               <strong className="text-white">100 %</strong>, quelle que soit la
               formule.
             </p>
+            <p className="mt-3">
+              <strong className="text-white">Séance déplacée par le coach</strong> :
+              le client est prévenu par email et peut, depuis son espace, confirmer
+              le nouvel horaire ou en choisir un autre parmi les créneaux du coach.
+              Sans réponse de sa part sous 48 heures (ou 12 heures avant la séance
+              si c'est plus tôt), le nouvel horaire est considéré comme accepté.
+            </p>
           </section>
 
           <section>
             <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>
-              3. Signaler un problème
+              3. Packs de séances : crédits et annulation
+            </h2>
+            <p>
+              L'achat d'un pack donne au client un nombre de{" "}
+              <strong className="text-white">crédits</strong> égal au nombre de
+              séances du pack, utilisables uniquement auprès du coach qui l'a
+              vendu. Le client place ses séances depuis son espace, dans les
+              créneaux du coach. Un crédit n'est jamais négatif : sans crédit
+              restant, le client reprend un pack ou réserve à l'unité.
+            </p>
+            <ul className="mt-3 flex flex-col gap-2" style={{ paddingLeft: 20, listStyleType: "disc" }}>
+              <li>
+                <strong className="text-white">Validité</strong> : le coach fixe la
+                durée de validité du pack (de 1 à 12 mois, ou sans limite),
+                affichée avant l'achat. À l'échéance, les séances non utilisées
+                sont perdues. Le client est prévenu par email 7 jours avant.
+              </li>
+              <li>
+                <strong className="text-white">Annulation d'une séance du pack</strong> :
+                le coach fixe pour chaque pack un délai d'annulation (12, 24 ou 48
+                heures). Une séance annulée par le client avant ce délai est
+                remise sur son solde. Une séance annulée après ce délai, ou non
+                honorée, est décomptée comme si elle avait eu lieu. Une séance
+                annulée par le coach est toujours remise sur le solde.
+              </li>
+              <li>
+                <strong className="text-white">Remboursement</strong> : les
+                séances déjà effectuées ou décomptées ne sont pas remboursables.
+                Le coach peut à tout moment rembourser les séances restantes d'un
+                pack, au prorata du prix payé ; le pack est alors clôturé et un
+                avoir est émis. Le client dispose en outre du droit de
+                rétractation décrit dans les CGV.
+              </li>
+              <li>
+                <strong className="text-white">Gestes commerciaux</strong> : le
+                coach peut offrir ou retirer des séances sur un pack. Chaque
+                mouvement de crédit est journalisé et visible du coach.
+              </li>
+              <li>
+                <strong className="text-white">Modification d'une offre</strong> :
+                les conditions d'un pack (prix, validité, délai) sont figées à
+                l'achat. Modifier l'offre ensuite ne change rien aux packs déjà
+                achetés.
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>
+              4. Signaler un problème
             </h2>
             <p>
               Tant que les fonds ne sont pas libérés (soit dans les 24 h suivant la
@@ -122,7 +193,7 @@ export default function ChartePaiement() {
 
           <section>
             <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>
-              4. Résolution des litiges : dans quels cas
+              5. Résolution des litiges : dans quels cas
             </h2>
             <p>
               En cas de signalement, Madger examine la situation et tranche selon
@@ -158,26 +229,38 @@ export default function ChartePaiement() {
 
           <section>
             <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>
-              5. Frais et commissions
+              6. Frais et commissions
             </h2>
             <p>
-              Sur chaque séance payée, les{" "}
-              <strong className="text-white">frais de traitement Stripe</strong>{" "}
-              sont à la charge du coach. La{" "}
+              Sur chaque séance ou pack payé, les{" "}
+              <strong className="text-white">frais de traitement du paiement</strong>{" "}
+              (Stripe, et le cas échéant Klarna ou Alma pour un paiement en
+              plusieurs fois) sont à la charge du coach et déduits de son
+              versement. La{" "}
               <strong className="text-white">commission Madger</strong> est de 0 %
               pour un coach Pro et de 5 % pour un coach Gratuit,
               prélevée sur la part effectivement conservée par le coach.
+            </p>
+            <p className="mt-3">
+              <strong className="text-white">Paiement en plusieurs fois</strong> :
+              lorsque le coach l'a activé, un pack de 120 € ou plus peut être réglé
+              en trois fois via Klarna ou Alma. Le coach reçoit l'intégralité
+              selon le circuit de séquestre habituel ; l'échéancier relève du
+              contrat entre le client et l'organisme choisi, qui applique ses
+              propres conditions. Les remboursements repartent vers ce même
+              organisme.
             </p>
           </section>
 
           <section>
             <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>
-              6. Délais
+              7. Délais
             </h2>
             <p>
               Les versements et remboursements sont exécutés via Stripe. Un
-              remboursement peut prendre plusieurs jours ouvrés pour apparaître sur
-              le compte du client, selon sa banque.
+              remboursement repart toujours vers le moyen de paiement d'origine et
+              peut prendre plusieurs jours ouvrés pour apparaître sur le compte du
+              client, selon sa banque.
             </p>
           </section>
 
@@ -188,6 +271,9 @@ export default function ChartePaiement() {
                 contact@madger.app
               </a>
               .
+            </p>
+            <p style={{ fontSize: 13, color: "#3A3A3A", marginTop: 8 }}>
+              Dernière mise à jour : septembre 2026
             </p>
           </section>
         </div>

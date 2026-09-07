@@ -46,17 +46,41 @@ export default function CGV() {
             <p>Madger propose deux formules :</p>
             <ul className="mt-3 flex flex-col gap-2" style={{ paddingLeft: 20, listStyleType: "disc" }}>
               <li><strong className="text-white">« Gratuit »</strong> : 0 €, 5 % de commission par séance encaissée</li>
-              <li><strong className="text-white">Madger Pro</strong> : 49 € HT / mois ou 490 € HT / an, 0 % de commission</li>
+              <li><strong className="text-white">Madger Pro</strong> : 49 € par mois ou 490 € par an, 0 % de commission</li>
             </ul>
             <p className="mt-3">
-              Les tarifs Madger sont exprimés hors taxes. TVA non applicable à ce jour,
-              art. 293 B du CGI : tant que cette franchise s&apos;applique, aucun montant de TVA
-              n&apos;est ajouté et le prix hors taxes correspond au prix payé. Si Madger devient
-              redevable de la TVA, celle-ci s&apos;ajoutera au tarif hors taxes en vigueur.
-              Les prestations des coachs sont affichées au prix fixé par chaque coach, toutes taxes comprises.
-              Le premier abonnement Madger Pro d&apos;un coach débute par 7 jours d&apos;essai gratuit ; sauf résiliation avant la fin de l&apos;essai, il se poursuit automatiquement au tarif choisi.
-              Les membres inscrits en accès anticipé bénéficient de Madger Pro offert pendant 1 mois au lancement.
-              Madger se réserve le droit de modifier ses tarifs avec un préavis de 30 jours.
+              TVA non applicable à ce jour, art. 293 B du CGI : tant que cette franchise
+              s&apos;applique, aucun montant de TVA n&apos;est ajouté et le prix affiché correspond
+              au prix payé. Si Madger devient redevable de la TVA, celle-ci s&apos;ajoutera au
+              tarif hors taxes en vigueur. Les prestations des coachs sont affichées au prix
+              fixé par chaque coach, toutes taxes comprises.
+            </p>
+            <p className="mt-3">
+              <strong className="text-white">Prix de lancement</strong> : le tarif de 49 € par
+              mois (490 € par an) est un prix de lancement valable pour tout abonnement
+              souscrit jusqu&apos;au 31 décembre 2026 inclus. À compter du 1er janvier 2027, le
+              tarif de Madger Pro pour les nouvelles souscriptions est de 69 € par mois
+              (690 € par an). Un coach abonné avant cette date conserve le prix de lancement
+              tant que son abonnement reste actif sans interruption.
+            </p>
+            <p className="mt-3">
+              Le premier abonnement Madger Pro d&apos;un coach débute par 7 jours d&apos;essai
+              gratuit, avec enregistrement d&apos;un moyen de paiement ; sauf résiliation avant la
+              fin de l&apos;essai, il se poursuit automatiquement au tarif choisi. Un seul essai
+              par coach. Les membres inscrits en accès anticipé bénéficient de Madger Pro
+              offert pendant 1 mois au lancement. Madger se réserve le droit de modifier ses
+              tarifs avec un préavis de 30 jours.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>Paiement en plusieurs fois</h2>
+            <p>
+              Lorsque le coach l&apos;a activé, un pack de séances de 120 € ou plus peut être
+              réglé en trois fois via Klarna ou Alma, proposés sur la page de paiement. Le
+              choix de ce mode de paiement forme un contrat entre le client et l&apos;organisme
+              concerné, qui applique ses propres conditions. Les séances à l&apos;unité se
+              règlent par carte, Apple Pay, Google Pay ou Link.
             </p>
           </section>
 
@@ -67,7 +91,33 @@ export default function CGV() {
               en deux étapes : un récapitulatif présente le détail de la commande et son prix total,
               puis le paiement est confirmé par un second clic sur la page de paiement sécurisée Stripe.
               Vous pouvez vérifier et corriger votre commande avant de la valider.
+              En validant le paiement, vous acceptez les présentes CGV et la charte de
+              paiement ; la version acceptée et la date sont conservées avec le paiement.
               Une confirmation est envoyée par email après le paiement.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>Packs de séances</h2>
+            <p>
+              Un pack est un ensemble de séances prépayées auprès d&apos;un coach donné, sous
+              forme de crédits utilisables uniquement chez ce coach, depuis l&apos;espace client.
+              Le prix, la durée de validité et le délai d&apos;annulation du pack sont affichés
+              avant l&apos;achat et figés à l&apos;achat. À l&apos;échéance de la validité, les séances
+              non utilisées sont perdues. Le détail des règles d&apos;utilisation, d&apos;annulation
+              et de remboursement figure dans la{" "}
+              <Link href="/charte-paiement" style={{ color: "#CBFF03" }}>charte de paiement</Link>.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>Factures</h2>
+            <p>
+              Chaque paiement encaissé donne lieu à une facture numérotée de façon
+              continue, émise au nom du coach avec ses mentions légales et envoyée au client
+              par email au format PDF. Tout remboursement donne lieu à un avoir, numéroté et
+              envoyé de la même façon. Le coach retrouve l&apos;ensemble de ses factures et
+              avoirs dans son espace.
             </p>
           </section>
 
@@ -88,9 +138,13 @@ export default function CGV() {
             <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>Paiement et résiliation</h2>
             <p>
               Les paiements sont traités par <strong className="text-white">Stripe</strong> (PCI-DSS niveau 1).
-              L'abonnement mensuel est sans engagement et résiliable à tout moment depuis votre espace
-              ou via <a href="mailto:contact@madger.app" style={{ color: "#CBFF03" }}>contact@madger.app</a>.
-              La résiliation prend effet à la fin de la période en cours, sans remboursement au prorata.
+              L&apos;abonnement Madger Pro est sans engagement et résiliable à tout moment depuis
+              votre espace (Abonnement, « Gérer mon abonnement ») ou via{" "}
+              <a href="mailto:contact@madger.app" style={{ color: "#CBFF03" }}>contact@madger.app</a>.
+              La résiliation prend effet à la fin de la période en cours, sans remboursement au
+              prorata ; jusqu&apos;à cette date, l&apos;abonnement reste actif et peut être réactivé
+              en un clic. Un abonnement résilié puis souscrit à nouveau est facturé au tarif en
+              vigueur à la nouvelle souscription.
             </p>
           </section>
 
@@ -108,6 +162,16 @@ export default function CGV() {
               Les conditions d&apos;annulation et de remboursement applicables sont celles de la{" "}
               <Link href="/charte-paiement" style={{ color: "#CBFF03" }}>charte de paiement</Link>,
               affichées avant tout paiement.
+            </p>
+            <p className="mt-3">
+              Pour l&apos;achat d&apos;un <strong className="text-white">pack de séances</strong>, dont les
+              séances ne sont pas toutes fixées à une date déterminée, le client dispose du droit
+              de rétractation de 14 jours à compter de l&apos;achat. En plaçant une séance avant la
+              fin de ce délai, il demande expressément l&apos;exécution anticipée du contrat : les
+              séances effectuées ou décomptées avant la rétractation restent dues, et le
+              remboursement porte sur les séances restantes, au prorata du prix payé. La demande
+              s&apos;exerce auprès du coach ou par email à{" "}
+              <a href="mailto:contact@madger.app" style={{ color: "#CBFF03" }}>contact@madger.app</a>.
             </p>
           </section>
 
@@ -132,7 +196,7 @@ export default function CGV() {
           </section>
 
           <p style={{ fontSize: 13, color: "#3A3A3A", marginTop: 8 }}>
-            Dernière mise à jour : juillet 2026
+            Dernière mise à jour : septembre 2026
           </p>
         </div>
       </div>

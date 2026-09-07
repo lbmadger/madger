@@ -51,10 +51,24 @@ export default function PolitiqueConfidentialite() {
                 Base légale : exécution du contrat (art. 6.1.b du RGPD).
               </li>
               <li>
-                <strong className="text-white">Réservations et paiements</strong> (séances réservées, montants,
-                statuts de paiement et de remboursement) : prise de rendez-vous, encaissement sécurisé,
-                versement au coach, facturation, gestion des annulations et litiges.
-                Base légale : exécution du contrat, puis obligation légale pour la conservation comptable.
+                <strong className="text-white">Réservations et paiements</strong> (séances réservées, packs et
+                crédits de séances avec l&apos;historique de leurs mouvements, montants, statuts de paiement et
+                de remboursement, factures et avoirs, version et date d&apos;acceptation des CGV) : prise de
+                rendez-vous, encaissement sécurisé, versement au coach, facturation, gestion des annulations
+                et litiges. Base légale : exécution du contrat, puis obligation légale pour la conservation
+                comptable.
+              </li>
+              <li>
+                <strong className="text-white">Notifications et relances</strong> (cloche de l&apos;espace client,
+                emails de rappel, de fin de pack, d&apos;expiration, de séance déplacée ; pour le coach, alertes
+                sur les clients à relancer) : suivi de la relation de coaching. Base légale : exécution du
+                contrat et intérêt légitime. Ces emails sont liés au service, ce ne sont pas des messages
+                publicitaires.
+              </li>
+              <li>
+                <strong className="text-white">Raison de résiliation</strong> (motif choisi et commentaire
+                facultatif d&apos;un coach qui arrête Madger Pro) : amélioration du service. Base légale :
+                intérêt légitime.
               </li>
               <li>
                 <strong className="text-white">Messagerie</strong> (messages échangés entre client et coach) :
@@ -92,14 +106,19 @@ export default function PolitiqueConfidentialite() {
             <ul className="mt-3 flex flex-col gap-2" style={{ paddingLeft: 20, listStyleType: "disc" }}>
               <li><strong className="text-white">Supabase</strong> : base de données et authentification (hébergement dans l&apos;Union européenne)</li>
               <li><strong className="text-white">Stripe</strong> : paiements, empreintes bancaires et versements aux coachs (certifié PCI-DSS niveau 1 ; Madger ne stocke jamais vos numéros de carte)</li>
+              <li><strong className="text-white">Klarna</strong> et <strong className="text-white">Alma</strong> : uniquement si vous choisissez de payer un pack en plusieurs fois ; ces organismes traitent alors vos données selon leur propre politique de confidentialité, en qualité de responsables de traitement</li>
               <li><strong className="text-white">Google</strong> : agenda et visioconférence, uniquement pour les coachs qui connectent leur compte Google</li>
               <li><strong className="text-white">Vercel</strong> (États-Unis) : hébergement du site et mesure d&apos;audience sans cookies</li>
-              <li><strong className="text-white">Resend</strong> : envoi des emails transactionnels (confirmations, rappels, factures)</li>
+              <li><strong className="text-white">PostHog</strong> (hébergement dans l&apos;Union européenne) : mesure d&apos;audience et des parcours, sans cookie ni identifiant persistant sur votre appareil</li>
+              <li><strong className="text-white">Resend</strong> : envoi des emails transactionnels (confirmations, rappels, factures et avoirs)</li>
+              <li><strong className="text-white">CARTO</strong> et <strong className="text-white">OpenStreetMap</strong> : fonds de carte et recherche d&apos;adresses (votre adresse IP leur est transmise lors de l&apos;affichage d&apos;une carte ou de la recherche d&apos;une salle)</li>
+              <li><strong className="text-white">Anthropic</strong> et <strong className="text-white">Google</strong> : génération assistée de la présentation d&apos;un coach, à sa demande, à partir du texte qu&apos;il saisit ; aucune donnée client n&apos;est transmise</li>
             </ul>
             <p className="mt-3">
-              Certains de ces prestataires (Vercel, Stripe, Google, Resend) sont établis aux
-              États-Unis : les transferts de données sont encadrés par le Data Privacy Framework
-              UE-États-Unis ou par les clauses contractuelles types de la Commission européenne.
+              Certains de ces prestataires (Vercel, Stripe, Google, Resend, Anthropic, CARTO) sont
+              établis aux États-Unis : les transferts de données sont encadrés par le Data Privacy
+              Framework UE-États-Unis ou par les clauses contractuelles types de la Commission
+              européenne.
             </p>
           </section>
 
@@ -107,7 +126,8 @@ export default function PolitiqueConfidentialite() {
             <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>Conservation</h2>
             <ul className="mt-1 flex flex-col gap-2" style={{ paddingLeft: 20, listStyleType: "disc" }}>
               <li>Compte et profil : tant que le compte est actif, puis supprimés à la clôture.</li>
-              <li>Pièces comptables (paiements, factures) : 10 ans, conformément au Code de commerce.</li>
+              <li>Pièces comptables (paiements, factures, avoirs, journal des crédits de pack) : 10 ans, conformément au Code de commerce.</li>
+              <li>Notifications de l&apos;espace client : 12 mois. Raisons de résiliation : 3 ans.</li>
               <li>Données de forme : supprimées avec le compte, ou à votre demande à tout moment.</li>
               <li>Messagerie coach-client : conservée tant que les deux comptes sont actifs, supprimée avec le compte.</li>
               <li>Formulaire d&apos;accès anticipé : 3 ans à compter de l&apos;inscription, puis suppression ou anonymisation.</li>
@@ -130,7 +150,7 @@ export default function PolitiqueConfidentialite() {
           </section>
 
           <p style={{ fontSize: 13, color: "#3A3A3A", marginTop: 8 }}>
-            Dernière mise à jour : juillet 2026
+            Dernière mise à jour : septembre 2026
           </p>
         </div>
       </div>
