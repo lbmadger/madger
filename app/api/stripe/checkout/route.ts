@@ -279,10 +279,20 @@ export async function POST(req: NextRequest) {
   // validé par Stripe, puis la carte seule. Une liste refusée par Stripe
   // (moyen non activé sur le compte plateforme) passe à la suivante :
   // l'achat du pack n'est jamais bloqué.
+  // « card » couvre aussi Apple Pay et Google Pay ; Link (paiement en un
+  // clic Stripe) est fondé sur la carte, donc compatible avec l'empreinte
+  // du mode approbation. Les autres moyens du Dashboard (PayPal, virement,
+  // Bancontact…) ne sont pas repris ici : pas d'autorisation différée pour
+  // l'approbation, frais différents, et le coach ne les a pas choisis.
   const attempts: Stripe.Checkout.SessionCreateParams.PaymentMethodType[][] =
     withInstallments
-      ? [["card", "klarna", "alma"], ["card", "klarna"], ["card"]]
-      : [["card"]];
+      ? [
+          ["card", "link", "klarna", "alma"],
+          ["card", "link", "klarna"],
+          ["card", "link"],
+          ["card"],
+        ]
+      : [["card", "link"], ["card"]];
 
   // Charge sur le compte plateforme (pas d'option stripeAccount) → séquestre.
   let session;
