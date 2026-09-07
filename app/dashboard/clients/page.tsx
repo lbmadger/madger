@@ -6,6 +6,9 @@ import FollowUpList, {
 import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
 import type { Client } from "@/lib/clients/types";
+import { getCoach } from "@/lib/coach/getCoach";
+import { isPro } from "@/lib/subscription/plan";
+import ProLock from "@/components/subscription/ProLock";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +19,8 @@ export default async function ClientsPage() {
   const { dict, locale } = getServerDictionary();
   const loc = locale === "fr" ? "fr-FR" : "en-GB";
   const supabase = createClient();
+  const { coach } = await getCoach();
+  const pro = isPro(coach?.pro_until);
 
   const now = Date.now();
   const nowIso = new Date(now).toISOString();
@@ -94,11 +99,22 @@ export default async function ClientsPage() {
     <>
       <Topbar title={dict.clients.title} />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
-        <FollowUpList
-          items={followUps}
-          title={dict.clients.followUpTitle}
-          cta={dict.clients.followUpCta}
-        />
+        {/* Alerte churn : fonctionnalité Pro. En Essentiel, la liste est
+            verrouillée (même règle que l'email du matin, coupé côté cron). */}
+        {pro ? (
+          <FollowUpList
+            items={followUps}
+            title={dict.clients.followUpTitle}
+            cta={dict.clients.followUpCta}
+          />
+        ) : (
+          <ProLock
+            className="mb-5"
+            title={dict.plans.lock.followUpTitle}
+            desc={dict.plans.lock.followUpDesc}
+            cta={dict.plans.lock.cta}
+          />
+        )}
         <ClientsView initialClients={clients} />
       </main>
     </>

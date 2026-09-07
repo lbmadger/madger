@@ -22,6 +22,9 @@ export type PublicCoach = {
   cancel_hours?: number | null;
   // Paiement en 3x (Klarna) sur les packs dès 120 € (migration 0060).
   installments_enabled?: boolean | null;
+  // Plan Pro actif (migration 0065) : politique d'annulation paramétrable.
+  // Absent ou faux : règle fixe Essentiel.
+  pro?: boolean | null;
   booking_mode: "instant" | "approval";
   created_at: string;
   // Avis (vue public_coaches, migration 0020)

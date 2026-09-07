@@ -33,6 +33,15 @@ export const DEFAULT_REFUND_POLICY: RefundPolicy = {
   hours: DEFAULT_CANCEL_HOURS,
 };
 
+// Plan Essentiel : règle FIXE, non modifiable. Remboursement intégral si le
+// client annule plus de 24 h avant la séance, rien en deçà (le montant reste
+// acquis au coach). La politique paramétrable ci-dessous est réservée à Pro.
+export const ESSENTIAL_REFUND_POLICY: RefundPolicy = {
+  overPct: 100,
+  underPct: 0,
+  hours: 24,
+};
+
 // Valeurs proposées dans les réglages (sélecteurs).
 export const REFUND_PCT_CHOICES = [100, 75, 50, 25, 0] as const;
 
@@ -47,9 +56,25 @@ export function clampCancelHours(v: unknown): number {
   return n === 12 || n === 24 || n === 48 ? n : DEFAULT_CANCEL_HOURS;
 }
 
-// Résout la politique d'un coach à partir de ses colonnes : les deux
-// pourcentages explicites priment ; à défaut, l'ancienne formule est
-// convertie ; à défaut, la politique par défaut (75 / 0, 24 h).
+// Le coach est-il Essentiel (règle fixe) ? Vrai seulement quand la source
+// permet de le dire : `pro` (vue publique) ou `pro_until` (ligne coaches).
+// Une source muette garde la politique paramétrée (compatibilité).
+function isEssential(src: { pro?: unknown; pro_until?: unknown } | null | undefined): boolean {
+  if (!src) return false;
+  if (typeof src.pro === "boolean") return !src.pro;
+  if ("pro_until" in src) {
+    const until = src.pro_until;
+    if (!until) return true;
+    const t = new Date(String(until)).getTime();
+    return !(Number.isFinite(t) && t > Date.now());
+  }
+  return false;
+}
+
+// Résout la politique d'un coach à partir de ses colonnes. Coach Essentiel :
+// règle fixe. Coach Pro : les deux pourcentages explicites priment ; à
+// défaut, l'ancienne formule est convertie ; à défaut, la politique par
+// défaut (75 / 0, 24 h).
 export function resolveRefundPolicy(
   src:
     | {
@@ -57,10 +82,13 @@ export function resolveRefundPolicy(
         refund_under_24h_pct?: unknown;
         cancellation_policy?: unknown;
         cancel_hours?: unknown;
+        pro?: unknown;
+        pro_until?: unknown;
       }
     | null
     | undefined
 ): RefundPolicy {
+  if (isEssential(src)) return { ...ESSENTIAL_REFUND_POLICY };
   const hours = clampCancelHours(src?.cancel_hours);
   const over = clampPct(src?.refund_over_24h_pct);
   const under = clampPct(src?.refund_under_24h_pct);

@@ -52,6 +52,8 @@ export type ClientBooking = {
   coach_slug: string | null;
   cancellation_policy: string;
   cancel_hours: number | null;
+  // Coach Pro : politique paramétrée ; Essentiel : règle fixe (migration 0065).
+  pro: boolean;
   // Séance réglée avec un crédit de pack (ou séance d'achat du pack) : pas
   // de remboursement, le crédit est rendu ou perdu selon le délai du pack.
   on_credit: boolean;

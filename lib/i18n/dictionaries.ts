@@ -594,6 +594,25 @@ const fr = {
     upsellInvoicesTitle: "Des packs à vendre, en Pro",
     upsellInvoicesDesc: "Vends des packs de séances, relance les renouvellements et laisse l'annulation automatique gérer les imprévus.",
     upsellCardCta: "Bloquer le prix Pro",
+    // Sections verrouillées pour un coach Essentiel.
+    lock: {
+      cta: "Passer en Pro",
+      packsTitle: "Packs de séances : fonctionnalité Pro",
+      packsDesc:
+        "Vends des packs de 5, 10 ou 20 séances payés d'avance, avec validité et délai d'annulation propres, et des relances de renouvellement automatiques.",
+      packType: "Réservé au plan Pro",
+      cancellationTitle: "Annulation automatique : fonctionnalité Pro",
+      cancellationDesc:
+        "En Pro, tu choisis ton délai (12, 24 ou 48 h) et ce que le client récupère s'il annule tôt ou tard. Appliqué automatiquement, sans intervention.",
+      cancellationFixed:
+        "Ta règle actuelle, fixe : remboursement intégral si le client annule plus de 24 h avant la séance, aucun remboursement en deçà. Tu peux toujours rembourser manuellement depuis la fiche client.",
+      followUpTitle: "Alerte churn : fonctionnalité Pro",
+      followUpDesc:
+        "Chaque matin, la liste des clients sans séance depuis 14 jours et des packs qui expirent, ici et par email.",
+      paymentsTitle: "Écran encaissements : fonctionnalité Pro",
+      paymentsDesc:
+        "Qui a payé quoi, ce qui est versé, ce qui reste sous séquestre et les crédits en cours, client par client, avec export CSV.",
+    },
   },
   promo: {
     title: "Code d'accès anticipé",
@@ -2235,6 +2254,24 @@ const en: Dictionary = {
     upsellInvoicesTitle: "Packs to sell, on Pro",
     upsellInvoicesDesc: "Sell session packs, send renewal reminders and let automatic cancellation handle the unexpected.",
     upsellCardCta: "Lock the Pro price",
+    lock: {
+      cta: "Upgrade to Pro",
+      packsTitle: "Session packs: a Pro feature",
+      packsDesc:
+        "Sell packs of 5, 10 or 20 prepaid sessions, with their own validity and cancellation window, and automatic renewal reminders.",
+      packType: "Pro plan only",
+      cancellationTitle: "Automatic cancellation: a Pro feature",
+      cancellationDesc:
+        "On Pro, you choose your window (12, 24 or 48 h) and what the client gets back when cancelling early or late. Applied automatically, no action needed.",
+      cancellationFixed:
+        "Your current rule, fixed: full refund if the client cancels more than 24 h before the session, no refund after that. You can always refund manually from the client sheet.",
+      followUpTitle: "Churn alert: a Pro feature",
+      followUpDesc:
+        "Every morning, the list of clients without a session for 14 days and packs about to expire, here and by email.",
+      paymentsTitle: "Payments screen: a Pro feature",
+      paymentsDesc:
+        "Who paid what, what was paid out, what is still in escrow and credits in progress, client by client, with CSV export.",
+    },
   },
   promo: {
     title: "Early access code",

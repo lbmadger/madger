@@ -20,10 +20,14 @@ export default function AddServiceModal({
   onClose,
   onCreated,
   service,
+  packsAllowed = true,
 }: {
   onClose: () => void;
   onCreated: () => void;
   service?: Service;
+  // Coach Essentiel : le type « pack » est verrouillé (fonctionnalité Pro).
+  // Un pack existant reste éditable pour être désactivé.
+  packsAllowed?: boolean;
 }) {
   const { t } = useI18n();
   const [name, setName] = useState(service?.name ?? "");
@@ -133,22 +137,33 @@ export default function AddServiceModal({
           <div className="flex flex-col gap-1.5">
             <span className={labelClass}>{t("services.form.type")}</span>
             <div className="flex gap-2">
-              {TYPES.map((ty) => (
-                <button
-                  key={ty}
-                  type="button"
-                  aria-pressed={type === ty}
-                  onClick={() => setType(ty)}
-                  className={`flex-1 rounded-full border px-2 py-2 text-sm font-medium transition-colors ${
-                    type === ty
-                      ? "border-accent bg-accent/10 text-accent"
-                      : "border-border-strong text-text-muted hover:text-text-base"
-                  }`}
-                >
-                  {t(`services.types.${ty}`)}
-                </button>
-              ))}
+              {TYPES.map((ty) => {
+                const locked = ty === "pack" && !packsAllowed && service?.type !== "pack";
+                return (
+                  <button
+                    key={ty}
+                    type="button"
+                    aria-pressed={type === ty}
+                    disabled={locked}
+                    title={locked ? t("plans.lock.packType") : undefined}
+                    onClick={() => !locked && setType(ty)}
+                    className={`flex-1 rounded-full border px-2 py-2 text-sm font-medium transition-colors ${
+                      type === ty
+                        ? "border-accent bg-accent/10 text-accent"
+                        : locked
+                        ? "cursor-not-allowed border-border text-text-dim"
+                        : "border-border-strong text-text-muted hover:text-text-base"
+                    }`}
+                  >
+                    {t(`services.types.${ty}`)}
+                    {locked ? " 🔒" : ""}
+                  </button>
+                );
+              })}
             </div>
+            {!packsAllowed && service?.type !== "pack" && (
+              <span className="text-xs text-text-dim">{t("plans.lock.packType")}</span>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">

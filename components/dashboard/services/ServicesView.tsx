@@ -12,10 +12,13 @@ import AddServiceModal from "./AddServiceModal";
 export default function ServicesView({
   initialServices,
   canCreate = true,
+  packsAllowed = true,
 }: {
   initialServices: Service[];
   // false → compte Stripe pas encore actif : pas de création de prestation.
   canCreate?: boolean;
+  // false → coach Essentiel : le type « pack » est verrouillé.
+  packsAllowed?: boolean;
 }) {
   const { t, locale } = useI18n();
   const router = useRouter();
@@ -162,6 +165,7 @@ export default function ServicesView({
 
       {adding && (
         <AddServiceModal
+          packsAllowed={packsAllowed}
           onClose={() => setAdding(false)}
           onCreated={() => {
             setAdding(false);
@@ -172,6 +176,7 @@ export default function ServicesView({
       {editing && (
         <AddServiceModal
           service={editing}
+          packsAllowed={packsAllowed}
           onClose={() => setEditing(null)}
           onCreated={() => {
             setEditing(null);

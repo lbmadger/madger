@@ -82,6 +82,11 @@ export async function POST(req: NextRequest) {
   if (!service || service.price_cents <= 0) {
     return NextResponse.json({ error: "invalid_service" }, { status: 400 });
   }
+  // Les packs sont réservés au plan Pro : un coach repassé Essentiel ne peut
+  // plus en vendre (la vue publique les masque déjà, ceci est la sécurité).
+  if (service.type === "pack" && planOf(coach) !== "pro") {
+    return NextResponse.json({ error: "pack_requires_pro" }, { status: 403 });
+  }
 
   // ── Abonnement mensuel : souscription récurrente, pas de créneau requis ───
   if (service.type === "subscription") {

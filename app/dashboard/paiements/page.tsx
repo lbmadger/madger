@@ -11,6 +11,7 @@ import { SUPABASE_URL } from "@/lib/supabase/config";
 import { getStripe } from "@/lib/stripe/server";
 import { isPro } from "@/lib/subscription/plan";
 import ProUpsellCard from "@/components/subscription/ProUpsellCard";
+import ProLock from "@/components/subscription/ProLock";
 
 export const dynamic = "force-dynamic";
 
@@ -294,8 +295,17 @@ export default async function PaymentsPage() {
         )}
 
         {/* Encaissements par client (lot 4) : qui a payé quoi, ce qui est
-            déjà versé, ce qui reste sous séquestre, crédits en cours. */}
-        {clientRows.length > 0 && (
+            déjà versé, ce qui reste sous séquestre, crédits en cours.
+            Fonctionnalité Pro : verrouillée en Essentiel. */}
+        {!isPro(coach?.pro_until) && state !== "not_configured" && (
+          <ProLock
+            className="mt-6"
+            title={dict.plans.lock.paymentsTitle}
+            desc={dict.plans.lock.paymentsDesc}
+            cta={dict.plans.lock.cta}
+          />
+        )}
+        {isPro(coach?.pro_until) && clientRows.length > 0 && (
           <section className="mt-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="text-xs font-semibold uppercase tracking-wide text-text-dim">

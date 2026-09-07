@@ -38,7 +38,10 @@ import {
   resolveRefundPolicy,
   REFUND_PCT_CHOICES,
   CANCEL_HOURS_CHOICES,
+  ESSENTIAL_REFUND_POLICY,
 } from "@/lib/booking/cancellation";
+import { isPro } from "@/lib/subscription/plan";
+import ProLock from "@/components/subscription/ProLock";
 
 // Fuseaux proposés : France métropolitaine + DOM-TOM + grandes villes
 // francophones. Le fuseau pilote les créneaux affichés aux clients.
@@ -745,12 +748,40 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         </div>
       </SettingsSection>
 
-      {/* Politique d'annulation */}
+      {/* Politique d'annulation : paramétrable en Pro, règle fixe en
+          Essentiel (remboursement intégral à plus de 24 h, rien en deçà). */}
       <SettingsSection
         icon={<ShieldIcon size={18} />}
         title={t("cancellation.title")}
         desc={t("cancellation.subtitle")}
       >
+        {!isPro(coach.pro_until) ? (
+          <>
+            <div className="rounded-xl border border-border-strong p-4">
+              <p className="text-sm font-semibold text-text-base">{t("cancellation.title")}</p>
+              <p className="mt-1 text-xs leading-relaxed text-text-muted">
+                {t("plans.lock.cancellationFixed")}
+              </p>
+              <div className="mt-3 max-w-sm rounded-xl border border-border bg-bg-elevated p-4">
+                <PolicyTiers policy={ESSENTIAL_REFUND_POLICY} />
+              </div>
+            </div>
+            <ProLock
+              className="mt-3"
+              title={t("plans.lock.cancellationTitle")}
+              desc={t("plans.lock.cancellationDesc")}
+              cta={t("plans.lock.cta")}
+            />
+            <Link
+              href="/charte-paiement"
+              target="_blank"
+              className="mt-4 inline-flex items-center gap-1.5 text-sm text-accent hover:underline"
+            >
+              {t("cancellation.seeCharter")}
+            </Link>
+          </>
+        ) : (
+        <>
         {/* Délai de bascule : 12, 24 ou 48 h avant la séance. */}
         <div className="mb-3 flex flex-col gap-1.5 rounded-xl border border-border-strong p-4">
           <span className="text-sm font-semibold text-text-base">
@@ -841,6 +872,8 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             <p role="status" className="text-sm text-accent">{t("settings.saved")}</p>
           )}
         </div>
+        </>
+        )}
       </SettingsSection>
 
       {/* Facturation : mentions légales affichées sur chaque facture */}
