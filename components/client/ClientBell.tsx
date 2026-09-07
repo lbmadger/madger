@@ -11,7 +11,17 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 // n'existe pas encore, la cloche reste muette.
 type Notif = {
   id: string;
-  type: "cancelled" | "declined" | "rescheduled" | "accepted";
+  type:
+    | "cancelled"
+    | "declined"
+    | "rescheduled"
+    | "accepted"
+    | "booked"
+    | "invoice"
+    | "credit_note"
+    | "pack_low"
+    | "pack_empty"
+    | "pack_expiring";
   coach_name: string | null;
   starts_at: string | null;
   created_at: string;

@@ -8,6 +8,8 @@ export async function sendEmail(opts: {
   subject: string;
   html: string;
   replyTo?: string;
+  // Pièces jointes (facture PDF…) : contenu encodé en base64.
+  attachments?: { filename: string; content: string }[];
 }): Promise<boolean> {
   const key = process.env.RESEND_API_KEY;
   if (!key || !opts.to) return false;
@@ -24,6 +26,7 @@ export async function sendEmail(opts: {
         subject: opts.subject,
         html: opts.html,
         ...(opts.replyTo ? { reply_to: opts.replyTo } : {}),
+        ...(opts.attachments?.length ? { attachments: opts.attachments } : {}),
       }),
     });
     if (!res.ok) {

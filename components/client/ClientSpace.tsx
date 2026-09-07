@@ -8,6 +8,7 @@ import Button from "@/components/ui/Button";
 import ClientBell from "@/components/client/ClientBell";
 import { useConfirm } from "@/components/ui/useConfirm";
 import { TicketIcon, RepeatIcon, StarIcon } from "@/components/ui/icons";
+import SlotPickerModal from "@/components/client/SlotPickerModal";
 import {
   refundCents,
   resolveRefundPolicy,
@@ -22,6 +23,11 @@ export type ClientPack = {
   // active | expired | refunded | closed (migration 0056).
   status: string;
   expires_at: string | null;
+  // Pour placer une séance sur les crédits (lot 1).
+  coach_id: string;
+  coach_slug: string | null;
+  coach_booking_mode: string;
+  duration_min: number;
 };
 
 export type ClientSub = {
@@ -53,6 +59,9 @@ export type ClientBooking = {
   refunded_cents: number;
   pack_total: number | null;
   pack_used: number | null;
+  // Report par le coach en attente de réponse du client (migration 0057).
+  reschedule_pending_until: string | null;
+  rescheduled_from: string | null;
 };
 
 // Espace client : séances à venir (annulables selon la formule du coach,
@@ -77,6 +86,121 @@ export default function ClientSpace({
   const [cancelDone, setCancelDone] = useState(false);
   const [subCancelling, setSubCancelling] = useState<string | null>(null);
   const [subError, setSubError] = useState<string | null>(null);
+  // Placer une séance sur un pack (par coach) / choisir un autre créneau
+  // pour une séance déplacée par le coach.
+  const [creditCoach, setCreditCoach] = useState<CoachCredits | null>(null);
+  const [moveBooking, setMoveBooking] = useState<ClientBooking | null>(null);
+  const [flash, setFlash] = useState<string | null>(null);
+  const [proposalBusy, setProposalBusy] = useState<string | null>(null);
+
+  // Crédits disponibles, regroupés par coach : c'est chez LE coach du pack
+  // que la séance se place (couple client / coach strict).
+  type CoachCredits = {
+    coach_id: string;
+    coach_name: string;
+    coach_slug: string | null;
+    booking_mode: string;
+    duration_min: number;
+    credits: number;
+    expires_at: string | null;
+  };
+  const byCoach = new Map<string, CoachCredits>();
+  const nowMs = Date.now();
+  for (const p of packs) {
+    if (p.status !== "active") continue;
+    if (p.expires_at && new Date(p.expires_at).getTime() < nowMs) continue;
+    const left = Math.max(0, p.total - p.used);
+    if (left <= 0) continue;
+    const cur = byCoach.get(p.coach_id);
+    if (cur) {
+      cur.credits += left;
+      if (
+        p.expires_at &&
+        (!cur.expires_at || p.expires_at < cur.expires_at)
+      ) {
+        cur.expires_at = p.expires_at;
+      }
+    } else {
+      byCoach.set(p.coach_id, {
+        coach_id: p.coach_id,
+        coach_name: p.coach_name,
+        coach_slug: p.coach_slug,
+        booking_mode: p.coach_booking_mode,
+        duration_min: p.duration_min,
+        credits: left,
+        expires_at: p.expires_at,
+      });
+    }
+  }
+  const inProgress = Array.from(byCoach.values());
+  // Coachs dont le pack est épuisé ou expiré, sans crédit restant : on
+  // propose de reprendre un pack ou de réserver à l'unité.
+  const exhausted = Array.from(
+    new Map(
+      packs
+        .filter((p) => !byCoach.has(p.coach_id) && p.coach_slug)
+        .map((p) => [p.coach_id, p])
+    ).values()
+  );
+
+  async function bookOnCredits(slots: string[]): Promise<string | null> {
+    if (!creditCoach) return null;
+    try {
+      const res = await fetch("/api/bookings/book-credit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ coach_id: creditCoach.coach_id, slots }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const code = (j as { error?: string }).error ?? "generic";
+        return t(`creditBooking.errors.${["slot_taken", "too_soon", "no_credit", "not_enough_credits"].includes(code) ? code : "generic"}`);
+      }
+      const confirmed = (j as { confirmed?: boolean }).confirmed;
+      setCreditCoach(null);
+      setFlash(
+        confirmed
+          ? t("creditBooking.done")
+          : t("creditBooking.donePending").replace("{coach}", creditCoach.coach_name)
+      );
+      router.refresh();
+      return null;
+    } catch {
+      return t("creditBooking.errors.generic");
+    }
+  }
+
+  async function answerProposal(
+    b: ClientBooking,
+    action: "confirm" | "move",
+    startsAt?: string
+  ): Promise<string | null> {
+    setProposalBusy(b.id);
+    try {
+      const res = await fetch("/api/bookings/client-reschedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ booking_id: b.id, action, starts_at: startsAt }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const code = (j as { error?: string }).error ?? "generic";
+        return t(`creditBooking.errors.${["slot_taken", "too_soon"].includes(code) ? code : "generic"}`);
+      }
+      setMoveBooking(null);
+      setFlash(
+        action === "confirm"
+          ? t("clientSpace.proposalDone")
+          : t("clientSpace.proposalMoved")
+      );
+      router.refresh();
+      return null;
+    } catch {
+      return t("creditBooking.errors.generic");
+    } finally {
+      setProposalBusy(null);
+    }
+  }
 
   // Arrêt d'un abonnement mensuel : reste actif jusqu'à la fin de la période
   // payée, puis plus aucun prélèvement.
@@ -219,6 +343,38 @@ export default function ClientSpace({
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
       {dialog}
+      {creditCoach && creditCoach.coach_slug && (
+        <SlotPickerModal
+          coachSlug={creditCoach.coach_slug}
+          coachName={creditCoach.coach_name}
+          durationMin={creditCoach.duration_min}
+          maxSelect={Math.min(5, creditCoach.credits)}
+          title={t("creditBooking.title")}
+          subtitle={`${t("clientSpace.with")} ${creditCoach.coach_name} · ${t("creditBooking.upTo").replace("{n}", String(Math.min(5, creditCoach.credits)))}`}
+          submitLabel={t("creditBooking.submit")}
+          onSubmit={bookOnCredits}
+          onClose={() => setCreditCoach(null)}
+        />
+      )}
+      {moveBooking && moveBooking.coach_slug && (
+        <SlotPickerModal
+          coachSlug={moveBooking.coach_slug}
+          coachName={moveBooking.coach_name}
+          durationMin={Math.max(
+            15,
+            Math.round(
+              (new Date(moveBooking.ends_at).getTime() -
+                new Date(moveBooking.starts_at).getTime()) /
+                60000
+            )
+          )}
+          maxSelect={1}
+          title={t("clientSpace.proposalChoose")}
+          submitLabel={t("creditBooking.moveSubmit")}
+          onSubmit={(slots) => answerProposal(moveBooking, "move", slots[0])}
+          onClose={() => setMoveBooking(null)}
+        />
+      )}
       <h1 className="text-2xl font-extrabold tracking-tight text-text-base sm:text-3xl">
         {t("clientSpace.title")}
       </h1>
@@ -275,6 +431,90 @@ export default function ClientSpace({
           packs à droite. Une seule colonne sur mobile (ordre inchangé). */}
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-8">
       <aside className="min-w-0 lg:order-2">
+      {/* En cours : crédits de pack à placer, par coach. Le bouton ouvre
+          les créneaux du coach, plusieurs séances d'un coup possibles. */}
+      {(inProgress.length > 0 || exhausted.length > 0) && (
+        <>
+          <h2 className="mt-8 text-xs font-semibold uppercase tracking-wide text-text-dim">
+            {t("clientSpace.inProgress")}
+          </h2>
+          <ul className="mt-3 flex flex-col gap-2">
+            {inProgress.map((c) => (
+              <li
+                key={c.coach_id}
+                className="rounded-2xl border border-accent/30 bg-accent/[0.05] p-4"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-text-base">
+                      {c.coach_slug ? (
+                        <Link href={`/${c.coach_slug}`} className="hover:underline">
+                          {c.coach_name}
+                        </Link>
+                      ) : (
+                        c.coach_name
+                      )}
+                    </p>
+                    <p className="mt-0.5 text-xs text-text-muted">
+                      {c.credits}{" "}
+                      {c.credits === 1
+                        ? t("clientSpace.creditOne")
+                        : t("clientSpace.creditMany")}
+                      {c.expires_at
+                        ? ` · ${t("packs.validUntil")} ${new Date(c.expires_at).toLocaleDateString(loc, { day: "numeric", month: "short" })}`
+                        : ""}
+                    </p>
+                  </div>
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent font-display text-base font-extrabold text-black">
+                    {c.credits}
+                  </span>
+                </div>
+                <Button
+                  type="button"
+                  className="mt-3 w-full py-2.5 text-sm"
+                  disabled={!c.coach_slug}
+                  onClick={() => setCreditCoach(c)}
+                >
+                  {t("clientSpace.placeSession")}
+                </Button>
+                {c.booking_mode === "approval" && (
+                  <p className="mt-2 text-center text-[11px] text-text-dim">
+                    {t("clientSpace.placeApprovalHint")}
+                  </p>
+                )}
+              </li>
+            ))}
+            {exhausted.map((p) => (
+              <li
+                key={p.coach_id}
+                className="rounded-2xl border border-border bg-bg-card p-4"
+              >
+                <p className="text-sm font-semibold text-text-base">
+                  {p.coach_name}
+                </p>
+                <p className="mt-0.5 text-xs text-text-muted">
+                  {t("clientSpace.noCreditLeft")}
+                </p>
+                <div className="mt-3 flex gap-2">
+                  <Link
+                    href={`/${p.coach_slug}`}
+                    className="flex-1 rounded-full bg-accent px-3 py-2 text-center text-xs font-semibold text-black transition-opacity hover:opacity-90"
+                  >
+                    {t("clientSpace.rebuyPack")}
+                  </Link>
+                  <Link
+                    href={`/${p.coach_slug}`}
+                    className="flex-1 rounded-full border border-border-strong px-3 py-2 text-center text-xs font-semibold text-text-base transition-colors hover:border-accent"
+                  >
+                    {t("clientSpace.bookSingle")}
+                  </Link>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
       {/* Abonnements mensuels */}
       {subs.length > 0 && (
         <>
@@ -429,6 +669,14 @@ export default function ClientSpace({
           {t("clientSpace.cancelDone")}
         </p>
       )}
+      {flash && (
+        <p
+          role="status"
+          className="mt-6 rounded-2xl border border-accent/25 bg-accent/[0.06] px-4 py-3 text-center text-sm text-text-base"
+        >
+          {flash}
+        </p>
+      )}
       <h2 className="mt-8 text-xs font-semibold uppercase tracking-wide text-text-dim">
         {t("clientSpace.upcoming")}
       </h2>
@@ -477,6 +725,51 @@ export default function ClientSpace({
                   {statusChip[b.status]?.label ?? b.status}
                 </span>
               </div>
+
+              {/* Report par le coach : la séance est déjà déplacée, le
+                  client confirme ou choisit un autre créneau. Sans réponse,
+                  validation automatique à la date indiquée. */}
+              {b.reschedule_pending_until &&
+                new Date(b.reschedule_pending_until).getTime() > now && (
+                  <div className="mt-3 rounded-xl border border-warning/30 bg-warning/[0.06] p-3">
+                    <p className="text-xs font-semibold text-text-base">
+                      {t("clientSpace.proposalTitle").replace("{coach}", b.coach_name)}
+                    </p>
+                    {b.rescheduled_from && (
+                      <p className="mt-0.5 text-xs text-text-muted">
+                        {t("clientSpace.proposalOld")}{" "}
+                        <span className="line-through">{dateStr(b.rescheduled_from)}</span>
+                      </p>
+                    )}
+                    <p className="mt-1 text-[11px] text-text-dim">
+                      {t("clientSpace.proposalAuto").replace(
+                        "{date}",
+                        new Date(b.reschedule_pending_until).toLocaleDateString(loc, {
+                          day: "numeric",
+                          month: "long",
+                        })
+                      )}
+                    </p>
+                    <div className="mt-2 flex gap-2">
+                      <button
+                        type="button"
+                        disabled={proposalBusy === b.id}
+                        onClick={() => answerProposal(b, "confirm")}
+                        className="flex-1 rounded-full bg-accent px-3 py-2 text-xs font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-50"
+                      >
+                        {t("clientSpace.proposalConfirm")}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={proposalBusy === b.id || !b.coach_slug}
+                        onClick={() => setMoveBooking(b)}
+                        className="flex-1 rounded-full border border-border-strong px-3 py-2 text-xs font-semibold text-text-base transition-colors hover:border-accent disabled:opacity-50"
+                      >
+                        {t("clientSpace.proposalChoose")}
+                      </button>
+                    </div>
+                  </div>
+                )}
 
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border pt-2.5">
                 {/* Accès direct au suivi : lien visio, ajout calendrier,

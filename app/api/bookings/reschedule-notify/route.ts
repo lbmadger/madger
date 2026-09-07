@@ -50,9 +50,26 @@ export async function POST(req: NextRequest) {
 
   // Les rappels repartent pour le NOUVEL horaire : sans ça, un rappel déjà
   // envoyé pour l'ancien créneau privait le client de tout rappel.
+  // Le client est invité à confirmer le nouvel horaire ou à en choisir un
+  // autre ; sans réponse sous 48 h (ou 12 h avant la séance si c'est plus
+  // tôt), l'horaire est validé automatiquement (migration 0057).
+  const autoAt = new Date(
+    Math.min(
+      Date.now() + 48 * 3600 * 1000,
+      Math.max(
+        Date.now() + 3600 * 1000,
+        new Date(booking.starts_at as string).getTime() - 12 * 3600 * 1000
+      )
+    )
+  );
   await admin
     .from("bookings")
-    .update({ reminder_sent_at: null, reminder_soon_sent_at: null })
+    .update({
+      reminder_sent_at: null,
+      reminder_soon_sent_at: null,
+      reschedule_pending_until: autoAt.toISOString(),
+      rescheduled_from: oldStartsAt,
+    })
     .eq("id", bookingId);
 
   // Le séquestre SUIT la séance : sans ça, reporter une séance payée
@@ -108,6 +125,15 @@ export async function POST(req: NextRequest) {
         oldDateStr: fmt(oldStartsAt),
         dateStr: fmt(booking.starts_at as string),
         reservationUrl: `${APP_URL}/reservation/${bookingId}`,
+        spaceUrl: `${APP_URL}/espace`,
+        autoDateStr: autoAt.toLocaleString("fr-FR", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZone: (coach?.timezone as string | null) || "Europe/Paris",
+        }),
       });
       await sendEmail({
         to: client.email,

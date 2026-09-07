@@ -14,6 +14,7 @@ import {
 } from "@/lib/email/templates";
 import { cronAuthorized } from "@/lib/cron/auth";
 import { detachMeetFromBooking } from "@/lib/google/calendar";
+import { emailInvoice } from "@/lib/invoices/send";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -318,11 +319,12 @@ export async function GET(req: NextRequest) {
               p_note: "Première séance jamais acceptée par le coach",
             });
           }
-          await supabase.rpc("create_credit_note", {
+          const { data: noteId } = await supabase.rpc("create_credit_note", {
             p_payment: p.id,
             p_total_refunded_cents: p.amount_cents,
             p_reason: "Séance non confirmée par le coach",
           });
+          emailJobs.push(() => emailInvoice(supabase, noteId as string | null));
         } catch {
           /* best-effort */
         }

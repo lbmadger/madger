@@ -60,14 +60,14 @@ export default async function ClientSpacePage() {
           admin
             .from("pack_credits")
             .select(
-              "id, total, used, status, expires_at, service_name, services(name), coaches(first_name, last_name)"
+              "id, coach_id, total, used, status, expires_at, service_name, services(name, duration_min), coaches(first_name, last_name, slug, booking_mode)"
             )
             .in("client_id", clientIds)
             .order("created_at", { ascending: false }),
           admin
             .from("bookings")
             .select(
-              "id, starts_at, ends_at, status, location, location_text, coaches(first_name, last_name, slug, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, gym_name, gym_address)"
+              "id, starts_at, ends_at, status, location, location_text, reschedule_pending_until, rescheduled_from, coaches(first_name, last_name, slug, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, gym_name, gym_address)"
             )
             .in("client_id", clientIds)
             .order("starts_at", { ascending: false })
@@ -102,6 +102,10 @@ export default async function ClientSpacePage() {
             (c.service_name as string | null) ?? (svc?.name as string) ?? "Pack",
           coach_name:
             [co?.first_name, co?.last_name].filter(Boolean).join(" ") || "-",
+          coach_id: c.coach_id as string,
+          coach_slug: (co?.slug as string | null) ?? null,
+          coach_booking_mode: (co?.booking_mode as string | null) ?? "instant",
+          duration_min: (svc?.duration_min as number | null) ?? 60,
         });
       }
 
@@ -162,6 +166,9 @@ export default async function ClientSpacePage() {
           pack_used:
             ((pay && packByPayment.get(pay.id as string)?.used) as number) ??
             null,
+          reschedule_pending_until:
+            (b.reschedule_pending_until as string | null) ?? null,
+          rescheduled_from: (b.rescheduled_from as string | null) ?? null,
         });
       }
     }

@@ -83,7 +83,23 @@ export default async function InvoicePage({
           </svg>
           {inv.back}
         </Link>
-        <PrintButton label={inv.pdf} />
+        <div className="flex items-center gap-2">
+          {/* Pièce séquentielle (migration 0056) : vrai PDF généré côté
+              serveur, identique à celui envoyé au client. */}
+          {(creditNote?.id ||
+            invoiceRows?.find((r) => (r.kind ?? "invoice") === "invoice")?.id) && (
+            <a
+              href={`/api/invoices/${
+                creditNote?.id ??
+                invoiceRows?.find((r) => (r.kind ?? "invoice") === "invoice")?.id
+              }/pdf`}
+              className="inline-flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-xs font-semibold text-black transition-opacity hover:opacity-90"
+            >
+              {inv.pdfDownload}
+            </a>
+          )}
+          <PrintButton label={inv.pdf} />
+        </div>
       </div>
 
       {/* Facture */}

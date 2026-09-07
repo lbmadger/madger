@@ -14,6 +14,7 @@ import {
   cancellationNoRefundClient,
 } from "@/lib/email/templates";
 import { detachMeetFromBooking } from "@/lib/google/calendar";
+import { emailInvoice } from "@/lib/invoices/send";
 
 export const dynamic = "force-dynamic";
 // Refund + transfert Stripe + agenda Google + email en série : la limite de
@@ -330,7 +331,7 @@ export async function POST(req: NextRequest) {
         });
       }
       if (refund > 0) {
-        await admin.rpc("create_credit_note", {
+        const { data: noteId } = await admin.rpc("create_credit_note", {
           p_payment: payment.id,
           p_total_refunded_cents: totalRefunded,
           p_reason:
@@ -338,6 +339,7 @@ export async function POST(req: NextRequest) {
               ? "Annulation par le coach"
               : "Annulation à la demande du client",
         });
+        await emailInvoice(admin, noteId as string | null);
       }
     } catch {
       /* best-effort */

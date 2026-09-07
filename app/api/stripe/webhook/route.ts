@@ -366,11 +366,13 @@ export async function POST(req: NextRequest) {
             .eq("stripe_charge_id", ch.id)
             .maybeSingle();
           if (payRow && refunded > 0) {
-            await supabase.rpc("create_credit_note", {
+            const { data: noteId } = await supabase.rpc("create_credit_note", {
               p_payment: payRow.id,
               p_total_refunded_cents: refunded,
               p_reason: "Remboursement",
             });
+            const { emailInvoice } = await import("@/lib/invoices/send");
+            await emailInvoice(supabase, noteId as string | null);
           }
         } catch {
           /* la pièce comptable ne bloque pas la synchro */

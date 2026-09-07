@@ -635,6 +635,10 @@ export function bookingRescheduledClient(p: {
   oldDateStr: string;
   dateStr: string;
   reservationUrl: string;
+  // Espace client où confirmer ou choisir un autre créneau ; date limite
+  // de validation automatique (migration 0057).
+  spaceUrl?: string;
+  autoDateStr?: string;
 }): Email {
   return {
     subject: `Séance déplacée : ${p.dateStr}`,
@@ -642,16 +646,219 @@ export function bookingRescheduledClient(p: {
       preheader: `Nouvel horaire : ${p.dateStr}`,
       eyebrow: "Séance déplacée",
       title: "Ta séance a été déplacée",
-      intro: `<b style="color:${C.text};">${p.coachName}</b> a déplacé votre séance.`,
+      intro: `<b style="color:${C.text};">${p.coachName}</b> a déplacé ta séance.${p.spaceUrl ? " Ce nouvel horaire te convient ? Confirme-le en un clic, ou choisis-en un autre parmi ses créneaux." : ""}`,
       blocks: [
         infoBox(
           "Nouvel horaire",
-          `Ancien horaire : <span style="text-decoration:line-through;">${p.oldDateStr}</span><br/>Nouvel horaire : <b style="color:${C.text};">${p.dateStr}</b>`
+          `Ancien horaire : <span style="text-decoration:line-through;">${p.oldDateStr}</span><br/>Nouvel horaire : <b style="color:${C.text};">${p.dateStr}</b>${
+            p.autoDateStr
+              ? `<br/><br/>Sans réponse de ta part, ce nouvel horaire sera validé automatiquement le ${p.autoDateStr}.`
+              : ""
+          }`
         ),
       ],
-      cta: { label: "Voir ma réservation", url: p.reservationUrl },
+      cta: p.spaceUrl
+        ? { label: "Confirmer ou choisir un autre créneau", url: p.spaceUrl }
+        : { label: "Voir ma réservation", url: p.reservationUrl },
       outro:
         "Un empêchement ? Réponds directement à cet email ou gère ta réservation depuis ton espace.",
+    }),
+  };
+}
+
+// ── Coach : le client a choisi un autre créneau après un report ─────────────
+export function clientRescheduleAnswerCoach(p: {
+  clientName: string;
+  oldDateStr: string;
+  dateStr: string;
+  dashboardUrl: string;
+  locale?: EmailLocale;
+}): Email {
+  const en = p.locale === "en";
+  return {
+    subject: en
+      ? `${p.clientName} picked another slot: ${p.dateStr}`
+      : `${p.clientName} a choisi un autre créneau : ${p.dateStr}`,
+    html: layout({
+      locale: p.locale,
+      preheader: en ? `New time: ${p.dateStr}` : `Nouvel horaire : ${p.dateStr}`,
+      eyebrow: en ? "Session moved" : "Séance déplacée",
+      title: en ? "Your client picked another slot" : "Ton client a choisi un autre créneau",
+      intro: en
+        ? `<b style="color:${C.text};">${p.clientName}</b> could not make the time you proposed and picked one of your available slots instead.`
+        : `<b style="color:${C.text};">${p.clientName}</b> ne pouvait pas à l'horaire proposé et a choisi un de tes créneaux disponibles à la place.`,
+      blocks: [
+        infoBox(
+          en ? "New time" : "Nouvel horaire",
+          `${en ? "Proposed" : "Proposé"} : <span style="text-decoration:line-through;">${p.oldDateStr}</span><br/>${en ? "Chosen" : "Choisi"} : <b style="color:${C.text};">${p.dateStr}</b>`
+        ),
+      ],
+      cta: { label: en ? "Open my agenda" : "Ouvrir mon agenda", url: p.dashboardUrl },
+    }),
+  };
+}
+
+// ── Client : séance(s) placée(s) sur un pack ────────────────────────────────
+export function packSessionBookedClient(p: {
+  coachName: string;
+  dates: string[];
+  confirmed: boolean;
+  remaining: number;
+  online: boolean;
+  placeStr?: string;
+  spaceUrl: string;
+}): Email {
+  const many = p.dates.length > 1;
+  const remainingStr =
+    p.remaining === 0
+      ? "Ton pack est maintenant épuisé."
+      : `Il te reste <b style="color:${C.text};">${p.remaining} séance${p.remaining > 1 ? "s" : ""}</b> à placer sur ton pack.`;
+  return {
+    subject: p.confirmed
+      ? many
+        ? `Tes ${p.dates.length} séances avec ${p.coachName} sont réservées ✅`
+        : `Ta séance avec ${p.coachName} est réservée ✅`
+      : `Demande envoyée à ${p.coachName}`,
+    html: layout({
+      preheader: p.confirmed
+        ? `Séance${many ? "s" : ""} placée${many ? "s" : ""} sur ton pack.`
+        : `${p.coachName} confirme rapidement.`,
+      eyebrow: p.confirmed ? "Séance réservée" : "Demande envoyée",
+      title: p.confirmed
+        ? "C'est dans l'agenda 💪"
+        : "Ta demande est partie",
+      intro: p.confirmed
+        ? `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> est confirmée, décomptée de ton pack. Aucun paiement à faire.`
+        : `<b style="color:${C.text};">${p.coachName}</b> a reçu ta demande et la confirme rapidement. Le crédit est réservé, il te sera rendu si le coach ne peut pas.`,
+      blocks: [
+        detailsTable([
+          ...p.dates.map((d, i) => ({
+            label: many ? `Séance ${i + 1}` : "Date & heure",
+            value: d,
+          })),
+          { label: "Format", value: p.online ? "En visio" : "En présentiel" },
+          ...(!p.online && p.placeStr ? [{ label: "Lieu", value: p.placeStr }] : []),
+        ]),
+        infoBox("Ton pack", remainingStr),
+      ],
+      cta: { label: "Voir mes séances", url: p.spaceUrl },
+      outro:
+        "Un empêchement ? Annule depuis ton espace en respectant le délai du coach pour récupérer ton crédit.",
+    }),
+  };
+}
+
+// ── Coach : séance(s) placée(s) sur un pack par le client ───────────────────
+export function packSessionBookedCoach(p: {
+  clientName: string;
+  dates: string[];
+  confirmed: boolean;
+  remaining: number;
+  dashboardUrl: string;
+  locale?: EmailLocale;
+}): Email {
+  const en = p.locale === "en";
+  const many = p.dates.length > 1;
+  return {
+    subject: en
+      ? p.confirmed
+        ? `${p.clientName} booked ${many ? `${p.dates.length} sessions` : "a session"} on their pack`
+        : `${p.clientName} requests ${many ? `${p.dates.length} sessions` : "a session"} on their pack`
+      : p.confirmed
+      ? `${p.clientName} a placé ${many ? `${p.dates.length} séances` : "une séance"} sur son pack`
+      : `${p.clientName} demande ${many ? `${p.dates.length} séances` : "une séance"} sur son pack`,
+    html: layout({
+      locale: p.locale,
+      preheader: en ? "Pack credit used, nothing to collect." : "Crédit de pack utilisé, rien à encaisser.",
+      eyebrow: en ? "Pack session" : "Séance sur pack",
+      title: p.confirmed
+        ? en
+          ? "New session in your agenda"
+          : "Nouvelle séance dans ton agenda"
+        : en
+        ? "A request awaits your answer"
+        : "Une demande attend ta réponse",
+      intro: en
+        ? `<b style="color:${C.text};">${p.clientName}</b> used ${many ? "credits" : "a credit"} from their pack. ${p.remaining} left after this.`
+        : `<b style="color:${C.text};">${p.clientName}</b> a utilisé ${many ? "des crédits" : "un crédit"} de son pack. Il lui en reste ${p.remaining} après ça.`,
+      blocks: [
+        detailsTable(
+          p.dates.map((d, i) => ({
+            label: many ? (en ? `Session ${i + 1}` : `Séance ${i + 1}`) : en ? "Date & time" : "Date & heure",
+            value: d,
+          }))
+        ),
+      ],
+      cta: {
+        label: p.confirmed
+          ? en ? "Open my agenda" : "Ouvrir mon agenda"
+          : en ? "Answer the request" : "Répondre à la demande",
+        url: p.dashboardUrl,
+      },
+    }),
+  };
+}
+
+// ── Client : facture en pièce jointe ────────────────────────────────────────
+export function invoiceClient(p: {
+  coachName: string;
+  number: string;
+  amountStr: string;
+  serviceName: string;
+  spaceUrl: string;
+}): Email {
+  return {
+    subject: `Ta facture ${p.number} · ${p.coachName}`,
+    html: layout({
+      preheader: `Facture ${p.number} de ${p.amountStr}, en pièce jointe.`,
+      eyebrow: "Facture",
+      title: "Ta facture est en pièce jointe",
+      intro: `Voici la facture de <b style="color:${C.text};">${p.coachName}</b> pour ton paiement. Elle est jointe à cet email au format PDF.`,
+      blocks: [
+        detailsTable([
+          { label: "Numéro", value: p.number },
+          { label: "Prestation", value: p.serviceName },
+          { label: "Montant", value: p.amountStr, accent: true },
+        ]),
+      ],
+      cta: { label: "Voir mes séances", url: p.spaceUrl },
+      outro:
+        "Garde ce document : il te sera utile pour une prise en charge (mutuelle, comité d'entreprise) ou ta comptabilité.",
+    }),
+  };
+}
+
+// ── Client : avoir (remboursement) en pièce jointe ──────────────────────────
+export function creditNoteClient(p: {
+  coachName: string;
+  number: string;
+  linkedNumber?: string;
+  amountStr: string;
+  reason?: string;
+  spaceUrl: string;
+}): Email {
+  return {
+    subject: `Ton avoir ${p.number} · remboursement de ${p.amountStr}`,
+    html: layout({
+      preheader: `Avoir ${p.number} de ${p.amountStr}, en pièce jointe.`,
+      eyebrow: "Remboursement",
+      title: "Ton avoir est en pièce jointe",
+      intro: `Un remboursement de <b style="color:${C.text};">${p.amountStr}</b> a été émis par <b style="color:${C.text};">${p.coachName}</b>. L'avoir correspondant est joint à cet email au format PDF.`,
+      blocks: [
+        detailsTable([
+          { label: "Numéro", value: p.number },
+          ...(p.linkedNumber
+            ? [{ label: "Facture d'origine", value: p.linkedNumber }]
+            : []),
+          ...(p.reason ? [{ label: "Motif", value: p.reason }] : []),
+          { label: "Montant remboursé", value: p.amountStr, accent: true },
+        ]),
+        infoBox(
+          "Délai",
+          "Le remboursement repart automatiquement vers ton moyen de paiement d'origine. Il apparaît sous 5 à 10 jours selon ta banque."
+        ),
+      ],
+      cta: { label: "Voir mes séances", url: p.spaceUrl },
     }),
   };
 }

@@ -19,6 +19,7 @@
     "leaflet": "^1.9.4",
     "maplibre-gl": "^5.24.0",
     "next": "14.2.35",
+    "pdf-lib": "^1.17.1",
     "posthog-js": "^1.408.1",
     "react": "^18",
     "react-dom": "^18",

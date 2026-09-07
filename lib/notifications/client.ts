@@ -8,7 +8,13 @@ export type ClientNotifType =
   | "cancelled"
   | "declined"
   | "rescheduled"
-  | "accepted";
+  | "accepted"
+  | "booked"
+  | "invoice"
+  | "credit_note"
+  | "pack_low"
+  | "pack_empty"
+  | "pack_expiring";
 
 export async function notifyClient(
   admin: SupabaseClient,

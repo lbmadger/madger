@@ -8,6 +8,7 @@ import { notifyClient } from "@/lib/notifications/client";
 import { requestReceivedClient } from "@/lib/email/templates";
 import { googleCalendarUrl, icsUrl } from "@/lib/calendar/links";
 import { attachMeetToBooking } from "@/lib/google/calendar";
+import { emailInvoice } from "@/lib/invoices/send";
 
 export const dynamic = "force-dynamic";
 // Stripe + agenda Google + emails en série : marge au-delà des 10 s par défaut.
@@ -141,8 +142,12 @@ export async function POST(req: NextRequest) {
           .update({ status: "paid", paid_at: new Date().toISOString() })
           .eq("id", payment.id);
       }
-      // Débit effectif : la facture séquentielle est émise maintenant.
-      await admin.rpc("ensure_invoice", { p_payment: payment.id });
+      // Débit effectif : la facture séquentielle est émise maintenant et
+      // envoyée au client en PDF.
+      const { data: invoiceId } = await admin.rpc("ensure_invoice", {
+        p_payment: payment.id,
+      });
+      await emailInvoice(admin, invoiceId as string | null);
     }
   }
 

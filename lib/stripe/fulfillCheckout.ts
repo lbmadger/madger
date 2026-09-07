@@ -13,6 +13,7 @@ import {
 } from "@/lib/email/templates";
 import { googleCalendarUrl, icsUrl } from "@/lib/calendar/links";
 import { attachMeetToBooking } from "@/lib/google/calendar";
+import { emailInvoice } from "@/lib/invoices/send";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
@@ -324,10 +325,14 @@ export async function fulfillCheckoutSession(
     }
   }
 
-  // Facture séquentielle (F-AAAA-0001) dès l'encaissement. En mode
-  // approbation (empreinte), elle est émise à la capture, dans /confirm.
+  // Facture séquentielle (F-AAAA-0001) dès l'encaissement, envoyée au
+  // client en PDF. En mode approbation (empreinte), elle est émise à la
+  // capture, dans /confirm.
   if (!authorized && payment) {
-    await supabase.rpc("ensure_invoice", { p_payment: payment.id });
+    const { data: invoiceId } = await supabase.rpc("ensure_invoice", {
+      p_payment: payment.id,
+    });
+    await emailInvoice(supabase, invoiceId as string | null);
   }
 
   // Confirmation (mode instantané) : après le paiement, pour que le trigger

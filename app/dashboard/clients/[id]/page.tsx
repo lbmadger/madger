@@ -7,6 +7,9 @@ import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
 import type { Client } from "@/lib/clients/types";
 import ClientSheet from "@/components/messaging/ClientSheet";
+import PackCreditActions, {
+  type CreditEvent,
+} from "@/components/dashboard/clients/PackCreditActions";
 import type { ClientProfile } from "@/lib/health/bmi";
 
 // Fiche d'un client. RLS garantit qu'on ne peut charger que ses propres
@@ -110,6 +113,34 @@ export default async function ClientDetailPage({
         "Pack",
     };
   });
+  // Journal des crédits de ces packs (RLS : ceux du coach), pour le geste
+  // commercial et la traçabilité.
+  const { data: eventRows } = packs.length
+    ? await supabase
+        .from("credit_events")
+        .select("id, pack_credit_id, delta, balance_after, reason, actor, note, created_at")
+        .in(
+          "pack_credit_id",
+          packs.map((p) => p.id)
+        )
+        .order("created_at", { ascending: false })
+        .limit(60)
+    : { data: [] };
+  const eventsByPack = new Map<string, CreditEvent[]>();
+  for (const e of eventRows ?? []) {
+    const k = e.pack_credit_id as string;
+    const list = eventsByPack.get(k) ?? [];
+    list.push({
+      id: e.id as string,
+      delta: e.delta as number,
+      balance_after: e.balance_after as number,
+      reason: e.reason as string,
+      actor: e.actor as string,
+      note: (e.note as string | null) ?? null,
+      created_at: e.created_at as string,
+    });
+    eventsByPack.set(k, list);
+  }
 
   return (
     <>
@@ -171,24 +202,38 @@ export default async function ClientDetailPage({
               return (
                 <div
                   key={p.id}
-                  className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-bg-card px-4 py-3"
+                  className="rounded-2xl border border-border bg-bg-card px-4 py-3"
                 >
-                  <p className="min-w-0 truncate text-sm font-medium text-text-base">
-                    <TicketIcon size={15} className="mr-1.5 inline-block align-[-2px] text-accent" />{p.name}
-                    <span className="text-text-muted">
-                      {" "}
-                      · {p.used}/{p.total}
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="min-w-0 truncate text-sm font-medium text-text-base">
+                      <TicketIcon size={15} className="mr-1.5 inline-block align-[-2px] text-accent" />{p.name}
+                      <span className="text-text-muted">
+                        {" "}
+                        · {p.used}/{p.total}
+                        {active && p.expires_at
+                          ? ` · ${dict.packs.validUntil} ${new Date(p.expires_at).toLocaleDateString(loc, { day: "numeric", month: "short", year: "numeric" })}`
+                          : ""}
+                      </span>
+                    </p>
+                    <span
+                      className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-semibold ${
+                        left > 0
+                          ? "bg-accent/10 text-accent"
+                          : "border border-border-strong text-text-dim"
+                      }`}
+                    >
+                      {pill}
                     </span>
-                  </p>
-                  <span
-                    className={`shrink-0 rounded-full px-3 py-1 text-[10px] font-semibold ${
-                      left > 0
-                        ? "bg-accent/10 text-accent"
-                        : "border border-border-strong text-text-dim"
-                    }`}
-                  >
-                    {pill}
-                  </span>
+                  </div>
+                  {/* Geste commercial (offrir / retirer un crédit) et
+                      journal, seulement sur un pack actif. */}
+                  {active && (
+                    <PackCreditActions
+                      packId={p.id}
+                      remaining={left}
+                      events={eventsByPack.get(p.id) ?? []}
+                    />
+                  )}
                 </div>
               );
             })}

@@ -26,6 +26,22 @@ export async function GET(req: NextRequest) {
   const supabase = createClient(SUPABASE_URL, serviceKey);
   const now = Date.now();
   const nowIso = new Date(now).toISOString();
+
+  // ── Reports sans réponse du client : validation automatique ───────────────
+  // (migration 0057). Ce cron tourne toutes les 15 min : la fenêtre de 48 h
+  // est respectée au quart d'heure près. Best-effort.
+  let autoValidated = 0;
+  try {
+    const { data: done } = await supabase
+      .from("bookings")
+      .update({ reschedule_pending_until: null, rescheduled_from: null })
+      .not("reschedule_pending_until", "is", null)
+      .lte("reschedule_pending_until", nowIso)
+      .select("id");
+    autoValidated = done?.length ?? 0;
+  } catch {
+    /* colonne absente : migration pas encore passée */
+  }
   // Fenêtre : séances qui démarrent dans les ~65 min. Toute cadence de cron
   // ≤ 60 min couvre alors chaque séance au moins une fois avant le début.
   const soon = new Date(now + 65 * 60 * 1000).toISOString();
@@ -99,5 +115,5 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ sent, scanned });
+  return NextResponse.json({ sent, scanned, autoValidated });
 }

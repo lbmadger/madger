@@ -13,6 +13,7 @@ import {
   cancellationNoRefundClient,
 } from "@/lib/email/templates";
 import { detachMeetFromBooking } from "@/lib/google/calendar";
+import { emailInvoice } from "@/lib/invoices/send";
 
 export const dynamic = "force-dynamic";
 // Refund + transfert Stripe + agenda Google + emails en série : la limite
@@ -294,11 +295,12 @@ export async function POST(req: NextRequest) {
         });
       }
       if (refund > 0) {
-        await admin.rpc("create_credit_note", {
+        const { data: noteId } = await admin.rpc("create_credit_note", {
           p_payment: payment.id,
           p_total_refunded_cents: totalRefunded,
           p_reason: "Annulation par le client",
         });
+        await emailInvoice(admin, noteId as string | null);
       }
     } catch {
       /* best-effort */
