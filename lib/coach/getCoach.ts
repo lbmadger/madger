@@ -46,6 +46,8 @@ export type Coach = {
   refund_under_24h_pct: number | null;
   // Délai de bascule 12 / 24 / 48 h (migration 0058).
   cancel_hours?: number | null;
+  // Paiement en 3x (Klarna) sur les packs dès 120 € (migration 0060).
+  installments_enabled?: boolean | null;
   // Mode de réservation (migration 0018) : instant | approval
   booking_mode: "instant" | "approval";
   // Filtres marketplace (migration 0021)

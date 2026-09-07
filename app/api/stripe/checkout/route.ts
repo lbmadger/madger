@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import type Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { isPro } from "@/lib/subscription/plan";
 import { TERMS_VERSION } from "@/lib/legal/terms";
+import { installmentsEligible } from "@/lib/stripe/installments";
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +50,7 @@ export async function POST(req: NextRequest) {
   const { data: coach } = await supabase
     .from("coaches")
     .select(
-      "id, siret, stripe_account_id, stripe_charges_enabled, pro_until, booking_mode, min_notice_hours"
+      "id, siret, stripe_account_id, stripe_charges_enabled, pro_until, booking_mode, min_notice_hours, installments_enabled"
     )
     .eq("slug", coach_slug)
     .eq("listed", true)
@@ -218,10 +220,18 @@ export async function POST(req: NextRequest) {
   const approval =
     coach.booking_mode === "approval" && service.type !== "pack";
 
-  // Charge sur le compte plateforme (pas d'option stripeAccount) → séquestre.
-  let session;
-  try {
-    session = await stripe.checkout.sessions.create({
+  // Paiement en 3 fois (Klarna) : packs dès 120 €, si le coach l'a activé.
+  // Les moyens de paiement sont FIXÉS explicitement : carte (Apple Pay et
+  // Google Pay compris) partout, Klarna en plus sur les packs éligibles
+  // seulement. Sans cette liste, Stripe proposerait Klarna sur toutes les
+  // séances, y compris à 45 € en empreinte, ce que le coach ne veut pas.
+  const withInstallments = installmentsEligible({
+    serviceType: service.type as string,
+    priceCents: service.price_cents as number,
+    coachEnabled: coach.installments_enabled as boolean | null,
+  });
+
+  const sessionParams = (klarna: boolean): Stripe.Checkout.SessionCreateParams => ({
     mode: "payment",
     line_items: [
       {
@@ -234,6 +244,7 @@ export async function POST(req: NextRequest) {
       },
     ],
     customer_email: String(email),
+    payment_method_types: klarna ? ["card", "klarna"] : ["card"],
     payment_intent_data: {
       // Regroupe charge et futur transfert vers le coach (charges séparées).
       transfer_group: `coach_${coach.id}`,
@@ -257,8 +268,22 @@ export async function POST(req: NextRequest) {
       // CGV acceptées en payant (mention affichée sous le bouton) : la
       // version est figée ici, l'horodatage est posé au fulfillment.
       terms_version: TERMS_VERSION,
+      installments: klarna ? "1" : "0",
     },
-    });
+  });
+
+  // Charge sur le compte plateforme (pas d'option stripeAccount) → séquestre.
+  let session;
+  try {
+    try {
+      session = await stripe.checkout.sessions.create(sessionParams(withInstallments));
+    } catch (err) {
+      // Klarna pas (encore) activé sur le compte plateforme Stripe : on
+      // retombe sur la carte plutôt que de bloquer l'achat du pack.
+      if (!withInstallments) throw err;
+      console.error("[checkout] klarna unavailable, card only", err);
+      session = await stripe.checkout.sessions.create(sessionParams(false));
+    }
   } catch (err) {
     // Stripe indisponible : le verrou est rendu tout de suite, pas dans 15 min.
     if (holdId) {

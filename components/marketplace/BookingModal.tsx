@@ -7,6 +7,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
 import Dialog from "@/components/ui/Dialog";
 import CancellationSummary from "@/components/booking/CancellationSummary";
+import { installmentsEligible } from "@/lib/stripe/installments";
 import { resolveRefundPolicy } from "@/lib/booking/cancellation";
 import { LockIcon, RepeatIcon, MapPinIcon } from "@/components/ui/icons";
 import { inputClass, labelClass } from "@/lib/ui/styles";
@@ -822,6 +823,19 @@ export default function BookingModal({
                     : t("booking.submit")}
                 </Button>
               </div>
+              {/* Pack éligible au 3x (Klarna) : dit avant d'ouvrir le
+                  paiement, l'option apparaît ensuite dans le formulaire. */}
+              {payMode &&
+                selectedService &&
+                installmentsEligible({
+                  serviceType: selectedService.type,
+                  priceCents: selectedService.price_cents,
+                  coachEnabled: coach.installments_enabled,
+                }) && (
+                  <p className="text-center text-[11px] font-medium text-accent">
+                    {t("booking.installmentsHint")}
+                  </p>
+                )}
               {/* Mode validation : rappel que rien n'est débité avant
                   l'acceptation, juste sous le bouton qui affiche un prix. */}
               {payMode && !isSubscription && !chargedNow && (

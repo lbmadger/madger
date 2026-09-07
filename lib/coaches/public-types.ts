@@ -20,6 +20,8 @@ export type PublicCoach = {
   refund_under_24h_pct: number | null;
   // Délai de bascule 12 / 24 / 48 h (migration 0058), absent = 24.
   cancel_hours?: number | null;
+  // Paiement en 3x (Klarna) sur les packs dès 120 € (migration 0060).
+  installments_enabled?: boolean | null;
   booking_mode: "instant" | "approval";
   created_at: string;
   // Avis (vue public_coaches, migration 0020)

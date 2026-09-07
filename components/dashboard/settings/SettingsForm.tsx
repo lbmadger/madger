@@ -111,6 +111,10 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   );
   const [timezone, setTimezone] = useState(coach.timezone || "Europe/Paris");
   const [minNotice, setMinNotice] = useState(coach.min_notice_hours ?? 2);
+  // Paiement en 3x (Klarna) sur les packs dès 120 € (migration 0060).
+  const [installments, setInstallments] = useState<boolean>(
+    coach.installments_enabled === true
+  );
   // Mentions légales de facturation (SIRET, TVA, adresse).
   const [businessName, setBusinessName] = useState(coach.business_name ?? "");
   const [siret, setSiret] = useState(coach.siret ?? "");
@@ -212,6 +216,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
       booking: {
         booking_mode: bookingMode,
         min_notice_hours: minNotice,
+        installments_enabled: installments,
       },
       cancellation: {
         refund_over_24h_pct: refundOver,
@@ -637,6 +642,37 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
               {t("settings.minNoticeHint")}
             </span>
           </label>
+        </div>
+
+        {/* Paiement en 3x sur les packs dès 120 € : le coach paie les frais */}
+        <div className="mt-4 border-t border-border pt-4">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={installments}
+            onClick={() => setInstallments((v) => !v)}
+            className="flex w-full items-center justify-between gap-4 rounded-xl border border-border-strong p-4 text-left transition-colors hover:border-accent/40"
+          >
+            <span>
+              <span className="block text-sm font-semibold text-text-base">
+                {t("settings.installments")}
+              </span>
+              <span className="mt-1 block text-xs text-text-dim">
+                {t("settings.installmentsDesc")}
+              </span>
+            </span>
+            <span
+              className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+                installments ? "bg-accent" : "bg-border-strong"
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 h-5 w-5 rounded-full bg-black transition-transform ${
+                  installments ? "translate-x-[22px]" : "translate-x-0.5"
+                }`}
+              />
+            </span>
+          </button>
         </div>
 
         <div className="mt-4 flex items-center gap-3">

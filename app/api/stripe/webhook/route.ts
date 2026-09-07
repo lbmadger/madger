@@ -130,6 +130,10 @@ export async function POST(req: NextRequest) {
       // Paiement d'une séance (séquestre) : enregistre la réservation même si
       // le client ne revient jamais de la page Stripe. Idempotent (index
       // unique sur stripe_payment_intent_id).
+      // async_payment_succeeded : moyens à confirmation différée (Klarna sur
+      // les packs) : la session est complétée d'abord « unpaid », puis payée.
+      // fulfill est idempotent et ignore les sessions non payées.
+      case "checkout.session.async_payment_succeeded":
       case "checkout.session.completed": {
         const s = event.data.object as Stripe.Checkout.Session;
         if (s.mode === "payment") {
@@ -651,6 +655,7 @@ export async function POST(req: NextRequest) {
       // fulfill est idempotent (index unique sur le PaymentIntent) : un
       // échec ici sans retry = client débité sans réservation enregistrée.
       "checkout.session.completed",
+      "checkout.session.async_payment_succeeded",
       "charge.refunded",
       "charge.dispute.created",
       "charge.dispute.closed",
