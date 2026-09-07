@@ -231,7 +231,9 @@ export async function POST(req: NextRequest) {
     coachEnabled: coach.installments_enabled as boolean | null,
   });
 
-  const sessionParams = (klarna: boolean): Stripe.Checkout.SessionCreateParams => ({
+  const sessionParams = (
+    methods: Stripe.Checkout.SessionCreateParams.PaymentMethodType[]
+  ): Stripe.Checkout.SessionCreateParams => ({
     mode: "payment",
     line_items: [
       {
@@ -244,7 +246,7 @@ export async function POST(req: NextRequest) {
       },
     ],
     customer_email: String(email),
-    payment_method_types: klarna ? ["card", "klarna"] : ["card"],
+    payment_method_types: methods,
     payment_intent_data: {
       // Regroupe charge et futur transfert vers le coach (charges séparées).
       transfer_group: `coach_${coach.id}`,
@@ -268,22 +270,35 @@ export async function POST(req: NextRequest) {
       // CGV acceptées en payant (mention affichée sous le bouton) : la
       // version est figée ici, l'horodatage est posé au fulfillment.
       terms_version: TERMS_VERSION,
-      installments: klarna ? "1" : "0",
+      installments: methods.length > 1 ? "1" : "0",
     },
   });
+
+  // Moyens de paiement, du plus complet au plus simple : Klarna et Alma
+  // (3x) sur les packs éligibles, puis Klarna seul si Alma n'est pas encore
+  // validé par Stripe, puis la carte seule. Une liste refusée par Stripe
+  // (moyen non activé sur le compte plateforme) passe à la suivante :
+  // l'achat du pack n'est jamais bloqué.
+  const attempts: Stripe.Checkout.SessionCreateParams.PaymentMethodType[][] =
+    withInstallments
+      ? [["card", "klarna", "alma"], ["card", "klarna"], ["card"]]
+      : [["card"]];
 
   // Charge sur le compte plateforme (pas d'option stripeAccount) → séquestre.
   let session;
   try {
-    try {
-      session = await stripe.checkout.sessions.create(sessionParams(withInstallments));
-    } catch (err) {
-      // Klarna pas (encore) activé sur le compte plateforme Stripe : on
-      // retombe sur la carte plutôt que de bloquer l'achat du pack.
-      if (!withInstallments) throw err;
-      console.error("[checkout] klarna unavailable, card only", err);
-      session = await stripe.checkout.sessions.create(sessionParams(false));
+    let lastErr: unknown = null;
+    for (const methods of attempts) {
+      try {
+        session = await stripe.checkout.sessions.create(sessionParams(methods));
+        break;
+      } catch (err) {
+        lastErr = err;
+        if (methods.length === 1) throw err;
+        console.error(`[checkout] ${methods.join("+")} refused, trying next`, err);
+      }
     }
+    if (!session) throw lastErr ?? new Error("checkout_failed");
   } catch (err) {
     // Stripe indisponible : le verrou est rendu tout de suite, pas dans 15 min.
     if (holdId) {
