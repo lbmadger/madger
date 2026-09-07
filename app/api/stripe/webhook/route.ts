@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
 import { subPeriodEnd, invoiceSubscriptionId } from "@/lib/stripe/subscription";
 import { SUPABASE_URL } from "@/lib/supabase/config";
-import { isPro } from "@/lib/subscription/plan";
+import { planOf, feeRatePercent, feeRateBps } from "@/lib/subscription/plan";
 
 export const dynamic = "force-dynamic";
 // L'enregistrement d'un paiement (webhook) peut dépasser 10 s : marge large.
@@ -439,23 +439,26 @@ export async function POST(req: NextRequest) {
               .eq("stripe_subscription_id", sub.id)
               .maybeSingle();
             if (reg) {
-              // La commission de l'abonnement est figée à sa création : si le
-              // statut Pro du coach a changé depuis, on réaligne la
-              // subscription Stripe (0 % en Pro, 5 % sinon) pour les
-              // échéances suivantes. Best-effort.
+              // Le taux d'une subscription Stripe est figé à sa création : si
+              // le plan du coach a changé depuis, on réaligne la subscription
+              // (5 % Essentiel, 3 % Pro) pour les échéances SUIVANTES. Le
+              // taux réellement prélevé sur celle-ci est celui de la charge.
+              // Best-effort.
+              const currentFee =
+                (
+                  sub as Stripe.Subscription & {
+                    application_fee_percent?: number | null;
+                  }
+                ).application_fee_percent ?? 0;
+              let coachPlan = planOf(null);
               try {
-                const { data: coachPro } = await supabase
+                const { data: coachRow } = await supabase
                   .from("coaches")
                   .select("pro_until")
                   .eq("id", reg.coach_id)
                   .maybeSingle();
-                const expectedFee = isPro(coachPro?.pro_until) ? 0 : 5;
-                const currentFee =
-                  (
-                    sub as Stripe.Subscription & {
-                      application_fee_percent?: number | null;
-                    }
-                  ).application_fee_percent ?? 0;
+                coachPlan = planOf(coachRow);
+                const expectedFee = feeRatePercent(coachPlan);
                 if (currentFee !== expectedFee) {
                   await stripe.subscriptions.update(sub.id, {
                     application_fee_percent: expectedFee,
@@ -468,24 +471,42 @@ export async function POST(req: NextRequest) {
                 charge?: string | Stripe.Charge | null;
                 payment_intent?: string | Stripe.PaymentIntent | null;
               };
-              // Commission réellement prélevée (application fee de la charge).
+              // Frais de transaction réellement prélevés (application fee de
+              // la charge), moyen de paiement et frais Stripe (marge interne).
               let commission = 0;
               let chargeId: string | null = null;
+              let subMethod: string | null = null;
+              let subStripeFee = 0;
               try {
                 chargeId =
                   typeof inv.charge === "string"
                     ? inv.charge
                     : inv.charge?.id ?? null;
                 if (chargeId) {
-                  const ch = await stripe.charges.retrieve(chargeId);
+                  const ch = await stripe.charges.retrieve(chargeId, {
+                    expand: ["balance_transaction"],
+                  });
                   commission =
                     typeof ch.application_fee_amount === "number"
                       ? ch.application_fee_amount
                       : 0;
+                  subMethod = ch.payment_method_details?.type ?? null;
+                  const bt =
+                    ch.balance_transaction && typeof ch.balance_transaction !== "string"
+                      ? ch.balance_transaction
+                      : null;
+                  subStripeFee = bt?.fee ?? 0;
                 }
               } catch {
-                /* commission inconnue : 0 par défaut */
+                /* frais inconnus : 0 par défaut */
               }
+              // Taux figé sur la ligne : celui réellement appliqué par Stripe
+              // à cette échéance (la subscription peut encore porter l'ancien
+              // taux jusqu'au réalignement ci-dessus).
+              const subRateBps =
+                currentFee > 0
+                  ? Math.round(currentFee * 100)
+                  : feeRateBps(coachPlan);
               const piId =
                 typeof inv.payment_intent === "string"
                   ? inv.payment_intent
@@ -512,6 +533,10 @@ export async function POST(req: NextRequest) {
                     0,
                     (invoice.amount_paid ?? 0) - commission
                   ),
+                  plan: coachPlan,
+                  fee_rate_bps: subRateBps,
+                  payment_method: subMethod,
+                  stripe_fee_cents: subStripeFee,
                 });
               // Échéance encaissée : le coach est prévenu (best-effort, et
               // seulement si l'insert a gagné : un rejeu du webhook ne doit

@@ -3,7 +3,7 @@ import type Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
-import { isPro } from "@/lib/subscription/plan";
+import { planOf, feeRatePercent } from "@/lib/subscription/plan";
 import { TERMS_VERSION } from "@/lib/legal/terms";
 import { installmentsEligible } from "@/lib/stripe/installments";
 
@@ -14,8 +14,10 @@ export const dynamic = "force-dynamic";
 //   l'argent est retenu par Madger, puis transféré au coach après la séance
 //   (24 h) si rien n'est signalé.
 // - Abonnement mensuel : souscription récurrente versée directement au coach
-//   (transfer_data), commission Madger en application_fee (5 % en Gratuit,
-//   0 % en Pro). Pas de séquestre sur du récurrent.
+//   (transfer_data), frais de transaction Madger en application_fee (taux du
+//   plan : 5 % Essentiel, 3 % Pro). Sur une destination charge, Stripe
+//   prélève ses frais sur la plateforme : « tout compris » de fait. Pas de
+//   séquestre sur du récurrent.
 export async function POST(req: NextRequest) {
   const stripe = getStripe();
   if (!stripe) {
@@ -83,6 +85,8 @@ export async function POST(req: NextRequest) {
 
   // ── Abonnement mensuel : souscription récurrente, pas de créneau requis ───
   if (service.type === "subscription") {
+    const subPlan = planOf(coach);
+    const subFeePercent = feeRatePercent(subPlan);
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [
@@ -99,12 +103,14 @@ export async function POST(req: NextRequest) {
       customer_email: String(email),
       subscription_data: {
         transfer_data: { destination: coach.stripe_account_id },
-        // Commission Madger prélevée sur chaque échéance.
-        ...(isPro(coach.pro_until) ? {} : { application_fee_percent: 5 }),
+        // Frais de transaction Madger prélevés sur chaque échéance, au taux
+        // du plan (réaligné à chaque échéance par le webhook si le plan change).
+        ...(subFeePercent > 0 ? { application_fee_percent: subFeePercent } : {}),
         metadata: {
           // `kind` distingue ces abonnements de l'abonnement Pro des coachs
           // dans le webhook (même endpoint).
           kind: "client_sub",
+          plan: subPlan,
           coach_id: coach.id,
           service_id: String(service_id),
           client_email: String(email).slice(0, 254),

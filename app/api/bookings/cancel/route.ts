@@ -3,14 +3,14 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
-import { computePayout } from "@/lib/stripe/escrow";
+import { computePayout, coachBearsStripeFee } from "@/lib/stripe/escrow";
 import {
   refundCents,
   resolveRefundPolicy,
   clampCancelHours,
   creditRestoredIfCancelled,
 } from "@/lib/booking/cancellation";
-import { isPro } from "@/lib/subscription/plan";
+import { planOf, feeRateBps } from "@/lib/subscription/plan";
 import { sendEmail } from "@/lib/email/resend";
 import { notifyClient } from "@/lib/notifications/client";
 import {
@@ -168,7 +168,7 @@ export async function POST(req: NextRequest) {
   const { data: payment } = await admin
     .from("payments")
     .select(
-      "id, client_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status, stripe_payment_intent_id, released_cents, refunded_cents, commission_cents, payout_cents"
+      "id, client_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status, stripe_payment_intent_id, released_cents, refunded_cents, commission_cents, payout_cents, fee_rate_bps, payment_method"
     )
     .eq("booking_id", bookingId)
     .maybeSingle();
@@ -344,12 +344,15 @@ export async function POST(req: NextRequest) {
     stripe_charge_id: payment.stripe_charge_id as string | null,
     stripe_fee_cents: payment.stripe_fee_cents as number | null,
   });
-  const breakdown = computePayout(
-    amount,
-    feeCents,
-    isPro(coach?.pro_until),
-    totalRefunded
-  );
+  // Taux figé au paiement (migration 0064), jamais le plan courant.
+  const breakdown = computePayout({
+    amountCents: amount,
+    feeRateBps:
+      (payment.fee_rate_bps as number | null) ?? feeRateBps(planOf(coach)),
+    stripeFeeCents: feeCents,
+    coachBearsStripeFee: coachBearsStripeFee(payment.payment_method as string | null),
+    refundCents: totalRefunded,
+  });
 
   // Réclame le paiement AVANT les appels Stripe : si une autre annulation, le
   // cron ou l'admin traite la même ligne en même temps, un seul gagne.
@@ -360,6 +363,7 @@ export async function POST(req: NextRequest) {
       status: totalRefunded >= amount ? "refunded" : "paid",
       refunded_cents: totalRefunded,
       commission_cents: breakdown.commissionCents,
+      provider_fee_cents: breakdown.providerFeeCents,
       payout_cents: breakdown.payoutCents,
       resolved_at: new Date().toISOString(),
     })

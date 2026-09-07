@@ -1160,7 +1160,9 @@ const fr = {
       "En deçà de ce délai, aucune réservation n'est plus possible et une demande en attente ne peut plus être acceptée (elle est annulée sans débit du client).",
     installments: "Paiement en 3 fois sur les packs",
     installmentsDesc:
-      "Tes clients peuvent régler un pack de 120 € ou plus en 3 fois via Klarna ou Alma. Tu touches tout de suite l'intégralité, l'organisme porte le risque. Leurs frais (environ 3 à 4 % plus une part fixe) sont déduits de ton versement, comme les frais de carte. Les séances à l'unité restent en carte, Apple Pay et Google Pay.",
+      "Tes clients peuvent régler un pack de 120 € ou plus en 3 fois via Klarna ou Alma. Tu touches tout de suite l'intégralité, l'organisme porte le risque. Les séances à l'unité restent en carte, Apple Pay et Google Pay.",
+    installmentsFees:
+      "Les frais du paiement en 3 fois sont à ta charge, environ {pct} % par transaction ({grid}), déduits de ton versement. Ils s'ajoutent à tes frais de transaction Madger.",
     timezone: "Fuseau horaire",
     timezoneHint:
       "Les créneaux proposés à tes clients et tes horaires s'affichent dans ce fuseau.",
@@ -2801,7 +2803,9 @@ const en: Dictionary = {
       "Below this notice, no more bookings can be made and pending requests can no longer be accepted (they are cancelled without charging the client).",
     installments: "Pay in 3 instalments on packs",
     installmentsDesc:
-      "Your clients can pay a pack of 120 € or more in 3 instalments via Klarna or Alma. You receive the full amount right away, the provider carries the risk. Their fees (around 3 to 4% plus a fixed part) are deducted from your payout, like card fees. Single sessions stay on card, Apple Pay and Google Pay.",
+      "Your clients can pay a pack of 120 € or more in 3 instalments via Klarna or Alma. You receive the full amount right away, the provider carries the risk. Single sessions stay on card, Apple Pay and Google Pay.",
+    installmentsFees:
+      "Instalment fees are on you, about {pct}% per transaction ({grid}), deducted from your payout. They come on top of your Madger transaction fees.",
     timezone: "Time zone",
     timezoneHint:
       "Slots offered to your clients and your schedule are shown in this time zone.",

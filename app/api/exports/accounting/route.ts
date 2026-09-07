@@ -9,8 +9,9 @@ import {
 export const dynamic = "force-dynamic";
 
 // Export comptable CSV du coach connecté : une ligne par paiement encaissé de
-// l'année demandée (?year=2026), avec numéro de facture, montants, commission
-// et net versé. Format tableur français : séparateur « ; », virgule décimale,
+// l'année demandée (?year=2026), avec numéro de facture, montants, frais de
+// transaction et net versé. Les frais Stripe réels ne figurent pas : ils sont
+// supportés par Madger (comptabilité interne). Format tableur français : séparateur « ; », virgule décimale,
 // BOM UTF-8 pour Excel. La RLS limite naturellement aux paiements du coach.
 export async function GET(req: NextRequest) {
   const supabase = createClient();
@@ -29,7 +30,7 @@ export async function GET(req: NextRequest) {
   const { data: payments, error } = await supabase
     .from("payments")
     .select(
-      "id, amount_cents, refunded_cents, commission_cents, stripe_fee_cents, payout_cents, escrow_status, paid_at, released_at, clients(first_name, last_name), services(name), invoices(number, kind, amount_cents, issued_at)"
+      "id, amount_cents, refunded_cents, commission_cents, provider_fee_cents, payout_cents, escrow_status, paid_at, released_at, clients(first_name, last_name), services(name), invoices(number, kind, amount_cents, issued_at)"
     )
     .not("paid_at", "is", null)
     .gte("paid_at", from)
@@ -55,8 +56,9 @@ export async function GET(req: NextRequest) {
     "Prestation",
     "Montant TTC (EUR)",
     "Rembourse (EUR)",
-    "Commission Madger (EUR)",
-    "Frais Stripe (EUR)",
+    // Frais de transaction Madger (tout compris). En paiement en 3 fois, les
+    // frais du prestataire, à la charge du coach, s'y ajoutent.
+    "Frais de transaction (EUR)",
     "Net verse (EUR)",
     "Statut",
     "Date versement",
@@ -87,8 +89,10 @@ export async function GET(req: NextRequest) {
       cell((service?.name as string) ?? "-"),
       money(p.amount_cents as number),
       money(p.refunded_cents as number),
-      money(p.commission_cents as number),
-      money(p.stripe_fee_cents as number),
+      money(
+        ((p.commission_cents as number) || 0) +
+          ((p.provider_fee_cents as number) || 0)
+      ),
       money(p.payout_cents as number),
       (p.escrow_status as string) || "-",
       p.released_at

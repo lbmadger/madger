@@ -1,12 +1,57 @@
-// Statut d'abonnement dérivé du coach. Un coach est "Pro" tant que pro_until
-// est dans le futur ; sinon "Free".
+// Plans Madger et taux de frais de transaction.
+//
+//   essential : 0 € / mois, 5 % de frais de transaction, tout compris
+//   pro       : 49 € / mois, 3 % de frais de transaction, tout compris
+//   studio    : 149 € / mois, 0 % de frais Madger, frais Stripe au coût réel
+//               (présent dans le modèle et le calcul UNIQUEMENT : aucune
+//               interface, aucun email, aucune colonne ne l'active encore)
+//
+// « Tout compris » : les frais Stripe carte sont supportés par Madger, ils ne
+// sont pas déduits du versement du coach. Seule exception, le paiement en
+// 3 fois (Klarna, Alma), activé par le coach : ses frais restent à sa
+// charge (cf. lib/stripe/installments.ts).
+//
+// Le taux est FIGÉ sur chaque transaction à la création de la ligne
+// payments (fee_rate_bps) : un changement de plan ne touche jamais les
+// transactions passées.
 
+export type Plan = "essential" | "pro" | "studio";
+
+export const PLANS: readonly Plan[] = ["essential", "pro", "studio"] as const;
+
+// Taux Madger en points de base (1 % = 100 bps).
+export const FEE_RATE_BPS: Record<Plan, number> = {
+  essential: 500,
+  pro: 300,
+  studio: 0,
+};
+
+// Un coach est "Pro" tant que pro_until est dans le futur ; sinon Essentiel.
 export function isPro(proUntil: string | null | undefined): boolean {
   if (!proUntil) return false;
   return new Date(proUntil).getTime() > Date.now();
 }
 
-// Nombre de jours restants de Pro (0 si Free/expiré).
+// Plan courant du coach. Studio n'est activable par aucune colonne pour
+// l'instant : le jour venu, une migration dédiée ajoutera le champ ici.
+export function planOf(coach: { pro_until?: string | null } | null | undefined): Plan {
+  return isPro(coach?.pro_until) ? "pro" : "essential";
+}
+
+export function feeRateBps(plan: Plan): number {
+  return FEE_RATE_BPS[plan];
+}
+
+// Pourcentage entier pour Stripe (application_fee_percent) : 5, 3 ou 0.
+export function feeRatePercent(plan: Plan): number {
+  return FEE_RATE_BPS[plan] / 100;
+}
+
+export function isPlan(v: unknown): v is Plan {
+  return typeof v === "string" && (PLANS as readonly string[]).includes(v);
+}
+
+// Nombre de jours restants de Pro (0 si Essentiel/expiré).
 export function proDaysLeft(proUntil: string | null | undefined): number {
   if (!proUntil) return 0;
   const ms = new Date(proUntil).getTime() - Date.now();

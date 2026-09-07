@@ -14,6 +14,7 @@ import {
 import { googleCalendarUrl, icsUrl } from "@/lib/calendar/links";
 import { attachMeetToBooking } from "@/lib/google/calendar";
 import { emailInvoice } from "@/lib/invoices/send";
+import { planOf, feeRateBps } from "@/lib/subscription/plan";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
@@ -173,11 +174,18 @@ export async function fulfillCheckoutSession(
   // approbation → à valider (refus = remboursement intégral).
   const { data: coachMode } = await supabase
     .from("coaches")
-    .select("booking_mode")
+    .select("booking_mode, pro_until")
     .eq("id", m.coach_id)
     .maybeSingle();
   const bookingStatus =
     coachMode?.booking_mode === "approval" ? "pending" : "confirmed";
+  // Taux de frais de transaction FIGÉ à la création de la ligne (empreinte
+  // ou débit, moment où le client accepte les CGV) : un changement de plan
+  // du coach ne touche jamais ce paiement. Le moyen de paiement est conservé
+  // pour le paiement en 3 fois (frais à la charge du coach).
+  const plan = planOf(coachMode);
+  const rateBps = feeRateBps(plan);
+  const paymentMethod = charge?.payment_method_details?.type ?? null;
 
   // Ordre volontaire : séance en 'pending' D'ABORD, puis le paiement, puis la
   // confirmation. Ainsi le trigger des packs voit le paiement attaché et ne
@@ -240,6 +248,9 @@ export async function fulfillCheckoutSession(
       stripe_payment_intent_id: piId,
       stripe_charge_id: chargeId,
       stripe_fee_cents: feeCents,
+      plan,
+      fee_rate_bps: rateBps,
+      payment_method: paymentMethod,
       escrow_status: authorized ? "authorized" : "held",
       release_after: releaseAfter.toISOString(),
       paid_at: authorized ? null : new Date().toISOString(),

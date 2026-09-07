@@ -32,6 +32,7 @@ import AvatarCropper, { fileFromUrl } from "@/components/ui/AvatarCropper";
 import Select from "@/components/ui/Select";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import { withTimeout } from "@/lib/utils/withTimeout";
+import { installmentFeeApproxPct, installmentFeeLabel } from "@/lib/stripe/installments";
 import AiBio from "@/components/ui/AiBio";
 import {
   resolveRefundPolicy,
@@ -66,7 +67,7 @@ import type { Coach } from "@/lib/coach/getCoach";
 
 
 export default function SettingsForm({ coach }: { coach: Coach }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
   const { confirm, dialog } = useConfirm();
 
@@ -712,6 +713,13 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
               </span>
               <span className="mt-1 block text-xs text-text-dim">
                 {t("settings.installmentsDesc")}
+              </span>
+              {/* Mention obligatoire : les frais du 3x sont à la charge du
+                  coach, contrairement à la carte (tout compris). */}
+              <span className="mt-1.5 block text-xs font-medium text-warning">
+                {t("settings.installmentsFees")
+                  .replace("{pct}", String(installmentFeeApproxPct()))
+                  .replace("{grid}", installmentFeeLabel(locale))}
               </span>
             </span>
             <span

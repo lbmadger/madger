@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
-import { computePayout } from "@/lib/stripe/escrow";
-import { isPro } from "@/lib/subscription/plan";
+import { computePayout, coachBearsStripeFee } from "@/lib/stripe/escrow";
+import { planOf, feeRateBps } from "@/lib/subscription/plan";
 import { sendEmail } from "@/lib/email/resend";
 import {
   reviewRequestClient,
@@ -165,7 +165,7 @@ export async function GET(req: NextRequest) {
     const dueQuery = supabase
       .from("payments")
       .select(
-        "id, coach_id, booking_id, amount_cents, currency, paid_at, stripe_charge_id, stripe_fee_cents, refunded_cents, released_cents, commission_cents, bookings(status, credit_lost, clients(first_name, last_name, email), coaches(first_name, last_name))"
+        "id, coach_id, booking_id, amount_cents, currency, paid_at, stripe_charge_id, stripe_fee_cents, refunded_cents, released_cents, commission_cents, fee_rate_bps, payment_method, provider_fee_cents, bookings(status, credit_lost, clients(first_name, last_name, email), coaches(first_name, last_name))"
       )
       .eq("escrow_status", "held")
       .lte("release_after", nowIso)
@@ -366,19 +366,24 @@ export async function GET(req: NextRequest) {
         return;
       }
 
-      // Frais Stripe relus chez Stripe s'ils manquent : le coach les porte
-      // toujours, Pro ou pas.
+      // Frais Stripe relus chez Stripe s'ils manquent : comptabilité interne
+      // (marge) et, en paiement fractionné, part déduite du coach.
       const feeCents = await ensureStripeFee(supabase, stripe, {
         id: p.id as string,
         stripe_charge_id: p.stripe_charge_id as string | null,
         stripe_fee_cents: p.stripe_fee_cents as number | null,
       });
-      const breakdown = computePayout(
-        p.amount_cents,
-        feeCents,
-        isPro(coach.pro_until as string | null),
-        alreadyRefunded
-      );
+      // Taux figé au paiement ; repli sur le plan courant pour une ligne
+      // antérieure à la migration 0064 (aucune en production).
+      const breakdown = computePayout({
+        amountCents: p.amount_cents,
+        feeRateBps:
+          (p.fee_rate_bps as number | null) ??
+          feeRateBps(planOf(coach as { pro_until?: string | null })),
+        stripeFeeCents: feeCents,
+        coachBearsStripeFee: coachBearsStripeFee(p.payment_method as string | null),
+        refundCents: alreadyRefunded,
+      });
 
       const alreadyReleased = (p.released_cents as number | null) ?? 0;
 
@@ -440,6 +445,9 @@ export async function GET(req: NextRequest) {
           const targetCommission = Math.floor(
             (breakdown.commissionCents * units) / pack.total
           );
+          const targetProviderFee = Math.floor(
+            (breakdown.providerFeeCents * units) / pack.total
+          );
           const deltaPayout = targetReleased - alreadyReleased;
           const nextCheck = new Date(Date.now() + 7 * 86400000).toISOString();
 
@@ -454,12 +462,14 @@ export async function GET(req: NextRequest) {
           }
 
           const prevCommission = (p.commission_cents as number | null) ?? 0;
+          const prevProviderFee = (p.provider_fee_cents as number | null) ?? 0;
           const { data: claimedPack } = await supabase
             .from("payments")
             .update({
               released_cents: targetReleased,
               payout_cents: targetReleased,
               commission_cents: targetCommission,
+              provider_fee_cents: targetProviderFee,
               released_at: nowIso,
               release_after: nextCheck,
             })
@@ -491,6 +501,7 @@ export async function GET(req: NextRequest) {
                 released_cents: alreadyReleased,
                 payout_cents: alreadyReleased,
                 commission_cents: prevCommission,
+                provider_fee_cents: prevProviderFee,
                 released_at: null,
               })
               .eq("id", p.id)
@@ -550,6 +561,7 @@ export async function GET(req: NextRequest) {
         .update({
           escrow_status: "released",
           commission_cents: breakdown.commissionCents,
+          provider_fee_cents: breakdown.providerFeeCents,
           payout_cents: breakdown.payoutCents,
           released_cents: breakdown.payoutCents,
           released_at: nowIso,

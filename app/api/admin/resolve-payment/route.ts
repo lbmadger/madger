@@ -3,8 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
-import { computePayout } from "@/lib/stripe/escrow";
-import { isPro } from "@/lib/subscription/plan";
+import { computePayout, coachBearsStripeFee } from "@/lib/stripe/escrow";
+import { planOf, feeRateBps } from "@/lib/subscription/plan";
 import { isAdminEmail } from "@/lib/admin";
 import { sendEmail } from "@/lib/email/resend";
 import {
@@ -17,8 +17,9 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 export const dynamic = "force-dynamic";
 
 // Résolution d'un litige par un admin (cf. charte). L'admin fixe le montant
-// remboursé au client (refund_cents) ; le reste, moins frais Stripe et
-// commission, est versé au coach. Exécuté immédiatement.
+// remboursé au client (refund_cents) ; le reste, moins les frais de
+// transaction Madger (taux figé au paiement), est versé au coach. Exécuté
+// immédiatement.
 export async function POST(req: NextRequest) {
   const stripe = getStripe();
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -44,7 +45,7 @@ export async function POST(req: NextRequest) {
   const { data: payment } = await admin
     .from("payments")
     .select(
-      "id, coach_id, client_id, booking_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status, released_cents, refunded_cents, commission_cents, payout_cents"
+      "id, coach_id, client_id, booking_id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status, released_cents, refunded_cents, commission_cents, payout_cents, fee_rate_bps, payment_method, provider_fee_cents"
     )
     .eq("id", paymentId)
     .maybeSingle();
@@ -73,12 +74,15 @@ export async function POST(req: NextRequest) {
     .eq("id", payment.coach_id)
     .maybeSingle();
 
-  const breakdown = computePayout(
-    amount,
-    payment.stripe_fee_cents ?? 0,
-    isPro(coach?.pro_until),
-    totalRefunded
-  );
+  // Taux figé au paiement (migration 0064), jamais le plan courant.
+  const breakdown = computePayout({
+    amountCents: amount,
+    feeRateBps:
+      (payment.fee_rate_bps as number | null) ?? feeRateBps(planOf(coach)),
+    stripeFeeCents: payment.stripe_fee_cents ?? 0,
+    coachBearsStripeFee: coachBearsStripeFee(payment.payment_method as string | null),
+    refundCents: totalRefunded,
+  });
 
   // Réclame la ligne AVANT tout appel Stripe (même patron que cancel/release) :
   // un seul processus gagne. Empêche le double traitement resolve + cron sur
@@ -92,6 +96,7 @@ export async function POST(req: NextRequest) {
       status: fullyRefunded ? "refunded" : "paid",
       refunded_cents: totalRefunded,
       commission_cents: breakdown.commissionCents,
+      provider_fee_cents: breakdown.providerFeeCents,
       payout_cents: breakdown.payoutCents,
       resolved_at: new Date().toISOString(),
     })
@@ -223,6 +228,7 @@ export async function POST(req: NextRequest) {
         resolved_at: null,
         refunded_cents: alreadyRefunded,
         commission_cents: (payment.commission_cents as number | null) ?? 0,
+        provider_fee_cents: (payment.provider_fee_cents as number | null) ?? 0,
         payout_cents: (payment.payout_cents as number | null) ?? null,
       })
       .eq("id", payment.id)

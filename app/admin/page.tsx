@@ -32,6 +32,20 @@ export default async function AdminOverview() {
   let coachesPrevMonth = 0;
   let earlyThisMonth = 0;
   let earlyPrevMonth = 0;
+  // Marge nette par plan et par mois (migration 0064) : frais Madger moins
+  // frais Stripe réels, plus frais 3x refacturés. Vérifie que Pro à 3 %
+  // reste positif en conditions réelles.
+  type MarginRow = {
+    month: string;
+    plan: string;
+    payments: number;
+    gross_cents: number;
+    madger_fee_cents: number;
+    stripe_fee_cents: number;
+    provider_fee_cents: number;
+    net_margin_cents: number;
+  };
+  let margins: MarginRow[] = [];
 
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -39,7 +53,7 @@ export default async function AdminOverview() {
 
   if (admin) {
     const head = { count: "exact" as const, head: true };
-    const [c1, c2, c3, c4, c5, c6, comm, geo, subs, pays, cm, cpm, em, epm] = await Promise.all([
+    const [c1, c2, c3, c4, c5, c6, comm, geo, subs, pays, cm, cpm, em, epm, marginRes] = await Promise.all([
       admin.from("coaches").select("id", head),
       admin.from("clients").select("id", head),
       admin.from("early_access").select("id", head),
@@ -73,7 +87,17 @@ export default async function AdminOverview() {
       admin.from("coaches").select("id", head).gte("created_at", prevMonthStart.toISOString()).lt("created_at", monthStart.toISOString()),
       admin.from("early_access").select("id", head).gte("created_at", monthStart.toISOString()),
       admin.from("early_access").select("id", head).gte("created_at", prevMonthStart.toISOString()).lt("created_at", monthStart.toISOString()),
+      admin.rpc("admin_margin_by_plan_month", { p_months: 6 }),
     ]);
+    margins = ((marginRes.data as MarginRow[] | null) ?? []).map((r) => ({
+      ...r,
+      payments: Number(r.payments) || 0,
+      gross_cents: Number(r.gross_cents) || 0,
+      madger_fee_cents: Number(r.madger_fee_cents) || 0,
+      stripe_fee_cents: Number(r.stripe_fee_cents) || 0,
+      provider_fee_cents: Number(r.provider_fee_cents) || 0,
+      net_margin_cents: Number(r.net_margin_cents) || 0,
+    }));
     coaches = c1.count ?? 0;
     clients = c2.count ?? 0;
     early = c3.count ?? 0;
@@ -264,6 +288,72 @@ export default async function AdminOverview() {
             index={5}
             hint="Depuis le lancement"
           />
+        </div>
+
+        {/* Marge nette par plan : ce que Madger garde réellement une fois les
+            frais Stripe carte payés (tout compris). Interne uniquement. */}
+        <div className="mt-6 rounded-2xl border border-border bg-bg-card p-4">
+          <h3 className="text-sm font-semibold text-text-base">
+            Marge nette par plan et par mois
+          </h3>
+          <p className="mt-0.5 text-xs text-text-muted">
+            Frais Madger moins frais Stripe réels, plus frais du paiement en
+            3 fois refacturés au coach. Mois de rattachement : versement au
+            coach. Une marge Pro négative signale que le 3 % ne couvre plus
+            les frais carte.
+          </p>
+          {margins.length === 0 ? (
+            <p className="mt-3 text-xs text-text-dim">Aucun paiement sur la période.</p>
+          ) : (
+            <div className="mt-3 overflow-x-auto">
+              <table className="w-full min-w-[640px] text-xs">
+                <thead className="text-left text-text-dim">
+                  <tr>
+                    <th className="py-1.5 pr-3 font-medium">Mois</th>
+                    <th className="py-1.5 pr-3 font-medium">Plan</th>
+                    <th className="py-1.5 pr-3 text-right font-medium">Paiements</th>
+                    <th className="py-1.5 pr-3 text-right font-medium">Volume net</th>
+                    <th className="py-1.5 pr-3 text-right font-medium">Frais Madger</th>
+                    <th className="py-1.5 pr-3 text-right font-medium">Frais Stripe</th>
+                    <th className="py-1.5 pr-3 text-right font-medium">Frais 3x refacturés</th>
+                    <th className="py-1.5 text-right font-medium">Marge nette</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {margins.map((r) => {
+                    const eur = (c: number) =>
+                      (c / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+                    const pct =
+                      r.gross_cents > 0
+                        ? ` (${((r.net_margin_cents / r.gross_cents) * 100).toFixed(1).replace(".", ",")} %)`
+                        : "";
+                    return (
+                      <tr key={`${r.month}-${r.plan}`} className="border-t border-border">
+                        <td className="py-1.5 pr-3 text-text-muted">
+                          {new Date(r.month).toLocaleDateString("fr-FR", { month: "short", year: "numeric" })}
+                        </td>
+                        <td className="py-1.5 pr-3 font-medium text-text-base">
+                          {r.plan === "pro" ? "Pro" : r.plan === "studio" ? "Studio" : "Essentiel"}
+                        </td>
+                        <td className="py-1.5 pr-3 text-right text-text-muted">{r.payments}</td>
+                        <td className="py-1.5 pr-3 text-right text-text-muted">{eur(r.gross_cents)}</td>
+                        <td className="py-1.5 pr-3 text-right text-text-base">{eur(r.madger_fee_cents)}</td>
+                        <td className="py-1.5 pr-3 text-right text-text-muted">{eur(r.stripe_fee_cents)}</td>
+                        <td className="py-1.5 pr-3 text-right text-text-muted">{eur(r.provider_fee_cents)}</td>
+                        <td
+                          className={`py-1.5 text-right font-semibold ${
+                            r.net_margin_cents < 0 ? "text-danger" : "text-accent"
+                          }`}
+                        >
+                          {eur(r.net_margin_cents)}{pct}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </section>
 
