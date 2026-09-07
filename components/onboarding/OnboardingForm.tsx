@@ -14,6 +14,7 @@ import { inputClass, labelClass } from "@/lib/ui/styles";
 import { SPORT_KEYS, defaultServiceForSport } from "@/lib/coaches/taxonomy";
 import { WEEK_ORDER } from "@/lib/availability/types";
 import { track } from "@/lib/analytics/posthog";
+import { withTimeout } from "@/lib/utils/withTimeout";
 
 // Onboarding en 3 étapes : qui tu es → ce que tu proposes → quand tu es
 // dispo. C'est le chemin le plus court vers le seul moment qui compte, le
@@ -145,17 +146,19 @@ export default function OnboardingForm({
     setLoading(true);
     try {
       const supabase = createClient();
-      const { error } = await supabase
-        .from("coaches")
-        .update({
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-          slug,
-          // listed / onboarding_completed ne sont posés qu'à la FIN de
-          // l'étape 3 : sinon un abandon à l'étape 2 publiait un profil
-          // vide et rendait l'onboarding irrécupérable (redirigé dashboard).
-        })
-        .eq("id", userId);
+      const { error } = await withTimeout(
+        supabase
+          .from("coaches")
+          .update({
+            first_name: firstName.trim(),
+            last_name: lastName.trim(),
+            slug,
+            // listed / onboarding_completed ne sont posés qu'à la FIN de
+            // l'étape 3 : sinon un abandon à l'étape 2 publiait un profil
+            // vide et rendait l'onboarding irrécupérable (redirigé dashboard).
+          })
+          .eq("id", userId)
+      );
       if (error) {
         setError(
           error.code === "23505"
@@ -173,6 +176,7 @@ export default function OnboardingForm({
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ code: ref }),
+            signal: AbortSignal.timeout(8000),
           });
           localStorage.removeItem("madger_ref");
         }
@@ -202,32 +206,35 @@ export default function OnboardingForm({
     setLoading(true);
     try {
       const supabase = createClient();
-      const { error: sportErr } = await supabase
-        .from("coaches")
-        .update({ sport })
-        .eq("id", userId);
+      const { error: sportErr } = await withTimeout(
+        supabase.from("coaches").update({ sport }).eq("id", userId)
+      );
       if (sportErr) {
         setError(t("onboarding.errors.generic"));
         return;
       }
-      const { error: svcErr } = await supabase.from("services").insert({
-        coach_id: userId,
-        name: serviceName.trim(),
-        type: "single",
-        // Le lieu se précise dans Réglages : par défaut, une séance en
-        // présentiel, le cas de très loin le plus fréquent.
-        location: "in_person",
-        duration_min: serviceDuration,
-        price_cents: priceCents,
-        currency: "eur",
-        active: true,
-      });
+      const { error: svcErr } = await withTimeout(
+        supabase.from("services").insert({
+          coach_id: userId,
+          name: serviceName.trim(),
+          type: "single",
+          // Le lieu se précise dans Réglages : par défaut, une séance en
+          // présentiel, le cas de très loin le plus fréquent.
+          location: "in_person",
+          duration_min: serviceDuration,
+          price_cents: priceCents,
+          currency: "eur",
+          active: true,
+        })
+      );
       if (svcErr) {
         setError(t("onboarding.errors.generic"));
         return;
       }
       track("onboarding_step_done", { step: 2 });
       setStep(3);
+    } catch {
+      setError(t("onboarding.errors.generic"));
     } finally {
       setLoading(false);
     }
@@ -242,13 +249,15 @@ export default function OnboardingForm({
     setLoading(true);
     try {
       const supabase = createClient();
-      const { error } = await supabase.from("availabilities").insert(
-        days.map((weekday) => ({
-          coach_id: userId,
-          weekday,
-          start_time: dayStart,
-          end_time: dayEnd,
-        }))
+      const { error } = await withTimeout(
+        supabase.from("availabilities").insert(
+          days.map((weekday) => ({
+            coach_id: userId,
+            weekday,
+            start_time: dayStart,
+            end_time: dayEnd,
+          }))
+        )
       );
       if (error) {
         setError(t("onboarding.errors.generic"));
@@ -256,10 +265,12 @@ export default function OnboardingForm({
       }
       // C'est ICI que le profil devient officiel : publié + onboarding
       // terminé, une fois les 3 étapes réellement franchies.
-      const { error: doneErr } = await supabase
-        .from("coaches")
-        .update({ listed: true, onboarding_completed: true })
-        .eq("id", userId);
+      const { error: doneErr } = await withTimeout(
+        supabase
+          .from("coaches")
+          .update({ listed: true, onboarding_completed: true })
+          .eq("id", userId)
+      );
       if (doneErr) {
         setError(t("onboarding.errors.generic"));
         return;
@@ -267,6 +278,8 @@ export default function OnboardingForm({
       track("onboarding_step_done", { step: 3 });
       track("onboarding_completed");
       setStep(4);
+    } catch {
+      setError(t("onboarding.errors.generic"));
     } finally {
       setLoading(false);
     }
