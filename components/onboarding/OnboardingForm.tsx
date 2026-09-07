@@ -6,7 +6,6 @@ import { startRouteProgress } from "@/components/ui/RouteProgress";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { slugify, isValidSlug } from "@/lib/utils/slug";
-import Image from "next/image";
 import Button from "@/components/ui/Button";
 import Leo from "@/components/ui/Leo";
 import AccountSwitchBar from "@/components/auth/AccountSwitchBar";
@@ -87,30 +86,40 @@ export default function OnboardingForm({
       return;
     }
     setAvatarUploading(true);
+    // Aperçu local immédiat : la photo remplace l'initiale dès la sélection,
+    // sans attendre le réseau. Remplacé par l'URL définitive à la fin.
+    const preview = URL.createObjectURL(file);
+    setAvatarUrl(preview);
     try {
       const supabase = createClient();
       const path = `${userId}/avatar`;
-      const { error: upErr } = await supabase.storage
-        .from("avatars")
-        .upload(path, file, { upsert: true, contentType: file.type });
+      const { error: upErr } = await withTimeout(
+        supabase.storage
+          .from("avatars")
+          .upload(path, file, { upsert: true, contentType: file.type }),
+        30000
+      );
       if (upErr) {
+        setAvatarUrl("");
         setAvatarErr(true);
         return;
       }
       const { data } = supabase.storage.from("avatars").getPublicUrl(path);
       const url = `${data.publicUrl}?v=${Date.now()}`;
-      const { error: dbErr } = await supabase
-        .from("coaches")
-        .update({ avatar_url: url })
-        .eq("id", userId);
+      const { error: dbErr } = await withTimeout(
+        supabase.from("coaches").update({ avatar_url: url }).eq("id", userId)
+      );
       if (dbErr) {
+        setAvatarUrl("");
         setAvatarErr(true);
         return;
       }
       setAvatarUrl(url);
     } catch {
+      setAvatarUrl("");
       setAvatarErr(true);
     } finally {
+      URL.revokeObjectURL(preview);
       setAvatarUploading(false);
     }
   }
@@ -525,11 +534,12 @@ export default function OnboardingForm({
                 visible. Non bloquante, mais présentée comme essentielle. */}
             <div className="flex items-center gap-3 rounded-xl border border-border-strong p-3">
               {avatarUrl ? (
-                <Image
+                // <img> natif : l'aperçu local (blob:) et l'URL Storage
+                // s'affichent sans passer par l'optimiseur d'images.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
                   src={avatarUrl}
                   alt=""
-                  width={56}
-                  height={56}
                   className="h-14 w-14 shrink-0 rounded-full border border-border-strong object-cover"
                 />
               ) : (
