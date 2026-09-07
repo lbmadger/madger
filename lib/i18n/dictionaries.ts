@@ -200,7 +200,7 @@ const fr = {
   },
   onboarding: {
     title: "Bienvenue sur Madger",
-    subtitle: "Ton prénom, et ton lien de réservation existe.",
+    subtitle: "Ton nom, ta photo, et ton lien de réservation existe.",
     linkPreview: "Ton lien de réservation",
     editLink: "Modifier",
     offerTitle: "Ce que tu proposes",
@@ -259,6 +259,7 @@ const fr = {
       slugTaken: "Ce lien est déjà pris, choisis-en un autre.",
       slugInvalid: "Lien invalide (lettres minuscules, chiffres et tirets).",
       nameRequired: "Indique ton prénom.",
+      lastNameRequired: "Indique ton nom : il figure sur tes factures.",
     },
   },
   availability: {
@@ -1831,7 +1832,7 @@ const en: Dictionary = {
   },
   onboarding: {
     title: "Welcome to Madger",
-    subtitle: "Your first name, and your booking link exists.",
+    subtitle: "Your name, your photo, and your booking link exists.",
     linkPreview: "Your booking link",
     editLink: "Edit",
     offerTitle: "What you offer",
@@ -1890,6 +1891,7 @@ const en: Dictionary = {
       slugTaken: "This link is already taken, pick another one.",
       slugInvalid: "Invalid link (lowercase letters, numbers and hyphens).",
       nameRequired: "Please enter at least your first name.",
+      lastNameRequired: "Enter your last name: it appears on your invoices.",
     },
   },
   availability: {

@@ -138,6 +138,8 @@ export default function OnboardingForm({
     e.preventDefault();
     setError(null);
     if (!firstName.trim()) return setError(t("onboarding.errors.nameRequired"));
+    // Le nom figure sur les factures émises au nom du coach : obligatoire.
+    if (!lastName.trim()) return setError(t("onboarding.errors.lastNameRequired"));
     if (!isValidSlug(slug)) return setError(t("onboarding.errors.slugInvalid"));
 
     setLoading(true);
@@ -147,7 +149,7 @@ export default function OnboardingForm({
         .from("coaches")
         .update({
           first_name: firstName.trim(),
-          last_name: lastName.trim() || null,
+          last_name: lastName.trim(),
           slug,
           // listed / onboarding_completed ne sont posés qu'à la FIN de
           // l'étape 3 : sinon un abandon à l'étape 2 publiait un profil
@@ -495,17 +497,13 @@ export default function OnboardingForm({
                 />
               </label>
               <label className="flex flex-col gap-1.5">
-                <span className={labelClass}>
-                  {t("onboarding.lastName")}{" "}
-                  <span className="font-normal text-text-dim">
-                    {t("common.optional")}
-                  </span>
-                </span>
+                <span className={labelClass}>{t("onboarding.lastName")}</span>
                 <input
                   type="text"
                   value={lastName}
                   onChange={(e) => syncNames({ last: e.target.value })}
                   className={inputClass}
+                  required
                 />
               </label>
             </div>
