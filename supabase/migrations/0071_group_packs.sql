@@ -8,7 +8,7 @@
 -- - pack_credit_consume (séance individuelle, coach ou client) ignore les
 --   packs collectifs ;
 -- - pack_credit_consume_from débite UN pack précis (place sur un cours).
--- À exécuter dans Supabase → SQL Editor → Run (après 0069).
+-- À exécuter dans Supabase → SQL Editor → Run (après 0070).
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- Séance individuelle : seuls les packs individuels sont débités.
