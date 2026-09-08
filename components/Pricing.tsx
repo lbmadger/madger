@@ -254,8 +254,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
             En dessous, tes relances, ton annulation automatique et tes statistiques te coûtent la différence, jamais plus de 49 € par mois.
           </p>
           <p className="text-xs" style={{ color: "#8C8C8C" }}>
-            Tout compris : frais bancaires, Apple Pay, remboursements et litiges inclus, aucune commission en plus.
-            Ailleurs, « 0 % de commission » laisse 1,5 % + 0,25 € de frais bancaires par paiement à ta charge, remboursements et litiges en plus.
+            Tout compris : paiement par carte, Apple Pay, remboursements et litiges. Un seul pourcentage, rien d&apos;autre.
           </p>
         </motion.div>
 
