@@ -120,6 +120,9 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
                 <div className="text-white text-sm">
                   5 % de frais de transaction, tout compris.
                 </div>
+                <div className="text-text-muted text-xs">
+                  Sans abonnement. Tu ne paies que quand tu encaisses.
+                </div>
               </div>
               <a
                 href={ctaHref}
@@ -199,7 +202,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
                   </div>
                 )}
                 <div className="text-white text-sm">
-                  3 % de frais de transaction, tout compris.
+                  0 % de commission Madger. 3 % de frais de transaction, tout compris.
                 </div>
                 <div className="text-text-muted text-xs">
                   ou {annual} € par an (2 mois offerts) · 7 jours d'essai gratuits
@@ -239,6 +242,23 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
           </motion.div>
           </div>
         </div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="max-w-3xl mx-auto mt-8 flex flex-col gap-2 text-center"
+        >
+          <p className="text-sm" style={{ color: "#C9C9C4" }}>
+            Au-delà de 2 450 € encaissés par mois, Pro te coûte moins cher qu&apos;Essentiel.
+            En dessous, tes SMS de rappel, tes relances et tes statistiques te reviennent à moins de 20 € par mois.
+          </p>
+          <p className="text-xs" style={{ color: "#8C8C8C" }}>
+            « Tout compris » veut dire : frais bancaires, Apple Pay, remboursements et litiges inclus.
+            Ailleurs, « 0 % de commission » laisse 1,5 % + 0,25 € de frais bancaires par paiement à ta charge, remboursements et litiges en plus.
+          </p>
+        </motion.div>
 
         {/* Bande vide : Léo se tient dans le noir sous les cartes, sans les chevaucher */}
         <div aria-hidden className="h-24 sm:h-52" />

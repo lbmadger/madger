@@ -462,7 +462,7 @@ const fr = {
     annualSave: "2 mois offerts",
     annualMonthlyEq: "soit {price} par mois",
     feesFree: "5 % de frais de transaction, tout compris.",
-    feesPro: "3 % de frais de transaction, tout compris.",
+    feesPro: "0 % de commission Madger. 3 % de frais de transaction, tout compris.",
     proNoShow: "Un no-show évité par mois et Pro est remboursé.",
     upgrading: "Ouverture du paiement sécurisé…",
     trialTitle: "Il te reste {n} jours de Pro offert",
@@ -655,7 +655,7 @@ const fr = {
       "Ton compte Stripe existe mais la configuration n'est pas finie. Termine-la pour encaisser.",
     finishSetup: "Terminer la configuration",
     feesNotePro:
-      "Offre Pro : 3 % de frais de transaction, tout compris.",
+      "Offre Pro : 0 % de commission Madger, 3 % de frais de transaction, tout compris.",
     feesNoteFree:
       "Offre Essentiel : 5 % de frais de transaction, tout compris.",
     notConfigured: "Paiements bientôt disponibles.",
@@ -2179,7 +2179,7 @@ const en: Dictionary = {
     annualSave: "2 months free",
     annualMonthlyEq: "i.e. {price} per month",
     feesFree: "5% transaction fees, all inclusive.",
-    feesPro: "3% transaction fees, all inclusive.",
+    feesPro: "0% Madger commission. 3% transaction fees, all inclusive.",
     proNoShow: "One no-show avoided per month and Pro pays for itself.",
     upgrading: "Opening secure payment…",
     trialTitle: "{n} days of free Pro left",
@@ -2370,7 +2370,7 @@ const en: Dictionary = {
       "Your Stripe account exists but setup isn't complete. Finish it to get paid.",
     finishSetup: "Finish setup",
     feesNotePro:
-      "Pro plan: 3% transaction fees, all inclusive.",
+      "Pro plan: 0% Madger commission, 3% transaction fees, all inclusive.",
     feesNoteFree:
       "Essential plan: 5% transaction fees, all inclusive.",
     notConfigured: "Payments coming soon.",
