@@ -31,6 +31,8 @@ export default function CityAutocomplete({
   // Suggestion mise en évidence au clavier (-1 : aucune).
   const [activeIdx, setActiveIdx] = useState(-1);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Une réponse plus lente arrivée après une frappe plus récente est ignorée.
+  const reqSeq = useRef(0);
   const ref = useRef<HTMLDivElement>(null);
   const listId = useId();
 
@@ -52,7 +54,9 @@ export default function CityAutocomplete({
       return;
     }
     timer.current = setTimeout(async () => {
+      const seq = ++reqSeq.current;
       const list = await searchCities(v);
+      if (seq !== reqSeq.current) return;
       setSuggestions(list);
       setOpen(list.length > 0);
       setActiveIdx(-1);

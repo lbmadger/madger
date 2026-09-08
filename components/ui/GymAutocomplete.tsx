@@ -39,6 +39,8 @@ export default function GymAutocomplete({
   const [active, setActive] = useState(-1);
   const wrapRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Une réponse plus lente arrivée après une frappe plus récente est ignorée.
+  const reqSeq = useRef(0);
 
   // Fermeture au clic extérieur.
   useEffect(() => {
@@ -58,9 +60,11 @@ export default function GymAutocomplete({
         return;
       }
       setLoading(true);
+      const seq = ++reqSeq.current;
       try {
         const res = await fetch(`/api/gyms?q=${encodeURIComponent(q)}`);
         const data = await res.json().catch(() => ({ gyms: [] }));
+        if (seq !== reqSeq.current) return;
         setGyms(Array.isArray(data.gyms) ? data.gyms : []);
         setOpen(true);
         setActive(-1);

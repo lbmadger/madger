@@ -28,6 +28,9 @@ export default function AddressAutocomplete({
   const [open, setOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Numéro de la dernière recherche : une réponse plus lente arrivée après
+  // une frappe plus récente est ignorée (sinon elle écraserait la bonne).
+  const reqSeq = useRef(0);
   const ref = useRef<HTMLDivElement>(null);
   const listId = useId();
 
@@ -49,7 +52,9 @@ export default function AddressAutocomplete({
       return;
     }
     timer.current = setTimeout(async () => {
+      const seq = ++reqSeq.current;
       const list = await searchAddresses(v);
+      if (seq !== reqSeq.current) return;
       setSuggestions(list);
       setOpen(list.length > 0);
       setActiveIdx(-1);
