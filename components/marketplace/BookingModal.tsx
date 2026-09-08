@@ -18,7 +18,8 @@ import { type PublicService, formatPrice } from "@/lib/services/types";
 
 
 type Slot = { iso: string; label: string };
-type SlotDay = { date: string; slots: Slot[] };
+// `taken` : créneaux pris, proposés en liste d'attente (migration 0068).
+type SlotDay = { date: string; slots: Slot[]; taken?: Slot[] };
 type SlotState =
   | { mode: "loading" }
   | { mode: "free" }
@@ -189,6 +190,34 @@ export default function BookingModal({
   // Charge les créneaux ; re-calcule si la durée change (prestation choisie).
   // `retry` force un rechargement après une erreur réseau.
   const [slotRetry, setSlotRetry] = useState(0);
+  // Liste d'attente sur un créneau pris : panneau ouvert sur `waitIso`.
+  const [waitIso, setWaitIso] = useState<string | null>(null);
+  const [waitName, setWaitName] = useState("");
+  const [waitEmail, setWaitEmail] = useState("");
+  const [waitState, setWaitState] = useState<"idle" | "sending" | "done" | "free" | "error">("idle");
+  async function joinWaitlist() {
+    if (!waitIso) return;
+    const mail = (waitEmail || email).trim();
+    if (!mail) return setWaitState("error");
+    setWaitState("sending");
+    try {
+      const r = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          coach: coach.slug,
+          starts_at: waitIso,
+          email: mail,
+          first_name: (waitName || firstName).trim() || undefined,
+        }),
+      });
+      if (r.ok) return setWaitState("done");
+      const j = await r.json().catch(() => ({}));
+      setWaitState(j.error === "slot_free" ? "free" : "error");
+    } catch {
+      setWaitState("error");
+    }
+  }
   useEffect(() => {
     let alive = true;
     setSlotState({ mode: "loading" });
@@ -389,7 +418,7 @@ export default function BookingModal({
     slotState.mode === "slots" ? slotState.days[dayIdx] : undefined;
   const anySlots =
     slotState.mode === "slots" &&
-    slotState.days.some((d) => d.slots.length > 0);
+    slotState.days.some((d) => d.slots.length > 0 || (d.taken?.length ?? 0) > 0);
 
   return (
     <Dialog
@@ -625,7 +654,7 @@ export default function BookingModal({
                       {/* Jours (14 prochains) */}
                       <div className="flex gap-1.5 overflow-x-auto pb-1">
                         {slotState.days.map((d, i) => {
-                          const empty = d.slots.length === 0;
+                          const empty = d.slots.length === 0 && (d.taken?.length ?? 0) === 0;
                           const active = i === dayIdx;
                           return (
                             <button
@@ -636,6 +665,8 @@ export default function BookingModal({
                               onClick={() => {
                                 setDayIdx(i);
                                 setSelectedIso(null);
+                                setWaitIso(null);
+                                setWaitState("idle");
                               }}
                               className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
                                 active
@@ -651,24 +682,102 @@ export default function BookingModal({
                         })}
                       </div>
                       {/* Heures du jour sélectionné */}
-                      {currentDay && currentDay.slots.length > 0 ? (
-                        <div className="grid grid-cols-4 gap-1.5">
-                          {currentDay.slots.map((s) => (
-                            <button
-                              key={s.iso}
-                              type="button"
-                              aria-pressed={selectedIso === s.iso}
-                              onClick={() => setSelectedIso(s.iso)}
-                              className={`rounded-lg border py-2 text-sm font-medium transition-colors ${
-                                selectedIso === s.iso
-                                  ? "border-accent bg-accent text-black"
-                                  : "border-border-strong text-text-base hover:border-accent/50"
-                              }`}
-                            >
-                              {s.label}
-                            </button>
-                          ))}
-                        </div>
+                      {currentDay && (currentDay.slots.length > 0 || (currentDay.taken?.length ?? 0) > 0) ? (
+                        <>
+                          <div className="grid grid-cols-4 gap-1.5">
+                            {[
+                              ...currentDay.slots.map((s) => ({ ...s, taken: false })),
+                              ...(currentDay.taken ?? []).map((s) => ({ ...s, taken: true })),
+                            ]
+                              .sort((a, b) => a.iso.localeCompare(b.iso))
+                              .map((s) =>
+                                s.taken ? (
+                                  <button
+                                    key={s.iso}
+                                    type="button"
+                                    aria-pressed={waitIso === s.iso}
+                                    title={t("booking.waitlistTitle")}
+                                    onClick={() => {
+                                      setSelectedIso(null);
+                                      setWaitIso(waitIso === s.iso ? null : s.iso);
+                                      setWaitState("idle");
+                                    }}
+                                    className={`flex flex-col items-center rounded-lg border border-dashed py-1.5 text-sm font-medium leading-tight transition-colors ${
+                                      waitIso === s.iso
+                                        ? "border-accent/60 bg-accent/10 text-accent"
+                                        : "border-border text-text-dim hover:border-border-strong hover:text-text-muted"
+                                    }`}
+                                  >
+                                    <span className="line-through decoration-text-dim/60">{s.label}</span>
+                                    <span className="text-[10px] font-semibold uppercase tracking-wide no-underline">
+                                      {t("booking.waitlistTaken")}
+                                    </span>
+                                  </button>
+                                ) : (
+                                  <button
+                                    key={s.iso}
+                                    type="button"
+                                    aria-pressed={selectedIso === s.iso}
+                                    onClick={() => {
+                                      setSelectedIso(s.iso);
+                                      setWaitIso(null);
+                                    }}
+                                    className={`rounded-lg border py-2 text-sm font-medium transition-colors ${
+                                      selectedIso === s.iso
+                                        ? "border-accent bg-accent text-black"
+                                        : "border-border-strong text-text-base hover:border-accent/50"
+                                    }`}
+                                  >
+                                    {s.label}
+                                  </button>
+                                )
+                              )}
+                          </div>
+                          {waitIso && (
+                            <div className="mt-2 rounded-xl border border-accent/25 bg-accent/[0.05] p-3.5">
+                              <p className="text-sm font-semibold text-text-base">{t("booking.waitlistTitle")}</p>
+                              <p className="mt-0.5 text-xs text-text-muted">{t("booking.waitlistDesc")}</p>
+                              {waitState === "done" ? (
+                                <p role="status" className="mt-2 text-xs font-medium text-accent">{t("booking.waitlistDone")}</p>
+                              ) : waitState === "free" ? (
+                                <p role="status" className="mt-2 text-xs font-medium text-accent">{t("booking.waitlistFree")}</p>
+                              ) : (
+                                <>
+                                  <div className="mt-2.5 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                    <input
+                                      type="text"
+                                      value={waitName || firstName}
+                                      onChange={(e) => setWaitName(e.target.value)}
+                                      placeholder={t("booking.waitlistName")}
+                                      aria-label={t("booking.waitlistName")}
+                                      className={inputClass}
+                                    />
+                                    <input
+                                      type="email"
+                                      value={waitEmail || email}
+                                      onChange={(e) => setWaitEmail(e.target.value)}
+                                      placeholder={t("booking.waitlistEmail")}
+                                      aria-label={t("booking.waitlistEmail")}
+                                      required
+                                      className={inputClass}
+                                    />
+                                  </div>
+                                  <button
+                                    type="button"
+                                    disabled={waitState === "sending"}
+                                    onClick={joinWaitlist}
+                                    className="mt-2.5 rounded-full border border-accent/40 px-4 py-1.5 text-xs font-semibold text-accent transition-colors hover:bg-accent/10 disabled:opacity-60"
+                                  >
+                                    {waitState === "sending" ? t("booking.waitlistSending") : t("booking.waitlistCta")}
+                                  </button>
+                                  {waitState === "error" && (
+                                    <p role="alert" className="mt-2 text-xs text-danger">{t("booking.waitlistError")}</p>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          )}
+                        </>
                       ) : (
                         <p className="rounded-xl border border-border bg-bg-elevated p-3 text-center text-xs text-text-dim">
                           {t("booking.noSlotsDay")}

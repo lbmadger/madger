@@ -10,7 +10,9 @@ export const dynamic = "force-dynamic";
 // Pas de coordonnées brutes exposées : on ne renvoie que des créneaux.
 //
 // GET /api/slots?coach=<slug>&duration=<min>
-// → { mode: "slots", days: [{ date, slots: [{ iso, label }] }] }
+// → { mode: "slots", days: [{ date, slots: [{ iso, label }], taken: [{ iso, label }] }] }
+//   `taken` : créneaux dans les disponibilités mais déjà pris, proposés en
+//   liste d'attente (migration 0068).
 // → { mode: "free" } si le coach n'a défini aucune disponibilité (saisie libre)
 
 const DAYS_AHEAD = 14;
@@ -93,7 +95,7 @@ export async function GET(req: NextRequest) {
   }
 
   const minStart = now.getTime() + noticeMs;
-  const days: { date: string; slots: Slot[] }[] = [];
+  const days: { date: string; slots: Slot[]; taken: Slot[] }[] = [];
 
   for (let d = 0; d < DAYS_AHEAD; d++) {
     const dayRef = new Date(now.getTime() + d * 86400000);
@@ -101,6 +103,7 @@ export async function GET(req: NextRequest) {
     const weekday = weekdayInTz(dayRef, tz);
     const windows = avail.filter((a) => a.weekday === weekday);
     const slots: Slot[] = [];
+    const taken: Slot[] = [];
 
     for (const w of windows) {
       const winStart = zonedToUtc(dateISO, w.start_time.slice(0, 5), tz);
@@ -112,18 +115,26 @@ export async function GET(req: NextRequest) {
       ) {
         const end = t + duration * 60000;
         if (t < minStart) continue;
-        if (busy.some((b) => t < b.end && end > b.start)) continue;
         const label = new Intl.DateTimeFormat(localeTag, {
           timeZone: tz,
           hour: "2-digit",
           minute: "2-digit",
         }).format(new Date(t));
+        if (busy.some((b) => t < b.end && end > b.start)) {
+          // Pris : proposé en liste d'attente, à condition de ne pas
+          // chevaucher un créneau libre déjà listé (pas de pas de 30 min
+          // « pris » entre deux libres qui se touchent).
+          if (!taken.some((x) => x.iso === new Date(t).toISOString()))
+            taken.push({ iso: new Date(t).toISOString(), label });
+          continue;
+        }
         slots.push({ iso: new Date(t).toISOString(), label });
       }
     }
 
     slots.sort((a, b) => a.iso.localeCompare(b.iso));
-    days.push({ date: dateISO, slots });
+    taken.sort((a, b) => a.iso.localeCompare(b.iso));
+    days.push({ date: dateISO, slots, taken });
   }
 
   return NextResponse.json({ mode: "slots", days });

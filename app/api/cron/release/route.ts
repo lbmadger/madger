@@ -5,6 +5,7 @@ import { SUPABASE_URL } from "@/lib/supabase/config";
 import { computePayout, coachBearsStripeFee } from "@/lib/stripe/escrow";
 import { planOf, feeRateBps } from "@/lib/subscription/plan";
 import { sendEmail } from "@/lib/email/resend";
+import { notifyWaitlistForBooking } from "@/lib/waitlist/notify";
 import {
   reviewRequestClient,
   bookingCancelledClient,
@@ -189,6 +190,7 @@ export async function GET(req: NextRequest) {
           .update({ status: "cancelled" })
           .eq("id", p.booking_id)
           .eq("status", "pending");
+        await notifyWaitlistForBooking(supabase, p.booking_id);
         // Prévient le client (best-effort) : rien n'a été débité.
         try {
           const { data: bk } = await supabase
@@ -350,6 +352,7 @@ export async function GET(req: NextRequest) {
           .eq("id", p.booking_id)
           .eq("status", "pending")
           .select("id");
+        await notifyWaitlistForBooking(supabase, p.booking_id);
         if (!claimedBooking?.length) {
           // Confirmée entre-temps : on rend le paiement et on écarte.
           await supabase

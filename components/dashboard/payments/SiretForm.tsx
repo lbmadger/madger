@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { cleanSiret, isValidSiret } from "@/lib/siret/siret";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { inputClass } from "@/lib/ui/styles";
 
@@ -15,31 +15,52 @@ export default function SiretForm({ coachId }: { coachId: string }) {
   const router = useRouter();
   const [siret, setSiret] = useState("");
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [error, setError] = useState(false);
+  const [saved, setSaved] = useState<null | { legalName: string | null; unverified: boolean }>(null);
+  const [error, setError] = useState<string | null>(null);
+  void coachId; // l'identité vient de la session côté serveur
 
+  // Vérifié dans l'annuaire officiel des entreprises avant enregistrement
+  // (route serveur, migration 0068) : un SIRET inconnu n'est jamais posé sur
+  // une facture. Clé de Luhn contrôlée localement pour un retour immédiat.
   async function save() {
-    setError(false);
-    const clean = siret.replace(/\s/g, "");
+    setError(null);
+    const clean = cleanSiret(siret);
     if (!/^\d{14}$/.test(clean)) {
-      setError(true);
+      setError(t("payments.siretErr"));
+      return;
+    }
+    if (!isValidSiret(clean)) {
+      setError(t("payments.siretInvalid"));
       return;
     }
     setSaving(true);
     try {
-      const supabase = createClient();
-      const { error: dbErr } = await supabase
-        .from("coaches")
-        .update({ siret: clean })
-        .eq("id", coachId);
-      if (dbErr) {
-        setError(true);
+      const res = await fetch("/api/siret/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ siret: clean }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const code = j.error as string | undefined;
+        setError(
+          code === "invalid_siret"
+            ? t("payments.siretInvalid")
+            : code === "siret_not_found"
+            ? t("payments.siretNotFound")
+            : code === "siret_closed"
+            ? t("payments.siretClosed")
+            : t("payments.siretErr")
+        );
         return;
       }
-      setSaved(true);
+      setSaved({
+        legalName: (j.legal_name as string | null) ?? null,
+        unverified: j.status === "unavailable",
+      });
       router.refresh();
     } catch {
-      setError(true);
+      setError(t("payments.siretErr"));
     } finally {
       setSaving(false);
     }
@@ -56,6 +77,14 @@ export default function SiretForm({ coachId }: { coachId: string }) {
           </span>
           {t("payments.siretSaved")}
         </p>
+        {saved.legalName && (
+          <p className="mt-1 text-xs text-text-muted">
+            {t("payments.siretFound").replace("{name}", saved.legalName)}
+          </p>
+        )}
+        {saved.unverified && (
+          <p className="mt-1 text-xs text-text-muted">{t("payments.siretUnverified")}</p>
+        )}
       </section>
     );
   }
@@ -88,7 +117,7 @@ export default function SiretForm({ coachId }: { coachId: string }) {
       </div>
       {error && (
         <p role="alert" className="mt-2 text-xs text-danger">
-          {t("payments.siretErr")}
+          {error}
         </p>
       )}
     </section>

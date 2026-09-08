@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { splitVat, vatApplies } from "@/lib/invoices/vat";
 import {
   displayInvoiceNumber,
   creditNotesOf,
@@ -26,6 +27,17 @@ export async function GET(req: NextRequest) {
   const year = Number(yearParam) || new Date().getFullYear();
   const from = new Date(Date.UTC(year, 0, 1)).toISOString();
   const to = new Date(Date.UTC(year + 1, 0, 1)).toISOString();
+
+  // TVA du coach (migration 0068) : colonnes HT / TVA ventilées si assujetti,
+  // sinon HT = TTC et TVA = 0 (franchise en base).
+  const { data: me } = await supabase
+    .from("coaches")
+    .select("vat_number, vat_rate_bps")
+    .eq("id", user.id)
+    .maybeSingle();
+  const vatBps = vatApplies(me?.vat_number as string | null, me?.vat_rate_bps as number | null)
+    ? (me?.vat_rate_bps as number)
+    : 0;
 
   const { data: payments, error } = await supabase
     .from("payments")
@@ -55,6 +67,8 @@ export async function GET(req: NextRequest) {
     "Client",
     "Prestation",
     "Montant TTC (EUR)",
+    "Montant HT (EUR)",
+    "TVA (EUR)",
     "Rembourse (EUR)",
     // Frais de transaction Madger (tout compris). En paiement en 3 fois, les
     // frais du prestataire, à la charge du coach, s'y ajoutent.
@@ -88,6 +102,8 @@ export async function GET(req: NextRequest) {
       ),
       cell((service?.name as string) ?? "-"),
       money(p.amount_cents as number),
+      money(splitVat((p.amount_cents as number) || 0, vatBps).htCents),
+      money(splitVat((p.amount_cents as number) || 0, vatBps).vatCents),
       money(p.refunded_cents as number),
       money(
         ((p.commission_cents as number) || 0) +

@@ -33,6 +33,8 @@ import Select from "@/components/ui/Select";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import { withTimeout } from "@/lib/utils/withTimeout";
 import { installmentFeeApproxPct, installmentFeeLabel } from "@/lib/stripe/installments";
+import { VAT_RATE_CHOICES_BPS, clampVatRateBps, vatRateLabel } from "@/lib/invoices/vat";
+import { cleanSiret } from "@/lib/siret/siret";
 import AiBio from "@/components/ui/AiBio";
 import {
   resolveRefundPolicy,
@@ -123,6 +125,12 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   const [installments, setInstallments] = useState<boolean>(
     coach.installments_enabled === true
   );
+  // Rappels SMS J-1 (migration 0068, réglage Pro).
+  const [smsReminders, setSmsReminders] = useState<boolean>(
+    coach.sms_reminders_enabled === true
+  );
+  // TVA hors franchise (migration 0068) : taux appliqué si un numéro est saisi.
+  const [vatRate, setVatRate] = useState<number>(clampVatRateBps(coach.vat_rate_bps));
   // Mentions légales de facturation (SIRET, TVA, adresse).
   const [businessName, setBusinessName] = useState(coach.business_name ?? "");
   const [siret, setSiret] = useState(coach.siret ?? "");
@@ -254,6 +262,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         booking_mode: bookingMode,
         min_notice_hours: minNotice,
         installments_enabled: installments,
+        sms_reminders_enabled: smsReminders,
       },
       cancellation: {
         refund_over_24h_pct: refundOver,
@@ -264,6 +273,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         business_name: businessName.trim() || null,
         siret: siret.trim() || null,
         vat_number: vatNumber.trim() || null,
+        vat_rate_bps: vatNumber.trim() ? vatRate : 0,
         billing_address: billingAddress.trim() || null,
       },
     };
@@ -275,6 +285,35 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
     setLoading(true);
     try {
       const supabase = createClient();
+      // SIRET nouveau ou modifié : vérifié dans l'annuaire officiel AVANT
+      // d'être enregistré (route serveur, migration 0068). Un SIRET inconnu
+      // ou fermé bloque l'enregistrement de la section : il figurerait sur
+      // des factures.
+      if (section === "billing") {
+        const next = cleanSiret(siret);
+        if (next && next !== cleanSiret(coach.siret ?? "")) {
+          const res = await fetch("/api/siret/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ siret: next }),
+          });
+          if (!res.ok) {
+            const j = await res.json().catch(() => ({}));
+            const code = j.error as string | undefined;
+            setError(
+              code === "invalid_siret"
+                ? t("settings.errors.siretInvalid")
+                : code === "siret_not_found"
+                ? t("settings.errors.siretNotFound")
+                : code === "siret_closed"
+                ? t("settings.errors.siretClosed")
+                : t("settings.errors.generic")
+            );
+            return;
+          }
+          payload.siret = next;
+        }
+      }
       const { error } = await supabase
         .from("coaches")
         .update(payload)
@@ -739,6 +778,45 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           </button>
         </div>
 
+        {/* Rappels SMS J-1 (Pro) : coût des SMS porté par Madger */}
+        <div className="mt-4 border-t border-border pt-4">
+          {isPro(coach.pro_until) ? (
+            <button
+              type="button"
+              role="switch"
+              aria-checked={smsReminders}
+              onClick={() => setSmsReminders((v) => !v)}
+              className="flex w-full items-center justify-between gap-4 rounded-xl border border-border-strong p-4 text-left transition-colors hover:border-accent/40"
+            >
+              <span>
+                <span className="block text-sm font-semibold text-text-base">
+                  {t("settings.smsReminders")}
+                </span>
+                <span className="mt-1 block text-xs text-text-dim">
+                  {t("settings.smsRemindersDesc")}
+                </span>
+              </span>
+              <span
+                className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+                  smsReminders ? "bg-accent" : "bg-border-strong"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 h-5 w-5 rounded-full bg-black transition-transform ${
+                    smsReminders ? "translate-x-[22px]" : "translate-x-0.5"
+                  }`}
+                />
+              </span>
+            </button>
+          ) : (
+            <ProLock
+              title={t("settings.smsRemindersLockTitle")}
+              desc={t("settings.smsRemindersLockDesc")}
+              cta={t("plans.lock.cta")}
+            />
+          )}
+        </div>
+
         <div className="mt-4 flex items-center gap-3">
           <Button onClick={() => handleSave("booking")} disabled={loading} className="self-start">
             {loading ? t("settings.saving") : t("settings.save")}
@@ -899,6 +977,13 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
                 placeholder="123 456 789 00012"
                 className={inputClass}
               />
+              {coach.siret_verified_at && coach.siret_legal_name && cleanSiret(siret) === cleanSiret(coach.siret ?? "") ? (
+                <span className="text-xs text-accent">
+                  {t("settings.siretVerified").replace("{name}", coach.siret_legal_name)}
+                </span>
+              ) : siret.trim() ? (
+                <span className="text-xs text-text-dim">{t("settings.siretUnverifiedHint")}</span>
+              ) : null}
             </label>
           </div>
           <label className="flex flex-col gap-1.5">
@@ -927,6 +1012,23 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
               {t("settings.vatHint")}
             </span>
           </label>
+          {vatNumber.trim() && (
+            <label className="flex flex-col gap-1.5">
+              <span className={labelClass}>{t("settings.vatRate")}</span>
+              <select
+                value={vatRate}
+                onChange={(e) => setVatRate(clampVatRateBps(Number(e.target.value)))}
+                className={inputClass}
+              >
+                {VAT_RATE_CHOICES_BPS.map((bps) => (
+                  <option key={bps} value={bps}>
+                    {bps === 0 ? t("settings.vatRateNone") : vatRateLabel(bps, locale)}
+                  </option>
+                ))}
+              </select>
+              <span className="text-xs text-text-dim">{t("settings.vatRateHint")}</span>
+            </label>
+          )}
 
           <p className="rounded-xl border border-accent/20 bg-accent/[0.04] px-4 py-3 text-xs leading-relaxed text-text-muted">
             {t("settings.billingCompliance")}
