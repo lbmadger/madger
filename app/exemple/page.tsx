@@ -208,6 +208,7 @@ export default function ExampleCoachPage() {
           reviews={DEMO_REVIEWS}
           photos={DEMO_PHOTOS}
           demo
+          launched={process.env.SITE_LAUNCHED === "1"}
         />
       </div>
     </I18nProvider>

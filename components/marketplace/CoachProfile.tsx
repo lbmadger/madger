@@ -29,6 +29,7 @@ export default function CoachProfile({
   reviews = [],
   photos = [],
   demo = false,
+  launched = false,
 }: {
   coach: PublicCoach;
   services?: PublicService[];
@@ -38,8 +39,12 @@ export default function CoachProfile({
   // Page VITRINE (madger.app/exemple) : mêmes visuels, mais les CTA
   // n'ouvrent pas de vraie réservation. Ils invitent à créer sa page.
   demo?: boolean;
+  // Site lancé : les CTA de la vitrine mènent à la création de compte ;
+  // avant, au formulaire d'accès anticipé de la landing.
+  launched?: boolean;
 }) {
   const { t, locale } = useI18n();
+  const signupHref = launched ? "/signup" : "/#early-access";
   const router = useRouter();
   const [booking, setBooking] = useState(false);
   const [demoPrompt, setDemoPrompt] = useState(false);
@@ -217,7 +222,7 @@ export default function CoachProfile({
             </p>
           </div>
           <Link
-            href="/signup"
+            href={signupHref}
             className="shrink-0 rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90"
           >
             {t("demoCoach.bannerCta")}
@@ -708,7 +713,7 @@ export default function CoachProfile({
             {t("demoCoach.promptDesc")}
           </p>
           <Link
-            href="/signup"
+            href={signupHref}
             className="mt-5 block w-full rounded-full bg-accent py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90"
           >
             {t("demoCoach.promptCta")}

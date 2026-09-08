@@ -480,6 +480,7 @@ const fr = {
       "Relances de renouvellement",
       "Écran encaissements",
       "Alerte churn",
+      "Statistiques avancées",
     ],
     upgrade: "Passer à Pro",
     trialButton: "Essayer Pro 7 jours gratuits",
@@ -502,7 +503,7 @@ const fr = {
       lossCommission:
         "Fin des packs, de l'annulation automatique, des relances de renouvellement, de l'écran encaissements et des alertes churn.",
       lossBadge:
-        "Tu perds la priorité d'affichage et les stats avancées de Madger Pro.",
+        "Tu perds les packs, l'annulation automatique et les statistiques avancées de Madger Pro.",
       stay: "Je reste en Pro",
       switchAnnual: "Passer à l'annuel : {price}/an, 2 mois offerts",
       switching: "Un instant…",
@@ -548,7 +549,7 @@ const fr = {
       confirmIntro: "Ton abonnement s'arrêtera à la fin de la période déjà payée. D'ici là, tu peux le réactiver en un clic. Voilà ce qui change ensuite :",
       confirmLoss: [
         "Fin des packs, de l'annulation automatique, des relances de renouvellement, de l'écran encaissements et des alertes churn.",
-        "Fin des statistiques avancées et du support prioritaire.",
+        "Fin des statistiques avancées.",
         "Tu perds ton prix de lancement : si tu reviens plus tard, c'est le tarif en vigueur.",
       ],
       keep: "Garder mon abonnement",
@@ -2160,6 +2161,7 @@ const en: Dictionary = {
       "Renewal reminders",
       "Payments screen",
       "Churn alert",
+      "Advanced statistics",
     ],
     upgrade: "Upgrade to Pro",
     trialButton: "Try Pro free for 7 days",
@@ -2182,7 +2184,7 @@ const en: Dictionary = {
       lossCommission:
         "End of packs, automatic cancellation, renewal reminders, the payments screen and churn alerts.",
       lossBadge:
-        "You lose priority placement and the advanced stats of Madger Pro.",
+        "You lose packs, automatic cancellation and the advanced stats of Madger Pro.",
       stay: "I'm staying on Pro",
       switchAnnual: "Switch to annual: {price}/year, 2 months free",
       switching: "One moment…",
@@ -2228,7 +2230,7 @@ const en: Dictionary = {
       confirmIntro: "Your subscription will stop at the end of the paid period. Until then, you can reactivate it in one click. Here is what changes afterwards:",
       confirmLoss: [
         "End of packs, automatic cancellation, renewal reminders, the payments screen and churn alerts.",
-        "End of advanced statistics and priority support.",
+        "End of advanced statistics.",
         "You lose your launch price: if you come back later, the current rate applies.",
       ],
       keep: "Keep my subscription",

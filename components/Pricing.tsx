@@ -28,6 +28,7 @@ const proFeatures = [
   "Relances de renouvellement",
   "Écran encaissements",
   "Alerte churn",
+  "Statistiques avancées",
 ];
 
 const handleSpotlight = (e: React.MouseEvent<HTMLDivElement>) => {
