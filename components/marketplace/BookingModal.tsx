@@ -11,7 +11,14 @@ import { SERVICE_DURATIONS, durationLabel } from "@/lib/services/durations";
 import CancellationSummary from "@/components/booking/CancellationSummary";
 import { installmentsEligible } from "@/lib/stripe/installments";
 import { resolveRefundPolicy } from "@/lib/booking/cancellation";
-import { LockIcon, RepeatIcon, MapPinIcon } from "@/components/ui/icons";
+import {
+  LockIcon,
+  RepeatIcon,
+  MapPinIcon,
+  ZapIcon,
+  CalendarIcon,
+  FileTextIcon,
+} from "@/components/ui/icons";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import type { PublicCoach, PublicGroupSession } from "@/lib/coaches/public-types";
 import { type PublicService, formatPrice, isGroupService } from "@/lib/services/types";
@@ -1096,12 +1103,52 @@ export default function BookingModal({
                     {t("booking.installmentsHint")}
                   </p>
                 )}
-              {/* Mode validation : rappel que rien n'est débité avant
-                  l'acceptation, juste sous le bouton qui affiche un prix. */}
-              {payMode && !isSubscription && !chargedNow && (
-                <p className="text-center text-[11px] text-text-dim">
-                  {t("booking.chargedOnAccept")}
-                </p>
+              {/* Réassurance sous le bouton (façon Airbnb) : trois faits
+                  tirés des réglages réels du coach, aucune autre promesse.
+                  1. débit à l'acceptation ou confirmation immédiate ;
+                  2. délai d'annulation (politique du coach, ou du pack) ;
+                  3. facture envoyée par email. */}
+              {payMode && !isSubscription && (
+                <ul className="flex flex-col gap-1.5 rounded-xl border border-border bg-bg-elevated px-3 py-2.5 text-xs text-text-muted">
+                  {selectedService?.type !== "pack" && (
+                    <li className="flex items-center gap-2">
+                      {chargedNow ? (
+                        <ZapIcon size={13} className="shrink-0 text-accent" />
+                      ) : (
+                        <LockIcon size={13} className="shrink-0 text-accent" />
+                      )}
+                      {chargedNow ? t("booking.assureInstant") : t("booking.assureOnAccept")}
+                    </li>
+                  )}
+                  {(() => {
+                    if (selectedService?.type === "pack") {
+                      return (
+                        <li className="flex items-center gap-2">
+                          <CalendarIcon size={13} className="shrink-0 text-accent" />
+                          {t("booking.assureCancelPack").replace(
+                            "{h}",
+                            String(selectedService.cancel_hours ?? 24)
+                          )}
+                        </li>
+                      );
+                    }
+                    const policy = resolveRefundPolicy(coach);
+                    if (policy.overPct <= 0) return null;
+                    return (
+                      <li className="flex items-center gap-2">
+                        <CalendarIcon size={13} className="shrink-0 text-accent" />
+                        {(policy.overPct >= 100
+                          ? t("booking.assureCancelFree")
+                          : t("booking.assureCancelPct").replace("{pct}", String(policy.overPct))
+                        ).replace("{h}", String(policy.hours))}
+                      </li>
+                    );
+                  })()}
+                  <li className="flex items-center gap-2">
+                    <FileTextIcon size={13} className="shrink-0 text-accent" />
+                    {t("booking.assureInvoice")}
+                  </li>
+                </ul>
               )}
               {/* Information précontractuelle (L.221-5 / L.221-28 12°) :
                   acceptation des CGV et de la charte, pas de rétractation
