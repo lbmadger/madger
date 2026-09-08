@@ -3,11 +3,12 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
+import { localSubStatus, monthlyCreditCents } from "@/lib/stripe/subscription";
 
 export const dynamic = "force-dynamic";
 
-// Geste de rétention : 1 mois de Pro offert (crédit de 49 € sur la prochaine
-// facture Stripe) pour un coach qui allait résilier. UNE seule fois par
+// Geste de rétention : 1 mois de Pro offert (crédit d'un mois d'abonnement
+// sur la prochaine facture Stripe) pour un coach qui allait résilier. UNE seule fois par
 // coach, abonnement actif requis. La raison donnée est journalisée.
 export async function POST(req: NextRequest) {
   const stripe = getStripe();
@@ -55,8 +56,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "already_used" }, { status: 409 });
   }
   try {
+    // Un mois = ce que le coach paie réellement (mensuel, ou annuel ramené au
+    // mois, prix de lancement inclus), lu sur son abonnement Stripe.
+    const current = await stripe.subscriptions.retrieve(coach.stripe_subscription_id);
     await stripe.customers.createBalanceTransaction(coach.stripe_customer_id, {
-      amount: -4900,
+      amount: -monthlyCreditCents(current),
       currency: "eur",
       description: "Madger : 1 mois de Pro offert",
     });
@@ -67,7 +71,7 @@ export async function POST(req: NextRequest) {
       });
       await admin
         .from("coaches")
-        .update({ subscription_status: sub.status, subscription_cancel_at: null })
+        .update({ subscription_status: localSubStatus(sub), subscription_cancel_at: null })
         .eq("id", coach.id);
     }
     await admin.from("churn_feedback").insert({

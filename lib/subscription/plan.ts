@@ -69,6 +69,14 @@ export function feeRatePercent(plan: Plan): number {
   return FEE_RATE_BPS[plan] / 100;
 }
 
+// Plan correspondant à un taux réellement prélevé (ligne payments) : le taux
+// est la vérité, le plan n'en est que l'étiquette. Null si le taux ne
+// correspond à aucun plan (ex. taux personnalisé posé à la main).
+export function planForRateBps(bps: number): Plan | null {
+  for (const p of PLANS) if (FEE_RATE_BPS[p] === bps) return p;
+  return null;
+}
+
 export function isPlan(v: unknown): v is Plan {
   return typeof v === "string" && (PLANS as readonly string[]).includes(v);
 }

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
+import { localSubStatus } from "@/lib/stripe/subscription";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +37,7 @@ export async function POST() {
     });
     await admin
       .from("coaches")
-      .update({ subscription_status: sub.status, subscription_cancel_at: null })
+      .update({ subscription_status: localSubStatus(sub), subscription_cancel_at: null })
       .eq("id", coach.id);
     await admin
       .from("churn_feedback")

@@ -119,6 +119,9 @@ export async function POST(req: NextRequest) {
           coach_id: coach.id,
           service_id: String(service_id),
           client_email: String(email).slice(0, 254),
+          // CGV acceptées en souscrivant : version figée, reportée sur
+          // chaque échéance encaissée (payments.terms_version).
+          terms_version: TERMS_VERSION,
         },
       },
       // Paiement EMBARQUÉ : le formulaire Stripe s'affiche dans /paiement,

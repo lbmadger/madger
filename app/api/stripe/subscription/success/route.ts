@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
-import { subPeriodEnd } from "@/lib/stripe/subscription";
+import { subPeriodEnd, localSubStatus } from "@/lib/stripe/subscription";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 
 export const dynamic = "force-dynamic";
@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
         p_coach_id: coachId,
         p_customer_id: customerId,
         p_subscription_id: sub.id,
-        p_status: sub.status,
+        p_status: localSubStatus(sub),
         p_plan: plan,
         p_period_end: periodEnd,
       });

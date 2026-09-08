@@ -2,9 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
-import { subPeriodEnd, invoiceSubscriptionId } from "@/lib/stripe/subscription";
+import {
+  subPeriodEnd,
+  invoiceSubscriptionId,
+  invoicePaymentIntentId,
+  localSubStatus,
+  monthlyCreditCents,
+} from "@/lib/stripe/subscription";
 import { SUPABASE_URL } from "@/lib/supabase/config";
-import { planOf, feeRatePercent, feeRateBps } from "@/lib/subscription/plan";
+import { planOf, feeRatePercent, feeRateBps, planForRateBps } from "@/lib/subscription/plan";
 
 export const dynamic = "force-dynamic";
 // L'enregistrement d'un paiement (webhook) peut dépasser 10 s : marge large.
@@ -42,12 +48,9 @@ export async function POST(req: NextRequest) {
       await supabase
         .from("client_subscriptions")
         .update({
-          // « canceling » : encore actif mais s'arrête à la fin de la
-          // période payée (le client a demandé l'arrêt).
-          status:
-            sub.cancel_at_period_end && sub.status === "active"
-              ? "canceling"
-              : sub.status,
+          // Statut local normalisé (canceling = arrêt programmé en fin de
+          // période, past_due = prélèvement en échec, canceled = terminé).
+          status: localSubStatus(sub),
           current_period_end: subPeriodEnd(sub),
         })
         .eq("stripe_subscription_id", sub.id);
@@ -64,15 +67,18 @@ export async function POST(req: NextRequest) {
         .eq("id", coachId)
         .is("pro_trial_used_at", null);
     }
-    // « canceling » : encore actif mais arrêt programmé en fin de période
-    // (réactivable depuis l'app).
-    const canceling = !!sub.cancel_at_period_end && sub.status === "active";
+    // Statut local normalisé : « canceling » = encore actif OU en essai mais
+    // arrêt programmé en fin de période (réactivable depuis l'app) ; les
+    // statuts Stripe unpaid / incomplete / paused sont ramenés aux valeurs
+    // connues de l'app (cf. localSubStatus).
+    const status = localSubStatus(sub);
+    const canceling = status === "canceling";
     await supabase.rpc("apply_pro_subscription", {
       p_coach_id: coachId,
       p_customer_id:
         typeof sub.customer === "string" ? sub.customer : sub.customer?.id ?? null,
       p_subscription_id: sub.id,
-      p_status: canceling ? "canceling" : sub.status,
+      p_status: status,
       p_plan: sub.metadata?.plan ?? null,
       p_period_end: periodEnd,
     });
@@ -88,23 +94,26 @@ export async function POST(req: NextRequest) {
       .eq("id", coachId);
   }
 
-  // Récompense un coach d'un mois de Pro : crédit de 49 € sur son solde Stripe
-  // s'il a un compte client (sa prochaine facture est réduite d'autant), sinon
-  // un mois d'accès Pro gratuit (pro_bonus_until). 49 € = tarif mensuel.
+  // Récompense un coach d'un mois de Pro : crédit d'un mois d'abonnement sur
+  // son solde Stripe s'il est abonné (sa prochaine facture est réduite
+  // d'autant : montant réellement payé, mensuel ou annuel ramené au mois,
+  // prix de lancement inclus), sinon un mois d'accès Pro offert
+  // (pro_bonus_until).
   async function rewardOneMonth(coachId: string) {
     const { data: c } = await supabase
       .from("coaches")
-      .select("stripe_customer_id, subscription_status")
+      .select("stripe_customer_id, stripe_subscription_id, subscription_status")
       .eq("id", coachId)
       .maybeSingle();
     const active =
       c?.subscription_status === "active" ||
       c?.subscription_status === "trialing" ||
       c?.subscription_status === "canceling";
-    if (c?.stripe_customer_id && active && stripe) {
+    if (c?.stripe_customer_id && c.stripe_subscription_id && active && stripe) {
       try {
+        const sub = await stripe.subscriptions.retrieve(c.stripe_subscription_id);
         await stripe.customers.createBalanceTransaction(c.stripe_customer_id, {
-          amount: -4900,
+          amount: -monthlyCreditCents(sub),
           currency: "eur",
           description: "Parrainage Madger : 1 mois de Pro offert",
         });
@@ -201,10 +210,12 @@ export async function POST(req: NextRequest) {
           } catch {
             /* le retour navigateur et subscription.updated rattrapent */
           }
-          if (alreadyProcessed) break;
           // Récompense de parrainage éventuelle (filleul + parrain, une
-          // seule fois).
+          // seule fois : verrou referral_rewarded_at). Appelée AVANT le test
+          // de redélivrance : si la récompense échoue au premier passage,
+          // Stripe rejoue l'événement et elle doit être retentée.
           await maybeRewardReferral(s.metadata.coach_id);
+          if (alreadyProcessed) break;
           // Puis email de bienvenue au coach (les renouvellements passent par
           // invoice.paid, sans re-email).
           try {
@@ -427,17 +438,44 @@ export async function POST(req: NextRequest) {
           const sub = await stripe.subscriptions.retrieve(subId);
           await applyFromSubscription(sub);
           // Abonnement CLIENT chez un coach : chaque échéance encaissée entre
-          // dans la comptabilité (facture client, commission Madger, CSV).
+          // dans la comptabilité (facture client, frais de transaction, CSV).
           // Idempotent via l'index unique sur stripe_payment_intent_id.
           if (
             sub.metadata?.kind === "client_sub" &&
             (invoice.amount_paid ?? 0) > 0
           ) {
-            const { data: reg } = await supabase
+            let { data: reg } = await supabase
               .from("client_subscriptions")
               .select("coach_id, client_id, service_id")
               .eq("stripe_subscription_id", sub.id)
               .maybeSingle();
+            if (!reg) {
+              // Première échéance arrivée AVANT checkout.session.completed
+              // (ordre des webhooks non garanti) : on enregistre l'abonnement
+              // depuis sa session Checkout, sinon cette échéance serait
+              // perdue pour la comptabilité.
+              try {
+                const sessions = await stripe.checkout.sessions.list({
+                  subscription: sub.id,
+                  limit: 1,
+                });
+                const sessionId = sessions.data[0]?.id;
+                if (sessionId) {
+                  const { fulfillSubscriptionSession } = await import(
+                    "@/lib/stripe/fulfillSubscription"
+                  );
+                  await fulfillSubscriptionSession(sessionId);
+                  ({ data: reg } = await supabase
+                    .from("client_subscriptions")
+                    .select("coach_id, client_id, service_id")
+                    .eq("stripe_subscription_id", sub.id)
+                    .maybeSingle());
+                }
+              } catch {
+                /* si l'enregistrement échoue, l'erreur ci-dessous fait rejouer */
+              }
+              if (!reg) throw new Error(`client_sub ${sub.id} introuvable`);
+            }
             if (reg) {
               // Le taux d'une subscription Stripe est figé à sa création : si
               // le plan du coach a changé depuis, on réaligne la subscription
@@ -467,50 +505,54 @@ export async function POST(req: NextRequest) {
               } catch {
                 /* réalignement raté : retenté à la prochaine échéance */
               }
-              const inv = invoice as Stripe.Invoice & {
-                charge?: string | Stripe.Charge | null;
-                payment_intent?: string | Stripe.PaymentIntent | null;
-              };
               // Frais de transaction réellement prélevés (application fee de
               // la charge), moyen de paiement et frais Stripe (marge interne).
+              // API 2025+ : la facture ne porte plus charge / payment_intent,
+              // on passe par invoice.payments → PaymentIntent → latest_charge.
               let commission = 0;
               let chargeId: string | null = null;
               let subMethod: string | null = null;
               let subStripeFee = 0;
+              let piId: string | null = null;
               try {
-                chargeId =
-                  typeof inv.charge === "string"
-                    ? inv.charge
-                    : inv.charge?.id ?? null;
-                if (chargeId) {
-                  const ch = await stripe.charges.retrieve(chargeId, {
-                    expand: ["balance_transaction"],
+                const full = await stripe.invoices.retrieve(invoice.id as string, {
+                  expand: ["payments"],
+                });
+                piId = invoicePaymentIntentId(full);
+                if (piId) {
+                  const pi = await stripe.paymentIntents.retrieve(piId, {
+                    expand: ["latest_charge.balance_transaction"],
                   });
-                  commission =
-                    typeof ch.application_fee_amount === "number"
-                      ? ch.application_fee_amount
-                      : 0;
-                  subMethod = ch.payment_method_details?.type ?? null;
-                  const bt =
-                    ch.balance_transaction && typeof ch.balance_transaction !== "string"
-                      ? ch.balance_transaction
+                  const ch =
+                    pi.latest_charge && typeof pi.latest_charge !== "string"
+                      ? pi.latest_charge
                       : null;
-                  subStripeFee = bt?.fee ?? 0;
+                  if (ch) {
+                    chargeId = ch.id;
+                    commission =
+                      typeof ch.application_fee_amount === "number"
+                        ? ch.application_fee_amount
+                        : 0;
+                    subMethod = ch.payment_method_details?.type ?? null;
+                    const bt =
+                      ch.balance_transaction && typeof ch.balance_transaction !== "string"
+                        ? ch.balance_transaction
+                        : null;
+                    subStripeFee = bt?.fee ?? 0;
+                  }
                 }
               } catch {
                 /* frais inconnus : 0 par défaut */
               }
               // Taux figé sur la ligne : celui réellement appliqué par Stripe
               // à cette échéance (la subscription peut encore porter l'ancien
-              // taux jusqu'au réalignement ci-dessus).
+              // taux jusqu'au réalignement ci-dessus). Le plan enregistré
+              // est celui de CE taux, pas le plan courant du coach.
               const subRateBps =
                 currentFee > 0
                   ? Math.round(currentFee * 100)
                   : feeRateBps(coachPlan);
-              const piId =
-                typeof inv.payment_intent === "string"
-                  ? inv.payment_intent
-                  : inv.payment_intent?.id ?? null;
+              const linePlan = planForRateBps(subRateBps) ?? coachPlan;
               const { error: insertError } = await supabase
                 .from("payments")
                 .insert({
@@ -533,10 +575,16 @@ export async function POST(req: NextRequest) {
                     0,
                     (invoice.amount_paid ?? 0) - commission
                   ),
-                  plan: coachPlan,
+                  plan: linePlan,
                   fee_rate_bps: subRateBps,
                   payment_method: subMethod,
                   stripe_fee_cents: subStripeFee,
+                  // CGV acceptées à la souscription (version figée dans les
+                  // métadonnées de l'abonnement Stripe).
+                  terms_version: sub.metadata?.terms_version || null,
+                  terms_accepted_at: sub.metadata?.terms_version
+                    ? new Date((sub.created ?? 0) * 1000).toISOString()
+                    : null,
                 });
               // Échéance encaissée : le coach est prévenu (best-effort, et
               // seulement si l'insert a gagné : un rejeu du webhook ne doit
