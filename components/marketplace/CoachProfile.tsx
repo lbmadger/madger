@@ -10,7 +10,16 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
 import Stars from "@/components/reviews/Stars";
 import BookingModal from "./BookingModal";
-import { TrophyIcon, MapPinIcon, BuildingIcon, StarIcon } from "@/components/ui/icons";
+import {
+  TrophyIcon,
+  MapPinIcon,
+  BuildingIcon,
+  StarIcon,
+  ZapIcon,
+  LockIcon,
+  CalendarIcon,
+} from "@/components/ui/icons";
+import { resolveRefundPolicy } from "@/lib/booking/cancellation";
 import {
   type PublicCoach,
   type PublicReview,
@@ -320,6 +329,12 @@ export default function CoachProfile({
   };
   const hasGroupServices = services.some((s) => isGroupService(s));
   const instant = coach.booking_mode === "instant";
+  // Badges factuels sous le nom : mode de réservation et délai d'annulation
+  // gratuite, uniquement quand le coach encaisse en ligne (sinon ces règles
+  // ne s'appliquent pas) et seulement si l'annulation est vraiment gratuite.
+  const refundPolicy = resolveRefundPolicy(coach);
+  const freeCancelHours =
+    coach.stripe_charges_enabled && refundPolicy.overPct >= 100 ? refundPolicy.hours : null;
 
   function metaLine(s: PublicService): string {
     // « Séance » sous « Séance individuelle » n'apprend rien : pour une
@@ -455,6 +470,22 @@ export default function CoachProfile({
             </h1>
             {coach.specialty && (
               <p className="mt-1 text-sm text-text-muted">{coach.specialty}</p>
+            )}
+            {/* Badges factuels : chacun n'apparaît que si la donnée existe.
+                Pas de « répond en moins de X h » tant que rien ne le mesure. */}
+            {coach.stripe_charges_enabled && (
+              <div className="mt-2 flex flex-wrap justify-center gap-1.5 sm:justify-start">
+                <span className="inline-flex items-center gap-1 rounded-full border border-accent/30 bg-accent/[0.06] px-2 py-0.5 text-[11px] font-medium text-accent">
+                  {instant ? <ZapIcon size={11} /> : <LockIcon size={11} />}
+                  {instant ? t("coachProfile.badgeInstant") : t("coachProfile.badgeApproval")}
+                </span>
+                {freeCancelHours !== null && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-accent/30 bg-accent/[0.06] px-2 py-0.5 text-[11px] font-medium text-accent">
+                    <CalendarIcon size={11} />
+                    {t("coachProfile.badgeCancelFree").replace("{h}", String(freeCancelHours))}
+                  </span>
+                )}
+              </div>
             )}
             {/* Note moyenne (1 client = 1 avis) */}
             {coach.rating_avg != null && coach.rating_count > 0 && (

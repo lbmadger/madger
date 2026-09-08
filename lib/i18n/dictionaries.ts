@@ -1068,6 +1068,9 @@ const fr = {
     nextSlot: "Prochain créneau :",
     nextSlotNone: "Aucun créneau libre sur 14 jours",
     notifySlot: "Me prévenir d'un créneau",
+    badgeInstant: "Confirmation immédiate",
+    badgeApproval: "Paiement à l'acceptation",
+    badgeCancelFree: "Annulation gratuite jusqu'à {h} h",
   },
   booking: {
     title: "Réserver une séance",
@@ -2907,6 +2910,9 @@ const en: Dictionary = {
     nextSlot: "Next slot:",
     nextSlotNone: "No free slot in the next 14 days",
     notifySlot: "Notify me of a slot",
+    badgeInstant: "Instant confirmation",
+    badgeApproval: "Charged on acceptance",
+    badgeCancelFree: "Free cancellation up to {h} h",
   },
   booking: {
     title: "Book a session",
