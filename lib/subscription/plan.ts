@@ -32,10 +32,32 @@ export function isPro(proUntil: string | null | undefined): boolean {
   return new Date(proUntil).getTime() > Date.now();
 }
 
+// Ligne coaches lue directement en base (sans passer par getCoach, qui
+// surcharge déjà pro_until). Le Pro effectif = max(pro_until réel,
+// pro_bonus_until offert par parrainage ou code). Toujours sélectionner les
+// DEUX colonnes et passer par isProRow / planOf : sinon un coach Pro par
+// bonus serait traité comme Essentiel côté serveur.
+export type ProRow = {
+  pro_until?: string | null;
+  pro_bonus_until?: string | null;
+};
+
+export function effectiveProUntil(row: ProRow | null | undefined): string | null {
+  if (!row) return null;
+  const a = row.pro_until ? new Date(row.pro_until).getTime() : 0;
+  const b = row.pro_bonus_until ? new Date(row.pro_bonus_until).getTime() : 0;
+  if (!a && !b) return null;
+  return b > a ? (row.pro_bonus_until as string) : (row.pro_until as string);
+}
+
+export function isProRow(row: ProRow | null | undefined): boolean {
+  return isPro(effectiveProUntil(row));
+}
+
 // Plan courant du coach. Studio n'est activable par aucune colonne pour
 // l'instant : le jour venu, une migration dédiée ajoutera le champ ici.
-export function planOf(coach: { pro_until?: string | null } | null | undefined): Plan {
-  return isPro(coach?.pro_until) ? "pro" : "essential";
+export function planOf(coach: ProRow | null | undefined): Plan {
+  return isProRow(coach) ? "pro" : "essential";
 }
 
 export function feeRateBps(plan: Plan): number {

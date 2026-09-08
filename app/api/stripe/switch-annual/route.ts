@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
+import { currentAnnualCents } from "@/lib/subscription/offer";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 
 export const dynamic = "force-dynamic";
@@ -58,7 +59,7 @@ export async function POST() {
                 typeof item.price.product === "string"
                   ? item.price.product
                   : item.price.product.id,
-              unit_amount: 49000,
+              unit_amount: currentAnnualCents(),
               recurring: { interval: "year" },
             },
           },

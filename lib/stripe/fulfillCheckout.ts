@@ -174,7 +174,7 @@ export async function fulfillCheckoutSession(
   // approbation → à valider (refus = remboursement intégral).
   const { data: coachMode } = await supabase
     .from("coaches")
-    .select("booking_mode, pro_until")
+    .select("booking_mode, pro_until, pro_bonus_until")
     .eq("id", m.coach_id)
     .maybeSingle();
   const bookingStatus =

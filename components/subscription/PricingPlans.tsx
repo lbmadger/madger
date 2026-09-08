@@ -6,6 +6,9 @@ import PromoCode from "@/components/subscription/PromoCode";
 import {
   launchOfferActive,
   launchOfferDaysLeft,
+  currentMonthlyCents,
+  currentAnnualCents,
+  euros,
 } from "@/lib/subscription/offer";
 import LaunchPrice from "@/components/subscription/LaunchPrice";
 
@@ -149,7 +152,7 @@ export default function PricingPlans({
           )}
         </div>
         {period === "annual" && (
-          <p className="mt-1 text-xs text-text-muted">{p.annualMonthlyEq}</p>
+          <p className="mt-1 text-xs text-text-muted">{p.annualMonthlyEq.replace("{price}", euros(Math.round(currentAnnualCents() / 12), locale))}</p>
         )}
         {/* Offre de lancement : le tarif à venir est barré à côté du prix,
             avec sa date. Compte à rebours réel, prix bloqué tant que le coach
@@ -193,7 +196,10 @@ export default function PricingPlans({
             </p>
             {trialEligible && (
               <p className="mt-2 text-center text-[11px] leading-relaxed text-text-dim">
-                {period === "annual" ? p.trialNoteAnnual : p.trialNoteMonthly}
+                {(period === "annual" ? p.trialNoteAnnual : p.trialNoteMonthly).replace(
+                  "{price}",
+                  euros(period === "annual" ? currentAnnualCents() : currentMonthlyCents(), locale)
+                )}
               </p>
             )}
             {error && (

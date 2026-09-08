@@ -9,6 +9,8 @@ import {
   launchOfferActive,
   launchOfferDaysLeft,
   launchOfferRegularFromLabel,
+  currentMonthlyCents,
+  currentAnnualCents,
 } from "@/lib/subscription/offer";
 
 // Cinq lignes par colonne, sans chiffre : Pro se vend sur ses fonctionnalités.
@@ -44,6 +46,8 @@ function Check() {
 
 export default function Pricing({ launched = false }: { launched?: boolean }) {
   const ctaHref = launched ? "/signup" : "#early-access";
+  const monthly = currentMonthlyCents() / 100;
+  const annual = currentAnnualCents() / 100;
   return (
     <section
       id="tarifs"
@@ -82,8 +86,8 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
             <span style={{ color: "#CBFF03", fontSize: 12, fontWeight: 600 }}>
               {launched
                 ? launchOfferActive()
-                  ? `Prix de lancement : ${launchOfferDaysLeft() <= 1 ? "dernier jour" : `plus que ${launchOfferDaysLeft()} jours`} pour bloquer 49 € à vie`
-                  : "Pro : 7 jours d'essai gratuits, puis 49 € par mois · Résiliable à tout moment"
+                  ? `Prix de lancement : ${launchOfferDaysLeft() <= 1 ? "dernier jour" : `plus que ${launchOfferDaysLeft()} jours`} pour bloquer ${monthly} € par mois`
+                  : `Pro : 7 jours d'essai gratuits, puis ${monthly} € par mois · Résiliable à tout moment`
                 : "Accès anticipé · Madger Pro offert 1 mois pour les premiers membres"}
             </span>
           </div>
@@ -177,7 +181,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
 
               <div className="flex flex-col gap-2 pt-2">
                 <div className="font-extrabold text-white flex flex-wrap items-end gap-x-2" style={{ fontSize: "clamp(22px, 5.5vw, 44px)", letterSpacing: "-0.04em", lineHeight: 1.05 }}>
-                  <span>49 €</span>
+                  <span>{monthly} €</span>
                   {launchOfferActive() && (
                     <span
                       aria-label={`${LAUNCH_OFFER.regularMonthlyCents / 100} € à partir du ${launchOfferRegularFromLabel("fr")}`}
@@ -197,12 +201,12 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
                   3 % de frais de transaction, tout compris.
                 </div>
                 <div className="text-text-muted text-xs">
-                  ou 490 € par an (2 mois offerts) · 7 jours d'essai gratuits
+                  ou {annual} € par an (2 mois offerts) · 7 jours d'essai gratuits
                 </div>
               </div>
               {launchOfferActive() && (
                 <div className="mt-4 mb-6 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold leading-snug sm:mb-8" style={{ background: "rgba(203,255,3,0.08)", border: "1px solid rgba(203,255,3,0.25)", color: "#CBFF03" }}>
-                  {launchOfferDaysLeft() <= 1 ? "Dernier jour" : `Plus que ${launchOfferDaysLeft()} jours`} pour bloquer 49 € à vie · garanti tant que tu restes abonné
+                  {launchOfferDaysLeft() <= 1 ? "Dernier jour" : `Plus que ${launchOfferDaysLeft()} jours`} pour bloquer {monthly} € par mois, garanti tant que tu restes abonné
                 </div>
               )}
 

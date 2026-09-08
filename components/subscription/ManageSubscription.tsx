@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Dialog from "@/components/ui/Dialog";
 import Button from "@/components/ui/Button";
+import { currentAnnualCents, euros } from "@/lib/subscription/offer";
 
 // « Gérer mon abonnement ». La mise à jour de carte et les factures ouvrent
 // le portail Stripe. La RÉSILIATION se fait dans l'app, en étapes claires :
@@ -163,7 +164,7 @@ export default function ManageSubscription({
               disabled={loading !== null}
               className="w-full"
             >
-              {loading === "annual" ? r.switching : r.switchAnnual}
+              {loading === "annual" ? r.switching : r.switchAnnual.replace("{price}", euros(currentAnnualCents(), locale))}
             </Button>
           )}
           <a
@@ -330,7 +331,7 @@ export default function ManageSubscription({
                 </h2>
                 <p className="mt-2 text-sm text-text-muted">
                   {result === "switched"
-                    ? r.switchedDesc
+                    ? r.switchedDesc.replace("{price}", euros(currentAnnualCents(), locale))
                     : result === "offer"
                     ? r.offerDoneDesc
                     : result === "resumed"

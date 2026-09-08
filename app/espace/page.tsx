@@ -3,7 +3,7 @@ import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { isPro } from "@/lib/subscription/plan";
+import { isProRow } from "@/lib/subscription/plan";
 import PublicHeader from "@/components/marketplace/PublicHeader";
 import ClientSpace, {
   type ClientBooking,
@@ -68,7 +68,7 @@ export default async function ClientSpacePage() {
           admin
             .from("bookings")
             .select(
-              "id, starts_at, ends_at, status, location, location_text, reschedule_pending_until, rescheduled_from, pack_credit_id, pack_credits(cancel_hours), coaches(first_name, last_name, slug, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, cancel_hours, gym_name, gym_address, pro_until)"
+              "id, starts_at, ends_at, status, location, location_text, reschedule_pending_until, rescheduled_from, pack_credit_id, pack_credits(cancel_hours), coaches(first_name, last_name, slug, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, cancel_hours, gym_name, gym_address, pro_until, pro_bonus_until)"
             )
             .in("client_id", clientIds)
             .order("starts_at", { ascending: false })
@@ -157,7 +157,7 @@ export default async function ClientSpacePage() {
             "moderate",
           cancel_hours: (co?.cancel_hours as number | null) ?? null,
           // Plan du coach : règle d'annulation fixe (Essentiel) ou la sienne (Pro).
-          pro: isPro(co?.pro_until as string | null),
+          pro: isProRow(co as { pro_until?: string | null; pro_bonus_until?: string | null } | null),
           // Séance sur pack (crédit) : l'annulation suit le délai du pack.
           on_credit: !!b.pack_credit_id,
           credit_cancel_hours: (() => {

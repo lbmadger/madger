@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
   const { data: coach } = await supabase
     .from("coaches")
     .select(
-      "id, siret, stripe_account_id, stripe_charges_enabled, pro_until, booking_mode, min_notice_hours, installments_enabled"
+      "id, siret, stripe_account_id, stripe_charges_enabled, pro_until, pro_bonus_until, booking_mode, min_notice_hours, installments_enabled"
     )
     .eq("slug", coach_slug)
     .eq("listed", true)

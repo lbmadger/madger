@@ -190,7 +190,7 @@ export async function GET(req: NextRequest) {
     const coachIds = Array.from(new Set(batch.map((p) => p.coach_id as string)));
     const { data: coachRows } = await supabase
       .from("coaches")
-      .select("id, stripe_account_id, pro_until, locale")
+      .select("id, stripe_account_id, pro_until, pro_bonus_until, locale")
       .in("id", coachIds);
     const coachById = new Map(
       (coachRows ?? []).map((c) => [c.id as string, c])
@@ -379,7 +379,7 @@ export async function GET(req: NextRequest) {
         amountCents: p.amount_cents,
         feeRateBps:
           (p.fee_rate_bps as number | null) ??
-          feeRateBps(planOf(coach as { pro_until?: string | null })),
+          feeRateBps(planOf(coach as { pro_until?: string | null; pro_bonus_until?: string | null })),
         stripeFeeCents: feeCents,
         coachBearsStripeFee: coachBearsStripeFee(p.payment_method as string | null),
         refundCents: alreadyRefunded,

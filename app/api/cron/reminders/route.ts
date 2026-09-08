@@ -14,7 +14,7 @@ import {
 } from "@/lib/email/templates";
 import { notifyClient } from "@/lib/notifications/client";
 import { cronAuthorized } from "@/lib/cron/auth";
-import { isPro } from "@/lib/subscription/plan";
+import { isProRow } from "@/lib/subscription/plan";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -251,7 +251,7 @@ export async function GET(req: NextRequest) {
     const { data: packs } = await supabase
       .from("pack_credits")
       .select(
-        "id, coach_id, client_id, total, used, expires_at, low_notified_at, empty_notified_at, expiring_notified_at, clients(email, first_name), coaches(first_name, last_name, slug, pro_until)"
+        "id, coach_id, client_id, total, used, expires_at, low_notified_at, empty_notified_at, expiring_notified_at, clients(email, first_name), coaches(first_name, last_name, slug, pro_until, pro_bonus_until)"
       )
       .eq("status", "active")
       .limit(500);
@@ -262,7 +262,7 @@ export async function GET(req: NextRequest) {
       // Relances de renouvellement : fonctionnalité Pro. Un coach repassé
       // Essentiel n'en envoie plus (rien n'est marqué : elles repartent s'il
       // revient en Pro).
-      if (!isPro(co?.pro_until as string | null)) continue;
+      if (!isProRow(co as { pro_until?: string | null; pro_bonus_until?: string | null } | null)) continue;
       const email = cl?.email as string | undefined;
       const coachName =
         [co?.first_name, co?.last_name].filter(Boolean).join(" ") || "ton coach";
@@ -432,11 +432,11 @@ export async function GET(req: NextRequest) {
       if (items.length === 0) continue;
       const [{ data: u }, { data: co }] = await Promise.all([
         supabase.auth.admin.getUserById(coachId),
-        supabase.from("coaches").select("first_name, locale, pro_until").eq("id", coachId).maybeSingle(),
+        supabase.from("coaches").select("first_name, locale, pro_until, pro_bonus_until").eq("id", coachId).maybeSingle(),
       ]);
       // Alerte churn : fonctionnalité Pro. Rien n'est marqué pour un coach
       // Essentiel : l'alerte part s'il passe Pro.
-      if (!isPro(co?.pro_until as string | null)) continue;
+      if (!isProRow(co as { pro_until?: string | null; pro_bonus_until?: string | null } | null)) continue;
       const email = u?.user?.email;
       const markAll = async () => {
         const packIds = items.filter((i) => i.packId).map((i) => i.packId as string);

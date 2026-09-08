@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe/server";
+import { currentMonthlyCents, currentAnnualCents } from "@/lib/subscription/offer";
 
 export const dynamic = "force-dynamic";
 
 // Abonnement Pro : le coach paie Madger sur le compte PLATEFORME (≠ Connect).
-// 49 €/mois ou 490 €/an. Les prix sont créés en ligne (price_data récurrent),
-// pas besoin de produits pré-créés dans le dashboard Stripe.
-const PLANS = {
-  monthly: { amount: 4900, interval: "month" as const },
-  annual: { amount: 49000, interval: "year" as const },
-};
+// Prix du moment (lancement puis tarif normal, lib/subscription/offer.ts).
+// Les prix sont créés en ligne (price_data récurrent), pas besoin de
+// produits pré-créés dans le dashboard Stripe.
+function plans() {
+  return {
+    monthly: { amount: currentMonthlyCents(), interval: "month" as const },
+    annual: { amount: currentAnnualCents(), interval: "year" as const },
+  };
+}
 
 export async function POST(req: NextRequest) {
   const stripe = getStripe();
@@ -21,7 +25,7 @@ export async function POST(req: NextRequest) {
   const origin = new URL(req.url).origin;
   const body = await req.json().catch(() => ({}));
   const plan = body.plan === "annual" ? "annual" : "monthly";
-  const cfg = PLANS[plan];
+  const cfg = plans()[plan];
 
   const supabase = createClient();
   const {
@@ -33,11 +37,21 @@ export async function POST(req: NextRequest) {
 
   const { data: coach } = await supabase
     .from("coaches")
-    .select("id, stripe_customer_id, stripe_subscription_id, pro_trial_used_at")
+    .select("id, stripe_customer_id, stripe_subscription_id, pro_trial_used_at, subscription_status")
     .eq("id", user.id)
     .maybeSingle();
   if (!coach) {
     return NextResponse.json({ error: "not_a_coach" }, { status: 403 });
+  }
+  // Un abonnement Stripe encore vivant (même impayé) : pas de second
+  // abonnement, sinon Stripe encaisserait les deux une fois la carte réparée.
+  if (
+    coach.stripe_subscription_id &&
+    ["active", "trialing", "canceling", "past_due", "unpaid"].includes(
+      coach.subscription_status ?? ""
+    )
+  ) {
+    return NextResponse.json({ error: "already_subscribed" }, { status: 409 });
   }
 
   // Essai de 7 jours : carte enregistrée, rien débité pendant l'essai, puis

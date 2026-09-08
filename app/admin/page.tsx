@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { isPro } from "@/lib/subscription/plan";
+import { isProRow } from "@/lib/subscription/plan";
 import AnimatedStat from "@/components/dashboard/AnimatedStat";
 import AdminMap, { type AdminMapPoint } from "@/components/admin/AdminMap";
 
@@ -65,7 +65,7 @@ export default async function AdminOverview() {
       admin.rpc("admin_total_commission"),
       admin
         .from("coaches")
-        .select("first_name, last_name, city, lat, lng, pro_until")
+        .select("first_name, last_name, city, lat, lng, pro_until, pro_bonus_until")
         .not("lat", "is", null)
         .not("lng", "is", null)
         .limit(1000),
@@ -141,7 +141,7 @@ export default async function AdminOverview() {
     }
 
     points = (geo.data ?? []).map((c) => {
-      const pro = isPro(c.pro_until as string | null);
+      const pro = isProRow(c as { pro_until?: string | null; pro_bonus_until?: string | null });
       if (pro) proCount++;
       return {
         lat: c.lat as number,

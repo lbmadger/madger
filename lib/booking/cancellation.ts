@@ -59,14 +59,19 @@ export function clampCancelHours(v: unknown): number {
 // Le coach est-il Essentiel (règle fixe) ? Vrai seulement quand la source
 // permet de le dire : `pro` (vue publique) ou `pro_until` (ligne coaches).
 // Une source muette garde la politique paramétrée (compatibilité).
-function isEssential(src: { pro?: unknown; pro_until?: unknown } | null | undefined): boolean {
+function isEssential(
+  src: { pro?: unknown; pro_until?: unknown; pro_bonus_until?: unknown } | null | undefined
+): boolean {
   if (!src) return false;
   if (typeof src.pro === "boolean") return !src.pro;
-  if ("pro_until" in src) {
-    const until = src.pro_until;
-    if (!until) return true;
-    const t = new Date(String(until)).getTime();
-    return !(Number.isFinite(t) && t > Date.now());
+  if ("pro_until" in src || "pro_bonus_until" in src) {
+    // Pro effectif = max(pro_until, pro_bonus_until), comme planOf().
+    const ts = (v: unknown) => {
+      if (!v) return 0;
+      const t = new Date(String(v)).getTime();
+      return Number.isFinite(t) ? t : 0;
+    };
+    return Math.max(ts(src.pro_until), ts(src.pro_bonus_until)) <= Date.now();
   }
   return false;
 }
@@ -84,6 +89,7 @@ export function resolveRefundPolicy(
         cancel_hours?: unknown;
         pro?: unknown;
         pro_until?: unknown;
+        pro_bonus_until?: unknown;
       }
     | null
     | undefined

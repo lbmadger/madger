@@ -2,6 +2,8 @@ import {
   LAUNCH_OFFER,
   launchOfferActive,
   launchOfferRegularFromLabel,
+  currentMonthlyCents,
+  currentAnnualCents,
 } from "@/lib/subscription/offer";
 
 // Prix du Pro pendant l'offre de lancement : le prix payé en grand, le
@@ -31,8 +33,7 @@ export default function LaunchPrice({
       currency: "EUR",
       maximumFractionDigits: 0,
     });
-  const paid =
-    period === "annual" ? LAUNCH_OFFER.launchAnnualCents : LAUNCH_OFFER.launchMonthlyCents;
+  const paid = period === "annual" ? currentAnnualCents() : currentMonthlyCents();
   const regular =
     period === "annual" ? LAUNCH_OFFER.regularAnnualCents : LAUNCH_OFFER.regularMonthlyCents;
 

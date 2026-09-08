@@ -454,7 +454,7 @@ export async function POST(req: NextRequest) {
               try {
                 const { data: coachRow } = await supabase
                   .from("coaches")
-                  .select("pro_until")
+                  .select("pro_until, pro_bonus_until")
                   .eq("id", reg.coach_id)
                   .maybeSingle();
                 coachPlan = planOf(coachRow);

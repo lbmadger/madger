@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
 
   const { data: coach } = await admin
     .from("coaches")
-    .select("stripe_account_id, pro_until")
+    .select("stripe_account_id, pro_until, pro_bonus_until")
     .eq("id", payment.coach_id)
     .maybeSingle();
 

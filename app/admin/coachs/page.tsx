@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { isPro } from "@/lib/subscription/plan";
+import { isProRow } from "@/lib/subscription/plan";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +10,7 @@ export default async function AdminCoaches() {
     ? await admin
         .from("coaches")
         .select(
-          "id, first_name, last_name, slug, city, listed, pro_until, stripe_charges_enabled, cancellation_policy, created_at, onboarding_completed"
+          "id, first_name, last_name, slug, city, listed, pro_until, pro_bonus_until, stripe_charges_enabled, cancellation_policy, created_at, onboarding_completed"
         )
         .order("created_at", { ascending: false })
         .limit(200)
@@ -89,7 +89,7 @@ export default async function AdminCoaches() {
             {(coaches ?? []).map((c) => {
               const name =
                 [c.first_name, c.last_name].filter(Boolean).join(" ") || "-";
-              const pro = isPro(c.pro_until as string | null);
+              const pro = isProRow(c as { pro_until?: string | null; pro_bonus_until?: string | null });
               const email = emailById.get(c.id as string);
               const abandoned = !c.onboarding_completed;
               return (
