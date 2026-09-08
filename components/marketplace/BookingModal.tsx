@@ -468,6 +468,14 @@ export default function BookingModal({
   const anySlots =
     slotState.mode === "slots" &&
     slotState.days.some((d) => d.slots.length > 0 || (d.taken?.length ?? 0) > 0);
+  // Rareté HONNÊTE : créneaux libres restants sur les 7 prochains jours,
+  // comptés côté client depuis la réponse réelle. Affiché seulement entre
+  // 1 et 3, jamais à 0, jamais au-delà.
+  const weekFree =
+    slotState.mode === "slots"
+      ? slotState.days.slice(0, 7).reduce((n, d) => n + d.slots.length, 0)
+      : 0;
+  const scarcity = weekFree >= 1 && weekFree <= 3 ? weekFree : 0;
 
   return (
     <Dialog
@@ -777,6 +785,14 @@ export default function BookingModal({
                           );
                         })}
                       </div>
+                      {scarcity > 0 && (
+                        <p className="flex items-center gap-1.5 text-[11px] font-semibold text-warning">
+                          <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-warning" />
+                          {scarcity === 1
+                            ? t("booking.scarcityOne")
+                            : t("booking.scarcity").replace("{n}", String(scarcity))}
+                        </p>
+                      )}
                       {/* Heures du jour sélectionné */}
                       {currentDay && (currentDay.slots.length > 0 || (currentDay.taken?.length ?? 0) > 0) ? (
                         <>

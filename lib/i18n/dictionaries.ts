@@ -1077,6 +1077,8 @@ const fr = {
     waitlistDone: "C'est noté. Tu recevras un email dès que ce créneau se libère.",
     waitlistFree: "Bonne nouvelle : ce créneau vient de se libérer, recharge les créneaux.",
     waitlistError: "Impossible d'enregistrer ta demande. Réessaie.",
+    scarcityOne: "Plus qu'un créneau cette semaine",
+    scarcity: "Plus que {n} créneaux cette semaine",
     confirmedTitle: "Séance confirmée",
     confirmedDesc:
       "Ton créneau est réservé. Tu recevras un email de confirmation.",
@@ -2892,6 +2894,8 @@ const en: Dictionary = {
     waitlistDone: "Noted. You'll get an email as soon as this slot frees up.",
     waitlistFree: "Good news: this slot just freed up, reload the slots.",
     waitlistError: "Could not save your request. Try again.",
+    scarcityOne: "Only one slot left this week",
+    scarcity: "Only {n} slots left this week",
     confirmedTitle: "Session confirmed",
     confirmedDesc: "Your slot is booked. You'll receive a confirmation email.",
     date: "Date",
