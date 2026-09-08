@@ -40,7 +40,7 @@ export const faqs = [
   },
   {
     q: "Suis-je prêt pour la facturation électronique obligatoire ?",
-    a: "Oui. Chaque séance encaissée génère une facture numérotée avec tes mentions légales (SIRET, TVA), Madger t'adresse une facture mensuelle pour ses frais de transaction, et ta comptabilité s'exporte en un clic pour ton expert-comptable. Le passage au format Factur-X prévu par la réforme française de la facturation électronique se fera automatiquement, sans rien changer de ton côté.",
+    a: "Oui. Chaque séance encaissée génère une facture numérotée avec tes mentions légales (SIRET, TVA), Madger t'adresse une facture mensuelle pour ses frais de transaction, et ta comptabilité s'exporte en un clic pour ton expert-comptable. Tes factures portent déjà toutes les mentions obligatoires, sont numérotées sans trou et conservées dans ton espace. Le format Factur-X prévu par la réforme sera proposé quand le calendrier l'exigera pour ton statut.",
   },
   {
     q: "Puis-je gérer plusieurs types de séances ?",

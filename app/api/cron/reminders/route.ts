@@ -15,6 +15,7 @@ import {
 import { notifyClient } from "@/lib/notifications/client";
 import { cronAuthorized } from "@/lib/cron/auth";
 import { isProRow } from "@/lib/subscription/plan";
+import { isMondayInParis, runWeeklyRecap } from "@/lib/cron/weeklyRecap";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -475,5 +476,18 @@ export async function GET(req: NextRequest) {
     /* best-effort */
   }
 
-  return NextResponse.json({ sent, scanned, nudged, reviewNudged, packNudged, coachAlerted });
+  // ── Récap hebdo (lundi) ───────────────────────────────────────────────────
+  // Fusionné ici : Vercel Hobby n'accorde que deux crons planifiés. Budget
+  // temps propre pour ne jamais retarder les rappels du jour.
+  let weekly: { sent: number; scanned: number } | null = null;
+  if (isMondayInParis()) {
+    try {
+      const remaining = Math.max(5_000, 55_000 - (Date.now() - startedAt));
+      weekly = await runWeeklyRecap(supabase, { budgetMs: remaining });
+    } catch (e) {
+      console.error("weekly recap failed:", e);
+    }
+  }
+
+  return NextResponse.json({ sent, scanned, nudged, reviewNudged, packNudged, coachAlerted, weekly });
 }

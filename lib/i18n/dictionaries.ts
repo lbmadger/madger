@@ -1180,7 +1180,7 @@ const fr = {
     vatHint:
       "Laisse vide si tu es en franchise de TVA (micro-entreprise) : la mention « TVA non applicable, art. 293 B du CGI » est ajoutée automatiquement sur tes factures.",
     billingCompliance:
-      "Avec ces informations, chaque facture émise via Madger porte tes mentions légales obligatoires. Tu es prêt pour la facturation électronique : le passage au format Factur-X se fera automatiquement, sans rien changer de ton côté.",
+      "Avec ces informations, chaque facture émise via Madger porte tes mentions légales obligatoires. Elles sont numérotées sans trou par année et conservées dans ton espace, prêtes pour ton expert-comptable.",
     minNotice: "Délai minimum de réservation",
     minNoticeBefore: "avant la séance",
     minNoticeHint:
@@ -1409,7 +1409,7 @@ const fr = {
   invoices: {
     title: "Factures",
     subtitle:
-      "Chaque paiement encaissé génère une facture numérotée avec tes mentions légales. Prêt pour la facturation électronique.",
+      "Chaque paiement encaissé génère une facture numérotée avec tes mentions légales, conservée ici et retéléchargeable à tout moment.",
     empty:
       "Aucune facture pour l'instant : elles apparaissent après chaque paiement encaissé.",
     download: "Télécharger",
@@ -2855,7 +2855,7 @@ const en: Dictionary = {
     vatHint:
       "Leave empty if you are VAT-exempt (French micro-enterprise): the mention \"TVA non applicable, art. 293 B du CGI\" is added automatically to your invoices.",
     billingCompliance:
-      "With these details, every invoice issued via Madger carries your mandatory legal mentions. You are ready for e-invoicing: the switch to the Factur-X format will happen automatically, with nothing to change on your side.",
+      "With these details, every invoice issued via Madger carries your mandatory legal mentions. They are numbered sequentially per year and kept in your space, ready for your accountant.",
     minNotice: "Minimum booking notice",
     minNoticeBefore: "before the session",
     minNoticeHint:
@@ -3082,7 +3082,7 @@ const en: Dictionary = {
   invoices: {
     title: "Invoices",
     subtitle:
-      "Every collected payment generates a numbered invoice with your legal mentions. Ready for e-invoicing.",
+      "Every collected payment generates a numbered invoice with your legal mentions, kept here and downloadable at any time.",
     empty: "No invoice yet: they appear after each collected payment.",
     download: "Download",
     pdf: "Download as PDF",
