@@ -1054,6 +1054,9 @@ const fr = {
     contact: "Contacter",
     notFoundTitle: "Coach introuvable",
     notFoundDesc: "Ce profil n'existe pas ou n'est plus disponible.",
+    nextSlot: "Prochain créneau :",
+    nextSlotNone: "Aucun créneau libre sur 14 jours",
+    notifySlot: "Me prévenir d'un créneau",
   },
   booking: {
     title: "Réserver une séance",
@@ -2866,6 +2869,9 @@ const en: Dictionary = {
     contact: "Contact",
     notFoundTitle: "Coach not found",
     notFoundDesc: "This profile doesn't exist or is no longer available.",
+    nextSlot: "Next slot:",
+    nextSlotNone: "No free slot in the next 14 days",
+    notifySlot: "Notify me of a slot",
   },
   booking: {
     title: "Book a session",

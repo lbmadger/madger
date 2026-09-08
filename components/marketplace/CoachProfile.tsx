@@ -70,6 +70,91 @@ export default function CoachProfile({
   const [bookingSlot, setBookingSlot] = useState<string | null>(null);
   // Place dans un cours collectif en cours de réservation.
   const [bookingGroup, setBookingGroup] = useState<PublicGroupSession | null>(null);
+  // Créneau pris à ouvrir en liste d'attente (barre mobile, rien de libre).
+  const [bookingWaitIso, setBookingWaitIso] = useState<string | null>(null);
+
+  // Barre mobile : après 8 s ou 40 % de scroll, elle affiche le PROCHAIN
+  // créneau réellement libre du coach (lu depuis /api/slots, durée de la
+  // première prestation). Rien de libre sur 14 jours mais des créneaux pris :
+  // « Me prévenir d'un créneau » ouvre la liste d'attente. Fermable, mémorisé
+  // pour la session. Jamais un pop-up : la barre existe déjà, elle s'enrichit.
+  const hintKey = `madger_nextslot_hidden_${coach.slug}`;
+  const [hintOn, setHintOn] = useState(false);
+  const [nextSlot, setNextSlot] = useState<
+    | { kind: "free"; iso: string; date: string; label: string }
+    | { kind: "taken"; iso: string }
+    | null
+  >(null);
+  useEffect(() => {
+    if (demo) return;
+    if (!window.matchMedia("(max-width: 1023px)").matches) return;
+    try {
+      if (sessionStorage.getItem(hintKey)) return;
+    } catch {
+      /* stockage indisponible : la barre s'affiche quand même */
+    }
+    let fired = false;
+    let alive = true;
+    const fire = () => {
+      if (fired) return;
+      fired = true;
+      cleanup();
+      const first = services.find(
+        (s) => s.price_cents > 0 && s.type === "single" && !isGroupService(s)
+      );
+      const duration = first?.duration_min ?? 60;
+      fetch(`/api/slots?coach=${coach.slug}&duration=${duration}&locale=${locale}`, {
+        cache: "no-store",
+      })
+        .then((r) => (r.ok ? r.json() : Promise.reject()))
+        .then(
+          (data: {
+            mode: string;
+            days?: { date: string; slots: { iso: string; label: string }[]; taken?: { iso: string }[] }[];
+          }) => {
+            if (!alive || data.mode !== "slots") return;
+            const days = data.days ?? [];
+            const free = days.find((d) => d.slots.length > 0);
+            if (free) {
+              setNextSlot({ kind: "free", iso: free.slots[0].iso, date: free.date, label: free.slots[0].label });
+            } else {
+              const takenIso = days.find((d) => (d.taken?.length ?? 0) > 0)?.taken?.[0]?.iso;
+              if (takenIso) setNextSlot({ kind: "taken", iso: takenIso });
+              else return;
+            }
+            setHintOn(true);
+          }
+        )
+        .catch(() => {
+          /* pas de créneau affiché : la barre garde le prix */
+        });
+    };
+    const onScroll = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      if (max > 0 && window.scrollY / max >= 0.4) fire();
+    };
+    const timer = setTimeout(fire, 8000);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    const cleanup = () => {
+      clearTimeout(timer);
+      window.removeEventListener("scroll", onScroll);
+    };
+    return () => {
+      alive = false;
+      cleanup();
+    };
+    // Lecture unique au montage (slug, prestations et langue sont stables).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const hideHint = () => {
+    setHintOn(false);
+    try {
+      sessionStorage.setItem(hintKey, "1");
+    } catch {
+      /* ignore */
+    }
+  };
+
   useEffect(() => {
     if (demo) return;
     const params = new URLSearchParams(window.location.search);
@@ -191,7 +276,10 @@ export default function CoachProfile({
   const fromService = (singles.length ? singles : paid).reduce<
     PublicService | null
   >((min, s) => (!min || s.price_cents < min.price_cents ? s : min), null);
-  const openBooking = (serviceId?: string) => {
+  const openBooking = (
+    serviceId?: string,
+    opts?: { slot?: string | null; waitIso?: string | null }
+  ) => {
     if (demo) {
       setDemoPrompt(true);
       return;
@@ -205,8 +293,22 @@ export default function CoachProfile({
     }
     setBookingGroup(null);
     setBookingServiceId(serviceId);
+    setBookingSlot(opts?.slot ?? null);
+    setBookingWaitIso(opts?.waitIso ?? null);
     setBooking(true);
   };
+  // Prestation dont la durée a servi à lire le prochain créneau (barre
+  // mobile) : la réservation s'ouvre dessus, créneau présélectionné.
+  const firstSingle = services.find(
+    (s) => s.price_cents > 0 && s.type === "single" && !isGroupService(s)
+  );
+  const nextSlotLabel =
+    nextSlot?.kind === "free"
+      ? `${new Date(nextSlot.date + "T12:00:00").toLocaleDateString(
+          locale === "fr" ? "fr-FR" : "en-GB",
+          { weekday: "short", day: "numeric" }
+        )} · ${nextSlot.label}`
+      : null;
   const openGroupBooking = (g: PublicGroupSession) => {
     if (demo) {
       setDemoPrompt(true);
@@ -776,7 +878,30 @@ export default function CoachProfile({
         )}
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3">
           <div className="min-w-0">
-            {fromService ? (
+            {hintOn && nextSlot ? (
+              <div className="flex min-w-0 items-center gap-1.5">
+                <p className="min-w-0 truncate text-sm text-text-base">
+                  {nextSlot.kind === "free" ? (
+                    <>
+                      <span className="text-xs text-text-muted">{t("coachProfile.nextSlot")}</span>{" "}
+                      <span className="font-extrabold capitalize">{nextSlotLabel}</span>
+                    </>
+                  ) : (
+                    <span className="text-xs text-text-muted">{t("coachProfile.nextSlotNone")}</span>
+                  )}
+                </p>
+                <button
+                  type="button"
+                  onClick={hideHint}
+                  aria-label={t("common.close")}
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-text-dim transition-colors hover:text-text-base"
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                    <path d="M18 6L6 18M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            ) : fromService ? (
               <p className="truncate text-sm text-text-base">
                 <span className="font-extrabold">
                   {formatPrice(fromService.price_cents, fromService.currency, locale)}
@@ -804,9 +929,26 @@ export default function CoachProfile({
             >
               {contacting ? t("common.loading") : t("coachProfile.contact")}
             </Button>
-            <Button onClick={() => openBooking()} className="px-5 py-2.5 text-sm">
-              {t("coachProfile.book")}
-            </Button>
+            {hintOn && nextSlot?.kind === "taken" ? (
+              <Button
+                onClick={() => openBooking(firstSingle?.id, { waitIso: nextSlot.iso })}
+                className="px-4 py-2.5 text-sm"
+              >
+                {t("coachProfile.notifySlot")}
+              </Button>
+            ) : (
+              <Button
+                onClick={() =>
+                  openBooking(
+                    hintOn && nextSlot?.kind === "free" ? firstSingle?.id : undefined,
+                    hintOn && nextSlot?.kind === "free" ? { slot: nextSlot.iso } : undefined
+                  )
+                }
+                className="px-5 py-2.5 text-sm"
+              >
+                {t("coachProfile.book")}
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -817,10 +959,12 @@ export default function CoachProfile({
           services={services}
           initialServiceId={bookingServiceId}
           initialSlot={bookingSlot}
+          initialWaitIso={bookingWaitIso}
           groupSession={bookingGroup}
           onClose={() => {
             setBooking(false);
             setBookingGroup(null);
+            setBookingWaitIso(null);
           }}
           onContact={handleContact}
         />

@@ -31,6 +31,7 @@ export default function BookingModal({
   services = [],
   initialServiceId,
   initialSlot,
+  initialWaitIso = null,
   groupSession = null,
   onClose,
   onContact,
@@ -45,6 +46,9 @@ export default function BookingModal({
   // sélection même sur un AUTRE appareil (confirmation email ouverte sur
   // téléphone alors que la réservation a commencé sur ordinateur).
   initialSlot?: string | null;
+  // Créneau PRIS à ouvrir directement en liste d'attente (barre mobile
+  // « Me prévenir d'un créneau » quand rien n'est libre sur 14 jours).
+  initialWaitIso?: string | null;
   onClose: () => void;
   // Ouvre la conversation avec le coach (proposé quand aucun créneau libre).
   onContact?: () => void;
@@ -210,6 +214,8 @@ export default function BookingModal({
   const [waitName, setWaitName] = useState("");
   const [waitEmail, setWaitEmail] = useState("");
   const [waitState, setWaitState] = useState<"idle" | "sending" | "done" | "free" | "error">("idle");
+  // Consommé une seule fois : ouvre le panneau liste d'attente sur ce créneau.
+  const initialWaitRef = useRef<string | null>(initialWaitIso);
   async function joinWaitlist() {
     if (!waitIso) return;
     const mail = (waitEmail || email).trim();
@@ -277,6 +283,17 @@ export default function BookingModal({
               setDraftRestored(true);
               draftSlotRef.current = null;
             }
+          }
+          // Barre mobile « Me prévenir d'un créneau » : panneau liste
+          // d'attente ouvert sur le premier créneau pris.
+          const wi = initialWaitRef.current;
+          if (wi) {
+            const idx = days.findIndex((d) => (d.taken ?? []).some((s) => s.iso === wi));
+            if (idx !== -1) {
+              setDayIdx(idx);
+              setWaitIso(wi);
+            }
+            initialWaitRef.current = null;
           }
         } else {
           setSlotState({ mode: "free" });
