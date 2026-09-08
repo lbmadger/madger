@@ -344,13 +344,39 @@ export async function fulfillCheckoutSession(
   // approbation : ses crédits sont disponibles tout de suite.
   if (m.service_id && clientId && payment) {
     if (svc?.type === "pack" && (svc.pack_size ?? 0) > 1) {
-      await supabase.rpc("pack_credit_open", {
+      const { data: packId, error: packError } = await supabase.rpc("pack_credit_open", {
         p_coach: m.coach_id,
         p_client: clientId,
         p_service: m.service_id,
         p_payment: payment.id,
         p_booking: booking.id,
       });
+      if (packError || !packId) {
+        // Pack payé sans crédits ouverts (service modifié entre le paiement
+        // et le webhook, panne SQL) : le fondateur est prévenu tout de
+        // suite, le client ne doit pas rester avec un pack vide.
+        console.error("[fulfill] pack_credit_open", packError?.message ?? "null");
+        if (process.env.FOUNDER_EMAIL) {
+          try {
+            const { founderAlert } = await import("@/lib/email/templates");
+            const tpl = founderAlert({
+              context: "Pack payé sans crédits ouverts",
+              details: [
+                `payment: ${payment.id}`,
+                `service: ${m.service_id}`,
+                packError?.message ?? "pack_credit_open a renvoyé null",
+              ],
+            });
+            await sendEmail({
+              to: process.env.FOUNDER_EMAIL,
+              subject: tpl.subject,
+              html: tpl.html,
+            });
+          } catch {
+            /* l'alerte reste best-effort */
+          }
+        }
+      }
     }
   }
 

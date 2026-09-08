@@ -167,7 +167,21 @@ export async function GET(req: NextRequest) {
       } catch {
         /* déjà annulée / expirée côté Stripe */
       }
-      await supabase.from("pack_credits").delete().eq("payment_id", p.id);
+      {
+        const { data: authPack } = await supabase
+          .from("pack_credits")
+          .select("id")
+          .eq("payment_id", p.id)
+          .maybeSingle();
+        if (authPack) {
+          await supabase.rpc("close_pack_credit", {
+            p_pack: authPack.id,
+            p_status: "closed",
+            p_actor: "system",
+            p_note: "Empreinte bancaire expirée, pack jamais activé",
+          });
+        }
+      }
 
       if (p.booking_id && br?.status === "pending") {
         await supabase

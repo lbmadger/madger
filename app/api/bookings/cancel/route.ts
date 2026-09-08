@@ -207,11 +207,23 @@ export async function POST(req: NextRequest) {
     } catch {
       /* déjà annulée / expirée : sans effet */
     }
-    // Pack acheté avec cette empreinte : crédits jamais activés.
-    await admin
-      .from("pack_credits")
-      .delete()
-      .eq("payment_id", payment.id);
+    // Pack acheté avec cette empreinte : crédits jamais activés, pack
+    // clôturé et journalisé (aucune écriture directe sur pack_credits).
+    {
+      const { data: authPack } = await admin
+        .from("pack_credits")
+        .select("id")
+        .eq("payment_id", payment.id)
+        .maybeSingle();
+      if (authPack) {
+        await admin.rpc("close_pack_credit", {
+          p_pack: authPack.id,
+          p_status: "closed",
+          p_actor: "system",
+          p_note: "Empreinte bancaire annulée, pack jamais activé",
+        });
+      }
+    }
     await detachMeetFromBooking(admin, bookingId);
     await supabase
       .from("bookings")

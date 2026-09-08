@@ -147,14 +147,14 @@ export async function POST(req: NextRequest) {
       .eq("id", booking.pack_credit_id)
       .maybeSingle();
     const hours = clampCancelHours(pack?.cancel_hours);
+    const inTime = creditRestoredIfCancelled(hours, new Date(booking.starts_at));
     // Un pack clôturé ou expiré ne récupère rien : le crédit n'est « rendu »
     // (email, réponse) que si le pack est encore actif.
-    const restored =
-      creditRestoredIfCancelled(hours, new Date(booking.starts_at)) &&
-      pack?.status === "active";
-    if (!restored) {
-      // Crédit perdu : posé AVANT l'annulation pour que le trigger SQL ne
-      // le restitue pas.
+    const restored = inTime && pack?.status === "active";
+    if (!inTime) {
+      // Annulation tardive : crédit perdu, posé AVANT l'annulation pour que
+      // le trigger SQL ne le restitue pas. Un pack inactif n'est pas marqué
+      // « perdu » : la cause est le pack, pas le délai.
       await admin.rpc("pack_credit_restore", {
         p_booking: bookingId,
         p_actor: "client",
@@ -240,7 +240,21 @@ export async function POST(req: NextRequest) {
     } catch {
       /* déjà annulée / expirée : sans effet */
     }
-    await admin.from("pack_credits").delete().eq("payment_id", payment.id);
+    {
+      const { data: authPack } = await admin
+        .from("pack_credits")
+        .select("id")
+        .eq("payment_id", payment.id)
+        .maybeSingle();
+      if (authPack) {
+        await admin.rpc("close_pack_credit", {
+          p_pack: authPack.id,
+          p_status: "closed",
+          p_actor: "system",
+          p_note: "Empreinte bancaire annulée, pack jamais activé",
+        });
+      }
+    }
     await detachMeetFromBooking(admin, bookingId);
     await admin
       .from("bookings")
