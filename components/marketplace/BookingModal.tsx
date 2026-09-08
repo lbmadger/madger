@@ -106,6 +106,25 @@ export default function BookingModal({
   const [done, setDone] = useState(false);
   // Id renvoyé par l'API : lien de suivi de la demande.
   const [bookingId, setBookingId] = useState<string | null>(null);
+  // Début de la séance demandée (écran de confirmation : fichier .ics).
+  const [doneStart, setDoneStart] = useState<string | null>(null);
+  // « Partager la page du coach » : navigator.share, sinon copie du lien.
+  const [shared, setShared] = useState(false);
+  async function sharePage() {
+    const url = `https://madger.app/${coach.slug}`;
+    const title = `${coach.first_name} · Madger`;
+    try {
+      if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+        await navigator.share({ title, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      setShared(true);
+      setTimeout(() => setShared(false), 1800);
+    } catch {
+      /* partage annulé ou presse-papiers indisponible */
+    }
+  }
   // Compte obligatoire pour réserver (modèle Airbnb/Doctolib), mais exigé au
   // DERNIER clic seulement : le client choisit prestation et créneau
   // librement, l'authentification n'arrive qu'au moment de payer.
@@ -462,6 +481,7 @@ export default function BookingModal({
         return;
       }
       if (data.booking_id) setBookingId(data.booking_id as string);
+      setDoneStart(starts ? starts.toISOString() : null);
       setDone(true);
     } catch {
       setError(t("booking.errors.generic"));
@@ -517,6 +537,39 @@ export default function BookingModal({
                   {t("clientSpace.title")}
                 </Button>
               </Link>
+              {/* Fichier .ics (route existante) : la séance dans l'agenda du
+                  client tout de suite, marquée « à confirmer » tant que le
+                  coach n'a pas accepté. */}
+              {doneStart && (
+                <a
+                  href={`/api/calendar/ics?${new URLSearchParams({
+                    title: `${t("booking.icsTitle")} ${[coach.first_name, coach.last_name].filter(Boolean).join(" ")}${instant ? "" : ` (${t("booking.icsPending")})`}`,
+                    start: doneStart,
+                    end: new Date(new Date(doneStart).getTime() + effectiveDuration * 60000).toISOString(),
+                    location: online ? t("booking.online") : coach.city ?? "",
+                  }).toString()}`}
+                  download="madger-seance.ics"
+                  className="flex w-full items-center justify-center gap-2 rounded-full border border-border-strong py-2.5 text-sm font-medium text-text-base transition-colors hover:border-accent"
+                >
+                  <CalendarIcon size={14} className="text-accent" />
+                  {t("booking.addToCalendar")}
+                </a>
+              )}
+              <button
+                type="button"
+                onClick={sharePage}
+                className="flex w-full items-center justify-center gap-2 rounded-full border border-border-strong py-2.5 text-sm font-medium text-text-base transition-colors hover:border-accent"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
+                </svg>
+                {shared
+                  ? t("booking.linkCopied")
+                  : t("booking.sharePage").replace("{name}", coach.first_name)}
+              </button>
               {/* « Fermer », surtout pas « Annuler » : sur un écran de
                   succès, le client lirait « annuler ma séance ». */}
               <Button variant="ghost" onClick={onClose}>
