@@ -31,12 +31,20 @@ export type InvoicePdfInput = {
 };
 
 // Les polices standard (Helvetica) n'acceptent que WinAnsi : on remplace les
-// espaces fines et tout caractère hors Latin-1 (sauf le symbole euro).
+// espaces fines, les guillemets et points de suspension typographiques, les
+// ligatures œ, puis on retire tout caractère hors Latin-1 (sauf le symbole
+// euro) et les caractères de contrôle, qui font planter l'encodage.
 function safe(s: string): string {
   return s
     .replace(/[\u202F\u00A0\u2009]/g, " ")
     .replace(/[\u2013\u2014]/g, "-")
-    .replace(/[^\x00-\xFF\u20AC]/g, "");
+    .replace(/[\u2018\u2019\u201A]/g, "'")
+    .replace(/[\u201C\u201D\u201E]/g, '"')
+    .replace(/\u2026/g, "...")
+    .replace(/\u0153/g, "oe")
+    .replace(/\u0152/g, "OE")
+    .replace(/\u2022/g, "-")
+    .replace(/[^\x20-\x7E\xA0-\xFF\u20AC]/g, "");
 }
 
 function money(cents: number, currency: string): string {

@@ -61,7 +61,7 @@ export default async function ClientSpacePage() {
           admin
             .from("pack_credits")
             .select(
-              "id, coach_id, total, used, status, expires_at, service_name, services(name, duration_min), coaches(first_name, last_name, slug, booking_mode)"
+              "id, coach_id, total, used, status, expires_at, service_name, cancel_hours, services(name, duration_min), coaches(first_name, last_name, slug, booking_mode)"
             )
             .in("client_id", clientIds)
             .order("created_at", { ascending: false }),
@@ -107,6 +107,7 @@ export default async function ClientSpacePage() {
           coach_slug: (co?.slug as string | null) ?? null,
           coach_booking_mode: (co?.booking_mode as string | null) ?? "instant",
           duration_min: (svc?.duration_min as number | null) ?? 60,
+          cancel_hours: (c.cancel_hours as number | null) ?? null,
         });
       }
 

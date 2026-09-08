@@ -95,6 +95,7 @@ export async function emailInvoice(
   invoiceId: string | null | undefined
 ): Promise<boolean> {
   if (!invoiceId) return false;
+  let claimedHere = false;
   try {
     const loaded = await loadInvoicePdfInput(admin, invoiceId);
     if (!loaded || !loaded.row.client_email) return false;
@@ -107,6 +108,7 @@ export async function emailInvoice(
       .is("emailed_at", null)
       .select("id");
     if (!claimed?.length) return false;
+    claimedHere = true;
 
     const bytes = await renderInvoicePdf(input);
     const base64 = Buffer.from(bytes).toString("base64");
@@ -157,6 +159,14 @@ export async function emailInvoice(
     return true;
   } catch (e) {
     console.error("[emailInvoice]", e instanceof Error ? e.message : e);
+    // Rendu PDF ou envoi planté APRÈS la réclamation : la pièce redevient
+    // envoyable, sinon le client ne la recevrait jamais.
+    if (claimedHere) {
+      await admin
+        .from("invoices")
+        .update({ emailed_at: null })
+        .eq("id", invoiceId);
+    }
     return false;
   }
 }

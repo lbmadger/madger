@@ -186,18 +186,32 @@ export function bookingConfirmationClient(p: {
   // Lieu de la séance en présentiel (salle + adresse) : le client doit
   // savoir OÙ aller sans avoir à écrire au coach.
   placeStr?: string;
+  // Achat d'un pack : nombre de séances et validité, pour que le client
+  // sache que le montant réglé couvre plusieurs séances.
+  pack?: { size: number; validityStr?: string | null };
 }): Email {
+  const packRows: DetailRow[] = p.pack
+    ? [
+        { label: "Pack", value: `${p.pack.size} séances` },
+        ...(p.pack.validityStr ? [{ label: "Valable jusqu'au", value: p.pack.validityStr }] : []),
+      ]
+    : [];
   return {
-    subject: `Ta séance avec ${p.coachName} est confirmée ✅`,
+    subject: p.pack
+      ? `Ton pack de ${p.pack.size} séances avec ${p.coachName} est confirmé ✅`
+      : `Ta séance avec ${p.coachName} est confirmée ✅`,
     html: layout({
       preheader: `Séance confirmée ${p.dateStr} · paiement sécurisé jusqu'après la séance.`,
       eyebrow: "Réservation confirmée",
       title: "C'est réservé. À toi de jouer 💪",
-      intro: `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> est confirmée et ton paiement est bien enregistré. Voici le récap :`,
+      intro: p.pack
+        ? `Ton pack de <b style="color:${C.text};">${p.pack.size} séances</b> avec <b style="color:${C.text};">${p.coachName}</b> est confirmé et ton paiement est bien enregistré. Ta première séance est déjà réservée, tu places les suivantes depuis ton espace. Voici le récap :`
+        : `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> est confirmée et ton paiement est bien enregistré. Voici le récap :`,
       blocks: [
         detailsTable([
           { label: "Coach", value: p.coachName },
-          { label: "Date & heure", value: p.dateStr },
+          ...packRows,
+          { label: p.pack ? "Première séance" : "Date & heure", value: p.dateStr },
           { label: "Format", value: p.online ? "En visio" : "En présentiel" },
           ...(!p.online && p.placeStr
             ? [{ label: "Lieu", value: p.placeStr }]
@@ -206,7 +220,9 @@ export function bookingConfirmationClient(p: {
         ]),
         infoBox(
           "Paiement sécurisé",
-          `Ton paiement est sécurisé : il n'est versé au coach que <b style="color:${C.text};">24 h après la séance</b>. Un imprévu ? Tu peux signaler un problème depuis ta réservation, les fonds restent bloqués le temps qu'on tranche.`
+          p.pack
+            ? `Ton paiement est sécurisé : il n'est versé au coach qu'au fil des séances, <b style="color:${C.text};">24 h après chacune</b>. Un imprévu ? Tu peux signaler un problème depuis ta réservation, les fonds restent bloqués le temps qu'on tranche.`
+            : `Ton paiement est sécurisé : il n'est versé au coach que <b style="color:${C.text};">24 h après la séance</b>. Un imprévu ? Tu peux signaler un problème depuis ta réservation, les fonds restent bloqués le temps qu'on tranche.`
         ),
         ...meetCalLinks(p.meetUrl, p.calendarUrl, p.icsUrl),
       ],
@@ -226,42 +242,57 @@ export function bookingNotificationCoach(p: {
   online: boolean;
   dashboardUrl: string;
   locale?: EmailLocale;
+  // Achat d'un pack : le montant couvre plusieurs séances, versées au fil
+  // des séances.
+  pack?: { size: number };
 }): Email {
   const locale = p.locale ?? "fr";
   const L =
     locale === "en"
       ? {
-          subject: `New booking: ${p.clientName} · ${p.dateStr}`,
+          subject: p.pack
+            ? `New pack sold: ${p.clientName} · ${p.pack.size} sessions`
+            : `New booking: ${p.clientName} · ${p.dateStr}`,
           preheader: `${p.clientName} booked and paid for "${p.serviceName}" · ${p.priceStr}.`,
           eyebrow: "New booking",
           title: "A client just booked 🎉",
-          intro: `Good news: <b style="color:${C.text};">${p.clientName}</b> booked <b style="color:${C.text};">and paid for</b> a session. It's already in your calendar.`,
+          intro: p.pack
+            ? `Good news: <b style="color:${C.text};">${p.clientName}</b> bought <b style="color:${C.text};">and paid for</b> a ${p.pack.size}-session pack. The first session is already in your calendar; the client books the others from their space.`
+            : `Good news: <b style="color:${C.text};">${p.clientName}</b> booked <b style="color:${C.text};">and paid for</b> a session. It's already in your calendar.`,
           client: "Client",
           service: "Service",
           dateTime: "Date & time",
           format: "Format",
           online: "Online",
           inPerson: "In person",
-          amount: "Session amount",
+          amount: p.pack ? "Pack amount" : "Session amount",
           payoutTitle: "Payout",
-          payoutBody: `Your money is released <b style="color:${C.text};">24 hours after the session</b> and lands automatically on your Stripe account, minus the Madger transaction fees. The exact breakdown will arrive with your payout email.`,
+          payoutBody: p.pack
+            ? `Your money is released <b style="color:${C.text};">session by session, 24 hours after each one</b>, and lands automatically on your Stripe account, minus the Madger transaction fees. The exact breakdown arrives with each payout email.`
+            : `Your money is released <b style="color:${C.text};">24 hours after the session</b> and lands automatically on your Stripe account, minus the Madger transaction fees. The exact breakdown will arrive with your payout email.`,
           cta: "Open my calendar",
         }
       : {
-          subject: `Nouvelle réservation : ${p.clientName} · ${p.dateStr}`,
+          subject: p.pack
+            ? `Nouveau pack vendu : ${p.clientName} · ${p.pack.size} séances`
+            : `Nouvelle réservation : ${p.clientName} · ${p.dateStr}`,
           preheader: `${p.clientName} a réservé et payé « ${p.serviceName} » · ${p.priceStr}.`,
           eyebrow: "Nouvelle réservation",
           title: "Un client vient de réserver 🎉",
-          intro: `Bonne nouvelle : <b style="color:${C.text};">${p.clientName}</b> a réservé <b style="color:${C.text};">et payé</b> une séance. Elle est déjà dans ton agenda.`,
+          intro: p.pack
+            ? `Bonne nouvelle : <b style="color:${C.text};">${p.clientName}</b> a acheté <b style="color:${C.text};">et payé</b> un pack de ${p.pack.size} séances. La première est déjà dans ton agenda, le client place les suivantes depuis son espace.`
+            : `Bonne nouvelle : <b style="color:${C.text};">${p.clientName}</b> a réservé <b style="color:${C.text};">et payé</b> une séance. Elle est déjà dans ton agenda.`,
           client: "Client",
           service: "Prestation",
           dateTime: "Date & heure",
           format: "Format",
           online: "En visio",
           inPerson: "En présentiel",
-          amount: "Montant de la séance",
+          amount: p.pack ? "Montant du pack" : "Montant de la séance",
           payoutTitle: "Versement",
-          payoutBody: `Ton argent est débloqué <b style="color:${C.text};">24 h après la séance</b> et arrive automatiquement sur ton compte Stripe, déduction faite des frais de transaction Madger. Le détail exact arrive avec l'email de versement.`,
+          payoutBody: p.pack
+            ? `Ton argent est débloqué <b style="color:${C.text};">séance par séance, 24 h après chacune</b>, et arrive automatiquement sur ton compte Stripe, déduction faite des frais de transaction Madger. Le détail exact arrive avec chaque email de versement.`
+            : `Ton argent est débloqué <b style="color:${C.text};">24 h après la séance</b> et arrive automatiquement sur ton compte Stripe, déduction faite des frais de transaction Madger. Le détail exact arrive avec l'email de versement.`,
           cta: "Ouvrir mon agenda",
         };
   return {
@@ -528,7 +559,7 @@ export function newMessageNotif(p: {
     subject: L.subject,
     html: layout({
       locale,
-      preheader: p.preview.slice(0, 90),
+      preheader: safe.slice(0, 90),
       eyebrow: L.eyebrow,
       title: L.title,
       intro: L.intro,
@@ -855,7 +886,7 @@ export function creditNoteClient(p: {
         ]),
         infoBox(
           "Délai",
-          "Le remboursement repart automatiquement vers ton moyen de paiement d'origine. Il apparaît sous 5 à 10 jours selon ta banque."
+          "Le remboursement repart automatiquement vers ton moyen de paiement d'origine. Il apparaît sous 2 à 7 jours ouvrés selon ta banque."
         ),
       ],
       cta: { label: "Voir mes séances", url: p.spaceUrl },
@@ -1088,15 +1119,20 @@ export function newReviewCoach(p: {
   reviewsUrl: string;
 }): Email {
   const stars = "★".repeat(p.rating) + "☆".repeat(5 - p.rating);
+  // Texte libre du client : échappé, jamais injecté tel quel dans le HTML.
+  const escText = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const comment = p.comment ? escText(p.comment.slice(0, 600)) : null;
+  const clientFirstName = escText(p.clientFirstName);
   return {
     subject: `${p.clientFirstName} t'a laissé un avis ${"★".repeat(p.rating)}`,
     html: layout({
-      preheader: `${p.clientFirstName} vient de noter sa séance ${p.rating}/5.`,
+      preheader: `${clientFirstName} vient de noter sa séance ${p.rating}/5.`,
       eyebrow: "Nouvel avis",
       title: "Tu viens de recevoir un avis",
-      intro: `<b style="color:${C.text};">${p.clientFirstName}</b> vient de noter sa séance : <b style="color:${C.accent};">${stars}</b>${
-        p.comment
-          ? `<br/><br/><span style="color:${C.muted};font-style:italic;">« ${p.comment} »</span>`
+      intro: `<b style="color:${C.text};">${clientFirstName}</b> vient de noter sa séance : <b style="color:${C.accent};">${stars}</b>${
+        comment
+          ? `<br/><br/><span style="color:${C.muted};font-style:italic;">« ${comment} »</span>`
           : ""
       }`,
       blocks: [
@@ -1309,11 +1345,11 @@ export function proWelcomeCoach(p: {
             "Your Pro plan is active: packs, automatic cancellation, reminders, payments screen, churn alerts.",
           eyebrow: "Pro plan",
           title: "Your Pro plan is active",
-          intro: `From now on you can <b style="color:${C.text};">sell session packs</b>, let automatic cancellation apply your rules, send renewal reminders, track payments per client and spot clients drifting away. Your advanced stats are unlocked on your dashboard.`,
+          intro: `From now on you can <b style="color:${C.text};">sell session packs</b>, let automatic cancellation apply your rules, send renewal reminders, track payments per client and spot clients drifting away. Everything is ready on your dashboard.`,
           boxTitle: "Your invoice",
           boxBody:
             "Stripe sends you the receipt for your subscription. You can manage your subscription at any time from the Subscription page.",
-          cta: "View my stats",
+          cta: "Open my dashboard",
         }
       : {
           subject: "Bienvenue en Pro 🎉",
@@ -1321,11 +1357,11 @@ export function proWelcomeCoach(p: {
             "Ton plan Pro est actif : packs, annulation automatique, relances, encaissements, alertes churn.",
           eyebrow: "Plan Pro",
           title: "Ton plan Pro est actif",
-          intro: `À partir de maintenant, tu peux <b style="color:${C.text};">vendre des packs de séances</b>, laisser l'annulation automatique appliquer tes règles, relancer les renouvellements, suivre tes encaissements par client et repérer les clients qui décrochent. Tes statistiques avancées sont débloquées sur ton dashboard.`,
+          intro: `À partir de maintenant, tu peux <b style="color:${C.text};">vendre des packs de séances</b>, laisser l'annulation automatique appliquer tes règles, relancer les renouvellements, suivre tes encaissements par client et repérer les clients qui décrochent. Tout est prêt sur ton dashboard.`,
           boxTitle: "Ta facture",
           boxBody:
             "Le reçu de ton abonnement t'est envoyé par Stripe. Tu peux gérer ton abonnement à tout moment depuis la page Abonnement.",
-          cta: "Voir mes statistiques",
+          cta: "Ouvrir mon dashboard",
         };
   return {
     subject: L.subject,
@@ -1650,10 +1686,10 @@ export function proCancelledCoach(p: {
             "Your account is back on the Essential plan. You can reactivate Pro anytime.",
           eyebrow: "Pro plan",
           title: "Back to the Essential plan",
-          intro: `Your Pro subscription has ended and your account is back on the <b style="color:${C.text};">Essential plan</b>. Your calendar, clients and payments keep working exactly the same. Pro features (packs, automatic cancellation, renewal reminders, payments screen, churn alerts) are paused and the <b style="color:${C.text};">Essential transaction fees</b> apply to your new payments.`,
+          intro: `Your Pro subscription has ended and your account is back on the <b style="color:${C.text};">Essential plan</b>. Your calendar, clients and payments keep working exactly the same. Pro features (packs, automatic cancellation, renewal reminders, payments screen, churn alerts) are paused. Packs already sold remain usable by your clients.`,
           boxTitle: "Come back whenever you want",
           boxBody:
-            "Reactivate Pro in two clicks to get your packs, reminders and advanced stats back. Your data is right where you left it.",
+            "Reactivate Pro in two clicks to get your packs, automatic cancellation and reminders back. Your data is right where you left it.",
           cta: "Reactivate Pro",
           outro:
             "Thanks for having tried Pro. If something did not fit, just reply to this email: your feedback really helps us improve.",
@@ -1664,10 +1700,10 @@ export function proCancelledCoach(p: {
             "Ton compte repasse au plan Essentiel. Tu peux réactiver Pro à tout moment.",
           eyebrow: "Plan Pro",
           title: "Retour au plan Essentiel",
-          intro: `Ton abonnement Pro est arrivé à son terme : ton compte repasse en <b style="color:${C.text};">plan Essentiel</b>. Ton agenda, tes clients et tes paiements continuent de fonctionner exactement pareil. Les fonctionnalités Pro (packs, annulation automatique, relances, écran encaissements, alertes churn) sont mises en pause et les <b style="color:${C.text};">frais de transaction Essentiel</b> s'appliquent à tes nouveaux encaissements.`,
+          intro: `Ton abonnement Pro est arrivé à son terme : ton compte repasse en <b style="color:${C.text};">plan Essentiel</b>. Ton agenda, tes clients et tes paiements continuent de fonctionner exactement pareil. Les fonctionnalités Pro (packs, annulation automatique, relances, écran encaissements, alertes churn) sont mises en pause. Les packs déjà vendus restent utilisables par tes clients.`,
           boxTitle: "Tu peux revenir quand tu veux",
           boxBody:
-            "Réactive Pro en deux clics pour retrouver tes packs, tes relances et tes statistiques avancées. Tes données sont restées exactement là où tu les as laissées.",
+            "Réactive Pro en deux clics pour retrouver tes packs, ton annulation automatique et tes relances. Tes données sont restées exactement là où tu les as laissées.",
           cta: "Réactiver Pro",
           outro:
             "Merci d'avoir essayé Pro. Si quelque chose ne t'a pas convenu, réponds simplement à cet email : ton retour nous aide vraiment à progresser.",

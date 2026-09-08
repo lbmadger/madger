@@ -6,6 +6,7 @@ import { SUPABASE_URL } from "@/lib/supabase/config";
 import { computePayout, coachBearsStripeFee } from "@/lib/stripe/escrow";
 import { planOf, feeRateBps } from "@/lib/subscription/plan";
 import { isAdminEmail } from "@/lib/admin";
+import { ensureStripeFee } from "@/lib/stripe/fees";
 import { sendEmail } from "@/lib/email/resend";
 import {
   disputeResolvedClient,
@@ -74,12 +75,18 @@ export async function POST(req: NextRequest) {
     .eq("id", payment.coach_id)
     .maybeSingle();
 
+  // Frais Stripe relus s'ils manquent (marge interne, part du 3x).
+  const feeCents = await ensureStripeFee(admin, stripe, {
+    id: payment.id as string,
+    stripe_charge_id: payment.stripe_charge_id as string | null,
+    stripe_fee_cents: payment.stripe_fee_cents as number | null,
+  });
   // Taux figé au paiement (migration 0064), jamais le plan courant.
   const breakdown = computePayout({
     amountCents: amount,
     feeRateBps:
       (payment.fee_rate_bps as number | null) ?? feeRateBps(planOf(coach)),
-    stripeFeeCents: payment.stripe_fee_cents ?? 0,
+    stripeFeeCents: feeCents,
     coachBearsStripeFee: coachBearsStripeFee(payment.payment_method as string | null),
     refundCents: totalRefunded,
   });
@@ -102,6 +109,7 @@ export async function POST(req: NextRequest) {
     })
     .eq("id", payment.id)
     .eq("escrow_status", previousStatus)
+    .eq("refunded_cents", alreadyRefunded)
     .select("id");
   if (!claimed?.length) {
     return NextResponse.json({ error: "already_resolved" }, { status: 409 });

@@ -322,9 +322,19 @@ export default function BookingModal({
         }
         if (data.error === "coach_billing_incomplete")
           setError(t("booking.errors.coachBillingIncomplete"));
+        else if (data.error === "coach_cannot_charge")
+          setError(t("booking.errors.coachCannotCharge"));
+        else if (data.error === "pack_requires_pro")
+          setError(t("booking.errors.packUnavailable"));
+        else if (data.error === "invalid_service")
+          setError(t("booking.errors.serviceUnavailable"));
         else if (data.error === "too_soon") setError(t("booking.errors.tooSoon"));
         else if (data.error === "slot_taken")
           setError(t("booking.errors.slotTaken"));
+        else if (data.error === "date_in_past")
+          setError(t("booking.errors.datePast"));
+        else if (data.error === "rate_limited")
+          setError(t("booking.errors.rateLimited"));
         else setError(t("booking.errors.generic"));
         return;
       }
@@ -730,11 +740,28 @@ export default function BookingModal({
                     {chargedNow ? t("booking.escrowDesc") : t("booking.authNote")}
                   </p>
                   <div className="mt-3 border-t border-border pt-3">
-                    <CancellationSummary
-                      policy={resolveRefundPolicy(coach)}
-                      startsAt={selectedIso ? new Date(selectedIso) : date && time ? new Date(`${date}T${time}`) : null}
-                      locale={locale}
-                    />
+                    {/* Pack : jamais d'argent rendu à l'annulation, la
+                        séance est rendue ou décomptée selon le délai du pack
+                        (pas la formule de remboursement du coach). */}
+                    {selectedService?.type === "pack" ? (
+                      <div>
+                        <p className="text-[11px] font-medium uppercase tracking-wide text-text-dim">
+                          {t("cancellation.summaryTitle")}
+                        </p>
+                        <p className="mt-1.5 text-xs text-text-muted">
+                          {t("cancellation.packSummary").replace(
+                            "{h}",
+                            String(selectedService.cancel_hours ?? 24)
+                          )}
+                        </p>
+                      </div>
+                    ) : (
+                      <CancellationSummary
+                        policy={resolveRefundPolicy(coach)}
+                        startsAt={selectedIso ? new Date(selectedIso) : date && time ? new Date(`${date}T${time}`) : null}
+                        locale={locale}
+                      />
+                    )}
                   </div>
                 </div>
               )}

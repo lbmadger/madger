@@ -434,15 +434,23 @@ export async function GET(req: NextRequest) {
         supabase.auth.admin.getUserById(coachId),
         supabase.from("coaches").select("first_name, locale, pro_until, pro_bonus_until").eq("id", coachId).maybeSingle(),
       ]);
-      // Alerte churn : fonctionnalité Pro. Rien n'est marqué pour un coach
-      // Essentiel : l'alerte part s'il passe Pro.
-      if (!isProRow(co as { pro_until?: string | null; pro_bonus_until?: string | null } | null)) continue;
       const email = u?.user?.email;
-      const markAll = async () => {
+      const markPacks = async () => {
         const packIds = items.filter((i) => i.packId).map((i) => i.packId as string);
         if (packIds.length) {
           await supabase.from("pack_credits").update({ expiring_coach_notified_at: nowIso }).in("id", packIds);
         }
+      };
+      // Alerte churn : fonctionnalité Pro. Les packs d'un coach Essentiel
+      // sont tout de même marqués : sinon ils resteraient chaque jour en tête
+      // de la file (limite 300) et finiraient par masquer ceux des coachs Pro.
+      // Les clients inactifs ne sont pas marqués : l'alerte part s'il passe Pro.
+      if (!isProRow(co as { pro_until?: string | null; pro_bonus_until?: string | null } | null)) {
+        await markPacks();
+        continue;
+      }
+      const markAll = async () => {
+        await markPacks();
         const clientIds = items.filter((i) => i.kind === "inactive").map((i) => i.clientId);
         if (clientIds.length) {
           await supabase.from("clients").update({ churn_alerted_at: nowIso }).in("id", clientIds);

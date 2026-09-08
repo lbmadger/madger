@@ -40,6 +40,72 @@ export async function GET(req: NextRequest) {
 
   const supabase = createClient(SUPABASE_URL, serviceKey);
   const nowIso = new Date().toISOString();
+  // Budget temps GLOBAL du run (maxDuration 60 s) : compté dès le début,
+  // balayages préliminaires compris, sinon les versements pourraient
+  // démarrer trop tard et être coupés en plein transfert.
+  const startedAt = Date.now();
+  const TIME_BUDGET_MS = 45_000;
+  const errors: string[] = [];
+
+  // ── Réconciliation : versements réclamés mais jamais transférés ───────────
+  // Une ligne passée « released » sans stripe_transfer_id est un processus
+  // mort entre la réclamation et le transfert (ou juste après, avant
+  // l'écriture de l'id). Le coach n'a rien reçu : on retente avec la MÊME clé
+  // d'idempotence que la libération finale (Stripe renvoie le transfert
+  // existant s'il avait bien été créé). Les packs libérés séance par séance
+  // sont exclus (plusieurs transferts partiels) et signalés au fondateur.
+  let reconciled = 0;
+  try {
+    const { data: orphans } = await supabase
+      .from("payments")
+      .select("id, coach_id, currency, stripe_charge_id, released_cents, released_at")
+      .eq("escrow_status", "released")
+      .is("stripe_transfer_id", null)
+      .gt("released_cents", 0)
+      .not("stripe_charge_id", "is", null)
+      .lte("released_at", new Date(Date.now() - 15 * 60000).toISOString())
+      .limit(20);
+    for (const o of orphans ?? []) {
+      if (Date.now() - startedAt > TIME_BUDGET_MS) break;
+      const { data: pk } = await supabase
+        .from("pack_credits")
+        .select("id, total")
+        .eq("payment_id", o.id)
+        .maybeSingle();
+      if (pk && (pk.total as number) > 1) {
+        errors.push(`${o.id}: pack libéré sans transfert enregistré, à vérifier à la main`);
+        continue;
+      }
+      const { data: co } = await supabase
+        .from("coaches")
+        .select("stripe_account_id")
+        .eq("id", o.coach_id)
+        .maybeSingle();
+      if (!co?.stripe_account_id) continue;
+      try {
+        const transfer = await stripe.transfers.create(
+          {
+            amount: o.released_cents as number,
+            currency: (o.currency as string) || "eur",
+            destination: co.stripe_account_id,
+            source_transaction: o.stripe_charge_id as string,
+            transfer_group: `coach_${o.coach_id}`,
+          },
+          { idempotencyKey: `release_${o.id}` }
+        );
+        await supabase
+          .from("payments")
+          .update({ stripe_transfer_id: transfer.id })
+          .eq("id", o.id)
+          .is("stripe_transfer_id", null);
+        reconciled++;
+      } catch (e) {
+        errors.push(`${o.id}: réconciliation ${e instanceof Error ? e.message : "error"}`);
+      }
+    }
+  } catch {
+    /* best-effort : le prochain run retente */
+  }
 
   // ── Packs arrivés à expiration (migration 0056) ────────────────────────────
   // Job quotidien journalisé : chaque pack expiré passe en 'expired' et un
@@ -151,11 +217,8 @@ export async function GET(req: NextRequest) {
   // jusqu'à épuisement (ou fin du budget temps) : le volume quotidien passe
   // entièrement, quel que soit le nombre de coachs. Les lignes en échec sont
   // écartées du run courant (retentées au prochain).
-  const startedAt = Date.now();
-  const TIME_BUDGET_MS = 45_000;
   let released = 0;
   let refunded = 0;
-  const errors: string[] = [];
   const skipIds = new Set<string>();
 
   while (Date.now() - startedAt < TIME_BUDGET_MS) {
@@ -165,7 +228,7 @@ export async function GET(req: NextRequest) {
     const dueQuery = supabase
       .from("payments")
       .select(
-        "id, coach_id, booking_id, amount_cents, currency, paid_at, stripe_charge_id, stripe_fee_cents, refunded_cents, released_cents, commission_cents, fee_rate_bps, payment_method, provider_fee_cents, bookings(status, credit_lost, clients(first_name, last_name, email), coaches(first_name, last_name))"
+        "id, coach_id, booking_id, amount_cents, currency, paid_at, release_after, stripe_charge_id, stripe_fee_cents, refunded_cents, released_cents, commission_cents, payout_cents, fee_rate_bps, payment_method, provider_fee_cents, bookings(status, credit_lost, clients(first_name, last_name, email), coaches(first_name, last_name))"
       )
       .eq("escrow_status", "held")
       .lte("release_after", nowIso)
@@ -259,6 +322,9 @@ export async function GET(req: NextRequest) {
           })
           .eq("id", p.id)
           .eq("escrow_status", "held")
+          // Un remboursement externe (webhook) arrivé entre la lecture et la
+          // réclamation invalide les montants calculés : on laisse passer.
+          .eq("refunded_cents", alreadyRefunded)
           .select("id");
         if (!claimedPay?.length) return;
 
@@ -476,6 +542,7 @@ export async function GET(req: NextRequest) {
             .eq("id", p.id)
             .eq("escrow_status", "held")
             .eq("released_cents", alreadyReleased)
+            .eq("refunded_cents", alreadyRefunded)
             .select("id");
           if (!claimedPack?.length) return;
 
@@ -488,7 +555,10 @@ export async function GET(req: NextRequest) {
                 source_transaction: p.stripe_charge_id as string,
                 transfer_group: `coach_${p.coach_id}`,
               },
-              { idempotencyKey: `release_${p.id}_u${units}` }
+              // La clé porte le montant déjà versé : un rejeu après revert
+              // (même base) retrouve le même transfert, une base différente
+              // (nouvelle séance mûre) en crée un nouveau.
+              { idempotencyKey: `release_${p.id}_from${alreadyReleased}_${deltaPayout}` }
             );
             await supabase
               .from("payments")
@@ -503,6 +573,8 @@ export async function GET(req: NextRequest) {
                 commission_cents: prevCommission,
                 provider_fee_cents: prevProviderFee,
                 released_at: null,
+                // Sinon la ligne attendrait une semaine avant d'être retentée.
+                release_after: (p.release_after as string | null) ?? nowIso,
               })
               .eq("id", p.id)
               .eq("released_cents", targetReleased);
@@ -567,11 +639,14 @@ export async function GET(req: NextRequest) {
           commission_cents: breakdown.commissionCents,
           provider_fee_cents: breakdown.providerFeeCents,
           payout_cents: breakdown.payoutCents,
-          released_cents: breakdown.payoutCents,
+          // Jamais en dessous de ce qui est déjà parti (pack partiellement
+          // libéré puis remboursé en partie).
+          released_cents: Math.max(alreadyReleased, breakdown.payoutCents),
           released_at: nowIso,
         })
         .eq("id", p.id)
         .eq("escrow_status", "held")
+        .eq("refunded_cents", alreadyRefunded)
         .select("id");
       if (!claimed?.length) return;
 
@@ -592,15 +667,21 @@ export async function GET(req: NextRequest) {
             .update({ stripe_transfer_id: transfer.id })
             .eq("id", p.id);
         } catch (e) {
-          // Transfert raté : on rend la ligne au prochain run.
+          // Transfert raté : on rend la ligne au prochain run, montants
+          // compris (sinon la base afficherait des frais et un versement
+          // qui n'ont pas eu lieu).
           await supabase
             .from("payments")
             .update({
               escrow_status: "held",
               released_cents: alreadyReleased,
               released_at: null,
+              commission_cents: (p.commission_cents as number | null) ?? 0,
+              provider_fee_cents: (p.provider_fee_cents as number | null) ?? 0,
+              payout_cents: (p.payout_cents as number | null) ?? null,
             })
-            .eq("id", p.id);
+            .eq("id", p.id)
+            .eq("escrow_status", "released");
           throw e;
         }
       }
@@ -661,7 +742,9 @@ export async function GET(req: NextRequest) {
           ? bookingRow?.coaches[0]
           : bookingRow?.coaches;
         const bkId = p.booking_id as string;
-        if (cl?.email) {
+        // Pas de demande d'avis pour une séance annulée dont le crédit a été
+        // perdu : le client n'a pas eu la séance.
+        if (cl?.email && bookingRow?.status !== "cancelled") {
           const clEmail = cl.email as string;
           const tpl = reviewRequestClient({
             coachName:
@@ -715,5 +798,5 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ released, refunded, expired, expiredPacks, errors });
+  return NextResponse.json({ released, refunded, reconciled, expired, expiredPacks, errors });
 }

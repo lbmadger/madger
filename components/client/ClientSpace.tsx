@@ -28,6 +28,9 @@ export type ClientPack = {
   coach_id: string;
   coach_slug: string | null;
   coach_booking_mode: string;
+  // Délai d'annulation du pack (figé à l'achat) : affiché avant de placer
+  // une séance sur les crédits.
+  cancel_hours: number | null;
   duration_min: number;
 };
 
@@ -111,6 +114,7 @@ export default function ClientSpace({
     duration_min: number;
     credits: number;
     expires_at: string | null;
+    cancel_hours: number | null;
   };
   const byCoach = new Map<string, CoachCredits>();
   const nowMs = Date.now();
@@ -137,6 +141,7 @@ export default function ClientSpace({
         duration_min: p.duration_min,
         credits: left,
         expires_at: p.expires_at,
+        cancel_hours: p.cancel_hours,
       });
     }
   }
@@ -314,7 +319,16 @@ export default function ClientSpace({
         body: JSON.stringify({ booking_id: id }),
       });
       if (!res.ok) {
-        setError(t("clientSpace.cancelError"));
+        const code = ((await res.json().catch(() => ({}))) as { error?: string }).error;
+        setError(
+          code === "too_late"
+            ? t("clientSpace.cancelTooLate")
+            : code === "disputed"
+            ? t("clientSpace.cancelDisputed")
+            : code === "already_processed" || code === "not_found"
+            ? t("clientSpace.cancelAlready")
+            : t("clientSpace.cancelError")
+        );
         return;
       }
       setCancelId(null);
@@ -358,7 +372,7 @@ export default function ClientSpace({
           durationMin={creditCoach.duration_min}
           maxSelect={Math.min(5, creditCoach.credits)}
           title={t("creditBooking.title")}
-          subtitle={`${t("clientSpace.with")} ${creditCoach.coach_name} · ${t("creditBooking.upTo").replace("{n}", String(Math.min(5, creditCoach.credits)))}`}
+          subtitle={`${t("clientSpace.with")} ${creditCoach.coach_name} · ${t("creditBooking.upTo").replace("{n}", String(Math.min(5, creditCoach.credits)))}. ${t("creditBooking.cancelHint").replace("{h}", String(creditCoach.cancel_hours ?? 24))}`}
           submitLabel={t("creditBooking.submit")}
           onSubmit={bookOnCredits}
           onClose={() => setCreditCoach(null)}

@@ -25,7 +25,9 @@ type BookingInfo = {
   meeting_url: string | null;
   coach_name: string;
   escrow_status: string | null;
-  client_email: string | null;
+  // Séance annulée : remboursement partiel effectué ou non (les colonnes
+  // amount/refunded distinguent une annulation tardive d'un remboursement).
+  partial_refund: boolean;
   // Lieu de la séance en présentiel (salle + adresse), null en visio.
   place: string | null;
 };
@@ -37,14 +39,14 @@ async function getBooking(id: string): Promise<BookingInfo | null> {
   const { data: booking } = await admin
     .from("bookings")
     .select(
-      "starts_at, ends_at, status, location, location_text, meeting_url, coaches(first_name, last_name, gym_name, gym_address), clients(email)"
+      "starts_at, ends_at, status, location, location_text, meeting_url, coaches(first_name, last_name, gym_name, gym_address)"
     )
     .eq("id", id)
     .maybeSingle();
   if (!booking) return null;
   const { data: payment } = await admin
     .from("payments")
-    .select("escrow_status")
+    .select("escrow_status, amount_cents, refunded_cents")
     .eq("booking_id", id)
     .maybeSingle();
   type CoachRow = {
@@ -55,11 +57,7 @@ async function getBooking(id: string): Promise<BookingInfo | null> {
   };
   const coach = booking.coaches as CoachRow | CoachRow[] | null;
   const c = Array.isArray(coach) ? coach[0] : coach;
-  const cl = booking.clients as
-    | { email: string | null }
-    | { email: string | null }[]
-    | null;
-  const clientRow = Array.isArray(cl) ? cl[0] : cl;
+  const refundedCents = (payment?.refunded_cents as number | null) ?? 0;
   return {
     starts_at: booking.starts_at as string,
     ends_at: booking.ends_at as string,
@@ -68,7 +66,9 @@ async function getBooking(id: string): Promise<BookingInfo | null> {
     meeting_url: (booking.meeting_url as string | null) ?? null,
     coach_name: [c?.first_name, c?.last_name].filter(Boolean).join(" "),
     escrow_status: payment?.escrow_status ?? null,
-    client_email: clientRow?.email ?? null,
+    partial_refund:
+      refundedCents > 0 &&
+      refundedCents < ((payment?.amount_cents as number | null) ?? 0),
     // Lieu : texte posé sur la séance, sinon salle + adresse du coach.
     place:
       booking.location === "online"
@@ -111,7 +111,11 @@ export default async function ReservationPage({
     held: r.statusHeld,
     released: r.statusReleased,
     refunded: r.statusRefunded,
-    canceled: r.statusRefunded,
+    // « canceled » = annulée sans remboursement intégral : le reste a été
+    // versé au coach. Ce n'est pas « remboursée ».
+    canceled: booking?.partial_refund
+      ? r.statusCanceledPartial
+      : r.statusCanceledNoRefund,
     disputed: r.statusDisputed,
   };
 
@@ -261,10 +265,11 @@ export default async function ReservationPage({
               {booking.status !== "cancelled" &&
                 new Date(booking.ends_at).getTime() < Date.now() && (
                   <div className="mt-6 border-t border-border pt-6">
-                    <ReviewForm
-                      bookingId={params.id}
-                      clientEmail={booking.client_email}
-                    />
+                    {/* L'email n'est pas injecté depuis le serveur : cette
+                        page est publique, quiconque a l'URL pourrait sinon
+                        noter au nom du client. Le formulaire pré-remplit
+                        depuis la session, champ éditable. */}
+                    <ReviewForm bookingId={params.id} />
                   </div>
                 )}
             </div>

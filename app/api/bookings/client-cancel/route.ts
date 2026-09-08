@@ -146,7 +146,11 @@ export async function POST(req: NextRequest) {
       .eq("id", booking.pack_credit_id)
       .maybeSingle();
     const hours = clampCancelHours(pack?.cancel_hours);
-    const restored = creditRestoredIfCancelled(hours, new Date(booking.starts_at));
+    // Un pack clôturé ou expiré ne récupère rien : le crédit n'est « rendu »
+    // (email, réponse) que si le pack est encore actif.
+    const restored =
+      creditRestoredIfCancelled(hours, new Date(booking.starts_at)) &&
+      pack?.status === "active";
     if (!restored) {
       // Crédit perdu : posé AVANT l'annulation pour que le trigger SQL ne
       // le restitue pas.
@@ -197,7 +201,7 @@ export async function POST(req: NextRequest) {
   const { data: payment } = await admin
     .from("payments")
     .select(
-      "id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status, stripe_payment_intent_id, released_cents, refunded_cents, commission_cents, payout_cents, fee_rate_bps, payment_method"
+      "id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status, stripe_payment_intent_id, released_cents, refunded_cents, commission_cents, payout_cents, fee_rate_bps, payment_method, provider_fee_cents"
     )
     .eq("booking_id", bookingId)
     .maybeSingle();
@@ -315,6 +319,9 @@ export async function POST(req: NextRequest) {
     })
     .eq("id", payment.id)
     .eq("escrow_status", "held")
+    // Un remboursement externe (webhook) arrivé entre la lecture et la
+    // réclamation invalide les montants calculés.
+    .eq("refunded_cents", alreadyRefunded)
     .select("id");
   if (!claimed?.length) {
     return NextResponse.json({ error: "already_processed" }, { status: 409 });
@@ -434,6 +441,7 @@ export async function POST(req: NextRequest) {
         resolved_at: null,
         refunded_cents: alreadyRefunded,
         commission_cents: (payment.commission_cents as number | null) ?? 0,
+        provider_fee_cents: (payment.provider_fee_cents as number | null) ?? 0,
         payout_cents: (payment.payout_cents as number | null) ?? null,
       })
       .eq("id", payment.id)

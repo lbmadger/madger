@@ -308,16 +308,34 @@ export async function fulfillCheckoutSession(
 
   // Prestation achetée : le nom sert aux emails, type/pack_size au circuit
   // des packs ci-dessous.
-  let svc: { name: string | null; type: string | null; pack_size: number | null } | null =
-    null;
+  let svc: {
+    name: string | null;
+    type: string | null;
+    pack_size: number | null;
+    validity_days: number | null;
+  } | null = null;
   if (m.service_id) {
     const { data: svcRow } = await supabase
       .from("services")
-      .select("name, type, pack_size")
+      .select("name, type, pack_size, validity_days")
       .eq("id", m.service_id)
       .maybeSingle();
     svc = svcRow ?? null;
   }
+  // Pack acheté : mentionné dans les emails de confirmation (nombre de
+  // séances, validité).
+  const packInfo =
+    svc?.type === "pack" && (svc.pack_size ?? 0) > 1
+      ? {
+          size: svc.pack_size as number,
+          validityStr: svc.validity_days
+            ? new Date(Date.now() + svc.validity_days * 86400000).toLocaleDateString(
+                "fr-FR",
+                { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Paris" }
+              )
+            : null,
+        }
+      : undefined;
 
   // Achat d'un PACK : ouverture du solde de crédits (migration 0056) avec
   // l'instantané de l'offre, la date d'expiration et le journal. La séance
@@ -475,6 +493,7 @@ export async function fulfillCheckoutSession(
           calendarUrl,
           icsUrl: calendarIcsUrl,
           placeStr,
+          pack: packInfo,
         });
         await sendEmail({ to: m.email, subject: t.subject, html: t.html });
       }
@@ -489,6 +508,7 @@ export async function fulfillCheckoutSession(
           priceStr: coachPriceStr,
           online,
           dashboardUrl: `${APP_URL}/dashboard/agenda`,
+          pack: packInfo ? { size: packInfo.size } : undefined,
         });
         await sendEmail({ to: coachEmail, subject: t.subject, html: t.html });
 

@@ -1050,6 +1050,12 @@ const fr = {
         "Ce créneau est trop proche : le coach n'accepte plus de réservation à si court délai. Choisis un créneau plus tard.",
       paymentRequired:
         "Ce coach réserve ses créneaux aux prestations payées en ligne. Choisis une prestation pour réserver.",
+      packUnavailable:
+        "Ce pack n'est plus proposé par le coach. Choisis une autre prestation.",
+      serviceUnavailable:
+        "Cette prestation n'est plus disponible. Recharge la page et choisis-en une autre.",
+      coachCannotCharge:
+        "Ce coach ne peut pas encore encaisser de paiement en ligne. Contacte-le directement pour réserver.",
     },
     authRequiredTitle: "Dernière étape : ton compte",
     authRequiredDesc:
@@ -1218,6 +1224,8 @@ const fr = {
     statusHeld: "Fonds sécurisés jusqu'après la séance",
     statusReleased: "Séance réglée au coach",
     statusRefunded: "Séance remboursée",
+    statusCanceledPartial: "Séance annulée, remboursement partiel effectué",
+    statusCanceledNoRefund: "Séance annulée, sans remboursement",
     statusDisputed: "Problème signalé, en cours d'examen",
     statusAuthorized:
       "En attente d'acceptation du coach, aucun débit pour l'instant",
@@ -1284,6 +1292,8 @@ const fr = {
     publicLabel: "En cas d'annulation",
     seeCharter: "Voir la charte de paiement",
     summaryTitle: "Conditions d'annulation",
+    packSummary:
+      "Pack de séances : aucun remboursement en cas d'annulation. Jusqu'à {h} h avant chaque séance, la séance annulée est rendue sur ton pack ; après, elle est décomptée.",
     freeUntil: "Annulation gratuite jusqu'au",
     freeOver24: "Annulation gratuite jusqu'à 24 h avant la séance",
     afterRefund: "Ensuite, remboursement de",
@@ -1469,6 +1479,9 @@ const fr = {
     confirmCancel: "Confirmer l'annulation",
     cancelling: "Annulation…",
     cancelError: "Impossible d'annuler. Réessaie ou contacte le support.",
+    cancelTooLate: "Cette séance a déjà commencé ou est passée : elle ne peut plus être annulée.",
+    cancelDisputed: "Un problème a été signalé sur cette séance : elle est gelée le temps de l'examen.",
+    cancelAlready: "Cette séance a déjà été annulée ou traitée.",
     rate: "Noter",
     inProgress: "En cours",
     creditOne: "séance à placer",
@@ -1493,6 +1506,7 @@ const fr = {
   creditBooking: {
     title: "Placer une séance",
     upTo: "jusqu'à {n} créneaux",
+    cancelHint: "Annulation possible jusqu'à {h} h avant chaque séance, sinon la séance est décomptée du pack.",
     submit: "Réserver",
     submitting: "Réservation…",
     moveSubmit: "Déplacer ma séance",
@@ -2709,6 +2723,12 @@ const en: Dictionary = {
         "This slot is too close: the coach no longer accepts bookings on such short notice. Pick a later slot.",
       paymentRequired:
         "This coach only takes bookings through paid services. Pick a service to book.",
+      packUnavailable:
+        "This pack is no longer offered by the coach. Pick another service.",
+      serviceUnavailable:
+        "This service is no longer available. Reload the page and pick another one.",
+      coachCannotCharge:
+        "This coach cannot take online payments yet. Contact them directly to book.",
     },
     authRequiredTitle: "Last step: your account",
     authRequiredDesc:
@@ -2874,6 +2894,8 @@ const en: Dictionary = {
     statusHeld: "Funds secured until after the session",
     statusReleased: "Session paid to the coach",
     statusRefunded: "Session refunded",
+    statusCanceledPartial: "Session cancelled, partial refund issued",
+    statusCanceledNoRefund: "Session cancelled, no refund",
     statusDisputed: "Problem reported, under review",
     statusAuthorized: "Waiting for the coach to accept, no charge yet",
     joinMeeting: "Join the video call",
@@ -2939,6 +2961,8 @@ const en: Dictionary = {
     publicLabel: "If cancelled",
     seeCharter: "See the payment charter",
     summaryTitle: "Cancellation terms",
+    packSummary:
+      "Session pack: no refund on cancellation. Up to {h}h before each session, a cancelled session goes back to your pack; after that, it is deducted.",
     freeUntil: "Free cancellation until",
     freeOver24: "Free cancellation up to 24h before the session",
     afterRefund: "After that, refund of",
@@ -3121,6 +3145,9 @@ const en: Dictionary = {
     confirmCancel: "Confirm cancellation",
     cancelling: "Cancelling…",
     cancelError: "Could not cancel. Try again or contact support.",
+    cancelTooLate: "This session has already started or is over: it can no longer be cancelled.",
+    cancelDisputed: "A problem was reported on this session: it is frozen while under review.",
+    cancelAlready: "This session has already been cancelled or handled.",
     rate: "Rate",
     inProgress: "In progress",
     creditOne: "session to book",
@@ -3145,6 +3172,7 @@ const en: Dictionary = {
   creditBooking: {
     title: "Book a session",
     upTo: "up to {n} slots",
+    cancelHint: "Cancellation possible up to {h}h before each session, otherwise the session is deducted from the pack.",
     submit: "Book",
     submitting: "Booking…",
     moveSubmit: "Move my session",

@@ -70,7 +70,10 @@ export async function POST(req: NextRequest) {
   if (payment.escrow_status === "disputed") {
     return NextResponse.json({ error: "disputed" }, { status: 409 });
   }
-  if (!["held", "released", "canceled"].includes(payment.escrow_status as string)) {
+  // Seul un paiement encore sous séquestre est remboursable par la
+  // plateforme : une fois versé (released) ou soldé (canceled), il ne reste
+  // que les frais de transaction, qui ne sont pas au client.
+  if (payment.escrow_status !== "held") {
     return NextResponse.json({ error: "not_refundable" }, { status: 409 });
   }
 
@@ -122,7 +125,7 @@ export async function POST(req: NextRequest) {
       .from("payments")
       .update({ escrow_status: "refunded", status: "refunded", resolved_at: new Date().toISOString() })
       .eq("id", payment.id)
-      .in("escrow_status", ["held", "canceled"]);
+      .eq("escrow_status", "held");
   }
 
   // Pack clôturé, avoir émis et envoyé, client prévenu (best-effort).
