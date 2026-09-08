@@ -86,6 +86,155 @@ export function CopyLinkPill() {
   );
 }
 
+// Événement global : la checklist de mise en route (« Envoie ton lien à un
+// premier client ») ouvre ce menu sans câblage de contexte.
+export const SHARE_OPEN_EVENT = "madger:share-open";
+
+// Menu « Partager » à côté de « Copier » : WhatsApp (message pré-écrit),
+// copie pour la bio Instagram, SMS. Sur mobile, navigator.share en premier.
+export function ShareLinkMenu() {
+  const { slug } = useSession();
+  const { t } = useI18n();
+  const [open, setOpen] = useState(false);
+  const [copiedBio, setCopiedBio] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const link = slug ? `https://madger.app/${slug}` : "";
+  const message = t("topbar.shareMessage").replace("{link}", link);
+
+  const openMenu = () => {
+    if (!link) return;
+    // Mobile : la feuille de partage native d'abord (WhatsApp, SMS, Instagram
+    // y sont déjà). Repli sur le menu maison.
+    if (
+      typeof navigator !== "undefined" &&
+      typeof navigator.share === "function" &&
+      window.matchMedia("(max-width: 1023px)").matches
+    ) {
+      navigator.share({ text: message }).catch(() => setOpen(true));
+      return;
+    }
+    setOpen((v) => !v);
+  };
+
+  useEffect(() => {
+    function onClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    const onOpenEvent = () => {
+      setOpen(true);
+      ref.current?.scrollIntoView({ block: "nearest" });
+    };
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    window.addEventListener(SHARE_OPEN_EVENT, onOpenEvent);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+      window.removeEventListener(SHARE_OPEN_EVENT, onOpenEvent);
+    };
+  }, []);
+
+  if (!slug) return null;
+
+  const copyBio = async () => {
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopiedBio(true);
+      setTimeout(() => setCopiedBio(false), 1800);
+    } catch {
+      /* presse-papiers indisponible */
+    }
+  };
+  const itemClass =
+    "flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-text-base transition-colors hover:bg-bg-card";
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={openMenu}
+        aria-label={t("topbar.share")}
+        title={t("topbar.share")}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="flex h-9 items-center justify-center gap-1.5 rounded-xl border border-border-strong bg-white/[0.03] px-2.5 text-text-muted transition-colors hover:border-accent hover:text-text-base lg:rounded-full lg:px-3.5"
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="18" cy="5" r="3" />
+          <circle cx="6" cy="12" r="3" />
+          <circle cx="18" cy="19" r="3" />
+          <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
+        </svg>
+        <span className="hidden text-xs font-semibold lg:inline">{t("topbar.share")}</span>
+      </button>
+
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 top-11 z-30 w-72 overflow-hidden rounded-xl border border-border bg-bg-elevated shadow-xl"
+        >
+          <p className="border-b border-border px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-text-dim">
+            {t("topbar.shareTitle")}
+          </p>
+          <a
+            role="menuitem"
+            href={`https://wa.me/?text=${encodeURIComponent(message)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setOpen(false)}
+            className={itemClass}
+          >
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 11.5a8.4 8.4 0 0 1-12.6 7.3L3 21l2.3-5.2A8.5 8.5 0 1 1 21 11.5z" />
+              </svg>
+            </span>
+            <span>
+              <span className="block font-medium">{t("topbar.shareWhatsapp")}</span>
+              <span className="block text-[11px] text-text-dim">{t("topbar.shareWhatsappDesc")}</span>
+            </span>
+          </a>
+          <button role="menuitem" type="button" onClick={copyBio} className={itemClass}>
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="5" />
+                <circle cx="12" cy="12" r="3.5" />
+                <path d="M17.5 6.5h.01" />
+              </svg>
+            </span>
+            <span>
+              <span className="block font-medium">
+                {copiedBio ? t("topbar.copied") : t("topbar.shareInstagram")}
+              </span>
+              <span className="block text-[11px] text-text-dim">{t("topbar.shareInstagramDesc")}</span>
+            </span>
+          </button>
+          <a
+            role="menuitem"
+            href={`sms:?&body=${encodeURIComponent(message)}`}
+            onClick={() => setOpen(false)}
+            className={itemClass}
+          >
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+            </span>
+            <span>
+              <span className="block font-medium">{t("topbar.shareSms")}</span>
+              <span className="block text-[11px] text-text-dim">{t("topbar.shareSmsDesc")}</span>
+            </span>
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function NotificationBell() {
   const { t, locale } = useI18n();
   const loc = locale === "fr" ? "fr-FR" : "en-GB";

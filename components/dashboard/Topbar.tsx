@@ -3,7 +3,7 @@
 import Link from "next/link";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 import AccountMenu from "@/components/dashboard/AccountMenu";
-import { CopyLinkPill, NotificationBell } from "@/components/dashboard/TopbarActions";
+import { CopyLinkPill, ShareLinkMenu, NotificationBell } from "@/components/dashboard/TopbarActions";
 
 // Barre supérieure du dashboard (comme le mockup de la landing) : titre,
 // logo centré (mobile), et à droite : lien de réservation prêt à copier
@@ -28,6 +28,7 @@ export default function Topbar({ title }: { title: string }) {
 
       <div className="ml-auto flex items-center gap-2.5">
         <CopyLinkPill />
+        <ShareLinkMenu />
         <NotificationBell />
         {/* Compte : mobile uniquement (desktop → profil en bas de sidebar) */}
         <div className="md:hidden">
