@@ -321,7 +321,7 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
             <span style={{ color: "#CBFF03", fontSize: 11, letterSpacing: "0.06em" }}>
               {launched
                 ? "Inscriptions ouvertes · Essentiel à 0 € par mois"
-                : "Inscriptions ouvertes · Accès anticipé gratuit"}
+                : "Accès anticipé · Plan Pro offert 1 mois"}
             </span>
           </motion.div>
 

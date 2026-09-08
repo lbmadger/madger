@@ -27,7 +27,12 @@ export default function ProUpsellModal() {
 
   useEffect(() => {
     if (pro) return;
-    if (!pathname || pathname.startsWith("/dashboard/abonnement")) return;
+    if (
+      !pathname ||
+      pathname.startsWith("/dashboard/abonnement") ||
+      pathname.startsWith("/dashboard/factures")
+    )
+      return;
     let until = 0;
     try {
       until = Number(localStorage.getItem(STORAGE_KEY) || 0);

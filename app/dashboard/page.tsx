@@ -875,10 +875,15 @@ export default async function OverviewPage() {
           </Link>
         )}
 
-        {/* Essai Pro offert en cours (Pro actif SANS abonnement payant) :
-            rappel doux du temps restant, vers la page Abonnement. */}
+        {/* Accès Pro OFFERT en cours (code, parrainage), sans abonnement
+            payant en cours : rappel doux du temps restant, vers la page
+            Abonnement. Un abonnement en échec de paiement ou résilié avec du
+            Pro payé restant n'est pas « offert ». */}
         {pro &&
-          !["active", "trialing", "canceling"].includes(coach?.subscription_status ?? "") && (
+          isPro(coach?.pro_bonus_until) &&
+          !["active", "trialing", "canceling", "past_due"].includes(
+            coach?.subscription_status ?? ""
+          ) && (
             <Link
               href="/dashboard/abonnement"
               className="mb-6 flex items-center justify-between gap-3 rounded-2xl border border-accent/25 bg-accent/[0.05] px-4 py-3 transition-colors hover:border-accent/40"

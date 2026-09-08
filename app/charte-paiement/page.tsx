@@ -96,7 +96,10 @@ export default function ChartePaiement() {
               <strong className="text-white">Coach Essentiel</strong> : règle
               fixe, non modifiable. Annulation plus de 24 heures avant la
               séance : remboursement intégral. Annulation à moins de 24 heures :
-              aucun remboursement, le montant reste acquis au coach.
+              aucun remboursement, le montant reste acquis au coach. Le coach
+              peut toujours, de sa propre initiative, rembourser tout ou partie
+              d'une séance depuis la fiche du client (geste commercial), quel
+              que soit son plan.
             </p>
             <p className="mt-3">
               <strong className="text-white">Coach Pro</strong> : le coach

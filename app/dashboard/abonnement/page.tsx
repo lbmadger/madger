@@ -162,6 +162,9 @@ export default async function SubscriptionPage({
         {/* Offres */}
         <PricingPlans
           currentPlan={pro ? "pro" : "free"}
+          subscribed={["active", "trialing", "canceling", "past_due"].includes(
+            coach?.subscription_status ?? ""
+          )}
           trialEligible={
             !coach?.stripe_subscription_id && !coach?.pro_trial_used_at
           }

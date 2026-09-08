@@ -83,7 +83,9 @@ export default function AddServiceModal({
         // les siennes : l'instantané est pris à l'achat.
         validity_days: type === "pack" && validity > 0 ? validity : null,
         cancel_hours: type === "pack" ? cancelHours : 24,
-        active: true,
+        // Modifier une prestation désactivée ne la republie pas : l'état
+        // actif se change depuis la liste.
+        active: service ? service.active : true,
       };
 
       const { error } = service

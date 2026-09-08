@@ -16,11 +16,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const launched = process.env.SITE_LAUNCHED === "1";
   // Pages légales : date de dernière révision réelle (pas de fraîcheur
   // factice qui changerait à chaque régénération).
-  const legalDate = new Date("2026-07-07");
+  const legalDate = new Date("2026-09-08");
   const fixed: MetadataRoute.Sitemap = [
     { url: "https://madger.app", lastModified: now, changeFrequency: "weekly", priority: 1 },
     // Page vitrine (exemple de page coach) : publique avant même le lancement.
     { url: "https://madger.app/exemple", lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+    { url: "https://madger.app/exemple/dashboard", lastModified: now, changeFrequency: "monthly", priority: 0.4 },
     // Blog : index + articles, publics et crawlables avant le lancement.
     { url: "https://madger.app/blog", lastModified: now, changeFrequency: "weekly", priority: 0.6 },
     ...ALL_POSTS.map((p) => ({

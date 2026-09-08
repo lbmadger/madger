@@ -102,7 +102,7 @@ export default function CoachPagePreview() {
                   <p className="mt-0.5 text-xs text-text-muted">Coach musculation & remise en forme</p>
                   <div className="mt-1.5 flex items-center gap-1 text-xs">
                     <span className="text-accent">★★★★★</span>
-                    <span className="text-text-dim">4,9 (27) · Lyon</span>
+                    <span className="text-text-dim">4,9 (27) · Paris</span>
                   </div>
                 </div>
               </div>

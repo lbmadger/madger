@@ -32,7 +32,7 @@ export const faqs = [
   },
   {
     q: "Comment fonctionne le paiement ?",
-    a: "Ton client règle en ligne au moment où il réserve, par carte, Apple Pay ou Google Pay via Stripe. Les fonds sont sécurisés par Madger, puis versés sur ton compte bancaire 24 heures après la séance. Si tu valides chaque demande à la main, la carte du client n'est débitée qu'au moment où tu acceptes. Fini les relances.",
+    a: "Ton client règle en ligne au moment où il réserve, par carte, Apple Pay ou Google Pay via Stripe. Les fonds sont sécurisés par Stripe, libérés 24 heures après la séance, puis virés sur ton compte bancaire chaque semaine, déduction faite des frais de transaction Madger. Si tu valides chaque demande à la main, la carte du client n'est débitée qu'au moment où tu acceptes. Fini les relances.",
   },
   {
     q: "Mes données et celles de mes clients sont-elles sécurisées ?",

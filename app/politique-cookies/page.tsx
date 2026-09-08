@@ -34,7 +34,7 @@ export default function PolitiqueCookies() {
           <section>
             <p>
               Madger n'utilise pas de cookies de traçage publicitaire ni d'outils d'analyse tiers
-              (Google Analytics, Meta Pixel, etc.).
+              déposant des cookies (Google Analytics, Meta Pixel, etc.).
             </p>
             <p className="mt-3">
               Seuls des cookies techniques strictement nécessaires au fonctionnement sont déposés :

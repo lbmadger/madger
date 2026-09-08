@@ -9,6 +9,7 @@ import ClientBell from "@/components/client/ClientBell";
 import { useConfirm } from "@/components/ui/useConfirm";
 import { TicketIcon, RepeatIcon, StarIcon } from "@/components/ui/icons";
 import SlotPickerModal from "@/components/client/SlotPickerModal";
+import { packProrata, packRefundableUnits, packPaidTotal } from "@/lib/packs/prorata";
 import {
   refundCents,
   resolveRefundPolicy,
@@ -69,6 +70,7 @@ export type ClientBooking = {
   released_cents: number;
   refunded_cents: number;
   pack_total: number | null;
+  pack_paid_total: number | null;
   pack_used: number | null;
   // Report par le coach en attente de réponse du client (migration 0057).
   reschedule_pending_until: string | null;
@@ -292,10 +294,10 @@ export default function ClientSpace({
     if (amount <= 0) return 0;
     const base =
       b.pack_total && b.pack_total > 1
-        ? Math.round(
-            (amount *
-              Math.max(0, b.pack_total - (b.pack_used ?? 0) + 1)) /
-              b.pack_total
+        ? packProrata(
+            amount,
+            packRefundableUnits(b.pack_total, b.pack_used ?? 0, b.pack_paid_total, true),
+            packPaidTotal(b.pack_total, b.pack_paid_total)
           )
         : amount;
     const wanted = refundCents(

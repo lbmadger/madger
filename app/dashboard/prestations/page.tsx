@@ -69,8 +69,10 @@ export default async function ServicesPage() {
           </div>
         )}
         {/* Packs : fonctionnalité Pro. Les packs déjà vendus restent
-            utilisables par les clients jusqu'à épuisement. */}
-        {!pro && (
+            utilisables par les clients jusqu'à épuisement. Affiché seulement
+            quand Stripe est prêt : avant, la priorité est d'activer les
+            paiements, pas de passer Pro. */}
+        {stripeReady && !pro && (
           <ProLock
             className="mb-5"
             title={dict.plans.lock.packsTitle}

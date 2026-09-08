@@ -24,6 +24,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 import { detachMeetFromBooking } from "@/lib/google/calendar";
 import { emailInvoice } from "@/lib/invoices/send";
 import { ensureStripeFee } from "@/lib/stripe/fees";
+import { packProrata, packRefundableUnits, packPaidTotal } from "@/lib/packs/prorata";
 
 export const dynamic = "force-dynamic";
 // Refund + transfert Stripe + agenda Google + email en série : la limite de
@@ -309,12 +310,15 @@ export async function POST(req: NextRequest) {
   // (la séance annulée comprise) et le pack est clôturé après annulation.
   const { data: pack } = await admin
     .from("pack_credits")
-    .select("id, total, used, status")
+    .select("id, total, paid_total, used, status")
     .eq("payment_id", payment.id)
     .maybeSingle();
+  // Prorata sur les séances PAYÉES (les séances offertes ne valent rien).
   const baseAmount = pack
-    ? Math.round(
-        (amount * Math.max(0, pack.total - pack.used + 1)) / pack.total
+    ? packProrata(
+        amount,
+        packRefundableUnits(pack.total, pack.used, pack.paid_total as number | null, true),
+        packPaidTotal(pack.total, pack.paid_total as number | null)
       )
     : amount;
 

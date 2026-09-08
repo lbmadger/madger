@@ -18,12 +18,18 @@ import LaunchPrice from "@/components/subscription/LaunchPrice";
 export default function PricingPlans({
   currentPlan,
   trialEligible = true,
+  subscribed,
 }: {
   currentPlan: "free" | "pro";
   // Premier abonnement : 7 jours d'essai, rien débité, puis renouvellement
   // automatique (migration 0062). Faux si l'essai a déjà été consommé.
   trialEligible?: boolean;
+  // Abonnement Stripe en cours (actif, en essai, en arrêt programmé ou en
+  // échec de paiement). Un coach Pro par accès OFFERT (code, parrainage) n'a
+  // pas d'abonnement : le bouton reste disponible pour bloquer son tarif.
+  subscribed?: boolean;
 }) {
+  const hasSubscription = subscribed ?? currentPlan === "pro";
   const { t, dict, locale } = useI18n();
   const p = dict.plans;
   // Annuel par défaut : c'est la meilleure offre (2 mois offerts), autant
@@ -176,7 +182,7 @@ export default function PricingPlans({
           ))}
         </ul>
 
-        {currentPlan === "free" && (
+        {!hasSubscription && (
           <>
             <button
               type="button"

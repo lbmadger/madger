@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { isProRow } from "@/lib/subscription/plan";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,16 @@ export async function GET() {
   } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+  // Écran encaissements par client : réservé au plan Pro (l'interface le
+  // verrouille déjà, l'URL de l'export doit l'être aussi).
+  const { data: me } = await supabase
+    .from("coaches")
+    .select("pro_until, pro_bonus_until")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (!isProRow(me)) {
+    return NextResponse.json({ error: "pro_required" }, { status: 403 });
   }
 
   const [{ data: pays, error }, { data: packs }] = await Promise.all([

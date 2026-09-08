@@ -21,6 +21,7 @@ import {
 import { detachMeetFromBooking } from "@/lib/google/calendar";
 import { emailInvoice } from "@/lib/invoices/send";
 import { ensureStripeFee } from "@/lib/stripe/fees";
+import { packProrata, packRefundableUnits, packPaidTotal } from "@/lib/packs/prorata";
 
 export const dynamic = "force-dynamic";
 // Refund + transfert Stripe + agenda Google + emails en série : la limite
@@ -266,12 +267,15 @@ export async function POST(req: NextRequest) {
   // (celle qu'on annule comprise), puis pack clôturé.
   const { data: pack } = await admin
     .from("pack_credits")
-    .select("id, total, used, status")
+    .select("id, total, paid_total, used, status")
     .eq("payment_id", payment.id)
     .maybeSingle();
+  // Prorata sur les séances PAYÉES (les séances offertes ne valent rien).
   const baseAmount = pack
-    ? Math.round(
-        (amount * Math.max(0, pack.total - pack.used + 1)) / pack.total
+    ? packProrata(
+        amount,
+        packRefundableUnits(pack.total, pack.used, pack.paid_total as number | null, true),
+        packPaidTotal(pack.total, pack.paid_total as number | null)
       )
     : amount;
 

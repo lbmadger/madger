@@ -16,6 +16,7 @@ import { cronAuthorized } from "@/lib/cron/auth";
 import { detachMeetFromBooking } from "@/lib/google/calendar";
 import { emailInvoice } from "@/lib/invoices/send";
 import { ensureStripeFee } from "@/lib/stripe/fees";
+import { packPaidTotal } from "@/lib/packs/prorata";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -269,7 +270,7 @@ export async function GET(req: NextRequest) {
     // Packs du lot : un paiement de pack se libère séance par séance.
     const { data: packRows } = await supabase
       .from("pack_credits")
-      .select("id, payment_id, total, used, status, expires_at")
+      .select("id, payment_id, total, paid_total, used, status, expires_at")
       .in(
         "payment_id",
         batch.map((p) => p.id as string)
@@ -472,7 +473,10 @@ export async function GET(req: NextRequest) {
       // pas MÛRES : `used` compte les séances RÉSERVÉES (le trigger incrémente
       // à la confirmation), pas effectuées. Un pack entièrement planifié
       // d'avance basculerait sinon en libération totale dès la 1re séance.
-      if (pack && pack.total > 1 && !packExpired) {
+      // Le prorata porte sur les séances PAYÉES (paid_total) : les séances
+      // offertes par le coach ne libèrent rien de plus.
+      const paidTotal = pack ? packPaidTotal(pack.total, pack.paid_total as number | null) : 0;
+      if (pack && paidTotal > 1 && !packExpired) {
         // Séances liées au pack, non annulées, terminées depuis 24 h. La
         // séance de l'achat (p.booking_id, rattachée au pack par
         // fulfillCheckout) est exclue : elle est déjà comptée via selfUnit.
@@ -499,20 +503,20 @@ export async function GET(req: NextRequest) {
           (bookingRow.status !== "cancelled" || bookingRow.credit_lost)
             ? 1
             : 0;
-        const units = Math.min(pack.total, (matured ?? 0) + selfUnit);
+        const units = Math.min(paidTotal, (matured ?? 0) + selfUnit);
 
         // Tant qu'il reste des séances non mûres, on verse au prorata et on
         // garde le reste sous séquestre. La libération finale (ci-dessous)
         // n'arrive que pack entièrement mûr ou expiré (cap 180 jours).
-        if (units < pack.total) {
+        if (units < paidTotal) {
           const targetReleased = Math.floor(
-            (breakdown.payoutCents * units) / pack.total
+            (breakdown.payoutCents * units) / paidTotal
           );
           const targetCommission = Math.floor(
-            (breakdown.commissionCents * units) / pack.total
+            (breakdown.commissionCents * units) / paidTotal
           );
           const targetProviderFee = Math.floor(
-            (breakdown.providerFeeCents * units) / pack.total
+            (breakdown.providerFeeCents * units) / paidTotal
           );
           const deltaPayout = targetReleased - alreadyReleased;
           const nextCheck = new Date(Date.now() + 7 * 86400000).toISOString();

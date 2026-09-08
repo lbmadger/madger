@@ -26,6 +26,25 @@ export default function ServicesView({
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<Service | null>(null);
   const [deleteError, setDeleteError] = useState(false);
+  const [toggling, setToggling] = useState<string | null>(null);
+
+  // Désactiver une prestation la retire de la page publique sans la
+  // supprimer (les packs déjà vendus et l'historique restent intacts).
+  async function handleToggleActive(s: Service) {
+    setToggling(s.id);
+    setDeleteError(false);
+    const supabase = createClient();
+    const { error } = await supabase
+      .from("services")
+      .update({ active: !s.active })
+      .eq("id", s.id);
+    setToggling(null);
+    if (error) {
+      setDeleteError(true);
+      return;
+    }
+    router.refresh();
+  }
 
   async function handleDelete(id: string) {
     const ok = await confirm({
@@ -113,6 +132,17 @@ export default function ServicesView({
                     {s.name}
                   </h3>
                   <p className="mt-0.5 text-xs text-text-muted">{metaLine(s)}</p>
+                  {/* État réel côté public : désactivée par le coach, ou pack
+                      masqué parce que le coach est repassé Essentiel. */}
+                  {!s.active ? (
+                    <span className="mt-1.5 inline-block rounded-full border border-border-strong px-2 py-0.5 text-[10px] font-medium text-text-dim">
+                      {t("services.inactiveBadge")}
+                    </span>
+                  ) : s.type === "pack" && !packsAllowed ? (
+                    <span className="mt-1.5 inline-block rounded-full border border-warning/40 bg-warning/[0.08] px-2 py-0.5 text-[10px] font-medium text-warning">
+                      {t("services.packHiddenBadge")}
+                    </span>
+                  ) : null}
                 </div>
                 <span className="shrink-0 text-right text-lg font-bold text-accent">
                   {priceLine(s)}
@@ -144,6 +174,14 @@ export default function ServicesView({
                     className="text-xs font-medium text-text-muted transition-colors hover:text-accent"
                   >
                     {t("services.edit")}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={toggling === s.id}
+                    onClick={() => handleToggleActive(s)}
+                    className="text-xs font-medium text-text-muted transition-colors hover:text-accent disabled:opacity-50"
+                  >
+                    {s.active ? t("services.deactivate") : t("services.reactivate")}
                   </button>
                   <button
                     type="button"

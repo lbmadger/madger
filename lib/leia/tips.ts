@@ -63,7 +63,9 @@ export function computeLeiaTips(i: LeiaInput): LeiaTip[] {
   if (i.bookingMode === "approval") {
     tips.push({ id: "instant", href: "/dashboard/reglages" });
   }
-  if (i.servicesCount > 0 && !i.hasPack) {
+  // Les packs sont une fonctionnalité Pro : inutile de conseiller à un
+  // coach Essentiel d'en créer un (le conseil « pro » s'en charge).
+  if (i.isPro && i.servicesCount > 0 && !i.hasPack) {
     tips.push({ id: "pack", href: "/dashboard/prestations" });
   }
   if (i.reviewsCount < 10) {

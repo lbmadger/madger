@@ -6,6 +6,7 @@ import { SUPABASE_URL } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
 import { packRefundClient } from "@/lib/email/templates";
 import { emailInvoice } from "@/lib/invoices/send";
+import { packProrata, packRefundableUnits, packPaidTotal } from "@/lib/packs/prorata";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
   const admin = createAdmin(SUPABASE_URL, serviceKey);
   const { data: pack } = await admin
     .from("pack_credits")
-    .select("id, coach_id, client_id, payment_id, total, used, status")
+    .select("id, coach_id, client_id, payment_id, total, paid_total, used, status")
     .eq("id", packId)
     .maybeSingle();
   if (!pack || pack.coach_id !== user.id) {
@@ -80,7 +81,19 @@ export async function POST(req: NextRequest) {
   const amount = payment.amount_cents as number;
   const alreadyReleased = (payment.released_cents as number | null) ?? 0;
   const alreadyRefunded = (payment.refunded_cents as number | null) ?? 0;
-  const wanted = Math.round((amount * remaining) / (pack.total as number));
+  // Prorata sur les séances PAYÉES : les séances offertes par le coach ne
+  // se remboursent pas.
+  const paidUnits = packRefundableUnits(
+    pack.total as number,
+    pack.used as number,
+    pack.paid_total as number | null,
+    false
+  );
+  const wanted = packProrata(
+    amount,
+    paidUnits,
+    packPaidTotal(pack.total as number, pack.paid_total as number | null)
+  );
   // Fonds déjà versés au coach : non remboursables par la plateforme (le
   // coach rembourse alors depuis son compte Stripe s'il le souhaite).
   const refund = Math.min(wanted, Math.max(0, amount - alreadyReleased - alreadyRefunded));

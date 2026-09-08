@@ -47,6 +47,7 @@ export default function Footer({ launched = false }: { launched?: boolean }) {
           <Link href="/politique-de-confidentialite" className="hover:text-white transition-colors duration-200">Politique de confidentialité</Link>
           <Link href="/cgu" className="hover:text-white transition-colors duration-200">CGU</Link>
           <Link href="/cgv" className="hover:text-white transition-colors duration-200">CGV</Link>
+          <Link href="/charte-paiement" className="hover:text-white transition-colors duration-200">Charte de paiement</Link>
           <Link href="/politique-cookies" className="hover:text-white transition-colors duration-200">Cookies</Link>
           <span>Paiements sécurisés via Stripe</span>
         </div>

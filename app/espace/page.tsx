@@ -126,7 +126,7 @@ export default async function ClientSpacePage() {
       const { data: packRows } = payIds.length
         ? await admin
             .from("pack_credits")
-            .select("payment_id, total, used")
+            .select("payment_id, total, paid_total, used")
             .in("payment_id", payIds)
         : { data: [] };
       const packByPayment = new Map(
@@ -173,6 +173,9 @@ export default async function ClientSpacePage() {
           refunded_cents: (pay?.refunded_cents as number) ?? 0,
           pack_total:
             ((pay && packByPayment.get(pay.id as string)?.total) as number) ??
+            null,
+          pack_paid_total:
+            ((pay && packByPayment.get(pay.id as string)?.paid_total) as number | null) ??
             null,
           pack_used:
             ((pay && packByPayment.get(pay.id as string)?.used) as number) ??

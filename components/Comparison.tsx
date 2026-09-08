@@ -6,9 +6,9 @@ import CoachAside from "@/components/ui/CoachAside";
 
 const features = [
   { label: "Prise de rendez-vous en ligne",         madger: true,  calendly: true,  whatsapp: false, excel: false },
-  { label: "Paiement intégré à la réservation",     madger: true,  calendly: false, whatsapp: false, excel: false },
+  { label: "Paiement intégré à la réservation",     madger: true,  calendly: true,  whatsapp: false, excel: false },
   { label: "Facturation automatique conforme",       madger: true,  calendly: false, whatsapp: false, excel: false },
-  { label: "Facturation au format Factur-X",          madger: true,  calendly: false, whatsapp: false, excel: false },
+  { label: "Prêt pour la facture électronique (Factur-X)", madger: true, calendly: false, whatsapp: false, excel: false },
   { label: "Conservation des données et factures",    madger: true,  calendly: false, whatsapp: false, excel: false },
   { label: "Rappels automatiques clients",           madger: true,  calendly: true,  whatsapp: false, excel: false },
   { label: "Gestion annulations & remboursements",  madger: true,  calendly: false, whatsapp: false, excel: false },

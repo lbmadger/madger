@@ -753,16 +753,16 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
       <SettingsSection
         icon={<ShieldIcon size={18} />}
         title={t("cancellation.title")}
-        desc={t("cancellation.subtitle")}
+        desc={
+          isPro(coach.pro_until)
+            ? t("cancellation.subtitle")
+            : t("plans.lock.cancellationFixed")
+        }
       >
         {!isPro(coach.pro_until) ? (
           <>
             <div className="rounded-xl border border-border-strong p-4">
-              <p className="text-sm font-semibold text-text-base">{t("cancellation.title")}</p>
-              <p className="mt-1 text-xs leading-relaxed text-text-muted">
-                {t("plans.lock.cancellationFixed")}
-              </p>
-              <div className="mt-3 max-w-sm rounded-xl border border-border bg-bg-elevated p-4">
+              <div className="max-w-sm rounded-xl border border-border bg-bg-elevated p-4">
                 <PolicyTiers policy={ESSENTIAL_REFUND_POLICY} />
               </div>
             </div>

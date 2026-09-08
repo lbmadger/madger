@@ -69,7 +69,9 @@ export default function CGV() {
               fin de l&apos;essai, il se poursuit automatiquement au tarif choisi. Un seul essai
               par coach. Les membres inscrits en accès anticipé bénéficient de Madger Pro
               offert pendant 1 mois au lancement. Madger se réserve le droit de modifier ses
-              tarifs avec un préavis de 30 jours.
+              tarifs avec un préavis de 30 jours ; cette faculté ne remet pas en cause le prix
+              de lancement garanti ci-dessus tant que l&apos;abonnement reste actif sans
+              interruption.
             </p>
           </section>
 
