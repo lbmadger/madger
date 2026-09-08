@@ -196,11 +196,9 @@ export async function POST(req: NextRequest) {
   if ((service.capacity as number | null ?? 1) > 1) {
     return NextResponse.json({ error: "group_requires_session" }, { status: 400 });
   }
-  // Les packs sont réservés au plan Pro : un coach repassé Essentiel ne peut
-  // plus en vendre (la vue publique les masque déjà, ceci est la sécurité).
-  if (service.type === "pack" && planOf(coach) !== "pro") {
-    return NextResponse.json({ error: "pack_requires_pro" }, { status: 403 });
-  }
+  // Packs ouverts à tous les plans depuis la migration 0070 : chaque pack
+  // vendu en Essentiel rapporte 5 % à Madger, le verrou Pro se privait de
+  // cette commission et poussait les coachs à packs vers la concurrence.
 
   // ── Pack collectif : crédits seuls, les places se posent sur les cours ────
   // Aucun créneau à l'achat (pas de première séance) : le client place ses

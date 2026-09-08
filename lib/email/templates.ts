@@ -485,6 +485,32 @@ export function sessionReminderClient(p: {
   };
 }
 
+// ── Client : un créneau demandé s'est libéré (liste d'attente) ─────────────
+export function waitlistSlotFreedClient(p: {
+  firstName: string | null;
+  coachName: string;
+  dateStr: string;
+  bookUrl: string;
+}): Email {
+  return {
+    subject: `Le créneau ${p.dateStr} avec ${p.coachName} vient de se libérer`,
+    html: layout({
+      preheader: `Tu l'avais demandé : il est à nouveau réservable.`,
+      eyebrow: "Liste d'attente",
+      title: "Ton créneau s'est libéré",
+      intro: `${p.firstName ? `${p.firstName}, ` : ""}tu avais demandé à être prévenu si le créneau <b style="color:${C.text};">${p.dateStr}</b> avec <b style="color:${C.text};">${p.coachName}</b> se libérait. C'est le cas.`,
+      blocks: [
+        detailsTable([
+          { label: "Coach", value: p.coachName },
+          { label: "Créneau", value: p.dateStr, accent: true },
+        ]),
+      ],
+      cta: { label: "Réserver ce créneau", url: p.bookUrl },
+      outro: "Premier arrivé, premier servi : le créneau reste ouvert à tous jusqu'à la réservation.",
+    }),
+  };
+}
+
 // ── Client : rappel « ~1 h avant » la séance ────────────────────────────────
 export function sessionReminderSoonClient(p: {
   coachName: string;

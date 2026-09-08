@@ -1,4 +1,5 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { splitVat, vatApplies, vatRateLabel } from "@/lib/invoices/vat";
 
 // Facture ou avoir en PDF, généré côté serveur (pdf-lib : pur JS, aucune
 // police à charger, fonctionne sur Vercel). Mise en page sobre, noir sur
@@ -27,6 +28,8 @@ export type InvoicePdfInput = {
     city: string | null;
     siret: string | null;
     vatNumber: string | null;
+    // Taux de TVA en points de base (0 = franchise en base).
+    vatRateBps?: number | null;
   };
 };
 
@@ -164,9 +167,23 @@ export async function renderInvoicePdf(input: InvoicePdfInput): Promise<Uint8Arr
   y -= 12;
   page.drawLine({ start: { x: M, y }, end: { x: M + W, y }, thickness: 0.8, color: light });
 
-  // Total
+  // Total : ventilé HT / TVA / TTC pour un coach assujetti, sinon un seul
+  // montant (franchise en base : la mention 293 B suit plus bas).
+  const withVat = vatApplies(c.vatNumber, c.vatRateBps);
   y -= 26;
-  text("Total", M + W - 150, y, { size: 10, color: grey });
+  if (withVat) {
+    const { htCents, vatCents } = splitVat(Math.abs(amount), c.vatRateBps as number);
+    const sign = amount < 0 ? -1 : 1;
+    text("Total HT", M + W - 150, y, { size: 10, color: grey });
+    text(money(sign * htCents, input.currency), M + W, y, { size: 10, right: true });
+    y -= 14;
+    text(`TVA ${vatRateLabel(c.vatRateBps as number)}`, M + W - 150, y, { size: 10, color: grey });
+    text(money(sign * vatCents, input.currency), M + W, y, { size: 10, right: true });
+    y -= 16;
+    text("Total TTC", M + W - 150, y, { size: 10, color: grey });
+  } else {
+    text("Total", M + W - 150, y, { size: 10, color: grey });
+  }
   text(money(amount, input.currency), M + W, y, { size: 15, b: true, right: true });
   y -= 16;
   text(
@@ -180,7 +197,7 @@ export async function renderInvoicePdf(input: InvoicePdfInput): Promise<Uint8Arr
 
   // Mentions
   y -= 34;
-  if (!c.vatNumber) {
+  if (!withVat) {
     text("TVA non applicable, art. 293 B du CGI.", M, y, { size: 9, color: grey });
     y -= 13;
   }

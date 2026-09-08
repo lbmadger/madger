@@ -63,9 +63,9 @@ export function computeLeiaTips(i: LeiaInput): LeiaTip[] {
   if (i.bookingMode === "approval") {
     tips.push({ id: "instant", href: "/dashboard/reglages" });
   }
-  // Les packs sont une fonctionnalité Pro : inutile de conseiller à un
-  // coach Essentiel d'en créer un (le conseil « pro » s'en charge).
-  if (i.isPro && i.servicesCount > 0 && !i.hasPack) {
+  // Packs ouverts à tous les plans (migration 0070) : un pack fidélise et
+  // fait grossir le panier, on le conseille dès la première prestation.
+  if (i.servicesCount > 0 && !i.hasPack) {
     tips.push({ id: "pack", href: "/dashboard/prestations" });
   }
   if (i.reviewsCount < 10) {

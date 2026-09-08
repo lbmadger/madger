@@ -263,6 +263,9 @@ const fr = {
     errors: {
       generic: "Une erreur est survenue. Réessaie.",
       slugTaken: "Ce lien est déjà pris, choisis-en un autre.",
+      siretInvalid: "Ce numéro n'est pas un SIRET valide (clé de contrôle fausse).",
+      siretNotFound: "Ce SIRET est inconnu de l'annuaire officiel des entreprises.",
+      siretClosed: "Cet établissement est fermé selon l'annuaire officiel.",
       slugInvalid: "Lien invalide (lettres minuscules, chiffres et tirets).",
       nameRequired: "Indique ton prénom.",
       lastNameRequired: "Indique ton nom : il figure sur tes factures.",
@@ -491,17 +494,17 @@ const fr = {
     trialTitle: "Il te reste {n} jours de Pro offert",
     trialTitleLast: "Dernier jour de Pro offert",
     trialDesc:
-      "Packs, annulation automatique, relances, écran encaissements et alertes churn sont actifs. Bloque ton tarif avant la fin pour ne rien perdre.",
+      "Rappels SMS, annulation automatique, relances, écran encaissements et alertes churn sont actifs. Bloque ton tarif avant la fin pour ne rien perdre.",
     trialCta: "Garder Pro",
     featuresFree: [
       "Lien public personnalisé",
-      "Réservations et paiements illimités",
+      "Réservations, packs et paiements illimités",
       "Factures conformes automatiques",
       "Synchronisation Google Calendar",
-      "Rappels automatiques",
+      "Rappels automatiques par email",
     ],
     featuresPro: [
-      "Packs de séances",
+      "Rappels SMS la veille",
       "Annulation automatique",
       "Relances de renouvellement",
       "Écran encaissements",
@@ -529,7 +532,7 @@ const fr = {
       lossCommission:
         "Fin des packs, de l'annulation automatique, des relances de renouvellement, de l'écran encaissements et des alertes churn.",
       lossBadge:
-        "Tu perds les packs, l'annulation automatique et les statistiques avancées de Madger Pro.",
+        "Tu perds les rappels SMS, l'annulation automatique et les statistiques avancées de Madger Pro.",
       stay: "Je reste en Pro",
       switchAnnual: "Passer à l'annuel : {price}/an, 2 mois offerts",
       switching: "Un instant…",
@@ -557,7 +560,7 @@ const fr = {
         too_expensive:
           "On comprend. Deux options pour alléger la note sans perdre les fonctionnalités Pro.",
         not_enough_revenue:
-          "Un no-show évité par mois et Pro est remboursé. Si ton volume est vraiment faible, Essentiel est un bon choix, mais pense aux packs et aux relances que tu perds.",
+          "Un no-show évité par mois et Pro est remboursé. Si ton volume est vraiment faible, Essentiel est un bon choix, mais pense aux rappels SMS et aux relances que tu perds.",
         missing_features:
           "Dis-nous laquelle : on construit Madger avec les coachs, et on répond vite.",
         other_tool:
@@ -607,7 +610,7 @@ const fr = {
     offerLocked: "Bloqué tant que tu restes abonné, même après la hausse.",
     modalTitle: "Pro, c'est ce qui fait rester tes clients",
     modalBody:
-      "Vends des packs de séances, laisse l'annulation automatique appliquer tes règles, relance les renouvellements, suis tes encaissements par client et repère ceux qui décrochent. Un no-show évité par mois et Pro est remboursé.",
+      "Rappelle tes clients par SMS la veille, laisse l'annulation automatique appliquer tes règles, relance les renouvellements, suis tes encaissements par client et repère ceux qui décrochent. Un no-show évité par mois et Pro est remboursé.",
     modalPoints: [
       "Packs de séances et relances de renouvellement",
       "Annulation automatique selon tes règles",
@@ -620,8 +623,8 @@ const fr = {
     upsellPaymentsDesc: "Qui a payé quoi, ce qui reste à venir, les packs en cours. Un no-show évité par mois et Pro est remboursé.",
     upsellStatsTitle: "Tes statistiques avancées t'attendent en Pro",
     upsellStatsDesc: "Packs de séances, annulation automatique, relances de renouvellement, écran encaissements, alerte churn. Et ces statistiques détaillées.",
-    upsellInvoicesTitle: "Des packs à vendre, en Pro",
-    upsellInvoicesDesc: "Vends des packs de séances, relance les renouvellements et laisse l'annulation automatique gérer les imprévus.",
+    upsellInvoicesTitle: "Des relances et des SMS, en Pro",
+    upsellInvoicesDesc: "Rappelle tes clients par SMS la veille, relance les renouvellements de packs et laisse l'annulation automatique gérer les imprévus.",
     upsellCardCta: "Bloquer le prix Pro",
     // Sections verrouillées pour un coach Essentiel.
     lock: {
@@ -703,6 +706,11 @@ const fr = {
     siretSave: "Enregistrer",
     siretSaved: "SIRET enregistré, tu peux encaisser.",
     siretErr: "Un SIRET fait 14 chiffres. Vérifie et réessaie.",
+    siretInvalid: "Ce numéro n'est pas un SIRET valide (clé de contrôle fausse). Vérifie et réessaie.",
+    siretNotFound: "Ce SIRET est inconnu de l'annuaire officiel des entreprises. Vérifie-le sur annuaire-entreprises.data.gouv.fr.",
+    siretClosed: "Cet établissement est fermé selon l'annuaire officiel. Indique le SIRET de ton établissement actif.",
+    siretFound: "Établissement vérifié : {name}",
+    siretUnverified: "Enregistré. L'annuaire officiel est indisponible : la vérification se fera à la prochaine saisie.",
     byClientTitle: "Encaissements par client",
     exportClientsCsv: "Export par client (CSV)",
     colClient: "Client",
@@ -1060,6 +1068,16 @@ const fr = {
     noSlotsDay: "Complet ce jour-là.",
     noSlotsRange:
       "Aucun créneau libre sur les 14 prochains jours. Contacte le coach par message.",
+    waitlistTaken: "Complet",
+    waitlistTitle: "Ce créneau est pris",
+    waitlistDesc: "Laisse ton email : si la séance est annulée, tu es prévenu en premier.",
+    waitlistName: "Prénom",
+    waitlistEmail: "Email",
+    waitlistCta: "Me prévenir s'il se libère",
+    waitlistSending: "Enregistrement…",
+    waitlistDone: "C'est noté. Tu recevras un email dès que ce créneau se libère.",
+    waitlistFree: "Bonne nouvelle : ce créneau vient de se libérer, recharge les créneaux.",
+    waitlistError: "Impossible d'enregistrer ta demande. Réessaie.",
     confirmedTitle: "Séance confirmée",
     confirmedDesc:
       "Ton créneau est réservé. Tu recevras un email de confirmation.",
@@ -1242,8 +1260,20 @@ const fr = {
     vatNumber: "Numéro de TVA intracommunautaire",
     vatHint:
       "Laisse vide si tu es en franchise de TVA (micro-entreprise) : la mention « TVA non applicable, art. 293 B du CGI » est ajoutée automatiquement sur tes factures.",
+    vatRate: "Taux de TVA appliqué",
+    vatRateHint:
+      "Tes prix restent TTC (ce que paie le client). La facture ventile HT, TVA et TTC à ce taux. Coaching sportif : 20 % dans la plupart des cas.",
+    vatRateNone: "Franchise en base (pas de TVA)",
+    siretVerified: "SIRET vérifié : {name}",
+    siretUnverifiedHint: "SIRET non vérifié : il sera contrôlé dans l'annuaire officiel à l'enregistrement.",
+    smsReminders: "Rappels par SMS la veille",
+    smsRemindersDesc:
+      "En plus de l'email, tes clients reçoivent un SMS de rappel la veille de leur séance (numéro de mobile requis sur leur fiche). Le coût des SMS est pris en charge par Madger.",
+    smsRemindersLockTitle: "Rappels SMS : réservés à Madger Pro",
+    smsRemindersLockDesc:
+      "Le SMS de la veille divise les oublis par cinq. Passe en Pro pour l'activer.",
     billingCompliance:
-      "Avec ces informations, chaque facture émise via Madger porte tes mentions légales obligatoires. Tu es prêt pour la facturation électronique : le passage au format Factur-X se fera automatiquement, sans rien changer de ton côté.",
+      "Avec ces informations, chaque facture émise via Madger porte tes mentions légales obligatoires. Elles sont numérotées sans trou par année et conservées dans ton espace, prêtes pour ton expert-comptable.",
     minNotice: "Délai minimum de réservation",
     minNoticeBefore: "avant la séance",
     minNoticeHint:
@@ -1279,6 +1309,9 @@ const fr = {
       generic: "Une erreur est survenue. Réessaie.",
       nameRequired: "Indique ton prénom.",
       slugTaken: "Ce lien est déjà pris, choisis-en un autre.",
+      siretInvalid: "Ce numéro n'est pas un SIRET valide (clé de contrôle fausse).",
+      siretNotFound: "Ce SIRET est inconnu de l'annuaire officiel des entreprises.",
+      siretClosed: "Cet établissement est fermé selon l'annuaire officiel.",
       slugInvalid: "Lien invalide (minuscules, chiffres et tirets).",
     },
   },
@@ -1472,7 +1505,7 @@ const fr = {
   invoices: {
     title: "Factures",
     subtitle:
-      "Chaque paiement encaissé génère une facture numérotée avec tes mentions légales. Prêt pour la facturation électronique.",
+      "Chaque paiement encaissé génère une facture numérotée avec tes mentions légales, conservée ici et retéléchargeable à tout moment.",
     empty:
       "Aucune facture pour l'instant : elles apparaissent après chaque paiement encaissé.",
     download: "Télécharger",
@@ -1498,6 +1531,9 @@ const fr = {
     siretLabel: "SIRET :",
     vatLabel: "TVA :",
     vatExempt: "TVA non applicable, art. 293 B du CGI.",
+    totalHt: "Total HT",
+    vatAmount: "TVA",
+    totalTtc: "Total TTC",
     missingSiretTitle: "Complète tes mentions légales",
     missingSiretDesc:
       "Ajoute ton SIRET dans les réglages : il est obligatoire sur tes factures.",
@@ -1751,8 +1787,8 @@ const fr = {
         body: "Ta moyenne est sous les 4.8, le seuil du badge Super coach. Ponctualité, suivi personnalisé et petit message après la séance font toute la différence.",
       },
       pro: {
-        title: "Passe en Pro : packs, relances et annulation automatique",
-        body: "Tu encaisses régulièrement : Pro te donne les packs de séances, les relances de renouvellement et l'annulation automatique. Un no-show évité par mois et Pro est remboursé.",
+        title: "Passe en Pro : SMS, relances et annulation automatique",
+        body: "Tu encaisses régulièrement : Pro te donne les rappels SMS la veille, les relances de renouvellement et l'annulation automatique. Un no-show évité par mois et Pro est remboursé.",
         cta: "Découvrir Pro",
       },
     },
@@ -2052,6 +2088,9 @@ const en: Dictionary = {
     errors: {
       generic: "Something went wrong. Please try again.",
       slugTaken: "This link is already taken, pick another one.",
+      siretInvalid: "This is not a valid SIRET (wrong check digit).",
+      siretNotFound: "This SIRET is unknown to the official French business register.",
+      siretClosed: "This establishment is closed according to the official register.",
       slugInvalid: "Invalid link (lowercase letters, numbers and hyphens).",
       nameRequired: "Please enter at least your first name.",
       lastNameRequired: "Enter your last name: it appears on your invoices.",
@@ -2279,17 +2318,17 @@ const en: Dictionary = {
     trialTitle: "{n} days of free Pro left",
     trialTitleLast: "Last day of free Pro",
     trialDesc:
-      "Packs, automatic cancellation, reminders, payments screen and churn alerts are on. Lock your price before it ends so you lose nothing.",
+      "SMS reminders, automatic cancellation, renewal reminders, payments screen and churn alerts are on. Lock your price before it ends so you lose nothing.",
     trialCta: "Keep Pro",
     featuresFree: [
       "Personalized public link",
-      "Unlimited bookings and payments",
+      "Unlimited bookings, packs and payments",
       "Compliant automatic invoices",
       "Google Calendar sync",
-      "Automatic reminders",
+      "Automatic email reminders",
     ],
     featuresPro: [
-      "Session packs",
+      "SMS reminders the day before",
       "Automatic cancellation",
       "Renewal reminders",
       "Payments screen",
@@ -2317,7 +2356,7 @@ const en: Dictionary = {
       lossCommission:
         "End of packs, automatic cancellation, renewal reminders, the payments screen and churn alerts.",
       lossBadge:
-        "You lose packs, automatic cancellation and the advanced stats of Madger Pro.",
+        "You lose SMS reminders, automatic cancellation and the advanced stats of Madger Pro.",
       stay: "I'm staying on Pro",
       switchAnnual: "Switch to annual: {price}/year, 2 months free",
       switching: "One moment…",
@@ -2345,7 +2384,7 @@ const en: Dictionary = {
         too_expensive:
           "We get it. Two options to lighten the bill without losing the Pro features.",
         not_enough_revenue:
-          "One no-show avoided per month and Pro pays for itself. If your volume is really low, Essential is a fine choice, but think about the packs and reminders you lose.",
+          "One no-show avoided per month and Pro pays for itself. If your volume is really low, Essential is a fine choice, but think about the SMS and renewal reminders you lose.",
         missing_features:
           "Tell us which one: we build Madger with coaches, and we answer fast.",
         other_tool:
@@ -2395,7 +2434,7 @@ const en: Dictionary = {
     offerLocked: "Locked as long as you stay subscribed, even after the increase.",
     modalTitle: "Pro is what keeps your clients coming back",
     modalBody:
-      "Sell session packs, let automatic cancellation apply your rules, send renewal reminders, track payments per client and spot the ones drifting away. One no-show avoided per month and Pro pays for itself.",
+      "Remind your clients by SMS the day before, let automatic cancellation apply your rules, send renewal reminders, track payments per client and spot the ones drifting away. One no-show avoided per month and Pro pays for itself.",
     modalPoints: [
       "Session packs and renewal reminders",
       "Automatic cancellation on your terms",
@@ -2408,8 +2447,8 @@ const en: Dictionary = {
     upsellPaymentsDesc: "Who paid what, what is still to come, packs in progress. One no-show avoided per month and Pro pays for itself.",
     upsellStatsTitle: "Your advanced statistics are waiting on Pro",
     upsellStatsDesc: "Session packs, automatic cancellation, renewal reminders, payments screen, churn alerts. And these detailed statistics.",
-    upsellInvoicesTitle: "Packs to sell, on Pro",
-    upsellInvoicesDesc: "Sell session packs, send renewal reminders and let automatic cancellation handle the unexpected.",
+    upsellInvoicesTitle: "Reminders and SMS, on Pro",
+    upsellInvoicesDesc: "Remind your clients by SMS the day before, send pack renewal reminders and let automatic cancellation handle the unexpected.",
     upsellCardCta: "Lock the Pro price",
     lock: {
       cta: "Upgrade to Pro",
@@ -2489,6 +2528,11 @@ const en: Dictionary = {
     siretSave: "Save",
     siretSaved: "SIRET saved, you can get paid.",
     siretErr: "A SIRET is 14 digits. Check and try again.",
+    siretInvalid: "This is not a valid SIRET (wrong check digit). Check and try again.",
+    siretNotFound: "This SIRET is unknown to the official French business register. Check it on annuaire-entreprises.data.gouv.fr.",
+    siretClosed: "This establishment is closed according to the official register. Enter the SIRET of your active establishment.",
+    siretFound: "Verified establishment: {name}",
+    siretUnverified: "Saved. The official register is unavailable: verification will run next time you save.",
     byClientTitle: "Payments by client",
     exportClientsCsv: "Export by client (CSV)",
     colClient: "Client",
@@ -2846,6 +2890,16 @@ const en: Dictionary = {
     noSlotsDay: "Fully booked that day.",
     noSlotsRange:
       "No free slot in the next 14 days. Message the coach directly.",
+    waitlistTaken: "Booked",
+    waitlistTitle: "This slot is taken",
+    waitlistDesc: "Leave your email: if the session is cancelled, you are the first to know.",
+    waitlistName: "First name",
+    waitlistEmail: "Email",
+    waitlistCta: "Notify me if it frees up",
+    waitlistSending: "Saving…",
+    waitlistDone: "Noted. You'll get an email as soon as this slot frees up.",
+    waitlistFree: "Good news: this slot just freed up, reload the slots.",
+    waitlistError: "Could not save your request. Try again.",
     confirmedTitle: "Session confirmed",
     confirmedDesc: "Your slot is booked. You'll receive a confirmation email.",
     date: "Date",
@@ -3024,8 +3078,20 @@ const en: Dictionary = {
     vatNumber: "EU VAT number",
     vatHint:
       "Leave empty if you are VAT-exempt (French micro-enterprise): the mention \"TVA non applicable, art. 293 B du CGI\" is added automatically to your invoices.",
+    vatRate: "VAT rate applied",
+    vatRateHint:
+      "Your prices stay tax-inclusive (what the client pays). Invoices break down net, VAT and gross at this rate. Sports coaching: 20% in most cases.",
+    vatRateNone: "VAT-exempt (no VAT)",
+    siretVerified: "SIRET verified: {name}",
+    siretUnverifiedHint: "SIRET not verified yet: it is checked against the official register when you save.",
+    smsReminders: "SMS reminders the day before",
+    smsRemindersDesc:
+      "On top of the email, your clients get an SMS reminder the day before their session (mobile number required on their profile). SMS costs are covered by Madger.",
+    smsRemindersLockTitle: "SMS reminders: Madger Pro only",
+    smsRemindersLockDesc:
+      "A day-before SMS cuts no-shows by five. Upgrade to Pro to enable it.",
     billingCompliance:
-      "With these details, every invoice issued via Madger carries your mandatory legal mentions. You are ready for e-invoicing: the switch to the Factur-X format will happen automatically, with nothing to change on your side.",
+      "With these details, every invoice issued via Madger carries your mandatory legal mentions. They are numbered sequentially per year and kept in your space, ready for your accountant.",
     minNotice: "Minimum booking notice",
     minNoticeBefore: "before the session",
     minNoticeHint:
@@ -3061,6 +3127,9 @@ const en: Dictionary = {
       generic: "Something went wrong. Please try again.",
       nameRequired: "First name is required.",
       slugTaken: "This link is already taken, pick another one.",
+      siretInvalid: "This is not a valid SIRET (wrong check digit).",
+      siretNotFound: "This SIRET is unknown to the official French business register.",
+      siretClosed: "This establishment is closed according to the official register.",
       slugInvalid: "Invalid link (lowercase, numbers and hyphens).",
     },
   },
@@ -3252,7 +3321,7 @@ const en: Dictionary = {
   invoices: {
     title: "Invoices",
     subtitle:
-      "Every collected payment generates a numbered invoice with your legal mentions. Ready for e-invoicing.",
+      "Every collected payment generates a numbered invoice with your legal mentions, kept here and downloadable at any time.",
     empty: "No invoice yet: they appear after each collected payment.",
     download: "Download",
     pdf: "Download as PDF",
@@ -3276,6 +3345,9 @@ const en: Dictionary = {
     siretLabel: "SIRET:",
     vatLabel: "VAT:",
     vatExempt: "VAT not applicable, art. 293 B of the French tax code (CGI).",
+    totalHt: "Net total",
+    vatAmount: "VAT",
+    totalTtc: "Gross total",
     missingSiretTitle: "Complete your legal details",
     missingSiretDesc:
       "Add your SIRET in the settings: it is mandatory on your invoices.",
@@ -3529,8 +3601,8 @@ const en: Dictionary = {
         body: "Your average is below 4.8, the Super coach badge threshold. Punctuality, personalized follow-up and a quick message after the session make all the difference.",
       },
       pro: {
-        title: "Go Pro: packs, reminders and automatic cancellation",
-        body: "You're earning regularly: Pro gives you session packs, renewal reminders and automatic cancellation. One no-show avoided per month and Pro pays for itself.",
+        title: "Go Pro: SMS, reminders and automatic cancellation",
+        body: "You're earning regularly: Pro gives you SMS reminders the day before, renewal reminders and automatic cancellation. One no-show avoided per month and Pro pays for itself.",
         cta: "Discover Pro",
       },
     },

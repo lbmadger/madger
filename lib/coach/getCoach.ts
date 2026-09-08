@@ -75,6 +75,13 @@ export type Coach = {
   siret: string | null;
   vat_number: string | null;
   billing_address: string | null;
+  // TVA hors franchise (migration 0070) : 0, 550, 1000 ou 2000 bps.
+  vat_rate_bps?: number | null;
+  // SIRET vérifié via l'annuaire officiel des entreprises (migration 0070).
+  siret_verified_at?: string | null;
+  siret_legal_name?: string | null;
+  // Rappels SMS J-1 aux clients (migration 0070, réglage Pro).
+  sms_reminders_enabled?: boolean | null;
   // Coach vérifié (migration 0044) : dépôt de diplôme + validation équipe.
   verification_status: "none" | "pending" | "verified" | "rejected";
   verification_doc_path: string | null;

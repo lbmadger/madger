@@ -9,6 +9,7 @@ import {
   type InvoiceRow,
 } from "@/lib/invoices/utils";
 import PrintButton from "@/components/invoices/PrintButton";
+import { splitVat, vatApplies, vatRateLabel } from "@/lib/invoices/vat";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 
 export const dynamic = "force-dynamic";
@@ -215,8 +216,24 @@ export default async function InvoicePage({
 
         <div className="mt-6 flex justify-end">
           <div className="w-56">
+            {vatApplies(coach.vat_number, coach.vat_rate_bps) && (() => {
+              const { htCents, vatCents } = splitVat(Math.abs(docAmount), coach.vat_rate_bps as number);
+              const sign = docAmount < 0 ? -1 : 1;
+              return (
+                <>
+                  <div className="flex items-center justify-between py-1 text-sm">
+                    <span className="text-text-muted">{inv.totalHt}</span>
+                    <span className="text-text-base">{money(sign * htCents)}</span>
+                  </div>
+                  <div className="flex items-center justify-between border-b border-border py-1 text-sm">
+                    <span className="text-text-muted">{inv.vatAmount} {vatRateLabel(coach.vat_rate_bps as number, locale)}</span>
+                    <span className="text-text-base">{money(sign * vatCents)}</span>
+                  </div>
+                </>
+              );
+            })()}
             <div className="flex items-center justify-between border-b border-border py-2 text-sm">
-              <span className="text-text-muted">Total</span>
+              <span className="text-text-muted">{vatApplies(coach.vat_number, coach.vat_rate_bps) ? inv.totalTtc : "Total"}</span>
               <span className="text-lg font-extrabold text-text-base">
                 {money(docAmount)}
               </span>
@@ -231,7 +248,7 @@ export default async function InvoicePage({
           </div>
         </div>
 
-        {!coach.vat_number && (
+        {!vatApplies(coach.vat_number, coach.vat_rate_bps) && (
           <p className="mt-6 text-xs text-text-muted">{inv.vatExempt}</p>
         )}
 

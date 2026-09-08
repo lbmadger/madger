@@ -21,8 +21,8 @@ const items = [
     desc: "Toute ton année (encaissements, remboursements, frais de transaction, net versé) au format CSV, prête pour ton expert-comptable.",
   },
   {
-    title: "Factur-X automatique",
-    desc: "Le format électronique prévu par la réforme sera activé pour toi au moment voulu. Tu ne changes rien à tes habitudes.",
+    title: "Numérotées sans trou, archivées",
+    desc: "Numérotation séquentielle par année, avoir automatique à chaque remboursement, factures conservées et retéléchargeables depuis ton espace.",
   },
 ];
 
@@ -61,8 +61,9 @@ export default function Compliance2026() {
           </h2>
           <p className="text-text-muted text-base max-w-xl mx-auto" style={{ lineHeight: 1.6 }}>
             La réforme française impose la facture électronique à toutes les
-            entreprises, micro-entrepreneurs compris. Pendant que d&apos;autres
-            chercheront un logiciel, tes factures seront déjà en règle.
+            entreprises, micro-entrepreneurs compris. Tes factures Madger portent
+            déjà toutes les mentions obligatoires et restent exportables pour ton
+            expert-comptable.
           </p>
         </motion.div>
 
@@ -116,7 +117,9 @@ export default function Compliance2026() {
           style={{ fontSize: 12, color: "var(--text-dim)" }}
         >
           Réforme de la facturation électronique française : réception dès
-          septembre 2026, émission généralisée en 2027.
+          septembre 2026, émission généralisée en 2027. Le format Factur-X sera
+          proposé à ta demande dès que le calendrier de la réforme l&apos;exigera pour
+          ton statut.
         </motion.p>
       </div>
     </section>

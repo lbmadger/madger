@@ -12,6 +12,7 @@ import {
 } from "@/lib/booking/cancellation";
 import { planOf, feeRateBps } from "@/lib/subscription/plan";
 import { sendEmail } from "@/lib/email/resend";
+import { notifyWaitlistForBooking } from "@/lib/waitlist/notify";
 import {
   refundClient,
   bookingCancelledCoach,
@@ -169,6 +170,7 @@ export async function POST(req: NextRequest) {
       .eq("id", bookingId)
       .neq("status", "cancelled")
       .select("id");
+    await notifyWaitlistForBooking(admin, bookingId);
     if (!cancelled?.length) {
       return NextResponse.json({ error: "already_processed" }, { status: 409 });
     }
@@ -260,6 +262,7 @@ export async function POST(req: NextRequest) {
       .from("bookings")
       .update({ status: "cancelled" })
       .eq("id", bookingId);
+    await notifyWaitlistForBooking(admin, bookingId);
     await notifyCoachCancelled(0, 0);
     return NextResponse.json({ ok: true, refunded_cents: 0 });
   }
@@ -271,6 +274,7 @@ export async function POST(req: NextRequest) {
       .from("bookings")
       .update({ status: "cancelled" })
       .eq("id", bookingId);
+    await notifyWaitlistForBooking(admin, bookingId);
     await notifyCoachCancelled(0, 0);
     return NextResponse.json({ ok: true, refunded_cents: 0 });
   }
@@ -382,6 +386,7 @@ export async function POST(req: NextRequest) {
       .from("bookings")
       .update({ status: "cancelled" })
       .eq("id", bookingId);
+    await notifyWaitlistForBooking(admin, bookingId);
 
     // Pack clôturé (journalisé) et avoir émis pour la part remboursée.
     // Best-effort : la pièce comptable ne doit jamais annuler un

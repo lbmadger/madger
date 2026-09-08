@@ -12,6 +12,7 @@ import {
 } from "@/lib/booking/cancellation";
 import { planOf, feeRateBps } from "@/lib/subscription/plan";
 import { sendEmail } from "@/lib/email/resend";
+import { notifyWaitlistForBooking } from "@/lib/waitlist/notify";
 import { notifyClient } from "@/lib/notifications/client";
 import {
   refundClient,
@@ -118,6 +119,7 @@ export async function POST(req: NextRequest) {
       .eq("id", bookingId)
       .neq("status", "cancelled")
       .select("id");
+    await notifyWaitlistForBooking(admin, bookingId);
     if (!cancelled?.length) {
       return NextResponse.json({ error: "already_processed" }, { status: 409 });
     }
@@ -229,6 +231,7 @@ export async function POST(req: NextRequest) {
       .from("bookings")
       .update({ status: "cancelled" })
       .eq("id", bookingId);
+    await notifyWaitlistForBooking(admin, bookingId);
     try {
       const { data: client } = await admin
         .from("clients")
@@ -274,6 +277,7 @@ export async function POST(req: NextRequest) {
       .from("bookings")
       .update({ status: "cancelled" })
       .eq("id", bookingId);
+    await notifyWaitlistForBooking(admin, bookingId);
     try {
       if (booking.client_id) {
         const { data: client } = await admin
@@ -429,6 +433,7 @@ export async function POST(req: NextRequest) {
       .from("bookings")
       .update({ status: "cancelled" })
       .eq("id", bookingId);
+    await notifyWaitlistForBooking(admin, bookingId);
 
     // Pack clôturé (journalisé) : plus aucun crédit utilisable après
     // remboursement. Avoir émis pour la part remboursée (best-effort : la

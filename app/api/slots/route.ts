@@ -11,7 +11,8 @@ export const dynamic = "force-dynamic";
 // coordonnées brutes exposées : on ne renvoie que des créneaux.
 //
 // GET /api/slots?coach=<slug>&duration=<min>
-// → { mode: "slots", days: [{ date, slots: [{ iso, label }] }] }
+// → { mode: "slots", days: [{ date, slots: [{ iso, label }], taken: [{ iso, label }] }] }
+//   `taken` : créneaux pris, proposés en liste d'attente (migration 0070).
 // → { mode: "free" } si le coach n'a défini aucune disponibilité (saisie libre)
 
 const DAYS_AHEAD = 14;
@@ -64,6 +65,7 @@ export async function GET(req: NextRequest) {
     days: result.days.map((d) => ({
       date: d.date,
       slots: d.starts.map((s) => ({ iso: s.toISOString(), label: fmt.format(s) })),
+      taken: d.taken.map((s) => ({ iso: s.toISOString(), label: fmt.format(s) })),
     })),
   });
 }

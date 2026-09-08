@@ -42,7 +42,7 @@ export async function loadInvoicePdfInput(
   const [{ data: coach }, { data: pay }, linked] = await Promise.all([
     admin
       .from("coaches")
-      .select("first_name, last_name, business_name, billing_address, city, siret, vat_number")
+      .select("first_name, last_name, business_name, billing_address, city, siret, vat_number, vat_rate_bps")
       .eq("id", r.coach_id)
       .maybeSingle(),
     r.payment_id
@@ -83,6 +83,7 @@ export async function loadInvoicePdfInput(
       city: (coach?.city as string | null) ?? null,
       siret: (coach?.siret as string | null) ?? null,
       vatNumber: (coach?.vat_number as string | null) ?? null,
+      vatRateBps: (coach?.vat_rate_bps as number | null) ?? 0,
     },
   };
   return { row: r, input };

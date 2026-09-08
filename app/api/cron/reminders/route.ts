@@ -15,6 +15,9 @@ import {
 import { notifyClient } from "@/lib/notifications/client";
 import { cronAuthorized } from "@/lib/cron/auth";
 import { isProRow } from "@/lib/subscription/plan";
+import { isMondayInParis, runWeeklyRecap } from "@/lib/cron/weeklyRecap";
+import { sendSms, sessionReminderSms, smsConfigured } from "@/lib/sms/twilio";
+import { isFrenchMobile, toE164 } from "@/lib/sms/phone";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -43,6 +46,7 @@ export async function GET(req: NextRequest) {
   const startedAt = Date.now();
   const TIME_BUDGET_MS = 45_000;
   let sent = 0;
+  let smsSent = 0;
   let scanned = 0;
   const skipIds = new Set<string>();
 
@@ -50,7 +54,7 @@ export async function GET(req: NextRequest) {
     const { data: bookings } = await supabase
       .from("bookings")
       .select(
-        "id, starts_at, location, location_text, meeting_url, reminder_sent_at, status, clients(first_name, email), coaches(first_name, last_name, timezone, gym_name, gym_address)"
+        "id, starts_at, location, location_text, meeting_url, reminder_sent_at, reminder_sms_sent_at, status, clients(first_name, email, phone), coaches(first_name, last_name, timezone, gym_name, gym_address, sms_reminders_enabled, pro_until, pro_bonus_until)"
       )
       .eq("status", "confirmed")
       .eq("is_block", false)
@@ -108,6 +112,40 @@ export async function GET(req: NextRequest) {
       });
       delivered = await sendEmail({ to: email, subject: t.subject, html: t.html });
       if (delivered) sent++;
+
+      // Rappel SMS (migration 0070) : réglage Pro du coach, mobile du client
+      // au format E.164. Tenté une seule fois par séance (reminder_sms_sent_at).
+      // Best-effort : un SMS refusé n'empêche jamais l'email ni le marquage.
+      if (
+        smsConfigured() &&
+        coach?.sms_reminders_enabled === true &&
+        isProRow(coach as { pro_until?: string | null; pro_bonus_until?: string | null }) &&
+        !b.reminder_sms_sent_at
+      ) {
+        const to = toE164(client?.phone as string | null);
+        if (to && (!to.startsWith("+33") || isFrenchMobile(to))) {
+          const body = sessionReminderSms({
+            firstName: (client?.first_name as string | null) ?? null,
+            coachName,
+            dateStr,
+            online: b.location === "online",
+            placeStr:
+              b.location === "online"
+                ? null
+                : (b.location_text as string | null) ||
+                  [coach?.gym_name, coach?.gym_address].filter(Boolean).join(", ") ||
+                  null,
+            url: `${APP_URL}/reservation/${b.id}`,
+          });
+          if (await sendSms({ to, body })) {
+            smsSent++;
+            await supabase
+              .from("bookings")
+              .update({ reminder_sms_sent_at: nowIso })
+              .eq("id", b.id);
+          }
+        }
+      }
     }
     // Marqué rappelé seulement si l'email est parti (ou s'il n'y a pas
     // d'adresse : inutile de rescanner la ligne à chaque run).
@@ -475,5 +513,18 @@ export async function GET(req: NextRequest) {
     /* best-effort */
   }
 
-  return NextResponse.json({ sent, scanned, nudged, reviewNudged, packNudged, coachAlerted });
+  // ── Récap hebdo (lundi) ───────────────────────────────────────────────────
+  // Fusionné ici : Vercel Hobby n'accorde que deux crons planifiés. Budget
+  // temps propre pour ne jamais retarder les rappels du jour.
+  let weekly: { sent: number; scanned: number } | null = null;
+  if (isMondayInParis()) {
+    try {
+      const remaining = Math.max(5_000, 55_000 - (Date.now() - startedAt));
+      weekly = await runWeeklyRecap(supabase, { budgetMs: remaining });
+    } catch (e) {
+      console.error("weekly recap failed:", e);
+    }
+  }
+
+  return NextResponse.json({ sent, smsSent, scanned, nudged, reviewNudged, packNudged, coachAlerted, weekly });
 }

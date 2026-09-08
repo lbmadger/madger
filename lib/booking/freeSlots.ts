@@ -9,7 +9,9 @@ import { zonedToUtc, weekdayInTz, dateISOInTz } from "@/lib/time/tz";
 
 export const STEP_MIN = 30; // un créneau proposé toutes les 30 min
 
-export type FreeSlotDay = { date: string; starts: Date[] };
+// `taken` : débuts de créneau dans les disponibilités mais déjà occupés
+// (séance, cours, verrou), proposés en liste d'attente (migration 0070).
+export type FreeSlotDay = { date: string; starts: Date[]; taken: Date[] };
 
 export async function computeFreeSlots(
   supabase: SupabaseClient,
@@ -64,6 +66,7 @@ export async function computeFreeSlots(
     const weekday = weekdayInTz(dayRef, tz);
     const windows = avail.filter((a) => a.weekday === weekday);
     const starts: Date[] = [];
+    const taken: Date[] = [];
     for (const w of windows) {
       const winStart = zonedToUtc(dateISO, (w.start_time as string).slice(0, 5), tz);
       const winEnd = zonedToUtc(dateISO, (w.end_time as string).slice(0, 5), tz);
@@ -74,13 +77,17 @@ export async function computeFreeSlots(
       ) {
         const end = t + duration * 60000;
         if (t < minStart) continue;
-        if (busy.some((b) => t < b.end && end > b.start)) continue;
+        if (busy.some((b) => t < b.end && end > b.start)) {
+          if (!taken.some((x) => x.getTime() === t)) taken.push(new Date(t));
+          continue;
+        }
         starts.push(new Date(t));
       }
     }
     starts.sort((a, b) => a.getTime() - b.getTime());
+    taken.sort((a, b) => a.getTime() - b.getTime());
     total += starts.length;
-    days.push({ date: dateISO, starts });
+    days.push({ date: dateISO, starts, taken });
   }
   return { mode: "slots", days, total };
 }
