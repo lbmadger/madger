@@ -2,9 +2,20 @@
 
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { SHARE_OPEN_EVENT } from "@/components/dashboard/TopbarActions";
 
 // Checklist d'onboarding affichée tant que la config n'est pas terminée.
 // Chaque étape est cliquable et reflète l'état réel du compte.
+
+// Temps indicatif par étape de configuration (minutes), pour l'estimation
+// « ~4 min » : profil 2, disponibilités 1, prestation 1, Stripe 3, SIRET 1.
+const STEP_MINUTES: Record<string, number> = {
+  "overview.setupProfile": 2,
+  "overview.setupAvailability": 1,
+  "overview.setupServices": 1,
+  "overview.setupStripe": 3,
+  "overview.setupSiret": 1,
+};
 export default function SetupChecklist({
   profileDone = true,
   availabilityDone,
@@ -25,7 +36,8 @@ export default function SetupChecklist({
 }) {
   const { t } = useI18n();
 
-  const steps = [
+  const setupDone = profileDone && availabilityDone && servicesDone && stripeDone && siretDone;
+  const steps: { labelKey: string; href?: string; done: boolean; onClick?: () => void }[] = [
     {
       labelKey: "overview.setupProfile",
       href: "/dashboard/reglages",
@@ -70,10 +82,26 @@ export default function SetupChecklist({
           },
         ]
       : []),
+    // Configuration terminée : la dernière étape est d'envoyer son lien,
+    // elle ouvre le menu Partager de la topbar. Cochée dès la première
+    // réservation reçue.
+    ...(setupDone
+      ? [
+          {
+            labelKey: "overview.setupShareLink",
+            done: bookingDone === true,
+            onClick: () => window.dispatchEvent(new Event(SHARE_OPEN_EVENT)),
+          },
+        ]
+      : []),
   ];
 
   const doneCount = steps.filter((s) => s.done).length;
   const pct = Math.round((doneCount / steps.length) * 100);
+  // Estimation du temps restant sur les étapes de configuration manquantes.
+  const remainingMin = steps
+    .filter((s) => !s.done)
+    .reduce((n, s) => n + (STEP_MINUTES[s.labelKey] ?? 0), 0);
 
   return (
     <section className="rounded-2xl border border-accent/20 bg-accent/[0.04] p-5">
@@ -81,8 +109,15 @@ export default function SetupChecklist({
         <h3 className="text-base font-semibold text-text-base">
           {t("overview.setupTitle")}
         </h3>
-        <span className="shrink-0 text-sm font-bold tabular-nums text-accent">
-          {doneCount}/{steps.length}
+        <span className="flex shrink-0 items-baseline gap-2">
+          {remainingMin > 0 && (
+            <span className="text-xs text-text-dim">
+              {t("overview.setupEta").replace("{n}", String(remainingMin))}
+            </span>
+          )}
+          <span className="text-sm font-bold tabular-nums text-accent">
+            {doneCount}/{steps.length}
+          </span>
         </span>
       </div>
       <p className="mt-1 text-sm text-text-muted">
@@ -119,7 +154,7 @@ export default function SetupChecklist({
               >
                 {t(step.labelKey)}
               </span>
-              {step.href && !step.done && (
+              {(step.href || step.onClick) && !step.done && (
                 <svg className="ml-auto shrink-0 text-text-dim" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M9 18l6-6-6-6" />
                 </svg>
@@ -136,6 +171,14 @@ export default function SetupChecklist({
                 <Link href={step.href} className={`${base} transition-colors hover:border-border-strong`}>
                   {inner}
                 </Link>
+              ) : step.onClick ? (
+                <button
+                  type="button"
+                  onClick={step.onClick}
+                  className={`${base} w-full text-left transition-colors hover:border-border-strong`}
+                >
+                  {inner}
+                </button>
               ) : (
                 <div className={base}>{inner}</div>
               )}

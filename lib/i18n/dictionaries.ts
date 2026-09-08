@@ -978,6 +978,8 @@ const fr = {
     setupSiret: "Ajouter mon SIRET (obligatoire pour facturer)",
     setupFirstClient: "Ajouter ton premier client",
     setupFirstBooking: "Recevoir ta première réservation",
+    setupShareLink: "Envoie ton lien à un premier client",
+    setupEta: "~{n} min restantes",
   },
   marketplace: {
     title: "Trouve ton coach",
@@ -2815,6 +2817,8 @@ const en: Dictionary = {
     setupSiret: "Add my SIRET (required to invoice)",
     setupFirstClient: "Add your first client",
     setupFirstBooking: "Get your first booking",
+    setupShareLink: "Send your link to a first client",
+    setupEta: "~{n} min left",
   },
   marketplace: {
     title: "Find your coach",
