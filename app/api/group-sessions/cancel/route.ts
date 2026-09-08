@@ -79,8 +79,18 @@ export async function POST(req: NextRequest) {
 
   for (const b of seats ?? []) {
     try {
-      // Place sur crédit de pack : le crédit revient au client (le coach
-      // annule), le trigger SQL le restitue à l'annulation.
+      // Place sur crédit de pack : le crédit revient au client, journalisé
+      // au nom du COACH (c'est lui qui annule : compte pour la prolongation
+      // automatique du pack). Restitué avant l'annulation, le trigger SQL
+      // ne trouve plus rien à rendre.
+      if (b.pack_credit_id) {
+        await admin.rpc("pack_credit_restore", {
+          p_booking: b.id,
+          p_actor: "coach",
+          p_lost: false,
+          p_note: "Cours annulé par le coach",
+        });
+      }
       const { data: done } = await admin
         .from("bookings")
         .update({ status: "cancelled" })

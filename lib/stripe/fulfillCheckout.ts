@@ -10,6 +10,8 @@ import {
   newRequestCoach,
   refundClient,
   firstPaymentCoach,
+  packPurchasedClient,
+  packPurchasedCoach,
 } from "@/lib/email/templates";
 import { googleCalendarUrl, icsUrl } from "@/lib/calendar/links";
 import { attachMeetToBooking } from "@/lib/google/calendar";
@@ -27,6 +29,8 @@ export type FulfillResult = {
   bookingId: string;
   // Créneau pris entre-temps par quelqu'un d'autre : client remboursé à 100 %.
   conflict: boolean;
+  // Achat d'un pack collectif : crédits ouverts, aucune séance créée.
+  groupPack?: boolean;
 };
 
 // Enregistre un paiement Stripe Checkout (séquestre) : client, séance,
@@ -86,9 +90,16 @@ export async function fulfillCheckoutSession(
   }
 
   const durationMin = Number(m.duration_min) || 60;
-  const starts = new Date(m.starts_at);
+  // Pack collectif (lot 2) : crédits seuls, aucune séance ni créneau.
+  const groupPack = m.group_pack === "1";
+  result.groupPack = groupPack;
+  const starts = m.starts_at ? new Date(m.starts_at) : new Date();
   const ends = new Date(starts.getTime() + durationMin * 60 * 1000);
-  const releaseAfter = new Date(ends.getTime() + RELEASE_DELAY_MS);
+  // Pack collectif : le cron repasse chaque semaine, libération séance par
+  // séance au fil des places consommées.
+  const releaseAfter = groupPack
+    ? new Date(Date.now() + 7 * 86400000)
+    : new Date(ends.getTime() + RELEASE_DELAY_MS);
   // Place dans un cours collectif (migration 0068) : pas de contrôle de
   // chevauchement (les participants partagent l'horaire), la place est
   // attribuée atomiquement par group_seat_book plus bas.
@@ -96,7 +107,7 @@ export async function fulfillCheckoutSession(
 
   // Créneau pris entre-temps (autre client payé/en attente qui chevauche) →
   // remboursement intégral immédiat, aucune séance créée.
-  const { data: overlapping } = groupSessionId
+  const { data: overlapping } = groupSessionId || groupPack
     ? { data: [] as { id: string }[] }
     : await supabase
         .from("bookings")
@@ -200,7 +211,9 @@ export async function fulfillCheckoutSession(
   // confirmation. Ainsi le trigger des packs voit le paiement attaché et ne
   // consomme jamais de crédit sur une séance déjà payée à part.
   let booking: { id: string } | null = null;
-  if (groupSessionId) {
+  if (groupPack) {
+    booking = null;
+  } else if (groupSessionId) {
     // Place attribuée sous verrou : cours complet ou annulé entre-temps →
     // null, traité comme un conflit de créneau (remboursement intégral).
     const { data: seatId, error: seatError } = await supabase.rpc("group_seat_book", {
@@ -234,7 +247,7 @@ export async function fulfillCheckoutSession(
   // enregistré avec booking_id null et le cron finirait par VERSER au coach
   // l'argent d'une séance qui n'existe pas. On rend l'argent et on sort
   // (même traitement que le conflit de créneau ci-dessus).
-  if (!booking?.id) {
+  if (!booking?.id && !groupPack) {
     result.conflict = true;
     if (authorized) {
       await stripe.paymentIntents.cancel(
@@ -354,11 +367,12 @@ export async function fulfillCheckoutSession(
     type: string | null;
     pack_size: number | null;
     validity_days: number | null;
+    group_service_id: string | null;
   } | null = null;
   if (m.service_id) {
     const { data: svcRow } = await supabase
       .from("services")
-      .select("name, type, pack_size, validity_days")
+      .select("name, type, pack_size, validity_days, group_service_id")
       .eq("id", m.service_id)
       .maybeSingle();
     svc = svcRow ?? null;
@@ -390,7 +404,7 @@ export async function fulfillCheckoutSession(
         p_client: clientId,
         p_service: m.service_id,
         p_payment: payment.id,
-        p_booking: booking.id,
+        p_booking: booking?.id ?? null,
       });
       if (packError || !packId) {
         // Pack payé sans crédits ouverts (service modifié entre le paiement
@@ -536,7 +550,42 @@ export async function fulfillCheckoutSession(
       [m.first_name, m.last_name].filter(Boolean).join(" ") || "Client";
     const coachEmail = coachAuth?.user?.email;
 
-    if (authorized) {
+    if (groupPack) {
+      // Pack collectif acheté : crédits ouverts, le client place ses places
+      // depuis son espace sur les cours de la prestation rattachée.
+      let groupServiceName: string | null = null;
+      if (svc?.group_service_id) {
+        const { data: gsvc } = await supabase
+          .from("services")
+          .select("name")
+          .eq("id", svc.group_service_id)
+          .maybeSingle();
+        groupServiceName = (gsvc?.name as string | null) ?? null;
+      }
+      if (m.email) {
+        const t = packPurchasedClient({
+          coachName,
+          packName: svc?.name ?? "Pack",
+          groupServiceName,
+          size: svc?.pack_size ?? 0,
+          priceStr,
+          validityStr: packInfo?.validityStr ?? null,
+          spaceUrl: `${APP_URL}/espace`,
+        });
+        await sendEmail({ to: m.email, subject: t.subject, html: t.html });
+      }
+      if (coachEmail) {
+        const t = packPurchasedCoach({
+          locale: coachLocale,
+          clientName,
+          packName: svc?.name ?? "Pack",
+          size: svc?.pack_size ?? 0,
+          priceStr: coachPriceStr,
+          dashboardUrl: `${APP_URL}/dashboard/clients`,
+        });
+        await sendEmail({ to: coachEmail, subject: t.subject, html: t.html });
+      }
+    } else if (authorized) {
       // Demande en attente d'acceptation : empreinte bancaire, pas de débit.
       if (m.email) {
         const t = requestReceivedClient({

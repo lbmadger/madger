@@ -76,6 +76,10 @@ export default function ServicesView({
       parts.push(t("services.groupMeta").replace("{n}", String(s.capacity)));
     if (s.type === "pack" && s.pack_size)
       parts.push(`${s.pack_size} ${t("services.sessionsLabel")}`);
+    if (s.type === "pack" && s.group_service_id) {
+      const g = initialServices.find((x) => x.id === s.group_service_id);
+      parts.push(t("services.groupPackMeta").replace("{name}", g?.name ?? "?"));
+    }
     if (s.type === "pack" && s.validity_days)
       parts.push(
         `${t("services.validityShort")} ${Math.round(s.validity_days / 30)} ${t("services.form.validityMonths")}`
@@ -206,6 +210,7 @@ export default function ServicesView({
       {adding && (
         <AddServiceModal
           packsAllowed={packsAllowed}
+          services={initialServices}
           onClose={() => setAdding(false)}
           onCreated={() => {
             setAdding(false);
@@ -217,6 +222,7 @@ export default function ServicesView({
         <AddServiceModal
           service={editing}
           packsAllowed={packsAllowed}
+          services={initialServices}
           onClose={() => setEditing(null)}
           onCreated={() => {
             setEditing(null);

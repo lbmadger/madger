@@ -119,7 +119,7 @@ export async function runPackMaintenance(
     const { data: expiring } = await admin
       .from("pack_credits")
       .select(
-        "id, coach_id, client_id, total, used, expires_at, extended_count, service_name, clients(email, first_name, last_name), coaches(first_name, last_name, timezone, min_notice_hours, locale)"
+        "id, coach_id, client_id, total, used, expires_at, extended_count, service_name, services(group_service_id), clients(email, first_name, last_name), coaches(first_name, last_name, timezone, min_notice_hours, locale)"
       )
       .eq("status", "active")
       .not("expires_at", "is", null)
@@ -145,7 +145,20 @@ export async function runPackMaintenance(
         .eq("reason", "cancel_restore")
         .eq("actor", "coach");
       let culprit = (coachCancels ?? 0) >= 2;
-      if (!culprit) {
+      // Pack collectif : le coach est en cause s'il n'a planifié aucun cours
+      // de cette prestation sur les 14 prochains jours.
+      const psvc = Array.isArray(p.services) ? p.services[0] : p.services;
+      const groupServiceId = (psvc?.group_service_id as string | null) ?? null;
+      if (!culprit && groupServiceId) {
+        const { count: upcoming } = await admin
+          .from("group_sessions")
+          .select("id", { count: "exact", head: true })
+          .eq("service_id", groupServiceId)
+          .eq("status", "scheduled")
+          .gt("starts_at", new Date(nowMs).toISOString())
+          .lte("starts_at", new Date(nowMs + LOOKAHEAD_DAYS * 86400000).toISOString());
+        culprit = (upcoming ?? 0) === 0;
+      } else if (!culprit) {
         if (!freeByCoach.has(coachId)) {
           const res = await computeFreeSlots(
             admin,

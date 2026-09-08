@@ -235,6 +235,10 @@ export default function CoachProfile({
     }
     if (isGroupService(s))
       parts.push(t("services.groupMeta").replace("{n}", String(s.capacity)));
+    if (s.type === "pack" && s.group_service_id) {
+      const g = services.find((x) => x.id === s.group_service_id);
+      parts.push(t("services.groupPackMeta").replace("{name}", g?.name ?? "?"));
+    }
     if (s.duration_min) parts.push(`${s.duration_min} min`);
     return parts.join(" · ");
   }

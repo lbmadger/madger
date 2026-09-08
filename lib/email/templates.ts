@@ -1832,6 +1832,90 @@ export function packRefundClient(p: {
   };
 }
 
+// ── Client + coach : pack collectif acheté (crédits, places à poser) ────────
+export function packPurchasedClient(p: {
+  coachName: string;
+  packName: string;
+  groupServiceName: string | null;
+  size: number;
+  priceStr: string;
+  validityStr: string | null;
+  spaceUrl: string;
+}): Email {
+  return {
+    subject: `Ton pack « ${p.packName} » est prêt : ${p.size} places à poser ✅`,
+    html: layout({
+      preheader: `${p.size} places sur les cours de ${p.coachName}, à poser depuis ton espace.`,
+      eyebrow: "Pack collectif",
+      title: `${p.size} places à poser sur les cours`,
+      intro: `Ton pack <b style="color:${C.text};">${p.packName}</b> chez <b style="color:${C.text};">${p.coachName}</b> est payé. Tu choisis tes cours au fil des semaines depuis ton espace${p.groupServiceName ? ` (cours « ${p.groupServiceName} »)` : ""} : chaque place posée se décompte du pack.`,
+      blocks: [
+        detailsTable([
+          { label: "Coach", value: p.coachName },
+          { label: "Pack", value: `${p.size} places` },
+          ...(p.validityStr ? [{ label: "Valable jusqu'au", value: p.validityStr }] : []),
+          { label: "Montant réglé", value: p.priceStr, accent: true },
+        ]),
+        infoBox(
+          "Paiement sécurisé",
+          `Ton paiement est sécurisé : il n'est versé au coach qu'au fil des cours, <b style="color:${C.text};">24 h après chacun</b>. Les places non consommées d'un pack peuvent être remboursées depuis ton espace.`
+        ),
+      ],
+      cta: { label: "Poser ma première place", url: p.spaceUrl },
+    }),
+  };
+}
+
+export function packPurchasedCoach(p: {
+  clientName: string;
+  packName: string;
+  size: number;
+  priceStr: string;
+  dashboardUrl: string;
+  locale?: EmailLocale;
+}): Email {
+  const locale = p.locale ?? "fr";
+  const L =
+    locale === "en"
+      ? {
+          subject: `New pack sold: ${p.clientName} · ${p.size} seats`,
+          preheader: `${p.clientName} bought and paid for "${p.packName}" · ${p.priceStr}.`,
+          eyebrow: "New pack",
+          title: "A client just bought a class pack 🎉",
+          intro: `Good news: <b style="color:${C.text};">${p.clientName}</b> bought <b style="color:${C.text};">and paid for</b> the pack <b style="color:${C.text};">${p.packName}</b> (${p.size} seats). They book their seats on your classes from their space.`,
+          amount: "Pack amount",
+          payoutTitle: "Payout",
+          payoutBody: `Your money is released <b style="color:${C.text};">seat by seat, 24 hours after each class</b>, minus the Madger transaction fees.`,
+          cta: "Open my clients",
+        }
+      : {
+          subject: `Nouveau pack vendu : ${p.clientName} · ${p.size} places`,
+          preheader: `${p.clientName} a acheté et payé « ${p.packName} » · ${p.priceStr}.`,
+          eyebrow: "Nouveau pack",
+          title: "Un client vient d'acheter un pack de cours 🎉",
+          intro: `Bonne nouvelle : <b style="color:${C.text};">${p.clientName}</b> a acheté <b style="color:${C.text};">et payé</b> le pack <b style="color:${C.text};">${p.packName}</b> (${p.size} places). Il pose ses places sur tes cours depuis son espace.`,
+          amount: "Montant du pack",
+          payoutTitle: "Versement",
+          payoutBody: `Ton argent est débloqué <b style="color:${C.text};">place par place, 24 h après chaque cours</b>, déduction faite des frais de transaction Madger.`,
+          cta: "Ouvrir mes clients",
+        };
+  return {
+    subject: L.subject,
+    html: layout({
+      locale,
+      preheader: L.preheader,
+      eyebrow: L.eyebrow,
+      title: L.title,
+      intro: L.intro,
+      blocks: [
+        detailsTable([{ label: L.amount, value: p.priceStr, accent: true }]),
+        infoBox(L.payoutTitle, L.payoutBody),
+      ],
+      cta: { label: L.cta, url: p.dashboardUrl },
+    }),
+  };
+}
+
 // ── Coach : un client demande le remboursement du reste de son pack ─────────
 export function packRefundRequestedCoach(p: {
   clientName: string;

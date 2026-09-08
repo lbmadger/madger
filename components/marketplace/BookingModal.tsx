@@ -183,6 +183,10 @@ export default function BookingModal({
   const payMode = !!selectedService || isGroup;
   // Abonnement mensuel : souscription récurrente, aucun créneau à choisir.
   const isSubscription = selectedService?.type === "subscription";
+  // Pack collectif : crédits seuls, les places se posent ensuite sur les
+  // cours depuis l'espace client. Aucun créneau à l'achat.
+  const isGroupPack = selectedService?.type === "pack" && !!selectedService.group_service_id;
+  const noSlot = isSubscription || isGroupPack;
   // Un pack est toujours débité à l'achat (crédits disponibles tout de
   // suite), même chez un coach en mode validation : seule la première séance
   // reste à approuver, remboursement intégral si le coach refuse. Une place
@@ -272,7 +276,7 @@ export default function BookingModal({
     let starts: Date | null = null;
     if (isGroup && groupSession) {
       starts = new Date(groupSession.starts_at);
-    } else if (!isSubscription) {
+    } else if (!noSlot) {
       if (slotState.mode === "error" || slotState.mode === "loading") {
         return setError(t("booking.errors.slotsUnavailable"));
       }
@@ -582,6 +586,23 @@ export default function BookingModal({
                   </div>
                 )}
 
+              {/* Pack collectif : pas de créneau, places posées ensuite */}
+              {isGroupPack && selectedService && (
+                <div className="rounded-xl border border-accent/25 bg-accent/[0.05] p-3">
+                  <p className="text-xs font-medium text-text-base">
+                    <RepeatIcon size={13} className="mr-1.5 inline-block align-[-2px] text-accent" />{t("booking.groupPackTitle")}
+                  </p>
+                  <p className="mt-1 text-xs text-text-muted">
+                    {t("booking.groupPackDesc")
+                      .replace("{n}", String(selectedService.pack_size ?? 0))
+                      .replace(
+                        "{name}",
+                        services.find((x) => x.id === selectedService.group_service_id)?.name ?? ""
+                      )}
+                  </p>
+                </div>
+              )}
+
               {/* Abonnement mensuel : pas de créneau, le coach planifie */}
               {isSubscription && (
                 <div className="rounded-xl border border-accent/25 bg-accent/[0.05] p-3">
@@ -595,7 +616,7 @@ export default function BookingModal({
               )}
 
               {/* Présentiel / visio si le coach propose les deux */}
-              {!isGroup && !isSubscription && coach.accepts_online && coach.city && (
+              {!isGroup && !noSlot && coach.accepts_online && coach.city && (
                 <div className="flex gap-2">
                   {[false, true].map((opt) => (
                     <button
@@ -626,7 +647,7 @@ export default function BookingModal({
               )}
 
               {/* ── Créneaux réels (pas pour un abonnement ni un cours) ── */}
-              {!isGroup && !isSubscription && slotState.mode === "loading" && (
+              {!isGroup && !noSlot && slotState.mode === "loading" && (
                 <div
                   role="status"
                   aria-busy={slotState.mode === "loading"}
@@ -638,7 +659,7 @@ export default function BookingModal({
 
               {/* Erreur de chargement : proposer de réessayer plutôt que de
                   laisser réserver à l'aveugle */}
-              {!isGroup && !isSubscription && slotState.mode === "error" && (
+              {!isGroup && !noSlot && slotState.mode === "error" && (
                 <div className="rounded-xl border border-border bg-bg-elevated p-4 text-center">
                   <p className="text-sm text-text-muted">
                     {t("booking.slotsError")}
@@ -660,7 +681,7 @@ export default function BookingModal({
                 </p>
               )}
 
-              {!isGroup && !isSubscription && slotState.mode === "slots" && (
+              {!isGroup && !noSlot && slotState.mode === "slots" && (
                 <div className="flex flex-col gap-2">
                   <span className={labelClass}>{t("booking.chooseSlot")}</span>
                   {!anySlots ? (
@@ -738,7 +759,7 @@ export default function BookingModal({
               )}
 
               {/* ── Saisie libre (coach sans disponibilités définies) ───── */}
-              {!isGroup && !isSubscription && slotState.mode === "free" && (
+              {!isGroup && !noSlot && slotState.mode === "free" && (
                 <>
                   <div className="grid grid-cols-2 gap-3">
                     <label className="flex flex-col gap-1.5">

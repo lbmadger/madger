@@ -9,6 +9,7 @@ import ClientBell from "@/components/client/ClientBell";
 import { useConfirm } from "@/components/ui/useConfirm";
 import { TicketIcon, RepeatIcon, StarIcon } from "@/components/ui/icons";
 import SlotPickerModal from "@/components/client/SlotPickerModal";
+import GroupSeatPickerModal from "@/components/client/GroupSeatPickerModal";
 import { packProrata, packRefundableUnits, packPaidTotal } from "@/lib/packs/prorata";
 import {
   refundCents,
@@ -40,6 +41,9 @@ export type ClientPack = {
   refund_requested_at: string | null;
   refund_refused_reason: string | null;
   extended_count: number;
+  // Pack collectif : prestation collective dont les cours acceptent ces
+  // places (lot 2). Null pour un pack de séances individuelles.
+  group_service_id: string | null;
   duration_min: number;
 };
 
@@ -112,6 +116,8 @@ export default function ClientSpace({
   // Placer une séance sur un pack (par coach) / choisir un autre créneau
   // pour une séance déplacée par le coach.
   const [creditCoach, setCreditCoach] = useState<CoachCredits | null>(null);
+  // Poser une place d'un pack collectif sur un cours.
+  const [seatPack, setSeatPack] = useState<ClientPack | null>(null);
   const [moveBooking, setMoveBooking] = useState<ClientBooking | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
   // Demande de remboursement du reste d'un pack (migration 0069).
@@ -167,8 +173,18 @@ export default function ClientSpace({
   };
   const byCoach = new Map<string, CoachCredits>();
   const nowMs = Date.now();
+  // Packs collectifs actifs avec des places à poser (traités à part : une
+  // place se pose sur un cours, pas sur un créneau libre).
+  const groupPacks = packs.filter(
+    (p) =>
+      p.group_service_id &&
+      p.status === "active" &&
+      !(p.expires_at && new Date(p.expires_at).getTime() < nowMs) &&
+      p.total - p.used > 0
+  );
   for (const p of packs) {
     if (p.status !== "active") continue;
+    if (p.group_service_id) continue;
     if (p.expires_at && new Date(p.expires_at).getTime() < nowMs) continue;
     const left = Math.max(0, p.total - p.used);
     if (left <= 0) continue;
@@ -204,6 +220,36 @@ export default function ClientSpace({
         .map((p) => [p.coach_id, p])
     ).values()
   );
+
+  async function bookGroupSeat(sessionId: string): Promise<string | null> {
+    if (!seatPack) return null;
+    try {
+      const res = await fetch("/api/bookings/book-credit-group", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pack_id: seatPack.id, group_session_id: sessionId }),
+      });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const code = (j as { error?: string }).error ?? "generic";
+        if (code === "max_per_week") {
+          return t("creditBooking.errors.max_per_week").replace(
+            "{n}",
+            String((j as { max_per_week?: number | null }).max_per_week ?? 1)
+          );
+        }
+        return t(
+          `creditBooking.errors.${["too_soon", "no_credit", "session_full", "already_booked", "session_unavailable"].includes(code) ? code : "generic"}`
+        );
+      }
+      setSeatPack(null);
+      setFlash(t("groupSeat.done"));
+      router.refresh();
+      return null;
+    } catch {
+      return t("creditBooking.errors.generic");
+    }
+  }
 
   async function bookOnCredits(slots: string[]): Promise<string | null> {
     if (!creditCoach) return null;
@@ -420,6 +466,16 @@ export default function ClientSpace({
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 sm:py-12">
       {dialog}
+      {seatPack && seatPack.group_service_id && (
+        <GroupSeatPickerModal
+          coachId={seatPack.coach_id}
+          serviceId={seatPack.group_service_id}
+          coachName={seatPack.coach_name}
+          packName={seatPack.service_name}
+          onSubmit={bookGroupSeat}
+          onClose={() => setSeatPack(null)}
+        />
+      )}
       {creditCoach && creditCoach.coach_slug && (
         <SlotPickerModal
           coachSlug={creditCoach.coach_slug}
@@ -510,12 +566,46 @@ export default function ClientSpace({
       <aside className="min-w-0 lg:order-2">
       {/* En cours : crédits de pack à placer, par coach. Le bouton ouvre
           les créneaux du coach, plusieurs séances d'un coup possibles. */}
-      {(inProgress.length > 0 || exhausted.length > 0) && (
+      {(inProgress.length > 0 || exhausted.length > 0 || groupPacks.length > 0) && (
         <>
           <h2 className="mt-8 text-xs font-semibold uppercase tracking-wide text-text-dim">
             {t("clientSpace.inProgress")}
           </h2>
           <ul className="mt-3 flex flex-col gap-2">
+            {groupPacks.map((p) => {
+              const left = Math.max(0, p.total - p.used);
+              return (
+                <li
+                  key={p.id}
+                  className="rounded-2xl border border-sky-400/30 bg-sky-400/[0.06] p-4"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-text-base">
+                        {p.service_name}
+                      </p>
+                      <p className="mt-0.5 text-xs text-text-muted">
+                        {t("packs.at")} {p.coach_name} · {left}{" "}
+                        {left === 1 ? t("groupSeat.seatOne") : t("groupSeat.seatMany")}
+                        {p.expires_at
+                          ? ` · ${t("packs.validUntil")} ${new Date(p.expires_at).toLocaleDateString(loc, { day: "numeric", month: "short" })}`
+                          : ""}
+                      </p>
+                    </div>
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-sky-400 font-display text-base font-extrabold text-black">
+                      {left}
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    className="mt-3 w-full py-2.5 text-sm"
+                    onClick={() => setSeatPack(p)}
+                  >
+                    {t("groupSeat.place")}
+                  </Button>
+                </li>
+              );
+            })}
             {inProgress.map((c) => (
               <li
                 key={c.coach_id}

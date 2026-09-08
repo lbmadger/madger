@@ -772,6 +772,7 @@ const fr = {
     free: "Gratuit",
     edit: "Modifier",
     groupMeta: "Collectif · jusqu'à {n} pers.",
+    groupPackMeta: "Places sur « {name} »",
     needStripeTitle: "Connecte Stripe pour créer tes prestations",
     needStripeDesc:
       "Tes prestations sont payées en ligne par tes clients : active d'abord les paiements, la création se débloque ensuite.",
@@ -811,6 +812,14 @@ const fr = {
       groupHint:
         "Tu planifies chaque cours depuis ton agenda (date, places). Les clients réservent une place et paient chacun la leur.",
       cancelHint: "Après ce délai, la séance annulée est décomptée du pack.",
+      packFormat: "Ce pack donne droit à",
+      packIndividual: "Des séances individuelles",
+      packGroup: "Des places en cours collectif",
+      packGroupService: "Cours concernés",
+      packGroupHint:
+        "Les places de ce pack se posent sur les cours de cette prestation, depuis l'espace client. Aucune séance n'est réservée à l'achat.",
+      packGroupNone: "Crée d'abord une prestation collective pour proposer un pack de cours.",
+      packGroupRequired: "Choisis la prestation collective de ce pack.",
       maxPerWeek: "Séances par semaine",
       maxPerWeekNone: "Sans limite",
       maxPerWeekN: "{n} par semaine max",
@@ -1130,6 +1139,9 @@ const fr = {
     retry: "Réessayer",
     groupTitle: "Réserver ma place",
     groupDesc: "Ta place est confirmée dès le paiement. Chaque participant règle la sienne.",
+    groupPackTitle: "Pack de places en cours collectif",
+    groupPackDesc:
+      "{n} places sur les cours « {name} ». Aucun cours à choisir maintenant : tu poses tes places au fil des semaines depuis ton espace.",
     groupSeatsLeft: "{n} places restantes",
     unpayableService:
       "Cette prestation se règle directement avec le coach (paiement en ligne pas encore activé chez lui). Envoie ta demande, il te précisera les modalités.",
@@ -1576,6 +1588,9 @@ const fr = {
       no_credit: "Plus de crédit disponible sur ton pack.",
       not_enough_credits: "Tu as sélectionné plus de créneaux que de crédits restants.",
       max_per_week: "Ton pack est limité à {n} séance(s) par semaine. Répartis tes créneaux sur plusieurs semaines.",
+      session_full: "Ce cours est complet. Choisis une autre date.",
+      already_booked: "Tu as déjà une place sur ce cours.",
+      session_unavailable: "Ce cours n'est plus proposé. Choisis une autre date.",
       generic: "Impossible de réserver. Réessaie ou contacte le support.",
     },
   },
@@ -1591,6 +1606,16 @@ const fr = {
     stopTitle: "Arrêter cet abonnement ?",
     confirmStop:
       "L'abonnement restera actif jusqu'à la fin de la période déjà payée, puis s'arrêtera sans nouveau prélèvement.",
+  },
+  groupSeat: {
+    title: "Poser une place sur un cours",
+    place: "Poser une place sur un cours",
+    submit: "Réserver ma place",
+    done: "C'est réservé, décompté de ton pack.",
+    none: "Aucun cours programmé pour le moment. Reviens bientôt ou écris à ton coach.",
+    loadError: "Les cours n'ont pas pu être chargés. Réessaie.",
+    seatOne: "place à poser",
+    seatMany: "places à poser",
   },
   packs: {
     title: "Packs de séances",
@@ -2533,6 +2558,7 @@ const en: Dictionary = {
     free: "Free",
     edit: "Edit",
     groupMeta: "Group · up to {n} people",
+    groupPackMeta: "Seats on \"{name}\"",
     needStripeTitle: "Connect Stripe to create your services",
     needStripeDesc:
       "Your services are paid online by your clients: enable payments first, then creation unlocks.",
@@ -2572,6 +2598,14 @@ const en: Dictionary = {
       groupHint:
         "You schedule each class from your calendar (date, seats). Clients book a seat and each pays their own.",
       cancelHint: "After that, the cancelled session is deducted from the pack.",
+      packFormat: "This pack gives",
+      packIndividual: "One-to-one sessions",
+      packGroup: "Seats in group classes",
+      packGroupService: "Classes covered",
+      packGroupHint:
+        "Seats from this pack are placed on the classes of this service, from the client space. No session is booked at purchase.",
+      packGroupNone: "Create a group service first to offer a class pack.",
+      packGroupRequired: "Pick the group service for this pack.",
       maxPerWeek: "Sessions per week",
       maxPerWeekNone: "No limit",
       maxPerWeekN: "max {n} per week",
@@ -2890,6 +2924,9 @@ const en: Dictionary = {
     retry: "Try again",
     groupTitle: "Book my seat",
     groupDesc: "Your seat is confirmed as soon as you pay. Each participant pays their own.",
+    groupPackTitle: "Group class seat pack",
+    groupPackDesc:
+      "{n} seats on the \"{name}\" classes. Nothing to pick now: you place your seats week after week from your space.",
     groupSeatsLeft: "{n} seats left",
     unpayableService:
       "This service is paid directly with the coach (online payment not enabled yet on their side). Send your request and they will confirm the details.",
@@ -3329,6 +3366,9 @@ const en: Dictionary = {
       no_credit: "No credit left on your pack.",
       not_enough_credits: "You selected more slots than credits left.",
       max_per_week: "Your pack is limited to {n} session(s) per week. Spread your slots over several weeks.",
+      session_full: "This class is full. Pick another date.",
+      already_booked: "You already have a seat in this class.",
+      session_unavailable: "This class is no longer offered. Pick another date.",
       generic: "Could not book. Try again or contact support.",
     },
   },
@@ -3344,6 +3384,16 @@ const en: Dictionary = {
     stopTitle: "Stop this subscription?",
     confirmStop:
       "The subscription stays active until the end of the paid period, then stops with no further charge.",
+  },
+  groupSeat: {
+    title: "Place a seat on a class",
+    place: "Place a seat on a class",
+    submit: "Book my seat",
+    done: "Booked, deducted from your pack.",
+    none: "No class scheduled yet. Come back soon or message your coach.",
+    loadError: "Classes could not be loaded. Try again.",
+    seatOne: "seat to place",
+    seatMany: "seats to place",
   },
   packs: {
     title: "Session packs",

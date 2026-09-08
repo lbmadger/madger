@@ -21,6 +21,11 @@ export async function GET(req: NextRequest) {
       slug = r.slug;
       bookingId = r.bookingId;
       conflict = r.conflict;
+      // Pack collectif : pas de séance, le client retrouve ses places à
+      // poser dans son espace.
+      if (r.groupPack && !conflict) {
+        return NextResponse.redirect(`${origin}/espace?pack=1`);
+      }
     } catch (e) {
       console.error("[checkout/success]", e);
     }

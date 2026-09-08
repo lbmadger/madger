@@ -183,7 +183,7 @@ export async function POST(req: NextRequest) {
 
   const { data: service } = await supabase
     .from("services")
-    .select("name, price_cents, currency, type, duration_min, capacity")
+    .select("name, price_cents, currency, type, duration_min, capacity, group_service_id")
     .eq("id", service_id)
     .eq("coach_id", coach.id)
     .eq("active", true)
@@ -200,6 +200,48 @@ export async function POST(req: NextRequest) {
   // plus en vendre (la vue publique les masque déjà, ceci est la sécurité).
   if (service.type === "pack" && planOf(coach) !== "pro") {
     return NextResponse.json({ error: "pack_requires_pro" }, { status: 403 });
+  }
+
+  // ── Pack collectif : crédits seuls, les places se posent sur les cours ────
+  // Aucun créneau à l'achat (pas de première séance) : le client place ses
+  // places depuis son espace, sur les cours de la prestation rattachée.
+  // Toujours débité à l'achat, jamais d'empreinte.
+  if (service.type === "pack" && service.group_service_id) {
+    const gpSession = await stripe.checkout.sessions.create({
+      mode: "payment",
+      line_items: [
+        {
+          price_data: {
+            currency: service.currency || "eur",
+            product_data: { name: service.name },
+            unit_amount: service.price_cents,
+          },
+          quantity: 1,
+        },
+      ],
+      customer_email: String(email),
+      payment_method_types: ["card", "link"],
+      payment_intent_data: { transfer_group: `coach_${coach.id}` },
+      ui_mode: "embedded_page",
+      return_url: `${origin}/api/stripe/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      metadata: {
+        coach_id: coach.id,
+        coach_slug: String(coach_slug),
+        service_id: String(service_id),
+        group_pack: "1",
+        first_name: String(first_name).slice(0, 80),
+        last_name: last_name ? String(last_name).slice(0, 80) : "",
+        email: String(email).slice(0, 254),
+        phone: phone ? String(phone).slice(0, 30) : "",
+        starts_at: "",
+        duration_min: String((service.duration_min as number | null) ?? 60),
+        online: "0",
+        message: message ? String(message).slice(0, 500) : "",
+        terms_version: TERMS_VERSION,
+        installments: "0",
+      },
+    });
+    return NextResponse.json({ client_secret: gpSession.client_secret });
   }
 
   // ── Abonnement mensuel : souscription récurrente, pas de créneau requis ───

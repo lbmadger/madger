@@ -23,10 +23,14 @@ export default function AddServiceModal({
   onCreated,
   service,
   packsAllowed = true,
+  services = [],
 }: {
   onClose: () => void;
   onCreated: () => void;
   service?: Service;
+  // Toutes les prestations du coach : un pack collectif se rattache à une
+  // de ses prestations collectives.
+  services?: Service[];
   // Coach Essentiel : le type « pack » est verrouillé (fonctionnalité Pro).
   // Un pack existant reste éditable pour être désactivé.
   packsAllowed?: boolean;
@@ -48,6 +52,15 @@ export default function AddServiceModal({
     service?.cancel_hours ?? 24
   );
   const [maxPerWeek, setMaxPerWeek] = useState<number>(service?.max_per_week ?? 0);
+  // Pack collectif : rattaché à une prestation collective, ses places se
+  // posent sur les cours de cette prestation.
+  const groupServices = services.filter(
+    (s) => s.type === "single" && (s.capacity ?? 1) > 1 && s.id !== service?.id
+  );
+  const [packGroup, setPackGroup] = useState(!!service?.group_service_id);
+  const [groupServiceId, setGroupServiceId] = useState(
+    service?.group_service_id ?? groupServices[0]?.id ?? ""
+  );
   const [location, setLocation] = useState<ServiceLocation>(
     service?.location ?? "in_person"
   );
@@ -67,6 +80,9 @@ export default function AddServiceModal({
     if (!name.trim()) return setError(t("services.errors.nameRequired"));
 
     const priceCents = Math.round((parseFloat(price.replace(",", ".")) || 0) * 100);
+    if (type === "pack" && packGroup && !groupServiceId) {
+      return setError(t("services.form.packGroupRequired"));
+    }
     const cap = type === "single" && group
       ? Math.min(50, Math.max(2, Number(capacity) || 2))
       : 1;
@@ -97,6 +113,7 @@ export default function AddServiceModal({
         cancel_hours: type === "pack" ? cancelHours : 24,
         max_per_week: type === "pack" && maxPerWeek > 0 ? maxPerWeek : null,
         capacity: cap,
+        group_service_id: type === "pack" && packGroup ? groupServiceId : null,
         // Modifier une prestation désactivée ne la republie pas : l'état
         // actif se change depuis la liste.
         active: service ? service.active : true,
@@ -270,6 +287,50 @@ export default function AddServiceModal({
                 className={inputClass}
               />
             </label>
+          )}
+
+          {/* Pack : séances individuelles ou places sur des cours collectifs */}
+          {type === "pack" && (
+            <div className="flex flex-col gap-1.5">
+              <span className={labelClass}>{t("services.form.packFormat")}</span>
+              <div className="flex gap-2">
+                {[false, true].map((opt) => (
+                  <button
+                    key={String(opt)}
+                    type="button"
+                    aria-pressed={packGroup === opt}
+                    disabled={opt && groupServices.length === 0}
+                    onClick={() => setPackGroup(opt)}
+                    className={`flex-1 rounded-full border px-3 py-2 text-sm font-medium transition-colors ${
+                      packGroup === opt
+                        ? "border-accent bg-accent/10 text-accent"
+                        : opt && groupServices.length === 0
+                        ? "cursor-not-allowed border-border text-text-dim"
+                        : "border-border-strong text-text-muted hover:text-text-base"
+                    }`}
+                  >
+                    {opt ? t("services.form.packGroup") : t("services.form.packIndividual")}
+                  </button>
+                ))}
+              </div>
+              {packGroup ? (
+                <>
+                  <Select
+                    value={groupServiceId}
+                    onChange={setGroupServiceId}
+                    ariaLabel={t("services.form.packGroupService")}
+                    options={groupServices.map((s) => ({ value: s.id, label: s.name }))}
+                  />
+                  <p className="text-xs leading-relaxed text-text-dim">
+                    {t("services.form.packGroupHint")}
+                  </p>
+                </>
+              ) : groupServices.length === 0 ? (
+                <p className="text-xs leading-relaxed text-text-dim">
+                  {t("services.form.packGroupNone")}
+                </p>
+              ) : null}
+            </div>
           )}
 
           {/* Conditions du pack : validité et délai d'annulation gratuite */}
