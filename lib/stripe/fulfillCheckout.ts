@@ -89,17 +89,23 @@ export async function fulfillCheckoutSession(
   const starts = new Date(m.starts_at);
   const ends = new Date(starts.getTime() + durationMin * 60 * 1000);
   const releaseAfter = new Date(ends.getTime() + RELEASE_DELAY_MS);
+  // Place dans un cours collectif (migration 0068) : pas de contrôle de
+  // chevauchement (les participants partagent l'horaire), la place est
+  // attribuée atomiquement par group_seat_book plus bas.
+  const groupSessionId = m.group_session_id || null;
 
   // Créneau pris entre-temps (autre client payé/en attente qui chevauche) →
   // remboursement intégral immédiat, aucune séance créée.
-  const { data: overlapping } = await supabase
-    .from("bookings")
-    .select("id")
-    .eq("coach_id", m.coach_id)
-    .in("status", ["pending", "confirmed"])
-    .lt("starts_at", ends.toISOString())
-    .gt("ends_at", starts.toISOString())
-    .limit(1);
+  const { data: overlapping } = groupSessionId
+    ? { data: [] as { id: string }[] }
+    : await supabase
+        .from("bookings")
+        .select("id")
+        .eq("coach_id", m.coach_id)
+        .in("status", ["pending", "confirmed"])
+        .lt("starts_at", ends.toISOString())
+        .gt("ends_at", starts.toISOString())
+        .limit(1);
   if ((overlapping ?? []).length > 0) {
     // Le conflit est acté AVANT l'appel Stripe : même si l'annulation/le
     // remboursement échoue ponctuellement, le client ne voit jamais un faux
@@ -177,8 +183,11 @@ export async function fulfillCheckoutSession(
     .select("booking_mode, pro_until, pro_bonus_until")
     .eq("id", m.coach_id)
     .maybeSingle();
+  // Un cours collectif est toujours confirmé d'office (le coach l'a planifié).
   const bookingStatus =
-    coachMode?.booking_mode === "approval" ? "pending" : "confirmed";
+    coachMode?.booking_mode === "approval" && !groupSessionId
+      ? "pending"
+      : "confirmed";
   // Taux de frais de transaction FIGÉ à la création de la ligne (empreinte
   // ou débit, moment où le client accepte les CGV) : un changement de plan
   // du coach ne touche jamais ce paiement. Le moyen de paiement est conservé
@@ -190,20 +199,35 @@ export async function fulfillCheckoutSession(
   // Ordre volontaire : séance en 'pending' D'ABORD, puis le paiement, puis la
   // confirmation. Ainsi le trigger des packs voit le paiement attaché et ne
   // consomme jamais de crédit sur une séance déjà payée à part.
-  const { data: booking } = await supabase
-    .from("bookings")
-    .insert({
-      coach_id: m.coach_id,
-      client_id: clientId,
-      service_id: m.service_id || null,
-      starts_at: starts.toISOString(),
-      ends_at: ends.toISOString(),
-      status: "pending",
-      location: m.online === "1" ? "online" : "in_person",
-      notes: m.message || null,
-    })
-    .select("id")
-    .single();
+  let booking: { id: string } | null = null;
+  if (groupSessionId) {
+    // Place attribuée sous verrou : cours complet ou annulé entre-temps →
+    // null, traité comme un conflit de créneau (remboursement intégral).
+    const { data: seatId, error: seatError } = await supabase.rpc("group_seat_book", {
+      p_session: groupSessionId,
+      p_client: clientId,
+      p_notes: m.message || null,
+      p_status: "pending",
+    });
+    if (seatError) console.error("[fulfill] group_seat_book", seatError.message);
+    booking = seatId ? { id: seatId as string } : null;
+  } else {
+    const { data: created } = await supabase
+      .from("bookings")
+      .insert({
+        coach_id: m.coach_id,
+        client_id: clientId,
+        service_id: m.service_id || null,
+        starts_at: starts.toISOString(),
+        ends_at: ends.toISOString(),
+        status: "pending",
+        location: m.online === "1" ? "online" : "in_person",
+        notes: m.message || null,
+      })
+      .select("id")
+      .single();
+    booking = created ? { id: created.id as string } : null;
+  }
   result.bookingId = booking?.id ?? "";
 
   // Réservation impossible à créer : SANS ce garde, le paiement serait
@@ -224,6 +248,23 @@ export async function fulfillCheckoutSession(
         { idempotencyKey: `nobooking_refund_${piId}` }
       );
     }
+    // Cours complet : le client est prévenu du remboursement (best-effort).
+    if (groupSessionId && m.email) {
+      try {
+        const tpl = refundClient({
+          coachName: "ton coach",
+          refundStr: ((session.amount_total ?? 0) / 100).toLocaleString("fr-FR", {
+            style: "currency",
+            currency: "EUR",
+          }),
+          reason: "cancellation",
+        });
+        await sendEmail({ to: m.email, subject: tpl.subject, html: tpl.html });
+      } catch {
+        /* best-effort */
+      }
+    }
+    await supabase.from("slot_holds").delete().eq("stripe_session_id", session.id);
     return result;
   }
 
@@ -403,7 +444,7 @@ export async function fulfillCheckoutSession(
   // compte est connecté) ; en visio, un lien Meet est intégré. En mode
   // approbation, l'événement est créé à la confirmation par le coach.
   let meetUrl: string | undefined;
-  if (booking && bookingStatus === "confirmed") {
+  if (booking && bookingStatus === "confirmed" && !groupSessionId) {
     meetUrl =
       (await attachMeetToBooking(supabase, {
         bookingId: booking.id,
@@ -465,8 +506,19 @@ export async function fulfillCheckoutSession(
           .filter(Boolean)
           .join(" · ") || undefined;
     const reservationUrl = `${APP_URL}/reservation/${result.bookingId}`;
+    // Cours collectif : lieu et lien visio du cours, nom du cours.
+    let groupName: string | undefined;
+    if (groupSessionId) {
+      const { data: gs } = await supabase
+        .from("group_sessions")
+        .select("name, meeting_url, location_text")
+        .eq("id", groupSessionId)
+        .maybeSingle();
+      groupName = (gs?.name as string | undefined) ?? undefined;
+      if (gs?.meeting_url) meetUrl = gs.meeting_url as string;
+    }
     const calEvent = {
-      title: `Séance avec ${coachName}`,
+      title: groupName ? `${groupName} avec ${coachName}` : `Séance avec ${coachName}`,
       start: starts,
       end: ends,
       details: [
@@ -520,6 +572,7 @@ export async function fulfillCheckoutSession(
           icsUrl: calendarIcsUrl,
           placeStr,
           pack: packInfo,
+          groupName,
         });
         await sendEmail({ to: m.email, subject: t.subject, html: t.html });
       }
@@ -530,7 +583,7 @@ export async function fulfillCheckoutSession(
           dateStr: coachDateStr,
           // Vrai nom de la prestation achetée (repli générique par langue).
           serviceName:
-            svc?.name || (coachLocale === "en" ? "Session" : "Séance"),
+            groupName || svc?.name || (coachLocale === "en" ? "Session" : "Séance"),
           priceStr: coachPriceStr,
           online,
           dashboardUrl: `${APP_URL}/dashboard/agenda`,

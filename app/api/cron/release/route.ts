@@ -18,6 +18,7 @@ import { detachMeetFromBooking } from "@/lib/google/calendar";
 import { emailInvoice } from "@/lib/invoices/send";
 import { ensureStripeFee } from "@/lib/stripe/fees";
 import { packPaidTotal } from "@/lib/packs/prorata";
+import { runPackMaintenance } from "@/lib/packs/maintenance";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -108,6 +109,15 @@ export async function GET(req: NextRequest) {
   } catch {
     /* best-effort : le prochain run retente */
   }
+
+  // ── Protection des packs (migration 0069) ──────────────────────────────────
+  // AVANT l'expiration : demandes de remboursement sans réponse, coachs
+  // partis, prolongation des packs dont le coach est en cause.
+  const packCare = await runPackMaintenance(supabase, stripe, {
+    startedAt,
+    budgetMs: 20_000,
+  });
+  for (const e of packCare.errors) errors.push(`packs: ${e}`);
 
   // ── Packs arrivés à expiration (migration 0056) ────────────────────────────
   // Job quotidien journalisé : chaque pack expiré passe en 'expired' et un
@@ -819,5 +829,17 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ released, refunded, reconciled, expired, expiredPacks, errors });
+  return NextResponse.json({
+    released,
+    refunded,
+    reconciled,
+    expired,
+    expiredPacks,
+    packCare: {
+      autoRefunded: packCare.autoRefunded,
+      offlineRefunded: packCare.offlineRefunded,
+      extended: packCare.extended,
+    },
+    errors,
+  });
 }

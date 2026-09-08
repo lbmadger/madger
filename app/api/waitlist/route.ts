@@ -4,7 +4,7 @@ import { SUPABASE_URL } from "@/lib/supabase/config";
 
 export const dynamic = "force-dynamic";
 
-// Liste d'attente sur un créneau pris (migration 0068). Route publique :
+// Liste d'attente sur un créneau pris (migration 0070). Route publique :
 // le visiteur laisse son email sur un créneau complet, il est prévenu si la
 // séance est annulée (lib/waitlist/notify.ts). Rate limit mémoire par IP,
 // même patron que le signalement de séance.

@@ -61,14 +61,14 @@ export default async function ClientSpacePage() {
           admin
             .from("pack_credits")
             .select(
-              "id, coach_id, total, used, status, expires_at, service_name, cancel_hours, services(name, duration_min), coaches(first_name, last_name, slug, booking_mode)"
+              "id, coach_id, total, used, status, expires_at, service_name, cancel_hours, max_per_week, payment_id, refund_request_status, refund_requested_at, refund_refused_reason, extended_count, services(name, duration_min), coaches(first_name, last_name, slug, booking_mode)"
             )
             .in("client_id", clientIds)
             .order("created_at", { ascending: false }),
           admin
             .from("bookings")
             .select(
-              "id, starts_at, ends_at, status, location, location_text, reschedule_pending_until, rescheduled_from, pack_credit_id, pack_credits(cancel_hours), coaches(first_name, last_name, slug, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, cancel_hours, gym_name, gym_address, pro_until, pro_bonus_until)"
+              "id, starts_at, ends_at, status, location, location_text, reschedule_pending_until, rescheduled_from, pack_credit_id, pack_credits(cancel_hours), group_sessions(name), coaches(first_name, last_name, slug, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, cancel_hours, gym_name, gym_address, pro_until, pro_bonus_until)"
             )
             .in("client_id", clientIds)
             .order("starts_at", { ascending: false })
@@ -108,6 +108,12 @@ export default async function ClientSpacePage() {
           coach_booking_mode: (co?.booking_mode as string | null) ?? "instant",
           duration_min: (svc?.duration_min as number | null) ?? 60,
           cancel_hours: (c.cancel_hours as number | null) ?? null,
+          max_per_week: (c.max_per_week as number | null) ?? null,
+          refundable: !!c.payment_id,
+          refund_request_status: (c.refund_request_status as string | null) ?? null,
+          refund_requested_at: (c.refund_requested_at as string | null) ?? null,
+          refund_refused_reason: (c.refund_refused_reason as string | null) ?? null,
+          extended_count: (c.extended_count as number | null) ?? 0,
         });
       }
 
@@ -153,6 +159,10 @@ export default async function ClientSpacePage() {
           coach_name:
             [co?.first_name, co?.last_name].filter(Boolean).join(" ") || "-",
           coach_slug: (co?.slug as string) ?? null,
+          group_name: (() => {
+            const g = Array.isArray(b.group_sessions) ? b.group_sessions[0] : b.group_sessions;
+            return (g?.name as string | null) ?? null;
+          })(),
           cancellation_policy:
             (co?.cancellation_policy as ClientBooking["cancellation_policy"]) ??
             "moderate",

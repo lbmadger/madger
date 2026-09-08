@@ -189,6 +189,8 @@ export function bookingConfirmationClient(p: {
   // Achat d'un pack : nombre de séances et validité, pour que le client
   // sache que le montant réglé couvre plusieurs séances.
   pack?: { size: number; validityStr?: string | null };
+  // Place dans un cours collectif : nom du cours.
+  groupName?: string;
 }): Email {
   const packRows: DetailRow[] = p.pack
     ? [
@@ -199,6 +201,8 @@ export function bookingConfirmationClient(p: {
   return {
     subject: p.pack
       ? `Ton pack de ${p.pack.size} séances avec ${p.coachName} est confirmé ✅`
+      : p.groupName
+      ? `Ta place au cours « ${p.groupName} » est confirmée ✅`
       : `Ta séance avec ${p.coachName} est confirmée ✅`,
     html: layout({
       preheader: `Séance confirmée ${p.dateStr} · paiement sécurisé jusqu'après la séance.`,
@@ -206,10 +210,13 @@ export function bookingConfirmationClient(p: {
       title: "C'est réservé. À toi de jouer 💪",
       intro: p.pack
         ? `Ton pack de <b style="color:${C.text};">${p.pack.size} séances</b> avec <b style="color:${C.text};">${p.coachName}</b> est confirmé et ton paiement est bien enregistré. Ta première séance est déjà réservée, tu places les suivantes depuis ton espace. Voici le récap :`
+        : p.groupName
+        ? `Ta place au cours <b style="color:${C.text};">${p.groupName}</b> avec <b style="color:${C.text};">${p.coachName}</b> est confirmée et ton paiement est bien enregistré. Voici le récap :`
         : `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> est confirmée et ton paiement est bien enregistré. Voici le récap :`,
       blocks: [
         detailsTable([
           { label: "Coach", value: p.coachName },
+          ...(p.groupName ? [{ label: "Cours", value: p.groupName }] : []),
           ...packRows,
           { label: p.pack ? "Première séance" : "Date & heure", value: p.dateStr },
           { label: "Format", value: p.online ? "En visio" : "En présentiel" },
@@ -1820,14 +1827,25 @@ export function packRefundClient(p: {
   refundStr: string;
   remaining: number;
   spaceUrl: string;
+  // coach : geste du coach ; no_answer : demande restée sans réponse 7 jours ;
+  // coach_offline : coach parti de la plateforme.
+  mode?: "coach" | "no_answer" | "coach_offline";
 }): Email {
+  const s = p.remaining > 1 ? "s" : "";
+  const mode = p.mode ?? "coach";
+  const intro =
+    mode === "no_answer"
+      ? `<b style="color:${C.text};">${p.coachName}</b> n'a pas répondu à ta demande sous 7 jours : comme prévu, Madger a remboursé les <b style="color:${C.text};">${p.remaining} séance${s}</b> restante${s} de ton pack. Le pack est clôturé, l'avoir arrive dans un email séparé.`
+      : mode === "coach_offline"
+      ? `<b style="color:${C.text};">${p.coachName}</b> n'est plus disponible sur Madger : les <b style="color:${C.text};">${p.remaining} séance${s}</b> restante${s} de ton pack te sont remboursées automatiquement. Le pack est clôturé, l'avoir arrive dans un email séparé.`
+      : `<b style="color:${C.text};">${p.coachName}</b> a remboursé les <b style="color:${C.text};">${p.remaining} séance${s}</b> restante${s} de ton pack. Le pack est clôturé, l'avoir arrive dans un email séparé.`;
   return {
     subject: `Ton pack est remboursé : ${p.refundStr} en route 💸`,
     html: layout({
-      preheader: `${p.coachName} a remboursé les ${p.remaining} séance${p.remaining > 1 ? "s" : ""} restante${p.remaining > 1 ? "s" : ""} de ton pack.`,
+      preheader: `Les ${p.remaining} séance${s} restante${s} de ton pack sont remboursées.`,
       eyebrow: "Remboursement",
       title: "Le reste de ton pack est remboursé",
-      intro: `<b style="color:${C.text};">${p.coachName}</b> a remboursé les <b style="color:${C.text};">${p.remaining} séance${p.remaining > 1 ? "s" : ""}</b> restante${p.remaining > 1 ? "s" : ""} de ton pack. Le pack est clôturé, l'avoir arrive dans un email séparé.`,
+      intro,
       blocks: [
         detailsTable([
           { label: "Coach", value: p.coachName },
@@ -1836,6 +1854,147 @@ export function packRefundClient(p: {
         ]),
       ],
       cta: { label: "Voir mes séances", url: p.spaceUrl },
+    }),
+  };
+}
+
+// ── Coach : un client demande le remboursement du reste de son pack ─────────
+export function packRefundRequestedCoach(p: {
+  clientName: string;
+  packName: string;
+  remaining: number;
+  note: string | null;
+  clientUrl: string;
+  locale?: EmailLocale;
+}): Email {
+  const locale = p.locale ?? "fr";
+  const esc = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const note = p.note ? esc(p.note.slice(0, 500)) : null;
+  const L =
+    locale === "en"
+      ? {
+          subject: `${p.clientName} asks for a refund of their pack`,
+          preheader: `${p.remaining} unused session(s) on "${p.packName}". You have 7 days to answer.`,
+          eyebrow: "Pack refund request",
+          title: `${p.clientName} asks for the rest of their pack back`,
+          intro: `<b style="color:${C.text};">${p.clientName}</b> asks to be refunded the <b style="color:${C.text};">${p.remaining} unused session${p.remaining > 1 ? "s" : ""}</b> of the pack <b style="color:${C.text};">${p.packName}</b>.${note ? `<br/><br/><span style="color:${C.muted};font-style:italic;">« ${note} »</span>` : ""}`,
+          boxTitle: "You have 7 days",
+          boxBody:
+            "From the client sheet, accept (the pro-rata refund leaves immediately) or refuse with a reason the client will read. Without an answer within 7 days, Madger refunds automatically. A refused request can be escalated to Madger by the client.",
+          cta: "Open the client sheet",
+        }
+      : {
+          subject: `${p.clientName} demande le remboursement de son pack`,
+          preheader: `${p.remaining} séance(s) non utilisée(s) sur « ${p.packName} ». Tu as 7 jours pour répondre.`,
+          eyebrow: "Demande de remboursement",
+          title: `${p.clientName} demande le remboursement du reste de son pack`,
+          intro: `<b style="color:${C.text};">${p.clientName}</b> demande à être remboursé des <b style="color:${C.text};">${p.remaining} séance${p.remaining > 1 ? "s" : ""}</b> non utilisée${p.remaining > 1 ? "s" : ""} du pack <b style="color:${C.text};">${p.packName}</b>.${note ? `<br/><br/><span style="color:${C.muted};font-style:italic;">« ${note} »</span>` : ""}`,
+          boxTitle: "Tu as 7 jours",
+          boxBody:
+            "Depuis la fiche client, accepte (le remboursement au prorata part tout de suite) ou refuse avec un motif que le client lira. Sans réponse sous 7 jours, Madger rembourse automatiquement. Un refus peut être contesté par le client auprès de Madger.",
+          cta: "Ouvrir la fiche client",
+        };
+  return {
+    subject: L.subject,
+    html: layout({
+      locale,
+      preheader: L.preheader,
+      eyebrow: L.eyebrow,
+      title: L.title,
+      intro: L.intro,
+      blocks: [infoBox(L.boxTitle, L.boxBody)],
+      cta: { label: L.cta, url: p.clientUrl },
+    }),
+  };
+}
+
+// ── Client : le coach refuse le remboursement du pack ───────────────────────
+export function packRefundRefusedClient(p: {
+  coachName: string;
+  packName: string;
+  remaining: number;
+  reason: string;
+  spaceUrl: string;
+}): Email {
+  const esc = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return {
+    subject: `Ta demande de remboursement : réponse de ${p.coachName}`,
+    html: layout({
+      preheader: `${p.coachName} a refusé le remboursement du reste de ton pack. Voici son motif.`,
+      eyebrow: "Demande de remboursement",
+      title: `${p.coachName} a refusé ta demande`,
+      intro: `Tu avais demandé le remboursement des <b style="color:${C.text};">${p.remaining} séance${p.remaining > 1 ? "s" : ""}</b> restante${p.remaining > 1 ? "s" : ""} du pack <b style="color:${C.text};">${p.packName}</b>. Ton coach a refusé, avec ce motif :<br/><br/><span style="color:${C.muted};font-style:italic;">« ${esc(p.reason)} »</span>`,
+      blocks: [
+        infoBox(
+          "Pas d'accord ?",
+          "Réponds à cet email en expliquant ta situation : Madger examine les échanges et tranche, comme pour un problème signalé sur une séance. Tes séances restent utilisables en attendant."
+        ),
+      ],
+      cta: { label: "Voir mon pack", url: p.spaceUrl },
+    }),
+  };
+}
+
+// ── Client + coach : validité du pack prolongée automatiquement ─────────────
+export function packExtendedClient(p: {
+  coachName: string;
+  packName: string;
+  remaining: number;
+  newExpiresStr: string;
+  spaceUrl: string;
+}): Email {
+  return {
+    subject: `Ton pack est prolongé jusqu'au ${p.newExpiresStr}`,
+    html: layout({
+      preheader: `${p.remaining} séance(s) à placer, validité repoussée de 30 jours.`,
+      eyebrow: "Pack prolongé",
+      title: `30 jours de plus pour tes ${p.remaining} séance${p.remaining > 1 ? "s" : ""}`,
+      intro: `Ton pack <b style="color:${C.text};">${p.packName}</b> chez <b style="color:${C.text};">${p.coachName}</b> arrivait à sa date de fin sans que tu aies pu placer tes séances (pas de créneau disponible, ou séances annulées par ton coach). Madger l'a prolongé automatiquement jusqu'au <b style="color:${C.text};">${p.newExpiresStr}</b>.`,
+      cta: { label: "Placer mes séances", url: p.spaceUrl },
+      outro:
+        "Toujours impossible de réserver ? Tu peux demander le remboursement des séances restantes depuis ton espace.",
+    }),
+  };
+}
+
+export function packExtendedCoach(p: {
+  clientName: string;
+  packName: string;
+  remaining: number;
+  newExpiresStr: string;
+  availabilityUrl: string;
+  locale?: EmailLocale;
+}): Email {
+  const locale = p.locale ?? "fr";
+  const L =
+    locale === "en"
+      ? {
+          subject: `${p.clientName}'s pack has been extended`,
+          preheader: `${p.remaining} session(s) left with no bookable slot: validity extended to ${p.newExpiresStr}.`,
+          eyebrow: "Pack extended",
+          title: `${p.clientName}'s pack was extended by 30 days`,
+          intro: `<b style="color:${C.text};">${p.clientName}</b> still has <b style="color:${C.text};">${p.remaining} session${p.remaining > 1 ? "s" : ""}</b> on the pack <b style="color:${C.text};">${p.packName}</b> and could not book them (no free slot in the coming days, or sessions you cancelled). Madger extended the pack to <b style="color:${C.text};">${p.newExpiresStr}</b> so those sessions are not lost because of scheduling.`,
+          cta: "Check my availability",
+        }
+      : {
+          subject: `Le pack de ${p.clientName} a été prolongé`,
+          preheader: `${p.remaining} séance(s) restante(s) sans créneau disponible : validité repoussée au ${p.newExpiresStr}.`,
+          eyebrow: "Pack prolongé",
+          title: `Le pack de ${p.clientName} est prolongé de 30 jours`,
+          intro: `<b style="color:${C.text};">${p.clientName}</b> a encore <b style="color:${C.text};">${p.remaining} séance${p.remaining > 1 ? "s" : ""}</b> sur le pack <b style="color:${C.text};">${p.packName}</b> et n'a pas pu les placer (aucun créneau libre dans les prochains jours, ou séances annulées de ton côté). Madger a prolongé le pack jusqu'au <b style="color:${C.text};">${p.newExpiresStr}</b> pour que ces séances ne soient pas perdues à cause du planning.`,
+          cta: "Vérifier mes disponibilités",
+        };
+  return {
+    subject: L.subject,
+    html: layout({
+      locale,
+      preheader: L.preheader,
+      eyebrow: L.eyebrow,
+      title: L.title,
+      intro: L.intro,
+      cta: { label: L.cta, url: p.availabilityUrl },
     }),
   };
 }

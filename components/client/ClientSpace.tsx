@@ -32,6 +32,14 @@ export type ClientPack = {
   // Délai d'annulation du pack (figé à l'achat) : affiché avant de placer
   // une séance sur les crédits.
   cancel_hours: number | null;
+  // Limite hebdomadaire, demande de remboursement et prolongation
+  // (migration 0069).
+  max_per_week: number | null;
+  refundable: boolean;
+  refund_request_status: string | null;
+  refund_requested_at: string | null;
+  refund_refused_reason: string | null;
+  extended_count: number;
   duration_min: number;
 };
 
@@ -54,6 +62,8 @@ export type ClientBooking = {
   place: string | null;
   coach_name: string;
   coach_slug: string | null;
+  // Place dans un cours collectif : nom du cours (migration 0068).
+  group_name: string | null;
   cancellation_policy: string;
   cancel_hours: number | null;
   // Coach Pro : politique paramétrée ; Essentiel : règle fixe (migration 0065).
@@ -104,6 +114,43 @@ export default function ClientSpace({
   const [creditCoach, setCreditCoach] = useState<CoachCredits | null>(null);
   const [moveBooking, setMoveBooking] = useState<ClientBooking | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+  // Demande de remboursement du reste d'un pack (migration 0069).
+  const [refundPackId, setRefundPackId] = useState<string | null>(null);
+  const [refundNote, setRefundNote] = useState("");
+  const [refundBusy, setRefundBusy] = useState(false);
+  const [refundErr, setRefundErr] = useState<string | null>(null);
+
+  async function requestPackRefund(packId: string) {
+    setRefundBusy(true);
+    setRefundErr(null);
+    try {
+      const res = await fetch("/api/packs/request-refund", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pack_id: packId, note: refundNote.trim() || null }),
+      });
+      if (!res.ok) {
+        setRefundErr(t("packs.requestErr"));
+        return;
+      }
+      setRefundPackId(null);
+      setRefundNote("");
+      setFlash(
+        t("packs.requestSent").replace(
+          "{date}",
+          new Date(Date.now() + 7 * 86400000).toLocaleDateString(loc, {
+            day: "numeric",
+            month: "long",
+          })
+        )
+      );
+      router.refresh();
+    } catch {
+      setRefundErr(t("packs.requestErr"));
+    } finally {
+      setRefundBusy(false);
+    }
+  }
   const [proposalBusy, setProposalBusy] = useState<string | null>(null);
 
   // Crédits disponibles, regroupés par coach : c'est chez LE coach du pack
@@ -169,6 +216,12 @@ export default function ClientSpace({
       const j = await res.json().catch(() => ({}));
       if (!res.ok) {
         const code = (j as { error?: string }).error ?? "generic";
+        if (code === "max_per_week") {
+          return t("creditBooking.errors.max_per_week").replace(
+            "{n}",
+            String((j as { max_per_week?: number | null }).max_per_week ?? 1)
+          );
+        }
         return t(`creditBooking.errors.${["slot_taken", "too_soon", "no_credit", "not_enough_credits"].includes(code) ? code : "generic"}`);
       }
       const confirmed = (j as { confirmed?: boolean }).confirmed;
@@ -674,6 +727,94 @@ export default function ClientSpace({
                       }}
                     />
                   </div>
+                  {active && (p.max_per_week || p.extended_count > 0) && (
+                    <p className="mt-2 text-[11px] text-text-dim">
+                      {[
+                        p.max_per_week
+                          ? t("packs.maxPerWeek").replace("{n}", String(p.max_per_week))
+                          : null,
+                        p.extended_count > 0 ? t("packs.extended") : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
+                  )}
+                  {/* Demande de remboursement du reste : le coach a 7 jours,
+                      sinon Madger rembourse. */}
+                  {active && left > 0 && p.refundable && (
+                    <div className="mt-3 border-t border-border pt-2.5">
+                      {p.refund_request_status === "pending" ? (
+                        <p className="text-xs text-text-muted">
+                          {t("packs.requestPending").replace(
+                            "{date}",
+                            p.refund_requested_at
+                              ? new Date(
+                                  new Date(p.refund_requested_at).getTime() + 7 * 86400000
+                                ).toLocaleDateString(loc, { day: "numeric", month: "long" })
+                              : ""
+                          )}
+                        </p>
+                      ) : refundPackId === p.id ? (
+                        <div className="rounded-xl border border-border bg-bg-elevated p-3">
+                          <p className="text-xs font-semibold text-text-base">
+                            {t("packs.requestTitle")}
+                          </p>
+                          <p className="mt-1 text-xs text-text-muted">{t("packs.requestDesc")}</p>
+                          <textarea
+                            value={refundNote}
+                            onChange={(e) => setRefundNote(e.target.value)}
+                            rows={2}
+                            maxLength={500}
+                            placeholder={t("packs.requestNote")}
+                            className="mt-2 w-full resize-none rounded-lg border border-border bg-bg-card px-3 py-2 text-xs text-text-base placeholder:text-text-dim focus:border-accent focus:outline-none"
+                          />
+                          {refundErr && <p className="mt-1 text-xs text-danger">{refundErr}</p>}
+                          <div className="mt-2 flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setRefundPackId(null)}
+                              className="flex-1 rounded-full border border-border-strong px-3 py-1.5 text-xs font-medium text-text-muted"
+                            >
+                              {t("common.cancel")}
+                            </button>
+                            <button
+                              type="button"
+                              disabled={refundBusy}
+                              onClick={() => requestPackRefund(p.id)}
+                              className="flex-1 rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-black disabled:opacity-50"
+                            >
+                              {refundBusy ? t("common.loading") : t("packs.requestSend")}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          {p.refund_request_status === "refused" && p.refund_refused_reason && (
+                            <p className="mb-2 text-xs text-text-muted">
+                              {t("packs.requestRefused")}{" "}
+                              <span className="italic">« {p.refund_refused_reason} »</span>{" "}
+                              <a
+                                href={`mailto:contact@madger.app?subject=${encodeURIComponent(`Remboursement de pack refusé · ${p.service_name}`)}`}
+                                className="text-accent hover:underline"
+                              >
+                                {t("packs.requestContact")}
+                              </a>
+                            </p>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setRefundErr(null);
+                              setRefundPackId(p.id);
+                            }}
+                            className="text-xs font-medium text-text-dim transition-colors hover:text-text-base"
+                          >
+                            {t("packs.requestRefund")}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
                 </li>
               );
             })}
@@ -734,6 +875,11 @@ export default function ClientSpace({
                     )}
                     {b.location === "online" && ` · ${t("clientSpace.online")}`}
                   </p>
+                  {b.group_name && (
+                    <p className="mt-0.5 text-xs font-medium text-accent">
+                      {t("clientSpace.groupLabel")} · {b.group_name}
+                    </p>
+                  )}
                   {b.place && (
                     <p className="mt-0.5 flex items-start gap-1 text-xs text-text-dim">
                       <svg className="mt-0.5 shrink-0" width="11" height="11" viewBox="0 0 24 24" fill="currentColor">

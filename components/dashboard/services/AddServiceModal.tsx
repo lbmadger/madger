@@ -13,6 +13,8 @@ const TYPES: ServiceType[] = ["single", "pack", "subscription"];
 // Validité d'un pack, en jours (0 = sans limite) ; délai d'annulation en h.
 const VALIDITIES = [0, 30, 60, 90, 180, 365];
 const CANCEL_HOURS = [12, 24, 48];
+// Séances par semaine au plus sur un pack (0 = sans limite).
+const MAX_PER_WEEK = [0, 1, 2, 3, 4, 5];
 
 // Création ET édition : passer `service` pré-remplit le formulaire et
 // enregistre en UPDATE au lieu d'un INSERT.
@@ -45,8 +47,15 @@ export default function AddServiceModal({
   const [cancelHours, setCancelHours] = useState<number>(
     service?.cancel_hours ?? 24
   );
+  const [maxPerWeek, setMaxPerWeek] = useState<number>(service?.max_per_week ?? 0);
   const [location, setLocation] = useState<ServiceLocation>(
     service?.location ?? "in_person"
+  );
+  // Format d'une séance : individuelle (1 place) ou collective (2 à 50
+  // places, prix par personne, cours planifiés depuis l'agenda).
+  const [group, setGroup] = useState((service?.capacity ?? 1) > 1);
+  const [capacity, setCapacity] = useState(
+    String((service?.capacity ?? 1) > 1 ? service?.capacity : 8)
   );
   const [description, setDescription] = useState(service?.description ?? "");
   const [loading, setLoading] = useState(false);
@@ -58,6 +67,9 @@ export default function AddServiceModal({
     if (!name.trim()) return setError(t("services.errors.nameRequired"));
 
     const priceCents = Math.round((parseFloat(price.replace(",", ".")) || 0) * 100);
+    const cap = type === "single" && group
+      ? Math.min(50, Math.max(2, Number(capacity) || 2))
+      : 1;
 
     setLoading(true);
     try {
@@ -83,6 +95,8 @@ export default function AddServiceModal({
         // les siennes : l'instantané est pris à l'achat.
         validity_days: type === "pack" && validity > 0 ? validity : null,
         cancel_hours: type === "pack" ? cancelHours : 24,
+        max_per_week: type === "pack" && maxPerWeek > 0 ? maxPerWeek : null,
+        capacity: cap,
         // Modifier une prestation désactivée ne la republie pas : l'état
         // actif se change depuis la liste.
         active: service ? service.active : true,
@@ -168,9 +182,42 @@ export default function AddServiceModal({
             )}
           </div>
 
+          {/* Format : individuelle ou collective (séance simple seulement) */}
+          {type === "single" && (
+            <div className="flex flex-col gap-1.5">
+              <span className={labelClass}>{t("services.form.format")}</span>
+              <div className="flex gap-2">
+                {[false, true].map((opt) => (
+                  <button
+                    key={String(opt)}
+                    type="button"
+                    aria-pressed={group === opt}
+                    onClick={() => setGroup(opt)}
+                    className={`flex-1 rounded-full border px-3 py-2 text-sm font-medium transition-colors ${
+                      group === opt
+                        ? "border-accent bg-accent/10 text-accent"
+                        : "border-border-strong text-text-muted hover:text-text-base"
+                    }`}
+                  >
+                    {opt ? t("services.form.groupFormat") : t("services.form.individualFormat")}
+                  </button>
+                ))}
+              </div>
+              {group && (
+                <p className="text-xs leading-relaxed text-text-dim">
+                  {t("services.form.groupHint")}
+                </p>
+              )}
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3">
             <label className="flex flex-col gap-1.5">
-              <span className={labelClass}>{t("services.form.price")}</span>
+              <span className={labelClass}>
+                {type === "single" && group
+                  ? t("services.form.pricePerPerson")
+                  : t("services.form.price")}
+              </span>
               <input
                 type="text"
                 inputMode="decimal"
@@ -210,6 +257,21 @@ export default function AddServiceModal({
             )}
           </div>
 
+          {/* Places d'un cours collectif */}
+          {type === "single" && group && (
+            <label className="flex flex-col gap-1.5">
+              <span className={labelClass}>{t("services.form.capacity")}</span>
+              <input
+                type="number"
+                min={2}
+                max={50}
+                value={capacity}
+                onChange={(e) => setCapacity(e.target.value)}
+                className={inputClass}
+              />
+            </label>
+          )}
+
           {/* Conditions du pack : validité et délai d'annulation gratuite */}
           {type === "pack" && (
             <div className="grid grid-cols-2 gap-3">
@@ -240,8 +302,24 @@ export default function AddServiceModal({
                   }))}
                 />
               </label>
+              <label className="col-span-2 flex flex-col gap-1.5">
+                <span className={labelClass}>{t("services.form.maxPerWeek")}</span>
+                <Select
+                  value={String(maxPerWeek)}
+                  onChange={(v) => setMaxPerWeek(Number(v))}
+                  ariaLabel={t("services.form.maxPerWeek")}
+                  options={MAX_PER_WEEK.map((n) => ({
+                    value: String(n),
+                    label:
+                      n === 0
+                        ? t("services.form.maxPerWeekNone")
+                        : t("services.form.maxPerWeekN").replace("{n}", String(n)),
+                  }))}
+                />
+              </label>
               <p className="col-span-2 text-xs leading-relaxed text-text-dim">
-                {t("services.form.validityHint")} {t("services.form.cancelHint")}
+                {t("services.form.validityHint")} {t("services.form.cancelHint")}{" "}
+                {t("services.form.maxPerWeekHint")}
               </p>
             </div>
           )}

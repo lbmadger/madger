@@ -15,11 +15,12 @@ import {
   type PublicCoach,
   type PublicReview,
   type CoachPhoto,
+  type PublicGroupSession,
   coachFullName,
   coachInitials,
   isSuperCoach,
 } from "@/lib/coaches/public-types";
-import { type PublicService, formatPrice } from "@/lib/services/types";
+import { type PublicService, formatPrice, isGroupService } from "@/lib/services/types";
 
 // Profil public d'un coach (page madger.app/<slug>). Les CTA Réserver /
 // Contacter seront branchés à l'étape suivante (réservation + messagerie).
@@ -28,12 +29,15 @@ export default function CoachProfile({
   services = [],
   reviews = [],
   photos = [],
+  groupSessions = [],
   demo = false,
   launched = false,
 }: {
   coach: PublicCoach;
   services?: PublicService[];
   reviews?: PublicReview[];
+  // Cours collectifs à venir (migration 0068) : réservation d'une place.
+  groupSessions?: PublicGroupSession[];
   // Galerie Résultats (avant/après), affichée entre prestations et avis.
   photos?: CoachPhoto[];
   // Page VITRINE (madger.app/exemple) : mêmes visuels, mais les CTA
@@ -64,11 +68,32 @@ export default function CoachProfile({
   // rouvre le modal de réservation là où le client s'était arrêté (le
   // brouillon local restaure prestation, créneau et champs).
   const [bookingSlot, setBookingSlot] = useState<string | null>(null);
+  // Place dans un cours collectif en cours de réservation.
+  const [bookingGroup, setBookingGroup] = useState<PublicGroupSession | null>(null);
   useEffect(() => {
     if (demo) return;
     const params = new URLSearchParams(window.location.search);
     const book = params.get("book");
     if (params.get("payment") === "canceled") setPaymentCanceled(true);
+    // Retour vers un cours collectif (?gs=<id>) : rouvre la place choisie.
+    const gs = params.get("gs");
+    if (gs) {
+      const found = groupSessions.find((g) => g.id === gs) ?? null;
+      if (found) {
+        setBookingGroup(found);
+        setBookingServiceId(found.service_id ?? undefined);
+        setBooking(true);
+      }
+      params.delete("gs");
+      params.delete("payment");
+      const qs = params.toString();
+      window.history.replaceState(
+        null,
+        "",
+        `${window.location.pathname}${qs ? `?${qs}` : ""}`
+      );
+      return;
+    }
     if (book) {
       setBookingServiceId(book === "1" ? undefined : book);
       // Créneau porté par l'URL : restauration même sans brouillon local
@@ -171,9 +196,27 @@ export default function CoachProfile({
       setDemoPrompt(true);
       return;
     }
+    // Prestation collective : elle se réserve sur un cours planifié, on
+    // descend à la liste des prochaines dates.
+    const svc = serviceId ? services.find((s) => s.id === serviceId) : null;
+    if (svc && isGroupService(svc)) {
+      document.getElementById("cours")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    setBookingGroup(null);
     setBookingServiceId(serviceId);
     setBooking(true);
   };
+  const openGroupBooking = (g: PublicGroupSession) => {
+    if (demo) {
+      setDemoPrompt(true);
+      return;
+    }
+    setBookingGroup(g);
+    setBookingServiceId(g.service_id ?? undefined);
+    setBooking(true);
+  };
+  const hasGroupServices = services.some((s) => isGroupService(s));
   const instant = coach.booking_mode === "instant";
 
   function metaLine(s: PublicService): string {
@@ -190,8 +233,20 @@ export default function CoachProfile({
           `${formatPrice(Math.round(s.price_cents / s.pack_size), s.currency, locale)} ${t("coachProfile.perSession")}`
         );
     }
+    if (isGroupService(s))
+      parts.push(t("services.groupMeta").replace("{n}", String(s.capacity)));
     if (s.duration_min) parts.push(`${s.duration_min} min`);
     return parts.join(" · ");
+  }
+
+  function groupDateLabel(iso: string): string {
+    return new Date(iso).toLocaleString(locale === "fr" ? "fr-FR" : "en-GB", {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   }
 
   return (
@@ -409,6 +464,75 @@ export default function CoachProfile({
                 </svg>
                 {t("coachProfile.escrowTrust")}
               </p>
+            )}
+          </div>
+        )}
+
+        {/* Cours collectifs à venir : une place se réserve sur un cours
+            planifié par le coach, chaque participant paie la sienne. */}
+        {(hasGroupServices || groupSessions.length > 0) && (
+          <div id="cours" className="mt-6 scroll-mt-24 border-t border-border pt-6">
+            <h2 className="text-xs font-medium uppercase tracking-wide text-text-dim">
+              {t("coachProfile.groupSessions")}
+            </h2>
+            {groupSessions.length === 0 ? (
+              <p className="mt-3 rounded-xl border border-border bg-bg-elevated p-4 text-sm text-text-muted">
+                {t("coachProfile.groupNone")}
+              </p>
+            ) : (
+              <ul className="mt-3 flex flex-col gap-2">
+                {groupSessions.map((g) => {
+                  const left = Math.max(0, g.capacity - g.seats_taken);
+                  const full = left === 0;
+                  return (
+                    <li
+                      key={g.id}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-border bg-bg-elevated p-3"
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-text-base">
+                          {g.name}
+                        </p>
+                        <p className="text-xs text-text-muted first-letter:uppercase">
+                          {groupDateLabel(g.starts_at)}
+                          {g.location === "online"
+                            ? ` · ${t("booking.online")}`
+                            : g.location_text
+                            ? ` · ${g.location_text}`
+                            : ""}
+                        </p>
+                        <p
+                          className={`mt-0.5 text-[11px] font-semibold ${
+                            full ? "text-text-dim" : left === 1 ? "text-warning" : "text-accent"
+                          }`}
+                        >
+                          {full
+                            ? t("coachProfile.groupFull")
+                            : left === 1
+                            ? t("coachProfile.groupSeatLeft")
+                            : t("coachProfile.groupSeatsLeft").replace("{n}", String(left))}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 flex-col items-end gap-1.5">
+                        <span className="text-sm font-bold text-accent">
+                          {formatPrice(g.price_cents, g.currency, locale)}
+                          <span className="ml-1 text-[10px] font-normal text-text-dim">
+                            {t("coachProfile.groupPerPerson")}
+                          </span>
+                        </span>
+                        <button
+                          type="button"
+                          disabled={full || !coach.stripe_charges_enabled}
+                          onClick={() => openGroupBooking(g)}
+                          className="rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-black transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          {t("coachProfile.groupBook")}
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
             )}
           </div>
         )}
@@ -689,7 +813,11 @@ export default function CoachProfile({
           services={services}
           initialServiceId={bookingServiceId}
           initialSlot={bookingSlot}
-          onClose={() => setBooking(false)}
+          groupSession={bookingGroup}
+          onClose={() => {
+            setBooking(false);
+            setBookingGroup(null);
+          }}
           onContact={handleContact}
         />
       )}

@@ -13,12 +13,12 @@ import { installmentsEligible } from "@/lib/stripe/installments";
 import { resolveRefundPolicy } from "@/lib/booking/cancellation";
 import { LockIcon, RepeatIcon, MapPinIcon } from "@/components/ui/icons";
 import { inputClass, labelClass } from "@/lib/ui/styles";
-import type { PublicCoach } from "@/lib/coaches/public-types";
-import { type PublicService, formatPrice } from "@/lib/services/types";
+import type { PublicCoach, PublicGroupSession } from "@/lib/coaches/public-types";
+import { type PublicService, formatPrice, isGroupService } from "@/lib/services/types";
 
 
 type Slot = { iso: string; label: string };
-// `taken` : créneaux pris, proposés en liste d'attente (migration 0068).
+// `taken` : créneaux pris, proposés en liste d'attente (migration 0070).
 type SlotDay = { date: string; slots: Slot[]; taken?: Slot[] };
 type SlotState =
   | { mode: "loading" }
@@ -31,12 +31,16 @@ export default function BookingModal({
   services = [],
   initialServiceId,
   initialSlot,
+  groupSession = null,
   onClose,
   onContact,
 }: {
   coach: PublicCoach;
   services?: PublicService[];
   initialServiceId?: string;
+  // Place dans un cours collectif : horaire, prix et places viennent du
+  // cours, aucun créneau à choisir (migration 0068).
+  groupSession?: PublicGroupSession | null;
   // Créneau porté par l'URL de retour (?slot=...) : permet de retrouver la
   // sélection même sur un AUTRE appareil (confirmation email ouverte sur
   // téléphone alors que la réservation a commencé sur ordinateur).
@@ -52,9 +56,12 @@ export default function BookingModal({
   // Prestations payantes (paiement possible seulement si le coach encaisse).
   // Les abonnements mensuels sont souscrits en récurrent (Stripe) : pas de
   // créneau à choisir, le coach planifie ensuite avec son client.
+  // Les prestations collectives se réservent sur un cours planifié (liste
+  // de la page), jamais sur un créneau libre : exclues du sélecteur.
   const paidServices = coach.stripe_charges_enabled
-    ? services.filter((s) => s.price_cents > 0)
+    ? services.filter((s) => s.price_cents > 0 && !isGroupService(s))
     : [];
+  const isGroup = !!groupSession;
 
   // Coach sans ville mais dispo en ligne → réservation en visio par défaut.
   const [online, setOnline] = useState(!coach.city && coach.accepts_online);
@@ -174,13 +181,17 @@ export default function BookingModal({
   const [selectedIso, setSelectedIso] = useState<string | null>(null);
 
   const selectedService = paidServices.find((s) => s.id === serviceId) ?? null;
-  const payMode = !!selectedService;
+  const payMode = !!selectedService || isGroup;
   // Abonnement mensuel : souscription récurrente, aucun créneau à choisir.
   const isSubscription = selectedService?.type === "subscription";
   // Un pack est toujours débité à l'achat (crédits disponibles tout de
   // suite), même chez un coach en mode validation : seule la première séance
-  // reste à approuver, remboursement intégral si le coach refuse.
-  const chargedNow = instant || selectedService?.type === "pack";
+  // reste à approuver, remboursement intégral si le coach refuse. Une place
+  // de cours collectif est toujours débitée et confirmée tout de suite.
+  const chargedNow = instant || selectedService?.type === "pack" || isGroup;
+  const groupSeatsLeft = groupSession
+    ? Math.max(0, groupSession.capacity - groupSession.seats_taken)
+    : 0;
   // Prestation choisie = durée imposée par la prestation (60 min par défaut) :
   // le client ne choisit jamais la durée d'une prestation payante.
   const effectiveDuration = selectedService
@@ -220,6 +231,14 @@ export default function BookingModal({
   }
   useEffect(() => {
     let alive = true;
+    // Cours collectif : l'horaire est celui du cours, pas de créneaux.
+    if (groupSession) {
+      setSlotState({ mode: "slots", days: [] });
+      setSelectedIso(groupSession.starts_at);
+      return () => {
+        alive = false;
+      };
+    }
     setSlotState({ mode: "loading" });
     setSelectedIso(null);
     // no-store : un blocage posé à l'instant par le coach doit disparaître
@@ -266,7 +285,7 @@ export default function BookingModal({
     return () => {
       alive = false;
     };
-  }, [coach.slug, effectiveDuration, slotRetry, locale]);
+  }, [coach.slug, effectiveDuration, slotRetry, locale, groupSession]);
 
   function dayChipLabel(dateISO: string): string {
     const d = new Date(dateISO + "T12:00:00");
@@ -280,7 +299,9 @@ export default function BookingModal({
     // Départ de séance : créneau choisi (mode slots) ou saisie libre.
     // Abonnement : aucun créneau requis (le coach planifie ensuite).
     let starts: Date | null = null;
-    if (!isSubscription) {
+    if (isGroup && groupSession) {
+      starts = new Date(groupSession.starts_at);
+    } else if (!isSubscription) {
       if (slotState.mode === "error" || slotState.mode === "loading") {
         return setError(t("booking.errors.slotsUnavailable"));
       }
@@ -309,20 +330,21 @@ export default function BookingModal({
     setLoading(true);
     try {
       // ── Prestation payante : on part sur le paiement Stripe ──────────────
-      if (payMode && selectedService) {
+      if (payMode && (selectedService || groupSession)) {
         const res = await fetch("/api/stripe/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             coach_slug: coach.slug,
-            service_id: selectedService.id,
+            service_id: groupSession ? groupSession.service_id : selectedService?.id,
+            group_session_id: groupSession?.id ?? null,
             first_name: firstName.trim(),
             last_name: lastName.trim() || null,
             email: email.trim(),
             phone: phone.trim() || null,
             starts_at: starts ? starts.toISOString() : null,
             duration_min: effectiveDuration,
-            online,
+            online: groupSession ? groupSession.location === "online" : online,
             message: composedMessage(),
           }),
         });
@@ -335,14 +357,16 @@ export default function BookingModal({
             // Paiement EMBARQUÉ : le formulaire Stripe s'affiche sur
             // /paiement, aux couleurs Madger. `back` rouvre la modale avec
             // le brouillon si le client renonce.
-            const back = `/${coach.slug}?payment=canceled&book=${selectedService.id}`;
+            const back = groupSession
+              ? `/${coach.slug}?payment=canceled&gs=${groupSession.id}`
+              : `/${coach.slug}?payment=canceled&book=${selectedService?.id}`;
             // Récap affiché sur /paiement (coach, prestation, créneau,
             // lieu) : le client revoit ce qu'il paie avant de payer.
             const recap =
-              `&sv=${encodeURIComponent(selectedService.name)}` +
+              `&sv=${encodeURIComponent(groupSession ? groupSession.name : selectedService?.name ?? "")}` +
               `&co=${encodeURIComponent([coach.first_name, coach.last_name].filter(Boolean).join(" "))}` +
               (starts ? `&at=${encodeURIComponent(starts.toISOString())}` : "") +
-              `&lo=${online ? "online" : "in_person"}`;
+              `&lo=${(groupSession ? groupSession.location === "online" : online) ? "online" : "in_person"}`;
             window.location.href = `/paiement?cs=${encodeURIComponent(data.client_secret)}&back=${encodeURIComponent(back)}${recap}`;
           } else {
             window.location.href = data.url; // secours : page Stripe hébergée
@@ -360,6 +384,10 @@ export default function BookingModal({
         else if (data.error === "too_soon") setError(t("booking.errors.tooSoon"));
         else if (data.error === "slot_taken")
           setError(t("booking.errors.slotTaken"));
+        else if (data.error === "session_full")
+          setError(t("booking.errors.sessionFull"));
+        else if (data.error === "session_unavailable")
+          setError(t("booking.errors.sessionUnavailable"));
         else if (data.error === "date_in_past")
           setError(t("booking.errors.datePast"));
         else if (data.error === "rate_limited")
@@ -487,13 +515,13 @@ export default function BookingModal({
             )}
             <div className="mt-6 flex flex-col gap-2">
               <Link
-                href={`/signup?role=client&redirect=${encodeURIComponent(`/${coach.slug}?book=${serviceId || "1"}${selectedIso ? `&slot=${encodeURIComponent(selectedIso)}` : ""}`)}`}
+                href={`/signup?role=client&redirect=${encodeURIComponent(groupSession ? `/${coach.slug}?gs=${groupSession.id}` : `/${coach.slug}?book=${serviceId || "1"}${selectedIso ? `&slot=${encodeURIComponent(selectedIso)}` : ""}`)}`}
                 className="w-full"
               >
                 <Button className="w-full">{t("booking.createAccount")}</Button>
               </Link>
               <Link
-                href={`/login?redirect=${encodeURIComponent(`/${coach.slug}?book=${serviceId || "1"}${selectedIso ? `&slot=${encodeURIComponent(selectedIso)}` : ""}`)}`}
+                href={`/login?redirect=${encodeURIComponent(groupSession ? `/${coach.slug}?gs=${groupSession.id}` : `/${coach.slug}?book=${serviceId || "1"}${selectedIso ? `&slot=${encodeURIComponent(selectedIso)}` : ""}`)}`}
                 className="w-full"
               >
                 <Button variant="secondary" className="w-full">
@@ -508,10 +536,14 @@ export default function BookingModal({
         ) : (
           <>
             <h2 className="text-lg font-extrabold tracking-tight text-text-base">
-              {t("booking.title")}
+              {isGroup ? t("booking.groupTitle") : t("booking.title")}
             </h2>
             <p className="mt-1 text-sm text-text-muted">
-              {instant ? t("booking.descInstant") : t("booking.desc")}
+              {isGroup
+                ? t("booking.groupDesc")
+                : instant
+                ? t("booking.descInstant")
+                : t("booking.desc")}
             </p>
 
             <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-3">
@@ -526,8 +558,34 @@ export default function BookingModal({
                 aria-hidden="true"
               />
 
+              {/* Place dans un cours collectif : récap du cours choisi */}
+              {groupSession && (
+                <div className="rounded-xl border border-accent/25 bg-accent/[0.05] p-3">
+                  <p className="text-sm font-semibold text-text-base">{groupSession.name}</p>
+                  <p className="mt-0.5 text-xs text-text-muted first-letter:uppercase">
+                    {new Date(groupSession.starts_at).toLocaleString(loc, {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                    {groupSession.location === "online"
+                      ? ` · ${t("booking.online")}`
+                      : groupSession.location_text
+                      ? ` · ${groupSession.location_text}`
+                      : ""}
+                  </p>
+                  <p className="mt-1 text-xs font-semibold text-accent">
+                    {formatPrice(groupSession.price_cents, groupSession.currency, locale)}{" "}
+                    {t("coachProfile.groupPerPerson")} ·{" "}
+                    {t("booking.groupSeatsLeft").replace("{n}", String(groupSeatsLeft))}
+                  </p>
+                </div>
+              )}
+
               {/* Prestation payante (si le coach encaisse via Stripe) */}
-              {paidServices.length > 0 && (
+              {!isGroup && paidServices.length > 0 && (
                 <label className="flex flex-col gap-1.5">
                   <span className={labelClass}>{t("booking.service")}</span>
                   <Select
@@ -566,7 +624,7 @@ export default function BookingModal({
               )}
 
               {/* Présentiel / visio si le coach propose les deux */}
-              {!isSubscription && coach.accepts_online && coach.city && (
+              {!isGroup && !isSubscription && coach.accepts_online && coach.city && (
                 <div className="flex gap-2">
                   {[false, true].map((opt) => (
                     <button
@@ -596,8 +654,8 @@ export default function BookingModal({
                 </div>
               )}
 
-              {/* ── Créneaux réels (pas pour un abonnement) ─────────────── */}
-              {!isSubscription && slotState.mode === "loading" && (
+              {/* ── Créneaux réels (pas pour un abonnement ni un cours) ── */}
+              {!isGroup && !isSubscription && slotState.mode === "loading" && (
                 <div
                   role="status"
                   aria-busy={slotState.mode === "loading"}
@@ -609,7 +667,7 @@ export default function BookingModal({
 
               {/* Erreur de chargement : proposer de réessayer plutôt que de
                   laisser réserver à l'aveugle */}
-              {!isSubscription && slotState.mode === "error" && (
+              {!isGroup && !isSubscription && slotState.mode === "error" && (
                 <div className="rounded-xl border border-border bg-bg-elevated p-4 text-center">
                   <p className="text-sm text-text-muted">
                     {t("booking.slotsError")}
@@ -631,7 +689,7 @@ export default function BookingModal({
                 </p>
               )}
 
-              {!isSubscription && slotState.mode === "slots" && (
+              {!isGroup && !isSubscription && slotState.mode === "slots" && (
                 <div className="flex flex-col gap-2">
                   <span className={labelClass}>{t("booking.chooseSlot")}</span>
                   {!anySlots ? (
@@ -789,7 +847,7 @@ export default function BookingModal({
               )}
 
               {/* ── Saisie libre (coach sans disponibilités définies) ───── */}
-              {!isSubscription && slotState.mode === "free" && (
+              {!isGroup && !isSubscription && slotState.mode === "free" && (
                 <>
                   <div className="grid grid-cols-2 gap-3">
                     <label className="flex flex-col gap-1.5">
@@ -814,7 +872,7 @@ export default function BookingModal({
               )}
 
               {/* Durée : visible uniquement en demande libre (sans prestation) */}
-              {!selectedService && (
+              {!selectedService && !isGroup && (
                 <label className="flex flex-col gap-1.5">
                   <span className={labelClass}>{t("booking.duration")}</span>
                   <Select
@@ -867,7 +925,15 @@ export default function BookingModal({
                     ) : (
                       <CancellationSummary
                         policy={resolveRefundPolicy(coach)}
-                        startsAt={selectedIso ? new Date(selectedIso) : date && time ? new Date(`${date}T${time}`) : null}
+                        startsAt={
+                          groupSession
+                            ? new Date(groupSession.starts_at)
+                            : selectedIso
+                            ? new Date(selectedIso)
+                            : date && time
+                            ? new Date(`${date}T${time}`)
+                            : null
+                        }
                         locale={locale}
                       />
                     )}
@@ -954,6 +1020,8 @@ export default function BookingModal({
                       : t("booking.sending")
                     : isSubscription && selectedService
                     ? `${t("booking.subscribe")} ${formatPrice(selectedService.price_cents, selectedService.currency, locale)}${t("services.perMonth")}`
+                    : groupSession
+                    ? `${t("booking.pay")} ${formatPrice(groupSession.price_cents, groupSession.currency, locale)}`
                     : payMode && selectedService && !instant
                     ? `${t("booking.reserve")} ${formatPrice(selectedService.price_cents, selectedService.currency, locale)}`
                     : payMode && selectedService

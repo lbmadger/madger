@@ -11,7 +11,8 @@
 --    bookings.reminder_sms_sent_at (idempotence du cron).
 -- 4. Liste d'attente sur créneau : slot_waitlist, écrite et lue uniquement
 --    côté serveur (service role) ; RLS sans policy.
--- À exécuter dans Supabase → SQL Editor → Run (après 0067).
+-- 5. Packs ouverts à tous les plans : vues publiques sans filtre Pro.
+-- À exécuter dans Supabase → SQL Editor → Run (après 0069).
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- ── 1. TVA ─────────────────────────────────────────────────────────────────
@@ -69,3 +70,55 @@ create index if not exists slot_waitlist_coach_start_idx
   where notified_at is null;
 alter table public.slot_waitlist enable row level security;
 revoke all on public.slot_waitlist from anon, authenticated;
+
+-- ── 5. Packs ouverts à tous les plans ──────────────────────────────────────
+-- Décision du 8 septembre 2026 : un pack vendu en Essentiel rapporte 5 % à
+-- Madger ; le verrou Pro se privait de cette commission. Les vues publiques
+-- cessent de masquer les packs des coachs Essentiel. Recréées SANS drop
+-- (les dépendances, search_coaches_nearby comprise, restent en place).
+create or replace view public.public_services as
+  select
+    s.id,
+    s.coach_id,
+    s.name,
+    s.description,
+    s.type,
+    s.location,
+    s.duration_min,
+    s.price_cents,
+    s.currency,
+    s.pack_size,
+    s.validity_days,
+    s.cancel_hours,
+    s.capacity,
+    s.group_service_id
+  from public.services s
+  join public.coaches c on c.id = s.coach_id
+  where s.active = true
+    and c.listed = true;
+grant select on public.public_services to anon, authenticated;
+
+create or replace view public.public_coaches as
+  select c.id, c.slug, c.first_name, c.last_name, c.specialty, c.bio,
+         c.avatar_url, c.city, c.accepts_online, c.lat, c.lng,
+         c.stripe_charges_enabled, c.cancellation_policy, c.booking_mode,
+         c.refund_over_24h_pct, c.refund_under_24h_pct,
+         c.created_at, c.sport, c.specialties, c.venues, c.gym_name,
+         c.rating_avg, c.rating_count,
+         (select min(s.price_cents) from public.services s
+           where s.coach_id = c.id and s.active = true) as from_price_cents,
+         (c.verification_status = 'verified') as verified,
+         c.cancel_hours,
+         c.installments_enabled,
+         (greatest(coalesce(c.pro_until, '-infinity'::timestamptz),
+                   coalesce(c.pro_bonus_until, '-infinity'::timestamptz)) > now()) as pro
+    from public.coaches c
+   where c.listed = true
+     and c.slug is not null
+     and c.avatar_url is not null
+     and c.stripe_charges_enabled = true
+     and exists (select 1 from public.services s
+                  where s.coach_id = c.id and s.active = true)
+     and exists (select 1 from public.availabilities a
+                  where a.coach_id = c.id);
+grant select on public.public_coaches to anon, authenticated;

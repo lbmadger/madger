@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 //  - trouvé                        → enregistré + siret_verified_at + raison sociale
 //  - annuaire indisponible         → enregistré SANS vérification (status unavailable),
 //    pour ne jamais bloquer un coach à cause d'un service tiers.
-// Le trigger de la migration 0068 remet la vérification à zéro si le coach
+// Le trigger de la migration 0070 remet la vérification à zéro si le coach
 // change ensuite son SIRET directement dans ses réglages.
 export async function POST(req: NextRequest) {
   const supabase = createClient();

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import type { Booking } from "@/lib/bookings/types";
+import type { Booking, GroupSession } from "@/lib/bookings/types";
 import type { Availability } from "@/lib/availability/types";
 
 // Vue calendrier : les disponibilités du coach apparaissent en fond (blocs
@@ -39,9 +39,16 @@ export default function WeekView({
   onBookingClick,
   onSlotClick,
   serviceName,
+  groupSessions = [],
+  seatCount,
+  onGroupClick,
 }: {
   bookings: Booking[];
   availabilities: Availability[];
+  // Cours collectifs planifiés (une tuile par cours, pas par participant).
+  groupSessions?: GroupSession[];
+  seatCount?: (sessionId: string) => number;
+  onGroupClick?: (g: GroupSession) => void;
   // Clic sur une séance de la grille (confirmer une demande, modifier…).
   onBookingClick?: (b: Booking) => void;
   // Clic sur une case horaire LIBRE : blocage direct du créneau (1 h),
@@ -88,8 +95,14 @@ export default function WeekView({
       min = Math.min(min, s.getHours() * 60 + s.getMinutes());
       max = Math.max(max, e.getHours() * 60 + e.getMinutes());
     }
+    for (const g of groupSessions) {
+      const s = new Date(g.starts_at);
+      const e = new Date(g.ends_at);
+      min = Math.min(min, s.getHours() * 60 + s.getMinutes());
+      max = Math.max(max, e.getHours() * 60 + e.getMinutes());
+    }
     return [Math.floor(min / 60), Math.min(24, Math.ceil(max / 60))];
-  }, [availabilities, bookings]);
+  }, [availabilities, bookings, groupSessions]);
 
   const hours = Array.from(
     { length: endHour - startHour },
@@ -110,6 +123,20 @@ export default function WeekView({
     }
     return map;
   }, [bookings, days]);
+
+  // Cours de la semaine affichée, par jour.
+  const groupsByDay = useMemo(() => {
+    const keys = new Set(days.map(ymd));
+    const map = new Map<string, GroupSession[]>();
+    for (const g of groupSessions) {
+      if (g.status !== "scheduled") continue;
+      const k = ymd(new Date(g.starts_at));
+      if (!keys.has(k)) continue;
+      if (!map.has(k)) map.set(k, []);
+      map.get(k)!.push(g);
+    }
+    return map;
+  }, [groupSessions, days]);
 
   const availByWeekday = useMemo(() => {
     const map = new Map<number, Availability[]>();
@@ -161,6 +188,7 @@ export default function WeekView({
     const isToday = key === today;
     const dayAvail = availByWeekday.get(d.getDay()) ?? [];
     const dayBookings = byDay.get(key) ?? [];
+    const dayGroups = groupsByDay.get(key) ?? [];
     return (
       <div
         key={key}
@@ -203,9 +231,12 @@ export default function WeekView({
             le vert « disponible » ne doit jamais apparaître sous une séance
             ni sous un blocage manuel. */}
         {(() => {
-          const busyMin = dayBookings
-            .filter((b) => b.status !== "cancelled")
-            .map((b) => {
+          const busyMin = [
+            ...dayBookings
+              .filter((b) => b.status !== "cancelled")
+              .map((b) => ({ starts_at: b.starts_at, ends_at: b.ends_at })),
+            ...dayGroups,
+          ].map((b) => {
               const s = new Date(b.starts_at);
               const e = new Date(b.ends_at);
               return [
@@ -240,6 +271,52 @@ export default function WeekView({
               ));
           });
         })()}
+
+        {/* Cours collectifs : une tuile par cours, places prises visibles. */}
+        {dayGroups.map((g) => {
+          const s = new Date(g.starts_at);
+          const e = new Date(g.ends_at);
+          const sMin = s.getHours() * 60 + s.getMinutes();
+          const eMin = e.getHours() * 60 + e.getMinutes();
+          const h = Math.max(top(eMin) - top(sMin), 22);
+          const taken = seatCount?.(g.id) ?? 0;
+          const label = `${g.name} · ${taken}/${g.capacity}`;
+          const inner = (
+            <>
+              <span className="block truncate text-[10px] font-semibold leading-tight text-text-base">
+                {s.toLocaleTimeString(loc, { hour: "2-digit", minute: "2-digit" })}
+              </span>
+              {h >= 34 && (
+                <span className="block truncate text-[10px] leading-tight text-sky-300">
+                  {g.name}
+                </span>
+              )}
+              {h >= 48 && (
+                <span className="block truncate text-[10px] font-medium leading-tight text-text-muted">
+                  {taken}/{g.capacity}
+                </span>
+              )}
+            </>
+          );
+          const cls =
+            "absolute inset-x-1 overflow-hidden rounded-md border-l-2 border-sky-400 bg-sky-400/10 px-1.5 py-0.5 text-left";
+          return onGroupClick ? (
+            <button
+              key={g.id}
+              type="button"
+              onClick={() => onGroupClick(g)}
+              className={`${cls} cursor-pointer transition-opacity hover:opacity-80`}
+              style={{ top: top(sMin), height: h }}
+              title={label}
+            >
+              {inner}
+            </button>
+          ) : (
+            <span key={g.id} className={cls} style={{ top: top(sMin), height: h }} title={label}>
+              {inner}
+            </span>
+          );
+        })}
 
         {/* Séances (dessus). Cliquables si un gestionnaire est fourni
             (confirmer/refuser une demande, modifier). */}
@@ -347,7 +424,8 @@ export default function WeekView({
           {days.map((d, i) => {
             const isToday = ymd(d) === today;
             const active = i === mobileDayIdx;
-            const count = (byDay.get(ymd(d)) ?? []).length;
+            const count =
+              (byDay.get(ymd(d)) ?? []).length + (groupsByDay.get(ymd(d)) ?? []).length;
             return (
               <button
                 key={ymd(d)}
@@ -436,6 +514,12 @@ export default function WeekView({
             <span className="h-2.5 w-2.5 rounded-sm border-l-2 border-warning bg-warning/10" />
             {t("agenda.pending")}
           </span>
+          {groupSessions.length > 0 && (
+            <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-sm border-l-2 border-sky-400 bg-sky-400/10" />
+              {t("agenda.legendGroup")}
+            </span>
+          )}
           {onSlotClick && (
             <span className="flex items-center gap-1.5">
               <span className="h-2.5 w-2.5 rounded-sm border border-border-strong bg-white/[0.06]" />

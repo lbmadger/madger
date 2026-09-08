@@ -334,6 +334,32 @@ const fr = {
     declineConfirm:
       "Refuser cette demande ? Si le client a réglé, il sera intégralement remboursé.",
     blocked: "Bloqué",
+    groupBtn: "Cours collectif",
+    groupBadge: "Cours",
+    groupSeats: "{n}/{c} places",
+    groupParticipants: "Participants",
+    groupNone: "Aucun inscrit pour l'instant.",
+    groupCancel: "Annuler le cours",
+    groupCancelConfirm:
+      "Tous les participants seront remboursés intégralement et prévenus par email. Cette action est définitive.",
+    groupCancelled: "Cours annulé, participants remboursés.",
+    groupPerPerson: "par personne",
+    legendGroup: "Cours collectif",
+    group: {
+      title: "Nouveau cours collectif",
+      service: "Prestation collective",
+      selectService: "Choisis une prestation",
+      noService:
+        "Crée d'abord une prestation collective (Prestations, format « Collective ») pour planifier un cours.",
+      capacity: "Places",
+      repeat: "Répéter chaque semaine",
+      once: "Une seule fois",
+      weeks: "{n} semaines",
+      create: "Planifier le cours",
+      createMany: "Planifier {n} cours",
+      creating: "Planification…",
+      partial: "{ok} cours planifiés, {ko} refusés (créneau déjà pris).",
+    },
     blockBtn: "Bloquer un créneau",
     blockDesc: "Les clients ne pourront pas réserver sur cette plage.",
     noteLabel: "Note de la séance",
@@ -468,17 +494,17 @@ const fr = {
     trialTitle: "Il te reste {n} jours de Pro offert",
     trialTitleLast: "Dernier jour de Pro offert",
     trialDesc:
-      "Packs, annulation automatique, relances, écran encaissements et alertes churn sont actifs. Bloque ton tarif avant la fin pour ne rien perdre.",
+      "Rappels SMS, annulation automatique, relances, écran encaissements et alertes churn sont actifs. Bloque ton tarif avant la fin pour ne rien perdre.",
     trialCta: "Garder Pro",
     featuresFree: [
       "Lien public personnalisé",
-      "Réservations et paiements illimités",
+      "Réservations, packs et paiements illimités",
       "Factures conformes automatiques",
       "Synchronisation Google Calendar",
-      "Rappels automatiques",
+      "Rappels automatiques par email",
     ],
     featuresPro: [
-      "Packs de séances",
+      "Rappels SMS la veille",
       "Annulation automatique",
       "Relances de renouvellement",
       "Écran encaissements",
@@ -506,7 +532,7 @@ const fr = {
       lossCommission:
         "Fin des packs, de l'annulation automatique, des relances de renouvellement, de l'écran encaissements et des alertes churn.",
       lossBadge:
-        "Tu perds les packs, l'annulation automatique et les statistiques avancées de Madger Pro.",
+        "Tu perds les rappels SMS, l'annulation automatique et les statistiques avancées de Madger Pro.",
       stay: "Je reste en Pro",
       switchAnnual: "Passer à l'annuel : {price}/an, 2 mois offerts",
       switching: "Un instant…",
@@ -534,7 +560,7 @@ const fr = {
         too_expensive:
           "On comprend. Deux options pour alléger la note sans perdre les fonctionnalités Pro.",
         not_enough_revenue:
-          "Un no-show évité par mois et Pro est remboursé. Si ton volume est vraiment faible, Essentiel est un bon choix, mais pense aux packs et aux relances que tu perds.",
+          "Un no-show évité par mois et Pro est remboursé. Si ton volume est vraiment faible, Essentiel est un bon choix, mais pense aux rappels SMS et aux relances que tu perds.",
         missing_features:
           "Dis-nous laquelle : on construit Madger avec les coachs, et on répond vite.",
         other_tool:
@@ -584,7 +610,7 @@ const fr = {
     offerLocked: "Bloqué tant que tu restes abonné, même après la hausse.",
     modalTitle: "Pro, c'est ce qui fait rester tes clients",
     modalBody:
-      "Vends des packs de séances, laisse l'annulation automatique appliquer tes règles, relance les renouvellements, suis tes encaissements par client et repère ceux qui décrochent. Un no-show évité par mois et Pro est remboursé.",
+      "Rappelle tes clients par SMS la veille, laisse l'annulation automatique appliquer tes règles, relance les renouvellements, suis tes encaissements par client et repère ceux qui décrochent. Un no-show évité par mois et Pro est remboursé.",
     modalPoints: [
       "Packs de séances et relances de renouvellement",
       "Annulation automatique selon tes règles",
@@ -597,8 +623,8 @@ const fr = {
     upsellPaymentsDesc: "Qui a payé quoi, ce qui reste à venir, les packs en cours. Un no-show évité par mois et Pro est remboursé.",
     upsellStatsTitle: "Tes statistiques avancées t'attendent en Pro",
     upsellStatsDesc: "Packs de séances, annulation automatique, relances de renouvellement, écran encaissements, alerte churn. Et ces statistiques détaillées.",
-    upsellInvoicesTitle: "Des packs à vendre, en Pro",
-    upsellInvoicesDesc: "Vends des packs de séances, relance les renouvellements et laisse l'annulation automatique gérer les imprévus.",
+    upsellInvoicesTitle: "Des relances et des SMS, en Pro",
+    upsellInvoicesDesc: "Rappelle tes clients par SMS la veille, relance les renouvellements de packs et laisse l'annulation automatique gérer les imprévus.",
     upsellCardCta: "Bloquer le prix Pro",
     // Sections verrouillées pour un coach Essentiel.
     lock: {
@@ -753,6 +779,7 @@ const fr = {
     sessionsLabel: "séances",
     free: "Gratuit",
     edit: "Modifier",
+    groupMeta: "Collectif · jusqu'à {n} pers.",
     needStripeTitle: "Connecte Stripe pour créer tes prestations",
     needStripeDesc:
       "Tes prestations sont payées en ligne par tes clients : active d'abord les paiements, la création se débloque ensuite.",
@@ -784,7 +811,18 @@ const fr = {
         "Passé ce délai, les séances non utilisées sont perdues. Un pack déjà acheté garde ses conditions.",
       cancelHours: "Annulation gratuite jusqu'à",
       cancelHoursUnit: "h avant la séance",
+      format: "Format",
+      individualFormat: "Individuelle",
+      groupFormat: "Collective",
+      capacity: "Places par cours",
+      pricePerPerson: "Prix par personne",
+      groupHint:
+        "Tu planifies chaque cours depuis ton agenda (date, places). Les clients réservent une place et paient chacun la leur.",
       cancelHint: "Après ce délai, la séance annulée est décomptée du pack.",
+      maxPerWeek: "Séances par semaine",
+      maxPerWeekNone: "Sans limite",
+      maxPerWeekN: "{n} par semaine max",
+      maxPerWeekHint: "La limite hebdomadaire empêche le client de placer toutes ses séances la même semaine.",
       location: "Lieu",
       inPerson: "Présentiel",
       online: "En ligne",
@@ -980,6 +1018,14 @@ const fr = {
   coachProfile: {
     backToSearch: "Tous les coachs",
     from: "À partir de",
+    groupSessions: "Cours collectifs",
+    groupSeatsLeft: "{n} places restantes",
+    groupSeatLeft: "Dernière place",
+    groupFull: "Complet",
+    groupBook: "Réserver ma place",
+    groupPerPerson: "par personne",
+    groupNone: "Aucun cours programmé pour le moment.",
+    groupServiceHint: "Réservation par cours, voir les prochaines dates ci-dessous.",
     perSession: "/ séance",
     instantNote: "Réservation instantanée : ton créneau est confirmé immédiatement.",
     approvalNote:
@@ -1079,6 +1125,8 @@ const fr = {
         "Cette prestation n'est plus disponible. Recharge la page et choisis-en une autre.",
       coachCannotCharge:
         "Ce coach ne peut pas encore encaisser de paiement en ligne. Contacte-le directement pour réserver.",
+      sessionFull: "Ce cours est complet. Choisis une autre date.",
+      sessionUnavailable: "Ce cours n'est plus proposé. Choisis une autre date.",
     },
     authRequiredTitle: "Dernière étape : ton compte",
     authRequiredDesc:
@@ -1098,6 +1146,9 @@ const fr = {
     installmentsHint: "Paiement en 3 fois possible (Klarna ou Alma), à choisir au moment de payer.",
     slotsError: "Impossible de charger les créneaux du coach.",
     retry: "Réessayer",
+    groupTitle: "Réserver ma place",
+    groupDesc: "Ta place est confirmée dès le paiement. Chaque participant règle la sienne.",
+    groupSeatsLeft: "{n} places restantes",
     unpayableService:
       "Cette prestation se règle directement avec le coach (paiement en ligne pas encore activé chez lui). Envoie ta demande, il te précisera les modalités.",
     viewBooking: "Suivre ma réservation",
@@ -1498,6 +1549,7 @@ const fr = {
   clientSpace: {
     title: "Mes séances",
     findCoach: "Trouver un coach",
+    groupLabel: "Cours collectif",
     cancelDone:
       "Séance annulée. Si un remboursement s'applique, il repart automatiquement vers ta carte sous quelques jours.",
     messages: "Messages",
@@ -1559,6 +1611,7 @@ const fr = {
       too_soon: "Ce créneau est trop proche : le coach demande un préavis.",
       no_credit: "Plus de crédit disponible sur ton pack.",
       not_enough_credits: "Tu as sélectionné plus de créneaux que de crédits restants.",
+      max_per_week: "Ton pack est limité à {n} séance(s) par semaine. Répartis tes créneaux sur plusieurs semaines.",
       generic: "Impossible de réserver. Réessaie ou contacte le support.",
     },
   },
@@ -1586,6 +1639,19 @@ const fr = {
     refunded: "Pack remboursé",
     closed: "Pack clôturé",
     validUntil: "valable jusqu'au",
+    maxPerWeek: "{n} séance(s) par semaine max",
+    requestRefund: "Demander le remboursement du reste",
+    requestTitle: "Demander le remboursement des séances restantes",
+    requestDesc:
+      "Ton coach a 7 jours pour accepter (remboursement au prorata, sur ton moyen de paiement) ou refuser avec un motif. Sans réponse, Madger rembourse automatiquement. Tes séances restent utilisables en attendant.",
+    requestNote: "Explique en deux mots (facultatif)",
+    requestSend: "Envoyer ma demande",
+    requestSent: "Demande envoyée, réponse du coach attendue avant le {date}.",
+    requestPending: "Demande de remboursement en cours, réponse attendue avant le {date}.",
+    requestRefused: "Ton coach a refusé le remboursement :",
+    requestContact: "Pas d'accord ? Écris à Madger",
+    requestErr: "La demande n'a pas pu partir. Réessaie.",
+    extended: "Prolongé par Madger",
   },
   packActions: {
     gift: "+ Offrir une séance",
@@ -1606,6 +1672,19 @@ const fr = {
     refundDone: "Remboursement de {amount} émis, pack clôturé.",
     refundNothing: "Rien à rembourser : les fonds de ce pack t'ont déjà été versés.",
     refundErr: "Le remboursement n'a pas pu partir. Réessaie ou contacte le support.",
+    requestBanner:
+      "Ce client demande le remboursement de ses {n} séance(s) restante(s). Réponse attendue avant le {date}.",
+    requestHint:
+      "Accepter rembourse le prorata tout de suite. Refuser exige un motif que le client lira ; il pourra saisir Madger. Sans réponse, Madger rembourse automatiquement.",
+    accept: "Accepter et rembourser",
+    refuse: "Refuser",
+    refuseTitle: "Refuser la demande",
+    refuseDesc: "Donne un motif clair : il est envoyé au client tel quel.",
+    refusePlaceholder: "Ex. : les séances proposées ont été refusées trois fois par le client…",
+    refuseReasonShort: "Le motif doit faire au moins 10 caractères.",
+    refuseSend: "Envoyer le refus",
+    refused: "Refus envoyé au client.",
+    refusedEarlier: "Demande précédente refusée :",
     reasons: {
       purchase: "Achat du pack",
       booking: "Séance réservée",
@@ -1616,6 +1695,9 @@ const fr = {
       coach_adjust: "Séance retirée",
       refund_closed: "Pack remboursé",
       coach_closed: "Pack clôturé",
+      extended: "Validité prolongée par Madger",
+      refund_requested: "Remboursement demandé par le client",
+      refund_refused: "Demande refusée par le coach",
     },
   },
   leia: {
@@ -1680,8 +1762,8 @@ const fr = {
         body: "Ta moyenne est sous les 4.8, le seuil du badge Super coach. Ponctualité, suivi personnalisé et petit message après la séance font toute la différence.",
       },
       pro: {
-        title: "Passe en Pro : packs, relances et annulation automatique",
-        body: "Tu encaisses régulièrement : Pro te donne les packs de séances, les relances de renouvellement et l'annulation automatique. Un no-show évité par mois et Pro est remboursé.",
+        title: "Passe en Pro : SMS, relances et annulation automatique",
+        body: "Tu encaisses régulièrement : Pro te donne les rappels SMS la veille, les relances de renouvellement et l'annulation automatique. Un no-show évité par mois et Pro est remboursé.",
         cta: "Découvrir Pro",
       },
     },
@@ -2052,6 +2134,32 @@ const en: Dictionary = {
     declineConfirm:
       "Decline this request? If the client already paid, they will be fully refunded.",
     blocked: "Blocked",
+    groupBtn: "Group class",
+    groupBadge: "Class",
+    groupSeats: "{n}/{c} seats",
+    groupParticipants: "Participants",
+    groupNone: "No one signed up yet.",
+    groupCancel: "Cancel the class",
+    groupCancelConfirm:
+      "Every participant will be fully refunded and notified by email. This cannot be undone.",
+    groupCancelled: "Class cancelled, participants refunded.",
+    groupPerPerson: "per person",
+    legendGroup: "Group class",
+    group: {
+      title: "New group class",
+      service: "Group service",
+      selectService: "Pick a service",
+      noService:
+        "Create a group service first (Services, format Group) to schedule a class.",
+      capacity: "Seats",
+      repeat: "Repeat weekly",
+      once: "Once",
+      weeks: "{n} weeks",
+      create: "Schedule the class",
+      createMany: "Schedule {n} classes",
+      creating: "Scheduling…",
+      partial: "{ok} classes scheduled, {ko} refused (slot already taken).",
+    },
     blockBtn: "Block a slot",
     blockDesc: "Clients will not be able to book during this window.",
     noteLabel: "Session note",
@@ -2185,17 +2293,17 @@ const en: Dictionary = {
     trialTitle: "{n} days of free Pro left",
     trialTitleLast: "Last day of free Pro",
     trialDesc:
-      "Packs, automatic cancellation, reminders, payments screen and churn alerts are on. Lock your price before it ends so you lose nothing.",
+      "SMS reminders, automatic cancellation, renewal reminders, payments screen and churn alerts are on. Lock your price before it ends so you lose nothing.",
     trialCta: "Keep Pro",
     featuresFree: [
       "Personalized public link",
-      "Unlimited bookings and payments",
+      "Unlimited bookings, packs and payments",
       "Compliant automatic invoices",
       "Google Calendar sync",
-      "Automatic reminders",
+      "Automatic email reminders",
     ],
     featuresPro: [
-      "Session packs",
+      "SMS reminders the day before",
       "Automatic cancellation",
       "Renewal reminders",
       "Payments screen",
@@ -2223,7 +2331,7 @@ const en: Dictionary = {
       lossCommission:
         "End of packs, automatic cancellation, renewal reminders, the payments screen and churn alerts.",
       lossBadge:
-        "You lose packs, automatic cancellation and the advanced stats of Madger Pro.",
+        "You lose SMS reminders, automatic cancellation and the advanced stats of Madger Pro.",
       stay: "I'm staying on Pro",
       switchAnnual: "Switch to annual: {price}/year, 2 months free",
       switching: "One moment…",
@@ -2251,7 +2359,7 @@ const en: Dictionary = {
         too_expensive:
           "We get it. Two options to lighten the bill without losing the Pro features.",
         not_enough_revenue:
-          "One no-show avoided per month and Pro pays for itself. If your volume is really low, Essential is a fine choice, but think about the packs and reminders you lose.",
+          "One no-show avoided per month and Pro pays for itself. If your volume is really low, Essential is a fine choice, but think about the SMS and renewal reminders you lose.",
         missing_features:
           "Tell us which one: we build Madger with coaches, and we answer fast.",
         other_tool:
@@ -2301,7 +2409,7 @@ const en: Dictionary = {
     offerLocked: "Locked as long as you stay subscribed, even after the increase.",
     modalTitle: "Pro is what keeps your clients coming back",
     modalBody:
-      "Sell session packs, let automatic cancellation apply your rules, send renewal reminders, track payments per client and spot the ones drifting away. One no-show avoided per month and Pro pays for itself.",
+      "Remind your clients by SMS the day before, let automatic cancellation apply your rules, send renewal reminders, track payments per client and spot the ones drifting away. One no-show avoided per month and Pro pays for itself.",
     modalPoints: [
       "Session packs and renewal reminders",
       "Automatic cancellation on your terms",
@@ -2314,8 +2422,8 @@ const en: Dictionary = {
     upsellPaymentsDesc: "Who paid what, what is still to come, packs in progress. One no-show avoided per month and Pro pays for itself.",
     upsellStatsTitle: "Your advanced statistics are waiting on Pro",
     upsellStatsDesc: "Session packs, automatic cancellation, renewal reminders, payments screen, churn alerts. And these detailed statistics.",
-    upsellInvoicesTitle: "Packs to sell, on Pro",
-    upsellInvoicesDesc: "Sell session packs, send renewal reminders and let automatic cancellation handle the unexpected.",
+    upsellInvoicesTitle: "Reminders and SMS, on Pro",
+    upsellInvoicesDesc: "Remind your clients by SMS the day before, send pack renewal reminders and let automatic cancellation handle the unexpected.",
     upsellCardCta: "Lock the Pro price",
     lock: {
       cta: "Upgrade to Pro",
@@ -2468,6 +2576,7 @@ const en: Dictionary = {
     sessionsLabel: "sessions",
     free: "Free",
     edit: "Edit",
+    groupMeta: "Group · up to {n} people",
     needStripeTitle: "Connect Stripe to create your services",
     needStripeDesc:
       "Your services are paid online by your clients: enable payments first, then creation unlocks.",
@@ -2499,7 +2608,18 @@ const en: Dictionary = {
         "After this period, unused sessions are lost. A pack already purchased keeps its terms.",
       cancelHours: "Free cancellation up to",
       cancelHoursUnit: "h before the session",
+      format: "Format",
+      individualFormat: "One-to-one",
+      groupFormat: "Group",
+      capacity: "Seats per class",
+      pricePerPerson: "Price per person",
+      groupHint:
+        "You schedule each class from your calendar (date, seats). Clients book a seat and each pays their own.",
       cancelHint: "After that, the cancelled session is deducted from the pack.",
+      maxPerWeek: "Sessions per week",
+      maxPerWeekNone: "No limit",
+      maxPerWeekN: "max {n} per week",
+      maxPerWeekHint: "The weekly limit keeps the client from placing every session in the same week.",
       location: "Location",
       inPerson: "In person",
       online: "Online",
@@ -2695,6 +2815,14 @@ const en: Dictionary = {
   coachProfile: {
     backToSearch: "All coaches",
     from: "From",
+    groupSessions: "Group classes",
+    groupSeatsLeft: "{n} seats left",
+    groupSeatLeft: "Last seat",
+    groupFull: "Full",
+    groupBook: "Book my seat",
+    groupPerPerson: "per person",
+    groupNone: "No class scheduled yet.",
+    groupServiceHint: "Booked per class, see the upcoming dates below.",
     perSession: "/ session",
     instantNote: "Instant booking: your slot is confirmed immediately.",
     approvalNote:
@@ -2793,6 +2921,8 @@ const en: Dictionary = {
         "This service is no longer available. Reload the page and pick another one.",
       coachCannotCharge:
         "This coach cannot take online payments yet. Contact them directly to book.",
+      sessionFull: "This class is full. Pick another date.",
+      sessionUnavailable: "This class is no longer offered. Pick another date.",
     },
     authRequiredTitle: "Last step: your account",
     authRequiredDesc:
@@ -2812,6 +2942,9 @@ const en: Dictionary = {
     installmentsHint: "Pay in 3 instalments available (Klarna or Alma), pick it at checkout.",
     slotsError: "Could not load this coach's slots.",
     retry: "Try again",
+    groupTitle: "Book my seat",
+    groupDesc: "Your seat is confirmed as soon as you pay. Each participant pays their own.",
+    groupSeatsLeft: "{n} seats left",
     unpayableService:
       "This service is paid directly with the coach (online payment not enabled yet on their side). Send your request and they will confirm the details.",
     viewBooking: "Track my booking",
@@ -3204,6 +3337,7 @@ const en: Dictionary = {
   },
   clientSpace: {
     title: "My sessions",
+    groupLabel: "Group class",
     cancelDone:
       "Session cancelled. If a refund applies, it is automatically sent back to your card within a few days.",
     findCoach: "Find a coach",
@@ -3266,6 +3400,7 @@ const en: Dictionary = {
       too_soon: "This slot is too close: the coach requires notice.",
       no_credit: "No credit left on your pack.",
       not_enough_credits: "You selected more slots than credits left.",
+      max_per_week: "Your pack is limited to {n} session(s) per week. Spread your slots over several weeks.",
       generic: "Could not book. Try again or contact support.",
     },
   },
@@ -3293,6 +3428,19 @@ const en: Dictionary = {
     refunded: "Pack refunded",
     closed: "Pack closed",
     validUntil: "valid until",
+    maxPerWeek: "max {n} session(s) per week",
+    requestRefund: "Ask for a refund of the rest",
+    requestTitle: "Ask for a refund of the remaining sessions",
+    requestDesc:
+      "Your coach has 7 days to accept (pro-rata refund to your payment method) or refuse with a reason. Without an answer, Madger refunds automatically. Your sessions stay usable meanwhile.",
+    requestNote: "A few words (optional)",
+    requestSend: "Send my request",
+    requestSent: "Request sent, coach's answer expected before {date}.",
+    requestPending: "Refund request in progress, answer expected before {date}.",
+    requestRefused: "Your coach refused the refund:",
+    requestContact: "Disagree? Write to Madger",
+    requestErr: "The request could not be sent. Try again.",
+    extended: "Extended by Madger",
   },
   packActions: {
     gift: "+ Offer a session",
@@ -3313,6 +3461,19 @@ const en: Dictionary = {
     refundDone: "Refund of {amount} issued, pack closed.",
     refundNothing: "Nothing to refund: this pack's funds were already paid out to you.",
     refundErr: "The refund could not go through. Try again or contact support.",
+    requestBanner:
+      "This client asks for a refund of their {n} remaining session(s). Answer expected before {date}.",
+    requestHint:
+      "Accepting refunds the pro-rata right away. Refusing requires a reason the client will read; they can escalate to Madger. Without an answer, Madger refunds automatically.",
+    accept: "Accept and refund",
+    refuse: "Refuse",
+    refuseTitle: "Refuse the request",
+    refuseDesc: "Give a clear reason: it is sent to the client as is.",
+    refusePlaceholder: "E.g. the client turned down the proposed sessions three times…",
+    refuseReasonShort: "The reason must be at least 10 characters.",
+    refuseSend: "Send the refusal",
+    refused: "Refusal sent to the client.",
+    refusedEarlier: "Previous request refused:",
     reasons: {
       purchase: "Pack purchase",
       booking: "Session booked",
@@ -3323,6 +3484,9 @@ const en: Dictionary = {
       coach_adjust: "Session removed",
       refund_closed: "Pack refunded",
       coach_closed: "Pack closed",
+      extended: "Validity extended by Madger",
+      refund_requested: "Refund requested by the client",
+      refund_refused: "Request refused by the coach",
     },
   },
   leia: {
@@ -3387,8 +3551,8 @@ const en: Dictionary = {
         body: "Your average is below 4.8, the Super coach badge threshold. Punctuality, personalized follow-up and a quick message after the session make all the difference.",
       },
       pro: {
-        title: "Go Pro: packs, reminders and automatic cancellation",
-        body: "You're earning regularly: Pro gives you session packs, renewal reminders and automatic cancellation. One no-show avoided per month and Pro pays for itself.",
+        title: "Go Pro: SMS, reminders and automatic cancellation",
+        body: "You're earning regularly: Pro gives you SMS reminders the day before, renewal reminders and automatic cancellation. One no-show avoided per month and Pro pays for itself.",
         cta: "Discover Pro",
       },
     },

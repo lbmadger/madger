@@ -24,12 +24,18 @@ export default function PackCreditActions({
   remaining,
   events,
   refundable,
+  request = null,
+  refusedReason = null,
 }: {
   packId: string;
   remaining: number;
   events: CreditEvent[];
   // Pack payé en ligne : le coach peut rembourser le reste (lot 2).
   refundable: boolean;
+  // Demande de remboursement du client en attente (migration 0069) : le
+  // coach a 7 jours pour accepter ou refuser avec motif.
+  request?: { requested_at: string | null; note: string | null } | null;
+  refusedReason?: string | null;
 }) {
   const { t, locale } = useI18n();
   const loc = locale === "fr" ? "fr-FR" : "en-GB";
@@ -42,6 +48,33 @@ export default function PackCreditActions({
   const [showLog, setShowLog] = useState(false);
   const [refundOpen, setRefundOpen] = useState(false);
   const [refundMsg, setRefundMsg] = useState<string | null>(null);
+  const [refuseOpen, setRefuseOpen] = useState(false);
+  const [refuseReason, setRefuseReason] = useState("");
+
+  async function refuse() {
+    if (refuseReason.trim().length < 10) {
+      setError(t("packActions.refuseReasonShort"));
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/packs/refuse-refund", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pack_id: packId, reason: refuseReason.trim() }),
+      });
+      if (!res.ok) {
+        setError(t("packActions.errGeneric"));
+        return;
+      }
+      setRefuseOpen(false);
+      setRefundMsg(t("packActions.refused"));
+      router.refresh();
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function refundRest() {
     setBusy(true);
@@ -103,8 +136,93 @@ export default function PackCreditActions({
     }
   }
 
+  const deadline = request?.requested_at
+    ? new Date(new Date(request.requested_at).getTime() + 7 * 86400000)
+    : null;
+
   return (
     <div className="mt-3 border-t border-border pt-2.5">
+      {/* Demande du client : à traiter sous 7 jours, sinon remboursement
+          automatique. */}
+      {request && (
+        <div className="mb-2 rounded-xl border border-warning/40 bg-warning/[0.08] p-3">
+          <p className="text-xs font-semibold text-text-base">
+            {t("packActions.requestBanner")
+              .replace("{n}", String(remaining))
+              .replace(
+                "{date}",
+                deadline
+                  ? deadline.toLocaleDateString(loc, { day: "numeric", month: "long" })
+                  : ""
+              )}
+          </p>
+          {request.note && (
+            <p className="mt-1 text-xs italic text-text-muted">« {request.note} »</p>
+          )}
+          <p className="mt-1 text-[11px] text-text-dim">{t("packActions.requestHint")}</p>
+          <div className="mt-2 flex gap-2">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => {
+                setRefuseOpen(false);
+                setRefundOpen(true);
+              }}
+              className="flex-1 rounded-full bg-accent px-3 py-1.5 text-xs font-semibold text-black disabled:opacity-50"
+            >
+              {t("packActions.accept")}
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => {
+                setRefundOpen(false);
+                setRefuseOpen(true);
+              }}
+              className="flex-1 rounded-full border border-border-strong px-3 py-1.5 text-xs font-medium text-text-muted transition-colors hover:border-danger hover:text-danger disabled:opacity-50"
+            >
+              {t("packActions.refuse")}
+            </button>
+          </div>
+        </div>
+      )}
+      {refusedReason && !request && (
+        <p className="mb-2 text-[11px] text-text-dim">
+          {t("packActions.refusedEarlier")} « {refusedReason} »
+        </p>
+      )}
+      {refuseOpen && (
+        <div className="mb-2 rounded-xl border border-border bg-bg-elevated p-3">
+          <p className="text-xs font-semibold text-text-base">{t("packActions.refuseTitle")}</p>
+          <p className="mt-1 text-xs text-text-muted">{t("packActions.refuseDesc")}</p>
+          <textarea
+            value={refuseReason}
+            onChange={(e) => setRefuseReason(e.target.value)}
+            rows={3}
+            maxLength={500}
+            placeholder={t("packActions.refusePlaceholder")}
+            className="mt-2 w-full resize-none rounded-lg border border-border bg-bg-card px-3 py-2 text-xs text-text-base placeholder:text-text-dim focus:border-accent focus:outline-none"
+          />
+          {error && <p className="mt-1 text-xs text-danger">{error}</p>}
+          <div className="mt-2 flex gap-2">
+            <button
+              type="button"
+              onClick={() => setRefuseOpen(false)}
+              className="flex-1 rounded-full border border-border-strong px-3 py-1.5 text-xs font-medium text-text-muted"
+            >
+              {t("common.cancel")}
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={refuse}
+              className="flex-1 rounded-full bg-danger/15 px-3 py-1.5 text-xs font-semibold text-danger transition-colors hover:bg-danger/25 disabled:opacity-50"
+            >
+              {busy ? t("common.loading") : t("packActions.refuseSend")}
+            </button>
+          </div>
+        </div>
+      )}
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"

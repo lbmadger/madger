@@ -41,6 +41,23 @@ export type PublicCoach = {
   verified: boolean;
 };
 
+// Cours collectif à venir (vue public_group_sessions, migration 0068) :
+// places prises calculées en base.
+export type PublicGroupSession = {
+  id: string;
+  coach_id: string;
+  service_id: string | null;
+  name: string;
+  starts_at: string;
+  ends_at: string;
+  capacity: number;
+  price_cents: number;
+  currency: string;
+  location: "in_person" | "online";
+  location_text: string | null;
+  seats_taken: number;
+};
+
 // Photo de la galerie Résultats (table coach_photos, migrations 0047/0048).
 // url_after remplie = paire avant/après affichée côte à côte.
 export type CoachPhoto = {

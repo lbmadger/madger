@@ -5,8 +5,6 @@ import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getCoach } from "@/lib/coach/getCoach";
 import type { Service } from "@/lib/services/types";
-import { isPro } from "@/lib/subscription/plan";
-import ProLock from "@/components/subscription/ProLock";
 
 // Page Prestations : les offres du coach (séance, pack, abonnement).
 // Deux prérequis pour créer des prestations : un compte Stripe actif (sinon
@@ -18,7 +16,6 @@ export default async function ServicesPage() {
   const { coach } = await getCoach();
   const stripeReady = Boolean(coach?.stripe_charges_enabled);
   const siretReady = Boolean(coach?.siret?.trim());
-  const pro = isPro(coach?.pro_until);
 
   const { data } = await supabase
     .from("services")
@@ -68,22 +65,11 @@ export default async function ServicesPage() {
             </Link>
           </div>
         )}
-        {/* Packs : fonctionnalité Pro. Les packs déjà vendus restent
-            utilisables par les clients jusqu'à épuisement. Affiché seulement
-            quand Stripe est prêt : avant, la priorité est d'activer les
-            paiements, pas de passer Pro. */}
-        {stripeReady && !pro && (
-          <ProLock
-            className="mb-5"
-            title={dict.plans.lock.packsTitle}
-            desc={dict.plans.lock.packsDesc}
-            cta={dict.plans.lock.cta}
-          />
-        )}
+        {/* Packs ouverts à tous les plans (migration 0070). */}
         <ServicesView
           initialServices={(data ?? []) as Service[]}
           canCreate={stripeReady}
-          packsAllowed={pro}
+          packsAllowed
         />
       </main>
     </>

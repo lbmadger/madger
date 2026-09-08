@@ -113,7 +113,7 @@ export async function GET(req: NextRequest) {
       delivered = await sendEmail({ to: email, subject: t.subject, html: t.html });
       if (delivered) sent++;
 
-      // Rappel SMS (migration 0068) : réglage Pro du coach, mobile du client
+      // Rappel SMS (migration 0070) : réglage Pro du coach, mobile du client
       // au format E.164. Tenté une seule fois par séance (reminder_sms_sent_at).
       // Best-effort : un SMS refusé n'empêche jamais l'email ni le marquage.
       if (

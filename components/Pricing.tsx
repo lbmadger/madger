@@ -16,14 +16,14 @@ import {
 // Cinq lignes par colonne, sans chiffre : Pro se vend sur ses fonctionnalités.
 const freeFeatures = [
   "Lien public personnalisé",
-  "Réservations et paiements illimités",
+  "Réservations, packs et paiements illimités",
   "Factures conformes automatiques",
   "Synchronisation Google Calendar",
-  "Rappels automatiques",
+  "Rappels automatiques par email",
 ];
 
 const proFeatures = [
-  "Packs de séances",
+  "Rappels SMS la veille",
   "Annulation automatique",
   "Relances de renouvellement",
   "Écran encaissements",
@@ -80,7 +80,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
             }}>Aucune surprise au lancement.</span>
           </h2>
           <p className="text-text-muted text-lg max-w-lg mx-auto mb-6" style={{ lineHeight: 1.6 }}>
-            Essentiel pour démarrer. Pro pour vendre des packs, automatiser tes annulations et garder tes clients. 7 jours d'essai, sans engagement.
+            Essentiel pour encaisser, packs compris. Pro pour automatiser tes annulations, rappeler par SMS et garder tes clients. 7 jours d'essai, sans engagement.
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8" style={{ background: "rgba(203,255,3,0.07)", border: "1px solid rgba(203,255,3,0.18)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-accent block" style={{ background: "#CBFF03" }} />

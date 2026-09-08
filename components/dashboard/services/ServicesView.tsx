@@ -72,6 +72,8 @@ export default function ServicesView({
 
   function metaLine(s: Service): string {
     const parts: string[] = [t(`services.types.${s.type}`)];
+    if ((s.capacity ?? 1) > 1)
+      parts.push(t("services.groupMeta").replace("{n}", String(s.capacity)));
     if (s.type === "pack" && s.pack_size)
       parts.push(`${s.pack_size} ${t("services.sessionsLabel")}`);
     if (s.type === "pack" && s.validity_days)

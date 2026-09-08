@@ -9,6 +9,14 @@ import {
   packSessionBookedCoach,
 } from "@/lib/email/templates";
 import { attachMeetToBooking } from "@/lib/google/calendar";
+import { dateISOInTz, weekdayInTz } from "@/lib/time/tz";
+
+// Clé de semaine (lundi, AAAA-MM-JJ) d'un instant dans le fuseau du coach.
+function weekKey(d: Date, tz: string): string {
+  const weekday = weekdayInTz(d, tz); // 0 = dimanche
+  const monday = new Date(d.getTime() - ((weekday + 6) % 7) * 86400000);
+  return dateISOInTz(monday, tz);
+}
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -79,7 +87,7 @@ export async function POST(req: NextRequest) {
   const nowIso = new Date().toISOString();
   const { data: packs } = await admin
     .from("pack_credits")
-    .select("id, total, used, expires_at, service_id, services(duration_min, location)")
+    .select("id, total, used, expires_at, service_id, max_per_week, services(duration_min, location)")
     .eq("coach_id", coachId)
     .eq("client_id", clientRow.id)
     .eq("status", "active")
@@ -120,12 +128,42 @@ export async function POST(req: NextRequest) {
   const booked: { id: string; starts_at: string; ends_at: string }[] = [];
   let failure: string | null = null;
 
+  // Limite hebdomadaire du pack débité en premier (figée à l'achat) : le
+  // client ne place pas toutes ses séances la même semaine. Comptées :
+  // ses séances sur crédit déjà posées chez ce coach (à venir ou passées)
+  // dans la même semaine, plus celles de cette demande.
+  const maxPerWeek = (first?.max_per_week as number | null) ?? null;
+  const tz = (coach.timezone as string | null) || "Europe/Paris";
+  const weekCounts = new Map<string, number>();
+  if (maxPerWeek) {
+    const { data: existing } = await admin
+      .from("bookings")
+      .select("starts_at")
+      .eq("coach_id", coachId)
+      .eq("client_id", clientRow.id)
+      .not("pack_credit_id", "is", null)
+      .in("status", ["pending", "confirmed", "completed"])
+      .gte("starts_at", new Date(Date.now() - 14 * 86400000).toISOString());
+    for (const b of existing ?? []) {
+      const k = weekKey(new Date(b.starts_at as string), tz);
+      weekCounts.set(k, (weekCounts.get(k) ?? 0) + 1);
+    }
+  }
+
   for (const iso of slots) {
     const starts = new Date(iso);
     const ends = new Date(starts.getTime() + durationMin * 60000);
     if (starts.getTime() < Date.now() + noticeMs) {
       failure = "too_soon";
       break;
+    }
+    if (maxPerWeek) {
+      const k = weekKey(starts, tz);
+      if ((weekCounts.get(k) ?? 0) >= maxPerWeek) {
+        failure = "max_per_week";
+        break;
+      }
+      weekCounts.set(k, (weekCounts.get(k) ?? 0) + 1);
     }
     // Créneau libre (séances en attente / confirmées, verrous de paiement).
     const [{ data: overlapping }, { data: holds }] = await Promise.all([
@@ -195,7 +233,10 @@ export async function POST(req: NextRequest) {
   }
 
   if (booked.length === 0) {
-    return NextResponse.json({ error: failure ?? "generic" }, { status: 409 });
+    return NextResponse.json(
+      { error: failure ?? "generic", max_per_week: maxPerWeek },
+      { status: 409 }
+    );
   }
 
   // Crédits restants après ces réservations.

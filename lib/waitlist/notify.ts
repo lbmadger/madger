@@ -4,7 +4,7 @@ import { waitlistSlotFreedClient } from "@/lib/email/templates";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
-// Liste d'attente sur créneau (migration 0068) : quand une séance est annulée,
+// Liste d'attente sur créneau (migration 0070) : quand une séance est annulée,
 // on prévient par email les personnes qui avaient demandé ce créneau. Chaque
 // ligne est réclamée (notified_at) AVANT l'envoi : deux annulations
 // concurrentes ne préviennent jamais deux fois. Best-effort : ne lève jamais,
