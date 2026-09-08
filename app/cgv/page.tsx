@@ -36,6 +36,7 @@ export default function CGV() {
             <p>
               <strong className="text-white">Léonard Bondeau</strong>, Madger<br />
               SIRET : 933 449 365 00016<br />
+              Adresse : Résidence du Bois de Sapin, 71400 Autun<br />
               TVA non applicable, art. 293 B du CGI<br />
               Email : <a href="mailto:contact@madger.app" style={{ color: "#CBFF03" }}>contact@madger.app</a>
             </p>
