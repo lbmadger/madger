@@ -202,7 +202,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
                   </div>
                 )}
                 <div className="text-white text-sm">
-                  0 % de commission Madger. 3 % de frais de transaction, tout compris.
+                  3 % de frais de transaction, tout compris.
                 </div>
                 <div className="text-text-muted text-xs">
                   ou {annual} € par an (2 mois offerts) · 7 jours d'essai gratuits
@@ -255,7 +255,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
             En dessous, tes SMS de rappel, tes relances et tes statistiques te reviennent à moins de 20 € par mois.
           </p>
           <p className="text-xs" style={{ color: "#8C8C8C" }}>
-            « Tout compris » veut dire : frais bancaires, Apple Pay, remboursements et litiges inclus.
+            Tout compris : frais bancaires, Apple Pay, remboursements et litiges inclus, aucune commission en plus.
             Ailleurs, « 0 % de commission » laisse 1,5 % + 0,25 € de frais bancaires par paiement à ta charge, remboursements et litiges en plus.
           </p>
         </motion.div>
