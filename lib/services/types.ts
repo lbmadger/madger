@@ -21,6 +21,8 @@ export type Service = {
   // par personne. Un pack collectif référence sa prestation collective.
   capacity?: number | null;
   group_service_id?: string | null;
+  // Packs : séances par semaine au plus (null = sans limite), figé à l'achat.
+  max_per_week?: number | null;
   active: boolean;
 };
 

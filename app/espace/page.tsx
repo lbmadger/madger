@@ -61,7 +61,7 @@ export default async function ClientSpacePage() {
           admin
             .from("pack_credits")
             .select(
-              "id, coach_id, total, used, status, expires_at, service_name, cancel_hours, services(name, duration_min), coaches(first_name, last_name, slug, booking_mode)"
+              "id, coach_id, total, used, status, expires_at, service_name, cancel_hours, max_per_week, payment_id, refund_request_status, refund_requested_at, refund_refused_reason, extended_count, services(name, duration_min), coaches(first_name, last_name, slug, booking_mode)"
             )
             .in("client_id", clientIds)
             .order("created_at", { ascending: false }),
@@ -108,6 +108,12 @@ export default async function ClientSpacePage() {
           coach_booking_mode: (co?.booking_mode as string | null) ?? "instant",
           duration_min: (svc?.duration_min as number | null) ?? 60,
           cancel_hours: (c.cancel_hours as number | null) ?? null,
+          max_per_week: (c.max_per_week as number | null) ?? null,
+          refundable: !!c.payment_id,
+          refund_request_status: (c.refund_request_status as string | null) ?? null,
+          refund_requested_at: (c.refund_requested_at as string | null) ?? null,
+          refund_refused_reason: (c.refund_refused_reason as string | null) ?? null,
+          extended_count: (c.extended_count as number | null) ?? 0,
         });
       }
 

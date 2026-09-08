@@ -96,7 +96,7 @@ export default async function ClientDetailPage({
   // Packs de séances achetés par ce client (RLS : seuls ceux du coach).
   const { data: packRows } = await supabase
     .from("pack_credits")
-    .select("id, total, used, status, expires_at, service_name, payment_id, services(name)")
+    .select("id, total, used, status, expires_at, service_name, payment_id, refund_request_status, refund_requested_at, refund_request_note, refund_refused_reason, services(name)")
     .eq("client_id", params.id)
     .order("created_at", { ascending: false });
   const packs = (packRows ?? []).map((p) => {
@@ -106,6 +106,17 @@ export default async function ClientDetailPage({
       total: p.total as number,
       used: p.used as number,
       refundable: !!p.payment_id,
+      request:
+        (p.refund_request_status as string | null) === "pending"
+          ? {
+              requested_at: (p.refund_requested_at as string | null) ?? null,
+              note: (p.refund_request_note as string | null) ?? null,
+            }
+          : null,
+      refusedReason:
+        (p.refund_request_status as string | null) === "refused"
+          ? ((p.refund_refused_reason as string | null) ?? null)
+          : null,
       status: ((p.status as string | null) ?? "active"),
       expires_at: (p.expires_at as string | null) ?? null,
       name:
@@ -234,6 +245,8 @@ export default async function ClientDetailPage({
                       remaining={left}
                       events={eventsByPack.get(p.id) ?? []}
                       refundable={p.refundable}
+                      request={p.request}
+                      refusedReason={p.refusedReason}
                     />
                   )}
                 </div>
