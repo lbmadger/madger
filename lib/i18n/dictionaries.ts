@@ -494,7 +494,7 @@ const fr = {
     trialTitle: "Il te reste {n} jours de Pro offert",
     trialTitleLast: "Dernier jour de Pro offert",
     trialDesc:
-      "Rappels SMS, annulation automatique, relances, écran encaissements et alertes churn sont actifs. Bloque ton tarif avant la fin pour ne rien perdre.",
+      "Annulation automatique, relances, écran encaissements, alertes churn et statistiques avancées sont actifs. Bloque ton tarif avant la fin pour ne rien perdre.",
     trialCta: "Garder Pro",
     featuresFree: [
       "Lien public personnalisé",
@@ -504,7 +504,6 @@ const fr = {
       "Rappels automatiques par email",
     ],
     featuresPro: [
-      "Rappels SMS la veille",
       "Annulation automatique",
       "Relances de renouvellement",
       "Écran encaissements",
@@ -532,7 +531,7 @@ const fr = {
       lossCommission:
         "Fin des packs, de l'annulation automatique, des relances de renouvellement, de l'écran encaissements et des alertes churn.",
       lossBadge:
-        "Tu perds les rappels SMS, l'annulation automatique et les statistiques avancées de Madger Pro.",
+        "Tu perds l'annulation automatique, les relances et les statistiques avancées de Madger Pro.",
       stay: "Je reste en Pro",
       switchAnnual: "Passer à l'annuel : {price}/an, 2 mois offerts",
       switching: "Un instant…",
@@ -560,7 +559,7 @@ const fr = {
         too_expensive:
           "On comprend. Deux options pour alléger la note sans perdre les fonctionnalités Pro.",
         not_enough_revenue:
-          "Un no-show évité par mois et Pro est remboursé. Si ton volume est vraiment faible, Essentiel est un bon choix, mais pense aux rappels SMS et aux relances que tu perds.",
+          "Un no-show évité par mois et Pro est remboursé. Si ton volume est vraiment faible, Essentiel est un bon choix, mais pense à l'annulation automatique et aux relances que tu perds.",
         missing_features:
           "Dis-nous laquelle : on construit Madger avec les coachs, et on répond vite.",
         other_tool:
@@ -610,7 +609,7 @@ const fr = {
     offerLocked: "Bloqué tant que tu restes abonné, même après la hausse.",
     modalTitle: "Pro, c'est ce qui fait rester tes clients",
     modalBody:
-      "Rappelle tes clients par SMS la veille, laisse l'annulation automatique appliquer tes règles, relance les renouvellements, suis tes encaissements par client et repère ceux qui décrochent. Un no-show évité par mois et Pro est remboursé.",
+      "Laisse l'annulation automatique appliquer tes règles, relance les renouvellements, suis tes encaissements par client et repère ceux qui décrochent. Un no-show évité par mois et Pro est remboursé.",
     modalPoints: [
       "Packs de séances et relances de renouvellement",
       "Annulation automatique selon tes règles",
@@ -623,8 +622,8 @@ const fr = {
     upsellPaymentsDesc: "Qui a payé quoi, ce qui reste à venir, les packs en cours. Un no-show évité par mois et Pro est remboursé.",
     upsellStatsTitle: "Tes statistiques avancées t'attendent en Pro",
     upsellStatsDesc: "Packs de séances, annulation automatique, relances de renouvellement, écran encaissements, alerte churn. Et ces statistiques détaillées.",
-    upsellInvoicesTitle: "Des relances et des SMS, en Pro",
-    upsellInvoicesDesc: "Rappelle tes clients par SMS la veille, relance les renouvellements de packs et laisse l'annulation automatique gérer les imprévus.",
+    upsellInvoicesTitle: "Des relances et l'annulation automatique, en Pro",
+    upsellInvoicesDesc: "Relance les renouvellements de packs, laisse l'annulation automatique gérer les imprévus et suis tes encaissements par client.",
     upsellCardCta: "Bloquer le prix Pro",
     // Sections verrouillées pour un coach Essentiel.
     lock: {
@@ -1266,12 +1265,6 @@ const fr = {
     vatRateNone: "Franchise en base (pas de TVA)",
     siretVerified: "SIRET vérifié : {name}",
     siretUnverifiedHint: "SIRET non vérifié : il sera contrôlé dans l'annuaire officiel à l'enregistrement.",
-    smsReminders: "Rappels par SMS la veille",
-    smsRemindersDesc:
-      "En plus de l'email, tes clients reçoivent un SMS de rappel la veille de leur séance (numéro de mobile requis sur leur fiche). Le coût des SMS est pris en charge par Madger.",
-    smsRemindersLockTitle: "Rappels SMS : réservés à Madger Pro",
-    smsRemindersLockDesc:
-      "Le SMS de la veille divise les oublis par cinq. Passe en Pro pour l'activer.",
     billingCompliance:
       "Avec ces informations, chaque facture émise via Madger porte tes mentions légales obligatoires. Elles sont numérotées sans trou par année et conservées dans ton espace, prêtes pour ton expert-comptable.",
     minNotice: "Délai minimum de réservation",
@@ -1787,8 +1780,8 @@ const fr = {
         body: "Ta moyenne est sous les 4.8, le seuil du badge Super coach. Ponctualité, suivi personnalisé et petit message après la séance font toute la différence.",
       },
       pro: {
-        title: "Passe en Pro : SMS, relances et annulation automatique",
-        body: "Tu encaisses régulièrement : Pro te donne les rappels SMS la veille, les relances de renouvellement et l'annulation automatique. Un no-show évité par mois et Pro est remboursé.",
+        title: "Passe en Pro : relances et annulation automatique",
+        body: "Tu encaisses régulièrement : Pro te donne les relances de renouvellement, l'annulation automatique et les statistiques avancées. Un no-show évité par mois et Pro est remboursé.",
         cta: "Découvrir Pro",
       },
     },
@@ -2318,7 +2311,7 @@ const en: Dictionary = {
     trialTitle: "{n} days of free Pro left",
     trialTitleLast: "Last day of free Pro",
     trialDesc:
-      "SMS reminders, automatic cancellation, renewal reminders, payments screen and churn alerts are on. Lock your price before it ends so you lose nothing.",
+      "Automatic cancellation, renewal reminders, payments screen, churn alerts and advanced statistics are on. Lock your price before it ends so you lose nothing.",
     trialCta: "Keep Pro",
     featuresFree: [
       "Personalized public link",
@@ -2328,7 +2321,6 @@ const en: Dictionary = {
       "Automatic email reminders",
     ],
     featuresPro: [
-      "SMS reminders the day before",
       "Automatic cancellation",
       "Renewal reminders",
       "Payments screen",
@@ -2356,7 +2348,7 @@ const en: Dictionary = {
       lossCommission:
         "End of packs, automatic cancellation, renewal reminders, the payments screen and churn alerts.",
       lossBadge:
-        "You lose SMS reminders, automatic cancellation and the advanced stats of Madger Pro.",
+        "You lose automatic cancellation, renewal reminders and the advanced stats of Madger Pro.",
       stay: "I'm staying on Pro",
       switchAnnual: "Switch to annual: {price}/year, 2 months free",
       switching: "One moment…",
@@ -2384,7 +2376,7 @@ const en: Dictionary = {
         too_expensive:
           "We get it. Two options to lighten the bill without losing the Pro features.",
         not_enough_revenue:
-          "One no-show avoided per month and Pro pays for itself. If your volume is really low, Essential is a fine choice, but think about the SMS and renewal reminders you lose.",
+          "One no-show avoided per month and Pro pays for itself. If your volume is really low, Essential is a fine choice, but think about the automatic cancellation and renewal reminders you lose.",
         missing_features:
           "Tell us which one: we build Madger with coaches, and we answer fast.",
         other_tool:
@@ -2434,7 +2426,7 @@ const en: Dictionary = {
     offerLocked: "Locked as long as you stay subscribed, even after the increase.",
     modalTitle: "Pro is what keeps your clients coming back",
     modalBody:
-      "Remind your clients by SMS the day before, let automatic cancellation apply your rules, send renewal reminders, track payments per client and spot the ones drifting away. One no-show avoided per month and Pro pays for itself.",
+      "Let automatic cancellation apply your rules, send renewal reminders, track payments per client and spot the ones drifting away. One no-show avoided per month and Pro pays for itself.",
     modalPoints: [
       "Session packs and renewal reminders",
       "Automatic cancellation on your terms",
@@ -2447,8 +2439,8 @@ const en: Dictionary = {
     upsellPaymentsDesc: "Who paid what, what is still to come, packs in progress. One no-show avoided per month and Pro pays for itself.",
     upsellStatsTitle: "Your advanced statistics are waiting on Pro",
     upsellStatsDesc: "Session packs, automatic cancellation, renewal reminders, payments screen, churn alerts. And these detailed statistics.",
-    upsellInvoicesTitle: "Reminders and SMS, on Pro",
-    upsellInvoicesDesc: "Remind your clients by SMS the day before, send pack renewal reminders and let automatic cancellation handle the unexpected.",
+    upsellInvoicesTitle: "Renewal reminders and automatic cancellation, on Pro",
+    upsellInvoicesDesc: "Send pack renewal reminders, let automatic cancellation handle the unexpected and track payments per client.",
     upsellCardCta: "Lock the Pro price",
     lock: {
       cta: "Upgrade to Pro",
@@ -3084,12 +3076,6 @@ const en: Dictionary = {
     vatRateNone: "VAT-exempt (no VAT)",
     siretVerified: "SIRET verified: {name}",
     siretUnverifiedHint: "SIRET not verified yet: it is checked against the official register when you save.",
-    smsReminders: "SMS reminders the day before",
-    smsRemindersDesc:
-      "On top of the email, your clients get an SMS reminder the day before their session (mobile number required on their profile). SMS costs are covered by Madger.",
-    smsRemindersLockTitle: "SMS reminders: Madger Pro only",
-    smsRemindersLockDesc:
-      "A day-before SMS cuts no-shows by five. Upgrade to Pro to enable it.",
     billingCompliance:
       "With these details, every invoice issued via Madger carries your mandatory legal mentions. They are numbered sequentially per year and kept in your space, ready for your accountant.",
     minNotice: "Minimum booking notice",
@@ -3601,8 +3587,8 @@ const en: Dictionary = {
         body: "Your average is below 4.8, the Super coach badge threshold. Punctuality, personalized follow-up and a quick message after the session make all the difference.",
       },
       pro: {
-        title: "Go Pro: SMS, reminders and automatic cancellation",
-        body: "You're earning regularly: Pro gives you SMS reminders the day before, renewal reminders and automatic cancellation. One no-show avoided per month and Pro pays for itself.",
+        title: "Go Pro: renewal reminders and automatic cancellation",
+        body: "You're earning regularly: Pro gives you renewal reminders, automatic cancellation and advanced statistics. One no-show avoided per month and Pro pays for itself.",
         cta: "Discover Pro",
       },
     },

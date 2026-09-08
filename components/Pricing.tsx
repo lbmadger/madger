@@ -23,7 +23,6 @@ const freeFeatures = [
 ];
 
 const proFeatures = [
-  "Rappels SMS la veille",
   "Annulation automatique",
   "Relances de renouvellement",
   "Écran encaissements",
@@ -80,7 +79,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
             }}>Aucune surprise au lancement.</span>
           </h2>
           <p className="text-text-muted text-lg max-w-lg mx-auto mb-6" style={{ lineHeight: 1.6 }}>
-            Essentiel pour encaisser, packs compris. Pro pour automatiser tes annulations, rappeler par SMS et garder tes clients. 7 jours d'essai, sans engagement.
+            Essentiel pour encaisser, packs compris. Pro pour automatiser tes annulations, relancer tes clients et les garder. 7 jours d'essai, sans engagement.
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8" style={{ background: "rgba(203,255,3,0.07)", border: "1px solid rgba(203,255,3,0.18)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-accent block" style={{ background: "#CBFF03" }} />
@@ -252,7 +251,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
         >
           <p className="text-sm" style={{ color: "#C9C9C4" }}>
             Au-delà de 2 450 € encaissés par mois, Pro te coûte moins cher qu&apos;Essentiel.
-            En dessous, tes SMS de rappel, tes relances et tes statistiques te reviennent à moins de 20 € par mois.
+            En dessous, tes relances, ton annulation automatique et tes statistiques te coûtent la différence, jamais plus de 49 € par mois.
           </p>
           <p className="text-xs" style={{ color: "#8C8C8C" }}>
             Tout compris : frais bancaires, Apple Pay, remboursements et litiges inclus, aucune commission en plus.

@@ -125,10 +125,6 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   const [installments, setInstallments] = useState<boolean>(
     coach.installments_enabled === true
   );
-  // Rappels SMS J-1 (migration 0068, réglage Pro).
-  const [smsReminders, setSmsReminders] = useState<boolean>(
-    coach.sms_reminders_enabled === true
-  );
   // TVA hors franchise (migration 0068) : taux appliqué si un numéro est saisi.
   const [vatRate, setVatRate] = useState<number>(clampVatRateBps(coach.vat_rate_bps));
   // Mentions légales de facturation (SIRET, TVA, adresse).
@@ -262,7 +258,6 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         booking_mode: bookingMode,
         min_notice_hours: minNotice,
         installments_enabled: installments,
-        sms_reminders_enabled: smsReminders,
       },
       cancellation: {
         refund_over_24h_pct: refundOver,
@@ -776,45 +771,6 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
               />
             </span>
           </button>
-        </div>
-
-        {/* Rappels SMS J-1 (Pro) : coût des SMS porté par Madger */}
-        <div className="mt-4 border-t border-border pt-4">
-          {isPro(coach.pro_until) ? (
-            <button
-              type="button"
-              role="switch"
-              aria-checked={smsReminders}
-              onClick={() => setSmsReminders((v) => !v)}
-              className="flex w-full items-center justify-between gap-4 rounded-xl border border-border-strong p-4 text-left transition-colors hover:border-accent/40"
-            >
-              <span>
-                <span className="block text-sm font-semibold text-text-base">
-                  {t("settings.smsReminders")}
-                </span>
-                <span className="mt-1 block text-xs text-text-dim">
-                  {t("settings.smsRemindersDesc")}
-                </span>
-              </span>
-              <span
-                className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
-                  smsReminders ? "bg-accent" : "bg-border-strong"
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 h-5 w-5 rounded-full bg-black transition-transform ${
-                    smsReminders ? "translate-x-[22px]" : "translate-x-0.5"
-                  }`}
-                />
-              </span>
-            </button>
-          ) : (
-            <ProLock
-              title={t("settings.smsRemindersLockTitle")}
-              desc={t("settings.smsRemindersLockDesc")}
-              cta={t("plans.lock.cta")}
-            />
-          )}
         </div>
 
         <div className="mt-4 flex items-center gap-3">
