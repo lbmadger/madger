@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import SectionLabel from "@/components/ui/SectionLabel";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 import CoachAside from "@/components/ui/CoachAside";
+import PricingCalculator from "@/components/PricingCalculator";
 import {
   LAUNCH_OFFER,
   launchOfferActive,
@@ -241,6 +242,10 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
           </motion.div>
           </div>
         </div>
+
+        {/* Calculateur : le coach pose SES chiffres, le point de bascule
+            apparaît de lui-même. */}
+        <PricingCalculator />
 
         <motion.div
           initial={{ opacity: 0 }}
