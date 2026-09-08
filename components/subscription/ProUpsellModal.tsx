@@ -21,7 +21,7 @@ const OPEN_DELAY_MS = 2500;
 // Abonnement (le coach y est déjà) ni pendant l'onboarding.
 export default function ProUpsellModal() {
   const { pro } = useSession();
-  const { t, locale } = useI18n();
+  const { t, dict, locale } = useI18n();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -102,7 +102,7 @@ export default function ProUpsellModal() {
           <p className="mt-1 text-xs text-text-muted">{t("plans.proNote")}</p>
         )}
         <ul className="mt-3 flex flex-col gap-1.5 text-sm text-text-base">
-          {(t("plans.modalPoints") as unknown as string[]).map((pt) => (
+          {dict.plans.modalPoints.map((pt) => (
             <li key={pt} className="flex items-start gap-2">
               <svg className="mt-0.5 shrink-0 text-accent" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 6L9 17l-5-5" />

@@ -245,7 +245,7 @@ const fr = {
     serviceInvalid: "Donne un nom et un prix à ta prestation.",
     availTitle: "Tes disponibilités",
     availSubtitle:
-      "Déjà pré-rempli : la semaine, 9 h – 18 h. Décoche ce qui ne va pas.",
+      "Déjà pré-rempli : la semaine, de 9 h à 18 h. Décoche ce qui ne va pas.",
     availInvalid: "Choisis au moins un jour et une plage valide.",
     daysLabel: "Tes jours",
     fromLabel: "De",
@@ -1908,7 +1908,7 @@ const en: Dictionary = {
     serviceInvalid: "Give your service a name and a price.",
     availTitle: "Your availability",
     availSubtitle:
-      "Already pre-filled: weekdays, 9am – 6pm. Untick whatever does not fit.",
+      "Already pre-filled: weekdays, 9am to 6pm. Untick whatever does not fit.",
     availInvalid: "Pick at least one day and a valid range.",
     daysLabel: "Your days",
     fromLabel: "From",

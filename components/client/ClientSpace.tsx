@@ -418,7 +418,7 @@ export default function ClientSpace({
         <div className="mt-4 grid grid-cols-2 gap-2 sm:max-w-sm">
           <div className="rounded-2xl border border-border bg-bg-card px-4 py-3">
             <p className="text-[11px] font-medium uppercase tracking-wide text-text-dim">
-              {t("clientSpace.statsWeek")}
+              {t("clientOnboarding.statsWeek")}
             </p>
             <p className="mt-1 font-display text-2xl font-extrabold tracking-tight text-text-base">
               {weekCount}
@@ -426,7 +426,7 @@ export default function ClientSpace({
           </div>
           <div className="rounded-2xl border border-border bg-bg-card px-4 py-3">
             <p className="text-[11px] font-medium uppercase tracking-wide text-text-dim">
-              {t("clientSpace.statsTotal")}
+              {t("clientOnboarding.statsTotal")}
             </p>
             <p className="mt-1 font-display text-2xl font-extrabold tracking-tight text-text-base">
               {totalCount}
