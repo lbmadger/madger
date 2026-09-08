@@ -68,7 +68,7 @@ export default async function ClientSpacePage() {
           admin
             .from("bookings")
             .select(
-              "id, starts_at, ends_at, status, location, location_text, reschedule_pending_until, rescheduled_from, pack_credit_id, pack_credits(cancel_hours), coaches(first_name, last_name, slug, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, cancel_hours, gym_name, gym_address, pro_until, pro_bonus_until)"
+              "id, starts_at, ends_at, status, location, location_text, reschedule_pending_until, rescheduled_from, pack_credit_id, pack_credits(cancel_hours), group_sessions(name), coaches(first_name, last_name, slug, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, cancel_hours, gym_name, gym_address, pro_until, pro_bonus_until)"
             )
             .in("client_id", clientIds)
             .order("starts_at", { ascending: false })
@@ -153,6 +153,10 @@ export default async function ClientSpacePage() {
           coach_name:
             [co?.first_name, co?.last_name].filter(Boolean).join(" ") || "-",
           coach_slug: (co?.slug as string) ?? null,
+          group_name: (() => {
+            const g = Array.isArray(b.group_sessions) ? b.group_sessions[0] : b.group_sessions;
+            return (g?.name as string | null) ?? null;
+          })(),
           cancellation_policy:
             (co?.cancellation_policy as ClientBooking["cancellation_policy"]) ??
             "moderate",

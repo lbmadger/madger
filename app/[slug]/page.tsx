@@ -12,6 +12,7 @@ import {
   type PublicCoach,
   type PublicReview,
   type CoachPhoto,
+  type PublicGroupSession,
   coachFullName,
 } from "@/lib/coaches/public-types";
 import type { PublicService } from "@/lib/services/types";
@@ -38,8 +39,9 @@ const fetchCoachPageData = async (slug: string) => {
     if (error) {
       console.error("[slug] public_coaches query failed:", error.message);
     }
-    if (!coach) return { coach: null, services: [], reviews: [], photos: [] };
-    const [{ data: services }, { data: reviews }, { data: photos }] =
+    if (!coach)
+      return { coach: null, services: [], reviews: [], photos: [], groupSessions: [] };
+    const [{ data: services }, { data: reviews }, { data: photos }, { data: groupSessions }] =
       await Promise.all([
         supabase.from("public_services").select("*").eq("coach_id", coach.id),
         // Tous les avis (borné large) : la modale « Voir tous les avis »
@@ -57,12 +59,21 @@ const fetchCoachPageData = async (slug: string) => {
           .eq("coach_id", coach.id)
           .order("created_at", { ascending: true })
           .limit(6),
+        // Cours collectifs à venir (migration 0068), 60 jours, places prises.
+        supabase
+          .from("public_group_sessions")
+          .select("*")
+          .eq("coach_id", coach.id)
+          .lte("starts_at", new Date(Date.now() + 60 * 86400000).toISOString())
+          .order("starts_at", { ascending: true })
+          .limit(60),
       ]);
     return {
       coach: coach as PublicCoach,
       services: (services ?? []) as PublicService[],
       reviews: (reviews ?? []) as PublicReview[],
       photos: (photos ?? []) as CoachPhoto[],
+      groupSessions: (groupSessions ?? []) as PublicGroupSession[],
     };
   };
 
@@ -218,7 +229,7 @@ export default async function CoachPublicPage({
   }
   const coach = data.coach;
   if (!coach) notFound();
-  const { services, reviews, photos } = data;
+  const { services, reviews, photos, groupSessions } = data;
 
   // Données structurées (Google). Person n'est pas éligible aux extraits
   // d'avis : la note passe par un Service avec offres (prestations réelles),
@@ -344,6 +355,7 @@ export default async function CoachPublicPage({
           services={services}
           reviews={reviews}
           photos={photos}
+          groupSessions={groupSessions}
         />
       </div>
     </I18nProvider>

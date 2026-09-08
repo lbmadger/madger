@@ -54,6 +54,8 @@ export type ClientBooking = {
   place: string | null;
   coach_name: string;
   coach_slug: string | null;
+  // Place dans un cours collectif : nom du cours (migration 0068).
+  group_name: string | null;
   cancellation_policy: string;
   cancel_hours: number | null;
   // Coach Pro : politique paramétrée ; Essentiel : règle fixe (migration 0065).
@@ -734,6 +736,11 @@ export default function ClientSpace({
                     )}
                     {b.location === "online" && ` · ${t("clientSpace.online")}`}
                   </p>
+                  {b.group_name && (
+                    <p className="mt-0.5 text-xs font-medium text-accent">
+                      {t("clientSpace.groupLabel")} · {b.group_name}
+                    </p>
+                  )}
                   {b.place && (
                     <p className="mt-0.5 flex items-start gap-1 text-xs text-text-dim">
                       <svg className="mt-0.5 shrink-0" width="11" height="11" viewBox="0 0 24 24" fill="currentColor">

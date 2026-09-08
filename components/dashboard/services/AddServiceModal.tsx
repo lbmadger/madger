@@ -48,6 +48,12 @@ export default function AddServiceModal({
   const [location, setLocation] = useState<ServiceLocation>(
     service?.location ?? "in_person"
   );
+  // Format d'une séance : individuelle (1 place) ou collective (2 à 50
+  // places, prix par personne, cours planifiés depuis l'agenda).
+  const [group, setGroup] = useState((service?.capacity ?? 1) > 1);
+  const [capacity, setCapacity] = useState(
+    String((service?.capacity ?? 1) > 1 ? service?.capacity : 8)
+  );
   const [description, setDescription] = useState(service?.description ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,6 +64,9 @@ export default function AddServiceModal({
     if (!name.trim()) return setError(t("services.errors.nameRequired"));
 
     const priceCents = Math.round((parseFloat(price.replace(",", ".")) || 0) * 100);
+    const cap = type === "single" && group
+      ? Math.min(50, Math.max(2, Number(capacity) || 2))
+      : 1;
 
     setLoading(true);
     try {
@@ -83,6 +92,7 @@ export default function AddServiceModal({
         // les siennes : l'instantané est pris à l'achat.
         validity_days: type === "pack" && validity > 0 ? validity : null,
         cancel_hours: type === "pack" ? cancelHours : 24,
+        capacity: cap,
         // Modifier une prestation désactivée ne la republie pas : l'état
         // actif se change depuis la liste.
         active: service ? service.active : true,
@@ -168,9 +178,42 @@ export default function AddServiceModal({
             )}
           </div>
 
+          {/* Format : individuelle ou collective (séance simple seulement) */}
+          {type === "single" && (
+            <div className="flex flex-col gap-1.5">
+              <span className={labelClass}>{t("services.form.format")}</span>
+              <div className="flex gap-2">
+                {[false, true].map((opt) => (
+                  <button
+                    key={String(opt)}
+                    type="button"
+                    aria-pressed={group === opt}
+                    onClick={() => setGroup(opt)}
+                    className={`flex-1 rounded-full border px-3 py-2 text-sm font-medium transition-colors ${
+                      group === opt
+                        ? "border-accent bg-accent/10 text-accent"
+                        : "border-border-strong text-text-muted hover:text-text-base"
+                    }`}
+                  >
+                    {opt ? t("services.form.groupFormat") : t("services.form.individualFormat")}
+                  </button>
+                ))}
+              </div>
+              {group && (
+                <p className="text-xs leading-relaxed text-text-dim">
+                  {t("services.form.groupHint")}
+                </p>
+              )}
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3">
             <label className="flex flex-col gap-1.5">
-              <span className={labelClass}>{t("services.form.price")}</span>
+              <span className={labelClass}>
+                {type === "single" && group
+                  ? t("services.form.pricePerPerson")
+                  : t("services.form.price")}
+              </span>
               <input
                 type="text"
                 inputMode="decimal"
@@ -209,6 +252,21 @@ export default function AddServiceModal({
               <div />
             )}
           </div>
+
+          {/* Places d'un cours collectif */}
+          {type === "single" && group && (
+            <label className="flex flex-col gap-1.5">
+              <span className={labelClass}>{t("services.form.capacity")}</span>
+              <input
+                type="number"
+                min={2}
+                max={50}
+                value={capacity}
+                onChange={(e) => setCapacity(e.target.value)}
+                className={inputClass}
+              />
+            </label>
+          )}
 
           {/* Conditions du pack : validité et délai d'annulation gratuite */}
           {type === "pack" && (

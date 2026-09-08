@@ -2,7 +2,7 @@ import Topbar from "@/components/dashboard/Topbar";
 import AgendaView from "@/components/dashboard/agenda/AgendaView";
 import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
-import type { Booking, ClientOption } from "@/lib/bookings/types";
+import type { Booking, ClientOption, GroupSession, AgendaService } from "@/lib/bookings/types";
 import type { Availability } from "@/lib/availability/types";
 import type { ClientProfile } from "@/lib/health/bmi";
 
@@ -18,6 +18,7 @@ export default async function AgendaPage() {
     { data: clients },
     { data: availabilities },
     { data: services },
+    { data: groupSessions },
   ] = await Promise.all([
     supabase
       .from("bookings")
@@ -35,8 +36,22 @@ export default async function AgendaPage() {
       .select("id, first_name, last_name")
       .order("first_name", { ascending: true }),
     supabase.from("availabilities").select("*"),
-    // Noms des prestations : affichés sur les séances (grille + fiche).
-    supabase.from("services").select("id, name"),
+    // Prestations : nom sur les séances, et de quoi créer un cours collectif
+    // (capacité, prix, durée, lieu).
+    supabase
+      .from("services")
+      .select("id, name, type, capacity, price_cents, currency, duration_min, location"),
+    // Cours collectifs planifiés (migration 0068), même fenêtre glissante.
+    supabase
+      .from("group_sessions")
+      .select("*")
+      .eq("status", "scheduled")
+      .gte(
+        "starts_at",
+        new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+      )
+      .order("starts_at", { ascending: true })
+      .limit(500),
   ]);
 
   // Fiche sportive des clients (objectifs, niveau, mensurations), affichée
@@ -79,7 +94,8 @@ export default async function AgendaPage() {
           clients={(clients ?? []) as ClientOption[]}
           availabilities={(availabilities ?? []) as Availability[]}
           profiles={profiles}
-          services={(services ?? []) as { id: string; name: string }[]}
+          services={(services ?? []) as AgendaService[]}
+          groupSessions={(groupSessions ?? []) as GroupSession[]}
         />
       </main>
     </>

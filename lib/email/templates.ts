@@ -189,6 +189,8 @@ export function bookingConfirmationClient(p: {
   // Achat d'un pack : nombre de séances et validité, pour que le client
   // sache que le montant réglé couvre plusieurs séances.
   pack?: { size: number; validityStr?: string | null };
+  // Place dans un cours collectif : nom du cours.
+  groupName?: string;
 }): Email {
   const packRows: DetailRow[] = p.pack
     ? [
@@ -199,6 +201,8 @@ export function bookingConfirmationClient(p: {
   return {
     subject: p.pack
       ? `Ton pack de ${p.pack.size} séances avec ${p.coachName} est confirmé ✅`
+      : p.groupName
+      ? `Ta place au cours « ${p.groupName} » est confirmée ✅`
       : `Ta séance avec ${p.coachName} est confirmée ✅`,
     html: layout({
       preheader: `Séance confirmée ${p.dateStr} · paiement sécurisé jusqu'après la séance.`,
@@ -206,10 +210,13 @@ export function bookingConfirmationClient(p: {
       title: "C'est réservé. À toi de jouer 💪",
       intro: p.pack
         ? `Ton pack de <b style="color:${C.text};">${p.pack.size} séances</b> avec <b style="color:${C.text};">${p.coachName}</b> est confirmé et ton paiement est bien enregistré. Ta première séance est déjà réservée, tu places les suivantes depuis ton espace. Voici le récap :`
+        : p.groupName
+        ? `Ta place au cours <b style="color:${C.text};">${p.groupName}</b> avec <b style="color:${C.text};">${p.coachName}</b> est confirmée et ton paiement est bien enregistré. Voici le récap :`
         : `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> est confirmée et ton paiement est bien enregistré. Voici le récap :`,
       blocks: [
         detailsTable([
           { label: "Coach", value: p.coachName },
+          ...(p.groupName ? [{ label: "Cours", value: p.groupName }] : []),
           ...packRows,
           { label: p.pack ? "Première séance" : "Date & heure", value: p.dateStr },
           { label: "Format", value: p.online ? "En visio" : "En présentiel" },

@@ -76,6 +76,24 @@ export async function GET(req: NextRequest) {
     end: new Date(b.ends_at).getTime(),
   }));
 
+  // Cours collectifs planifiés (migration 0068) : le coach y est occupé,
+  // aucune séance individuelle possible à cette heure.
+  const { data: groupSessions, error: groupError } = await supabase
+    .from("group_sessions")
+    .select("starts_at, ends_at")
+    .eq("coach_id", coach.id)
+    .eq("status", "scheduled")
+    .gte("ends_at", now.toISOString())
+    .lte("starts_at", horizon.toISOString());
+  if (!groupError) {
+    for (const g of groupSessions ?? []) {
+      busy.push({
+        start: new Date(g.starts_at).getTime(),
+        end: new Date(g.ends_at).getTime(),
+      });
+    }
+  }
+
   // Créneaux VERROUILLÉS (paiement en cours, migration 0052) : retirés de
   // l'affichage pendant 15 min. Défensif : table absente = simplement ignoré.
   const { data: holds, error: holdsError } = await supabase

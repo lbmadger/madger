@@ -5,9 +5,11 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import type { Booking, ClientOption } from "@/lib/bookings/types";
+import type { Booking, ClientOption, GroupSession, AgendaService } from "@/lib/bookings/types";
 import type { Availability } from "@/lib/availability/types";
 import AddSessionModal from "./AddSessionModal";
+import AddGroupSessionModal from "./AddGroupSessionModal";
+import GroupSessionDialog from "./GroupSessionDialog";
 import WeekView from "./WeekView";
 import Button from "@/components/ui/Button";
 import Leo from "@/components/ui/Leo";
@@ -34,14 +36,18 @@ export default function AgendaView({
   availabilities = [],
   profiles = {},
   services = [],
+  groupSessions = [],
 }: {
   initialBookings: Booking[];
   clients: ClientOption[];
   availabilities?: Availability[];
   // Fiche sportive par client CRM (agenda : le coach voit à qui il a affaire).
   profiles?: Record<string, ClientProfile>;
-  // Noms des prestations : affichés sur les séances (grille, liste, fiche).
-  services?: { id: string; name: string }[];
+  // Prestations : noms sur les séances, et prestations collectives pour
+  // planifier un cours.
+  services?: AgendaService[];
+  // Cours collectifs planifiés (migration 0068).
+  groupSessions?: GroupSession[];
 }) {
   const { t, locale } = useI18n();
   const router = useRouter();
@@ -51,6 +57,29 @@ export default function AgendaView({
   // sert plus qu'à réconcilier avec le serveur. Zéro latence perçue.
   const [bookings, setBookings] = useState(initialBookings);
   useEffect(() => setBookings(initialBookings), [initialBookings]);
+  // Cours collectifs : copie locale, une tuile par cours. Les places des
+  // participants (réservations rattachées) n'apparaissent pas une à une.
+  const [sessions, setSessions] = useState(groupSessions);
+  useEffect(() => setSessions(groupSessions), [groupSessions]);
+  const [addingGroup, setAddingGroup] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState<GroupSession | null>(null);
+  const hasGroupServices = services.some(
+    (s) => s.type === "single" && (s.capacity ?? 1) > 1
+  );
+  const individualBookings = useMemo(
+    () => bookings.filter((b) => !b.group_session_id),
+    [bookings]
+  );
+  const seatsBySession = useMemo(() => {
+    const map = new Map<string, Booking[]>();
+    for (const b of bookings) {
+      if (!b.group_session_id || b.status === "cancelled" || b.status === "completed") continue;
+      if (!map.has(b.group_session_id)) map.set(b.group_session_id, []);
+      map.get(b.group_session_id)!.push(b);
+    }
+    return map;
+  }, [bookings]);
+  const seatCount = (id: string) => seatsBySession.get(id)?.length ?? 0;
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<Booking | null>(null);
   const [cancelId, setCancelId] = useState<string | null>(null);
@@ -178,13 +207,19 @@ export default function AgendaView({
     const iso = start.toISOString();
     if (pendingSlots.current.has(iso)) return;
     const ends = new Date(start.getTime() + 60 * 60 * 1000);
-    // Case déjà occupée localement (séance ou blocage qui chevauche) : inerte.
-    const overlap = bookings.some(
-      (b) =>
-        b.status !== "cancelled" &&
-        new Date(b.starts_at).getTime() < ends.getTime() &&
-        new Date(b.ends_at).getTime() > start.getTime()
-    );
+    // Case déjà occupée localement (séance, cours ou blocage qui chevauche) : inerte.
+    const overlap =
+      bookings.some(
+        (b) =>
+          b.status !== "cancelled" &&
+          new Date(b.starts_at).getTime() < ends.getTime() &&
+          new Date(b.ends_at).getTime() > start.getTime()
+      ) ||
+      sessions.some(
+        (g) =>
+          new Date(g.starts_at).getTime() < ends.getTime() &&
+          new Date(g.ends_at).getTime() > start.getTime()
+      );
     if (overlap) return;
     // Confirmation AVANT d'agir : un clic dans la grille ne doit jamais
     // bloquer un créneau par accident.
@@ -370,20 +405,31 @@ export default function AgendaView({
     cancelBooking(id, "coach", true);
   }
 
-  // Séances à venir uniquement (>= maintenant), regroupées par jour.
+  // Séances et cours à venir uniquement (>= maintenant), regroupés par jour.
+  type DayItem = { kind: "booking"; b: Booking } | { kind: "group"; g: GroupSession };
   const groups = useMemo(() => {
     const now = Date.now();
-    const upcoming = bookings.filter(
-      (b) => new Date(b.ends_at).getTime() >= now && b.status !== "cancelled"
-    );
-    const map = new Map<string, Booking[]>();
-    for (const b of upcoming) {
-      const k = dayKey(b.starts_at);
+    const items: DayItem[] = [
+      ...individualBookings
+        .filter((b) => new Date(b.ends_at).getTime() >= now && b.status !== "cancelled")
+        .map((b) => ({ kind: "booking" as const, b })),
+      ...sessions
+        .filter((g) => new Date(g.ends_at).getTime() >= now && g.status === "scheduled")
+        .map((g) => ({ kind: "group" as const, g })),
+    ];
+    items.sort((x, y) => {
+      const a = x.kind === "booking" ? x.b.starts_at : x.g.starts_at;
+      const b = y.kind === "booking" ? y.b.starts_at : y.g.starts_at;
+      return a.localeCompare(b);
+    });
+    const map = new Map<string, DayItem[]>();
+    for (const it of items) {
+      const k = dayKey(it.kind === "booking" ? it.b.starts_at : it.g.starts_at);
       if (!map.has(k)) map.set(k, []);
-      map.get(k)!.push(b);
+      map.get(k)!.push(it);
     }
-    return Array.from(map.entries());
-  }, [bookings]);
+    return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+  }, [individualBookings, sessions]);
 
   function dayLabel(key: string): string {
     const d = new Date(key + "T12:00:00");
@@ -559,6 +605,15 @@ export default function AgendaView({
           >
             {t("agenda.blockBtn")}
           </button>
+          {hasGroupServices && (
+            <button
+              type="button"
+              onClick={() => setAddingGroup(true)}
+              className="flex-1 whitespace-nowrap rounded-full border border-sky-400/40 px-4 py-2.5 text-sm font-medium text-sky-300 transition-colors hover:border-sky-400 sm:flex-none"
+            >
+              + {t("agenda.groupBtn")}
+            </button>
+          )}
           <Button
             onClick={() => setAdding(true)}
             disabled={clients.length === 0}
@@ -583,9 +638,12 @@ export default function AgendaView({
 
       {view === "week" ? (
         <WeekView
-          bookings={bookings}
+          bookings={individualBookings}
           availabilities={availabilities}
           serviceName={serviceName}
+          groupSessions={sessions}
+          seatCount={seatCount}
+          onGroupClick={(g) => setSelectedGroup(g)}
           onBookingClick={(b) => {
             setActionError(null);
             setSelected(b);
@@ -614,7 +672,49 @@ export default function AgendaView({
                 {dayLabel(key)}
               </h3>
               <ul className="flex flex-col gap-2">
-                {items.map((b) => (
+                {items.map((it) => {
+                  if (it.kind === "group") {
+                    const g = it.g;
+                    const taken = seatCount(g.id);
+                    return (
+                      <li key={g.id}>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedGroup(g)}
+                          className="flex w-full items-center gap-3 rounded-2xl border border-sky-400/30 bg-sky-400/[0.06] p-3 text-left transition-colors hover:border-sky-400/60"
+                        >
+                          <div className="flex w-20 shrink-0 flex-col">
+                            <span className="text-sm font-semibold text-text-base">
+                              {new Date(g.starts_at).toLocaleTimeString(loc, {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </span>
+                            <span className="text-[11px] text-text-dim">
+                              {new Date(g.starts_at).toLocaleTimeString(loc, { hour: "2-digit", minute: "2-digit" })}
+                              {" – "}
+                              {new Date(g.ends_at).toLocaleTimeString(loc, { hour: "2-digit", minute: "2-digit" })}
+                            </span>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-medium text-text-base">
+                              {g.name}
+                            </span>
+                            <span className="block truncate text-xs font-medium text-sky-300">
+                              {t("agenda.groupSeats")
+                                .replace("{n}", String(taken))
+                                .replace("{c}", String(g.capacity))}
+                            </span>
+                          </div>
+                          <span className="shrink-0 rounded-full bg-sky-400/10 px-2 py-0.5 text-[10px] font-medium text-sky-300">
+                            {t("agenda.groupBadge")}
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  }
+                  const b = it.b;
+                  return (
                   <li
                     key={b.id}
                     className="rounded-2xl border border-border bg-bg-card p-3"
@@ -788,11 +888,42 @@ export default function AgendaView({
                      </div>
                    )}
                   </li>
-                ))}
+                  );
+                })}
               </ul>
             </section>
           ))}
         </div>
+      )}
+
+      {/* Fiche d'un cours collectif : participants, annulation du cours */}
+      {selectedGroup && (
+        <GroupSessionDialog
+          session={selectedGroup}
+          participants={seatsBySession.get(selectedGroup.id) ?? []}
+          onClose={() => setSelectedGroup(null)}
+          onCancelled={(id) => {
+            setSessions((ss) => ss.filter((g) => g.id !== id));
+            setBookings((bs) =>
+              bs.map((b) =>
+                b.group_session_id === id ? { ...b, status: "cancelled" as const } : b
+              )
+            );
+            setSelectedGroup(null);
+            router.refresh();
+          }}
+        />
+      )}
+
+      {addingGroup && (
+        <AddGroupSessionModal
+          services={services}
+          onClose={() => setAddingGroup(false)}
+          onCreated={() => {
+            setAddingGroup(false);
+            router.refresh();
+          }}
+        />
       )}
 
       {/* Fiche d'une séance cliquée dans la grille semaine */}

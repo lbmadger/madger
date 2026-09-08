@@ -41,9 +41,10 @@ export async function POST(req: NextRequest) {
     duration_min,
     online,
     message,
+    group_session_id,
   } = body;
 
-  if (!coach_slug || !service_id || !first_name || !email) {
+  if (!coach_slug || !first_name || !email || (!service_id && !group_session_id)) {
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
   }
 
@@ -72,15 +73,128 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // ── Place dans un cours collectif (migration 0068) ────────────────────────
+  // Le cours porte son prix (par personne), son horaire et ses places. La
+  // place est débitée tout de suite (jamais d'empreinte : le coach a déjà
+  // choisi de donner ce cours) et retenue sous séquestre comme une séance.
+  if (group_session_id) {
+    const { data: gs } = await supabase
+      .from("group_sessions")
+      .select(
+        "id, service_id, name, starts_at, ends_at, capacity, price_cents, currency, status, location"
+      )
+      .eq("id", String(group_session_id))
+      .eq("coach_id", coach.id)
+      .maybeSingle();
+    if (!gs || gs.status !== "scheduled" || (gs.price_cents as number) <= 0) {
+      return NextResponse.json({ error: "session_unavailable" }, { status: 400 });
+    }
+    const gsStart = new Date(gs.starts_at as string);
+    const gsNoticeMs = ((coach.min_notice_hours as number) || 2) * 3600000;
+    if (gsStart.getTime() < Date.now() + gsNoticeMs) {
+      return NextResponse.json({ error: "too_soon" }, { status: 400 });
+    }
+    // Places : réservations vivantes + paiements en cours (verrous 15 min).
+    const holdCutoff = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+    await supabase.from("slot_holds").delete().lt("created_at", holdCutoff);
+    const [{ count: taken }, { count: holding }] = await Promise.all([
+      supabase
+        .from("bookings")
+        .select("id", { count: "exact", head: true })
+        .eq("group_session_id", gs.id)
+        .in("status", ["pending", "confirmed"]),
+      supabase
+        .from("slot_holds")
+        .select("id", { count: "exact", head: true })
+        .eq("group_session_id", gs.id)
+        .gte("created_at", holdCutoff),
+    ]);
+    if ((taken ?? 0) + (holding ?? 0) >= (gs.capacity as number)) {
+      return NextResponse.json({ error: "session_full" }, { status: 409 });
+    }
+    let gsHoldId: string | null = null;
+    {
+      const { data: hold } = await supabase
+        .from("slot_holds")
+        .insert({
+          coach_id: coach.id,
+          starts_at: gs.starts_at,
+          ends_at: gs.ends_at,
+          group_session_id: gs.id,
+        })
+        .select("id")
+        .single();
+      gsHoldId = (hold?.id as string) ?? null;
+    }
+    const gsDuration = Math.max(
+      15,
+      Math.round(
+        (new Date(gs.ends_at as string).getTime() - gsStart.getTime()) / 60000
+      )
+    );
+    let gsSession;
+    try {
+      gsSession = await stripe.checkout.sessions.create({
+        mode: "payment",
+        line_items: [
+          {
+            price_data: {
+              currency: (gs.currency as string) || "eur",
+              product_data: { name: gs.name as string },
+              unit_amount: gs.price_cents as number,
+            },
+            quantity: 1,
+          },
+        ],
+        customer_email: String(email),
+        payment_method_types: ["card", "link"],
+        payment_intent_data: { transfer_group: `coach_${coach.id}` },
+        ui_mode: "embedded_page",
+        return_url: `${origin}/api/stripe/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+        metadata: {
+          coach_id: coach.id,
+          coach_slug: String(coach_slug),
+          service_id: (gs.service_id as string | null) ?? "",
+          group_session_id: gs.id as string,
+          first_name: String(first_name).slice(0, 80),
+          last_name: last_name ? String(last_name).slice(0, 80) : "",
+          email: String(email).slice(0, 254),
+          phone: phone ? String(phone).slice(0, 30) : "",
+          starts_at: gs.starts_at as string,
+          duration_min: String(gsDuration),
+          online: gs.location === "online" ? "1" : "0",
+          message: message ? String(message).slice(0, 500) : "",
+          terms_version: TERMS_VERSION,
+          installments: "0",
+        },
+      });
+    } catch (err) {
+      if (gsHoldId) await supabase.from("slot_holds").delete().eq("id", gsHoldId);
+      throw err;
+    }
+    if (gsHoldId) {
+      await supabase
+        .from("slot_holds")
+        .update({ stripe_session_id: gsSession.id })
+        .eq("id", gsHoldId);
+    }
+    return NextResponse.json({ client_secret: gsSession.client_secret });
+  }
+
   const { data: service } = await supabase
     .from("services")
-    .select("name, price_cents, currency, type, duration_min")
+    .select("name, price_cents, currency, type, duration_min, capacity")
     .eq("id", service_id)
     .eq("coach_id", coach.id)
     .eq("active", true)
     .maybeSingle();
   if (!service || service.price_cents <= 0) {
     return NextResponse.json({ error: "invalid_service" }, { status: 400 });
+  }
+  // Une prestation collective se réserve sur un cours planifié, jamais sur
+  // un créneau libre.
+  if ((service.capacity as number | null ?? 1) > 1) {
+    return NextResponse.json({ error: "group_requires_session" }, { status: 400 });
   }
   // Les packs sont réservés au plan Pro : un coach repassé Essentiel ne peut
   // plus en vendre (la vue publique les masque déjà, ceci est la sécurité).

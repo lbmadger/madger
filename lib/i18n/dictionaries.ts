@@ -331,6 +331,32 @@ const fr = {
     declineConfirm:
       "Refuser cette demande ? Si le client a réglé, il sera intégralement remboursé.",
     blocked: "Bloqué",
+    groupBtn: "Cours collectif",
+    groupBadge: "Cours",
+    groupSeats: "{n}/{c} places",
+    groupParticipants: "Participants",
+    groupNone: "Aucun inscrit pour l'instant.",
+    groupCancel: "Annuler le cours",
+    groupCancelConfirm:
+      "Tous les participants seront remboursés intégralement et prévenus par email. Cette action est définitive.",
+    groupCancelled: "Cours annulé, participants remboursés.",
+    groupPerPerson: "par personne",
+    legendGroup: "Cours collectif",
+    group: {
+      title: "Nouveau cours collectif",
+      service: "Prestation collective",
+      selectService: "Choisis une prestation",
+      noService:
+        "Crée d'abord une prestation collective (Prestations, format « Collective ») pour planifier un cours.",
+      capacity: "Places",
+      repeat: "Répéter chaque semaine",
+      once: "Une seule fois",
+      weeks: "{n} semaines",
+      create: "Planifier le cours",
+      createMany: "Planifier {n} cours",
+      creating: "Planification…",
+      partial: "{ok} cours planifiés, {ko} refusés (créneau déjà pris).",
+    },
     blockBtn: "Bloquer un créneau",
     blockDesc: "Les clients ne pourront pas réserver sur cette plage.",
     noteLabel: "Note de la séance",
@@ -745,6 +771,7 @@ const fr = {
     sessionsLabel: "séances",
     free: "Gratuit",
     edit: "Modifier",
+    groupMeta: "Collectif · jusqu'à {n} pers.",
     needStripeTitle: "Connecte Stripe pour créer tes prestations",
     needStripeDesc:
       "Tes prestations sont payées en ligne par tes clients : active d'abord les paiements, la création se débloque ensuite.",
@@ -776,6 +803,13 @@ const fr = {
         "Passé ce délai, les séances non utilisées sont perdues. Un pack déjà acheté garde ses conditions.",
       cancelHours: "Annulation gratuite jusqu'à",
       cancelHoursUnit: "h avant la séance",
+      format: "Format",
+      individualFormat: "Individuelle",
+      groupFormat: "Collective",
+      capacity: "Places par cours",
+      pricePerPerson: "Prix par personne",
+      groupHint:
+        "Tu planifies chaque cours depuis ton agenda (date, places). Les clients réservent une place et paient chacun la leur.",
       cancelHint: "Après ce délai, la séance annulée est décomptée du pack.",
       location: "Lieu",
       inPerson: "Présentiel",
@@ -972,6 +1006,14 @@ const fr = {
   coachProfile: {
     backToSearch: "Tous les coachs",
     from: "À partir de",
+    groupSessions: "Cours collectifs",
+    groupSeatsLeft: "{n} places restantes",
+    groupSeatLeft: "Dernière place",
+    groupFull: "Complet",
+    groupBook: "Réserver ma place",
+    groupPerPerson: "par personne",
+    groupNone: "Aucun cours programmé pour le moment.",
+    groupServiceHint: "Réservation par cours, voir les prochaines dates ci-dessous.",
     perSession: "/ séance",
     instantNote: "Réservation instantanée : ton créneau est confirmé immédiatement.",
     approvalNote:
@@ -1061,6 +1103,8 @@ const fr = {
         "Cette prestation n'est plus disponible. Recharge la page et choisis-en une autre.",
       coachCannotCharge:
         "Ce coach ne peut pas encore encaisser de paiement en ligne. Contacte-le directement pour réserver.",
+      sessionFull: "Ce cours est complet. Choisis une autre date.",
+      sessionUnavailable: "Ce cours n'est plus proposé. Choisis une autre date.",
     },
     authRequiredTitle: "Dernière étape : ton compte",
     authRequiredDesc:
@@ -1080,6 +1124,9 @@ const fr = {
     installmentsHint: "Paiement en 3 fois possible (Klarna ou Alma), à choisir au moment de payer.",
     slotsError: "Impossible de charger les créneaux du coach.",
     retry: "Réessayer",
+    groupTitle: "Réserver ma place",
+    groupDesc: "Ta place est confirmée dès le paiement. Chaque participant règle la sienne.",
+    groupSeatsLeft: "{n} places restantes",
     unpayableService:
       "Cette prestation se règle directement avec le coach (paiement en ligne pas encore activé chez lui). Envoie ta demande, il te précisera les modalités.",
     viewBooking: "Suivre ma réservation",
@@ -1462,6 +1509,7 @@ const fr = {
   clientSpace: {
     title: "Mes séances",
     findCoach: "Trouver un coach",
+    groupLabel: "Cours collectif",
     cancelDone:
       "Séance annulée. Si un remboursement s'applique, il repart automatiquement vers ta carte sous quelques jours.",
     messages: "Messages",
@@ -2013,6 +2061,32 @@ const en: Dictionary = {
     declineConfirm:
       "Decline this request? If the client already paid, they will be fully refunded.",
     blocked: "Blocked",
+    groupBtn: "Group class",
+    groupBadge: "Class",
+    groupSeats: "{n}/{c} seats",
+    groupParticipants: "Participants",
+    groupNone: "No one signed up yet.",
+    groupCancel: "Cancel the class",
+    groupCancelConfirm:
+      "Every participant will be fully refunded and notified by email. This cannot be undone.",
+    groupCancelled: "Class cancelled, participants refunded.",
+    groupPerPerson: "per person",
+    legendGroup: "Group class",
+    group: {
+      title: "New group class",
+      service: "Group service",
+      selectService: "Pick a service",
+      noService:
+        "Create a group service first (Services, format Group) to schedule a class.",
+      capacity: "Seats",
+      repeat: "Repeat weekly",
+      once: "Once",
+      weeks: "{n} weeks",
+      create: "Schedule the class",
+      createMany: "Schedule {n} classes",
+      creating: "Scheduling…",
+      partial: "{ok} classes scheduled, {ko} refused (slot already taken).",
+    },
     blockBtn: "Block a slot",
     blockDesc: "Clients will not be able to book during this window.",
     noteLabel: "Session note",
@@ -2424,6 +2498,7 @@ const en: Dictionary = {
     sessionsLabel: "sessions",
     free: "Free",
     edit: "Edit",
+    groupMeta: "Group · up to {n} people",
     needStripeTitle: "Connect Stripe to create your services",
     needStripeDesc:
       "Your services are paid online by your clients: enable payments first, then creation unlocks.",
@@ -2455,6 +2530,13 @@ const en: Dictionary = {
         "After this period, unused sessions are lost. A pack already purchased keeps its terms.",
       cancelHours: "Free cancellation up to",
       cancelHoursUnit: "h before the session",
+      format: "Format",
+      individualFormat: "One-to-one",
+      groupFormat: "Group",
+      capacity: "Seats per class",
+      pricePerPerson: "Price per person",
+      groupHint:
+        "You schedule each class from your calendar (date, seats). Clients book a seat and each pays their own.",
       cancelHint: "After that, the cancelled session is deducted from the pack.",
       location: "Location",
       inPerson: "In person",
@@ -2651,6 +2733,14 @@ const en: Dictionary = {
   coachProfile: {
     backToSearch: "All coaches",
     from: "From",
+    groupSessions: "Group classes",
+    groupSeatsLeft: "{n} seats left",
+    groupSeatLeft: "Last seat",
+    groupFull: "Full",
+    groupBook: "Book my seat",
+    groupPerPerson: "per person",
+    groupNone: "No class scheduled yet.",
+    groupServiceHint: "Booked per class, see the upcoming dates below.",
     perSession: "/ session",
     instantNote: "Instant booking: your slot is confirmed immediately.",
     approvalNote:
@@ -2739,6 +2829,8 @@ const en: Dictionary = {
         "This service is no longer available. Reload the page and pick another one.",
       coachCannotCharge:
         "This coach cannot take online payments yet. Contact them directly to book.",
+      sessionFull: "This class is full. Pick another date.",
+      sessionUnavailable: "This class is no longer offered. Pick another date.",
     },
     authRequiredTitle: "Last step: your account",
     authRequiredDesc:
@@ -2758,6 +2850,9 @@ const en: Dictionary = {
     installmentsHint: "Pay in 3 instalments available (Klarna or Alma), pick it at checkout.",
     slotsError: "Could not load this coach's slots.",
     retry: "Try again",
+    groupTitle: "Book my seat",
+    groupDesc: "Your seat is confirmed as soon as you pay. Each participant pays their own.",
+    groupSeatsLeft: "{n} seats left",
     unpayableService:
       "This service is paid directly with the coach (online payment not enabled yet on their side). Send your request and they will confirm the details.",
     viewBooking: "Track my booking",
@@ -3132,6 +3227,7 @@ const en: Dictionary = {
   },
   clientSpace: {
     title: "My sessions",
+    groupLabel: "Group class",
     cancelDone:
       "Session cancelled. If a refund applies, it is automatically sent back to your card within a few days.",
     findCoach: "Find a coach",
