@@ -3,9 +3,19 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import MadgerLogo from "@/components/ui/MadgerLogo";
-import Select from "@/components/ui/Select";
 import { track } from "@/lib/analytics/posthog";
 import { useEarlyAccessFull } from "@/components/ui/useEarlyAccessFull";
+import { FEE_RATE_BPS } from "@/lib/subscription/plan";
+import { currentMonthlyCents } from "@/lib/subscription/offer";
+
+// Accès anticipé en trois temps (parcours de capture progressif) :
+//   0. le coach pose SES chiffres (séances par semaine, prix d'une séance) et
+//      voit tout de suite ce que ça représente et ce que Madger lui coûte ;
+//   1. prénom, nom, email ;
+//   2. téléphone, puis envoi.
+// L'API /api/early-access et la table early_access ne changent pas : les
+// champs historiques (type de coaching, volume, défi) sont remplis depuis les
+// chiffres saisis à l'étape 0.
 
 const inputBase = {
   background: "rgba(255,255,255,0.03)",
@@ -25,23 +35,28 @@ function Required() {
   return <span style={{ color: "#ef4444" }}> *</span>;
 }
 
-function focusOn(e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
+function focusOn(e: React.FocusEvent<HTMLInputElement>) {
   e.target.style.borderColor = "#CBFF03";
 }
-function focusOff(e: React.FocusEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
+function focusOff(e: React.FocusEvent<HTMLInputElement>) {
   e.target.style.borderColor = "rgba(255,255,255,0.12)";
 }
 
 // text-base (16px) sur mobile : en dessous de 16px, iOS Safari zoome
-// automatiquement la page au focus d'un champ (et reste zoomé après envoi,
-// d'où l'écran de validation "agrandi"). sm:text-sm garde 14px sur desktop.
+// automatiquement la page au focus d'un champ. sm:text-sm garde 14px sur desktop.
 const cls = "w-full px-5 py-3.5 rounded-xl text-white text-base sm:text-sm outline-none";
+
+const WEEKS_PER_MONTH = 4.33;
+const eur = (n: number) =>
+  n.toLocaleString("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+
+const STEP_LABELS = ["Tes chiffres", "Toi", "Ton numéro"];
 
 export default function EarlyAccessForm() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0);
 
   // Bloc de confirmation : le focus y est déplacé après l'envoi pour que les
   // lecteurs d'écran annoncent immédiatement le succès.
@@ -56,27 +71,47 @@ export default function EarlyAccessForm() {
   // Adresse déjà inscrite : on le dit franchement au lieu d'un faux succès.
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
 
+  // Étape 0 : les chiffres du coach.
+  const [sessionsWeek, setSessionsWeek] = useState(10);
+  const [price, setPrice] = useState(50);
+  const monthlySessions = Math.round(sessionsWeek * WEEKS_PER_MONTH);
+  const revenue = monthlySessions * price;
+  const essentialRate = FEE_RATE_BPS.essential / 10000;
+  const proRate = FEE_RATE_BPS.pro / 10000;
+  const proMonthly = currentMonthlyCents() / 100;
+  const essentialCost = revenue * essentialRate;
+  const proCost = proMonthly + revenue * proRate;
+  const breakeven = proMonthly / (essentialRate - proRate);
+  const proCheaper = proCost < essentialCost;
+
   const [fields, setFields] = useState({
     prenom: "",
     nom: "",
     email: "",
-    type_coaching: "",
-    nb_clients: "",
     telephone: "",
-    instagram_site: "",
-    defi: "",
     // Honeypot anti-spam : invisible pour les humains, les bots le remplissent.
     website: "",
   });
 
   function set(k: keyof typeof fields) {
-    return (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+    return (e: React.ChangeEvent<HTMLInputElement>) =>
       setFields((prev) => ({ ...prev, [k]: e.target.value }));
   }
 
-  function handleContinue() {
-    if (!fields.prenom.trim() || !fields.email.trim() || !fields.type_coaching) {
-      setError("Merci de renseigner tous les champs obligatoires.");
+  function scrollToForm() {
+    window.scrollTo({ top: document.getElementById("early-access")?.offsetTop ?? 0, behavior: "smooth" });
+  }
+
+  function handleCalcContinue() {
+    setError(null);
+    track("early_access_calc", { sessions_week: sessionsWeek, price });
+    setStep(1);
+    scrollToForm();
+  }
+
+  function handleIdentityContinue() {
+    if (!fields.prenom.trim() || !fields.email.trim()) {
+      setError("Merci de renseigner ton prénom et ton email.");
       return;
     }
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email);
@@ -87,13 +122,13 @@ export default function EarlyAccessForm() {
     setError(null);
     track("early_access_step2");
     setStep(2);
-    window.scrollTo({ top: document.getElementById("early-access")?.offsetTop ?? 0, behavior: "smooth" });
+    scrollToForm();
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!fields.nb_clients || !fields.telephone.trim() || !fields.defi.trim()) {
-      setError("Merci de renseigner tous les champs obligatoires.");
+    if (!fields.telephone.trim()) {
+      setError("Merci de renseigner ton numéro de téléphone.");
       return;
     }
     if (!/^\+?[0-9 .\-()]{6,20}$/.test(fields.telephone.trim())) {
@@ -106,7 +141,19 @@ export default function EarlyAccessForm() {
       const res = await fetch("/api/early-access", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(fields),
+        body: JSON.stringify({
+          prenom: fields.prenom.trim(),
+          nom: fields.nom.trim(),
+          email: fields.email.trim(),
+          telephone: fields.telephone.trim(),
+          website: fields.website,
+          // Champs historiques de la table, remplis depuis l'étape 0 : le
+          // site s'adresse aux coachs sportifs, le volume et le contexte
+          // viennent des chiffres saisis.
+          type_coaching: "Coach sportif / fitness",
+          nb_clients: `${sessionsWeek} séances/semaine`,
+          defi: `Calculateur : ${sessionsWeek} séances/semaine à ${price} €, soit environ ${Math.round(revenue)} € par mois`,
+        }),
       });
       if (!res.ok) throw new Error("Erreur serveur");
       const data = await res.json().catch(() => ({}));
@@ -130,7 +177,6 @@ export default function EarlyAccessForm() {
         className="absolute inset-0 pointer-events-none"
         style={{ background: "radial-gradient(ellipse 60% 50% at 50% 50%, rgba(203,255,3,0.08), transparent 70%)" }}
       />
-
 
       <div className="relative max-w-6xl mx-auto px-5 sm:px-6">
         <motion.div
@@ -168,11 +214,17 @@ export default function EarlyAccessForm() {
             className="font-extrabold text-white mb-3"
             style={{ fontSize: "clamp(28px, 4vw, 44px)", letterSpacing: "-0.03em", lineHeight: 1.1 }}
           >
-            {full ? "L'accès fondateur est complet." : "Rejoins les premiers coachs Madger."}
+            {full
+              ? "L'accès fondateur est complet."
+              : step === 0
+              ? "Combien tu encaisses, et ce que Madger te coûte."
+              : "Réserve ta place fondateur."}
           </h2>
           <p className="text-text-muted leading-relaxed mb-4" style={{ fontSize: 16 }}>
             {full
               ? "Les places fondateurs sont parties. Inscris-toi pour être prévenu en priorité de la prochaine vague."
+              : step === 0
+              ? "Deux curseurs, le calcul se fait en direct avec tes vrais chiffres."
               : "Les premiers membres accèdent au plan Pro offert 1 mois."}
           </p>
 
@@ -191,50 +243,44 @@ export default function EarlyAccessForm() {
             </span>
           </div>
 
-          {/* Step indicator */}
+          {/* Indicateur d'étapes */}
           {!submitted && (
             <div className="flex items-center justify-center gap-2 mb-8">
-              {/* Step 1 */}
-              <div
-                style={{
-                  width: 26, height: 26, borderRadius: "50%",
-                  background: step >= 1 ? "#CBFF03" : "rgba(255,255,255,0.07)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}
-              >
-                {step > 1 ? (
-                  <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
-                    <path d="M13.5 4.5l-7 7-3-3" stroke="#000" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                ) : (
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "#000" }}>1</span>
-                )}
-              </div>
-              <span style={{ fontSize: 11, color: step === 1 ? "#fff" : "var(--text-dim)", fontWeight: step === 1 ? 600 : 400 }}>
-                Ton profil
-              </span>
-              {/* Connector */}
-              <div style={{ width: 28, height: 1, background: step > 1 ? "#CBFF03" : "rgba(255,255,255,0.1)", margin: "0 4px" }} />
-              {/* Step 2 */}
-              <div
-                style={{
-                  width: 26, height: 26, borderRadius: "50%",
-                  background: step >= 2 ? "#CBFF03" : "rgba(255,255,255,0.07)",
-                  border: `1px solid ${step >= 2 ? "#CBFF03" : "rgba(255,255,255,0.12)"}`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}
-              >
-                <span style={{ fontSize: 10, fontWeight: 700, color: step >= 2 ? "#000" : "var(--text-dim)" }}>2</span>
-              </div>
-              <span style={{ fontSize: 11, color: step === 2 ? "#fff" : "var(--text-dim)", fontWeight: step === 2 ? 600 : 400 }}>
-                Ton activité
-              </span>
+              {STEP_LABELS.map((label, i) => (
+                <div key={label} className="flex items-center gap-2">
+                  {i > 0 && (
+                    <div style={{ width: 22, height: 1, background: step >= i ? "#CBFF03" : "rgba(255,255,255,0.1)" }} />
+                  )}
+                  <div
+                    style={{
+                      width: 26, height: 26, borderRadius: "50%",
+                      background: step >= i ? "#CBFF03" : "rgba(255,255,255,0.07)",
+                      border: `1px solid ${step >= i ? "#CBFF03" : "rgba(255,255,255,0.12)"}`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}
+                  >
+                    {step > i ? (
+                      <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                        <path d="M13.5 4.5l-7 7-3-3" stroke="#000" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    ) : (
+                      <span style={{ fontSize: 10, fontWeight: 700, color: step >= i ? "#000" : "var(--text-dim)" }}>{i + 1}</span>
+                    )}
+                  </div>
+                  <span
+                    className="hidden sm:inline"
+                    style={{ fontSize: 11, color: step === i ? "#fff" : "var(--text-dim)", fontWeight: step === i ? 600 : 400 }}
+                  >
+                    {label}
+                  </span>
+                </div>
+              ))}
             </div>
           )}
 
           <AnimatePresence mode="wait">
-            {/* ── ÉTAT SUCCÈS ── */}
             {submitted ? (
+              /* ── ÉTAT SUCCÈS ── */
               <motion.div
                 key="confirm"
                 ref={confirmRef}
@@ -276,9 +322,97 @@ export default function EarlyAccessForm() {
                   )}
                 </p>
               </motion.div>
+            ) : step === 0 ? (
+              /* ── ÉTAPE 0 : les chiffres du coach ── */
+              <motion.div
+                key="step0"
+                initial={{ opacity: 0, x: 16 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -16 }}
+                transition={{ duration: 0.2 }}
+                className="flex flex-col gap-5 text-left"
+              >
+                <label className="flex flex-col gap-2">
+                  <span className="flex items-baseline justify-between text-xs" style={{ color: "#C9C9C4" }}>
+                    Séances que tu donnes par semaine
+                    <span className="text-white font-bold tabular-nums text-sm">{sessionsWeek}</span>
+                  </span>
+                  <input
+                    type="range"
+                    min={1}
+                    max={40}
+                    step={1}
+                    value={sessionsWeek}
+                    onChange={(e) => setSessionsWeek(Number(e.target.value))}
+                    className="w-full accent-[#CBFF03]"
+                    aria-label="Séances par semaine"
+                  />
+                </label>
+                <label className="flex flex-col gap-2">
+                  <span className="flex items-baseline justify-between text-xs" style={{ color: "#C9C9C4" }}>
+                    Prix d&apos;une séance
+                    <span className="text-white font-bold tabular-nums text-sm">{eur(price)}</span>
+                  </span>
+                  <input
+                    type="range"
+                    min={15}
+                    max={150}
+                    step={5}
+                    value={price}
+                    onChange={(e) => setPrice(Number(e.target.value))}
+                    className="w-full accent-[#CBFF03]"
+                    aria-label="Prix d'une séance"
+                  />
+                </label>
 
+                {/* Résultat en direct : uniquement des chiffres calculés
+                    depuis la saisie et les taux réels. */}
+                <div
+                  className="rounded-2xl p-5"
+                  style={{ background: "rgba(203,255,3,0.05)", border: "1px solid rgba(203,255,3,0.2)" }}
+                >
+                  <p className="text-xs" style={{ color: "#8C8C8C" }}>
+                    Environ {monthlySessions} séances par mois, soit
+                  </p>
+                  <p className="text-white font-extrabold tabular-nums" style={{ fontSize: "clamp(28px, 5vw, 40px)", letterSpacing: "-0.03em", lineHeight: 1.1 }}>
+                    {eur(revenue)}
+                    <span className="text-sm font-semibold" style={{ color: "#9a9a9a" }}> encaissés par mois</span>
+                  </p>
+                  <div className="mt-4 grid grid-cols-2 gap-3">
+                    <div className="rounded-xl p-3" style={{ background: "rgba(0,0,0,0.25)" }}>
+                      <p className="text-[11px] uppercase tracking-widest font-semibold" style={{ color: "#8A8A8A" }}>Essentiel</p>
+                      <p className="mt-0.5 text-white font-bold tabular-nums">{eur(essentialCost)}<span className="text-[11px] font-medium" style={{ color: "#9a9a9a" }}> / mois</span></p>
+                      <p className="text-[11px]" style={{ color: "#8C8C8C" }}>0 € tant que tu ne vends pas</p>
+                    </div>
+                    <div className="rounded-xl p-3" style={{ background: "rgba(0,0,0,0.25)", border: proCheaper ? "1px solid rgba(203,255,3,0.35)" : "1px solid transparent" }}>
+                      <p className="text-[11px] uppercase tracking-widest font-semibold" style={{ color: "#CBFF03" }}>Pro</p>
+                      <p className="mt-0.5 text-white font-bold tabular-nums">{eur(proCost)}<span className="text-[11px] font-medium" style={{ color: "#9a9a9a" }}> / mois</span></p>
+                      <p className="text-[11px]" style={{ color: "#8C8C8C" }}>offert 1 mois aux fondateurs</p>
+                    </div>
+                  </div>
+                  <p className="mt-3 text-xs font-semibold" style={{ color: "#CBFF03" }}>
+                    {proCheaper
+                      ? `À ton volume, Pro te coûte ${eur(essentialCost - proCost)} de moins qu'Essentiel chaque mois.`
+                      : `Au-delà de ${eur(breakeven)} encaissés par mois, Pro te coûte moins cher qu'Essentiel.`}
+                  </p>
+                  <p className="mt-2 text-xs leading-relaxed" style={{ color: "#8C8C8C" }}>
+                    Une séance annulée à la dernière minute et non payée, c&apos;est {eur(price)} perdus. Avec Madger, le paiement se fait à la réservation et ta règle d&apos;annulation s&apos;applique toute seule.
+                  </p>
+                </div>
+
+                <motion.button
+                  type="button"
+                  onClick={handleCalcContinue}
+                  className="cta-shine w-full py-4 rounded-xl text-black font-bold text-sm"
+                  style={{ background: "#CBFF03" }}
+                  whileHover={{ boxShadow: "0 0 30px rgba(203,255,3,0.35)" }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {full ? "Rejoindre la liste d'attente →" : "Réserver ma place fondateur →"}
+                </motion.button>
+              </motion.div>
             ) : step === 1 ? (
-              /* ── ÉTAPE 1 ── */
+              /* ── ÉTAPE 1 : identité ── */
               <motion.div
                 key="step1"
                 initial={{ opacity: 0, x: 16 }}
@@ -293,6 +427,7 @@ export default function EarlyAccessForm() {
                     <input
                       type="text"
                       placeholder="Prénom"
+                      autoComplete="given-name"
                       value={fields.prenom}
                       onChange={set("prenom")}
                       className={cls}
@@ -306,6 +441,7 @@ export default function EarlyAccessForm() {
                     <input
                       type="text"
                       placeholder="Nom"
+                      autoComplete="family-name"
                       value={fields.nom}
                       onChange={set("nom")}
                       className={cls}
@@ -321,6 +457,7 @@ export default function EarlyAccessForm() {
                   <input
                     type="email"
                     placeholder="toi@exemple.com"
+                    autoComplete="email"
                     value={fields.email}
                     onChange={set("email")}
                     className={cls}
@@ -330,41 +467,32 @@ export default function EarlyAccessForm() {
                   />
                 </label>
 
-                <label className="flex flex-col gap-1.5">
-                  <Label>Type de coaching<Required /></Label>
-                  <Select
-                    value={fields.type_coaching}
-                    onChange={(v) => setFields((prev) => ({ ...prev, type_coaching: v }))}
-                    ariaLabel="Type de coaching"
-                    placeholder="Sélectionner"
-                    className={`${cls} border-white/[0.12] bg-white/[0.03]`}
-                    options={[
-                      "Coach sportif / fitness",
-                      "Préparateur physique",
-                      "Coach bien-être",
-                      "Coach en développement personnel",
-                      "Coach business / accompagnement",
-                      "Autre",
-                    ].map((v) => ({ value: v, label: v }))}
-                  />
-                </label>
-
                 {error && <p role="alert" className="text-sm text-danger text-center">{error}</p>}
 
-                <motion.button
-                  type="button"
-                  onClick={handleContinue}
-                  className="cta-shine w-full py-4 rounded-xl text-black font-bold text-sm mt-2"
-                  style={{ background: "#CBFF03" }}
-                  whileHover={{ boxShadow: "0 0 30px rgba(203,255,3,0.35)" }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  Continuer →
-                </motion.button>
+                <div className="flex gap-3 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => { setStep(0); setError(null); }}
+                    aria-label="Retour"
+                    className="py-4 px-5 rounded-xl text-white font-semibold text-sm flex-shrink-0"
+                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)" }}
+                  >
+                    ←
+                  </button>
+                  <motion.button
+                    type="button"
+                    onClick={handleIdentityContinue}
+                    className="cta-shine flex-1 py-4 rounded-xl text-black font-bold text-sm"
+                    style={{ background: "#CBFF03" }}
+                    whileHover={{ boxShadow: "0 0 30px rgba(203,255,3,0.35)" }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Continuer →
+                  </motion.button>
+                </div>
               </motion.div>
-
             ) : (
-              /* ── ÉTAPE 2 ── */
+              /* ── ÉTAPE 2 : téléphone ── */
               <motion.form
                 key="step2"
                 onSubmit={handleSubmit}
@@ -385,57 +513,19 @@ export default function EarlyAccessForm() {
                   aria-hidden="true"
                   style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }}
                 />
-                <label className="flex flex-col gap-1.5">
-                  <Label>Nombre de clients actifs<Required /></Label>
-                  <Select
-                    value={fields.nb_clients}
-                    onChange={(v) => setFields((prev) => ({ ...prev, nb_clients: v }))}
-                    ariaLabel="Nombre de clients actifs"
-                    placeholder="Sélectionner"
-                    className={`${cls} border-white/[0.12] bg-white/[0.03]`}
-                    options={["Moins de 5", "5 à 15", "15 à 30", "Plus de 30"].map((v) => ({
-                      value: v,
-                      label: v,
-                    }))}
-                  />
-                </label>
-
+                <p className="text-sm text-center" style={{ color: "#8A8A8A" }}>
+                  Dernière étape, {fields.prenom.trim()} : ton numéro, pour t&apos;appeler quand ton accès est prêt.
+                </p>
                 <label className="flex flex-col gap-1.5">
                   <Label>Téléphone<Required /></Label>
                   <input
                     type="tel"
                     placeholder="+33 6 00 00 00 00"
+                    autoComplete="tel"
+                    autoFocus
                     value={fields.telephone}
                     onChange={set("telephone")}
                     className={cls}
-                    style={inputBase}
-                    onFocus={focusOn}
-                    onBlur={focusOff}
-                  />
-                </label>
-
-                <label className="flex flex-col gap-1.5">
-                  <Label>Instagram ou site <span style={{ color: "var(--text-dim)" }}>(optionnel)</span></Label>
-                  <input
-                    type="text"
-                    placeholder="@ton_compte ou https://..."
-                    value={fields.instagram_site}
-                    onChange={set("instagram_site")}
-                    className={cls}
-                    style={inputBase}
-                    onFocus={focusOn}
-                    onBlur={focusOff}
-                  />
-                </label>
-
-                <label className="flex flex-col gap-1.5">
-                  <Label>Qu'est-ce que tu veux arrêter de gérer manuellement ?<Required /></Label>
-                  <textarea
-                    placeholder="Ex : les relances de paiement, les factures en fin de mois…"
-                    value={fields.defi}
-                    onChange={set("defi")}
-                    rows={3}
-                    className={`${cls} resize-none`}
                     style={inputBase}
                     onFocus={focusOn}
                     onBlur={focusOff}
@@ -448,6 +538,7 @@ export default function EarlyAccessForm() {
                   <button
                     type="button"
                     onClick={() => { setStep(1); setError(null); }}
+                    aria-label="Retour"
                     className="py-4 px-5 rounded-xl text-white font-semibold text-sm flex-shrink-0"
                     style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)" }}
                   >
@@ -465,7 +556,7 @@ export default function EarlyAccessForm() {
                       ? "Envoi en cours…"
                       : full
                       ? "Rejoindre la liste d'attente"
-                      : "Rejoindre l'accès prioritaire"}
+                      : "Valider ma place fondateur"}
                   </motion.button>
                 </div>
               </motion.form>
