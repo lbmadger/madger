@@ -39,7 +39,7 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
     ? "Créer mon lien en 5 minutes"
     : full
     ? "Rejoindre la liste d'attente"
-    : "Calculer ce que je perds";
+    : "Calculer ce que je perds sans Madger";
   const ctaHref = launched ? "/signup" : "#early-access";
 
   // ── Scroll section refs ──────────────────────────────────────
@@ -384,7 +384,7 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
                 whileHover={{ backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.22)" }}
                 transition={{ duration: 0.2 }}
               >
-                {launched ? "Calculer ce que je perds" : "Voir le fonctionnement"}
+                {launched ? "Calculer ce que je perds sans Madger" : "Voir le fonctionnement"}
               </motion.a>
             </MagneticButton>
           </motion.div>
