@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getCoach } from "@/lib/coach/getCoach";
 import { isPro } from "@/lib/subscription/plan";
-import ProUpsellCard from "@/components/subscription/ProUpsellCard";
+import ProBlur from "@/components/subscription/ProBlur";
 
 type Status = "pending" | "confirmed" | "completed" | "cancelled";
 type Booking = { starts_at: string; ends_at: string; status: Status };
@@ -243,20 +243,6 @@ export default async function StatsPage() {
     <>
       <Topbar title={s.title} />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
-        {!statsPro && (
-          <ProUpsellCard
-            className="mb-5"
-            locale={locale}
-            title={dict.plans.upsellStatsTitle}
-            desc={dict.plans.upsellStatsDesc}
-            cta={dict.plans.upsellCardCta}
-            offerBadge={dict.plans.offerBadge}
-            perMonth={dict.plans.perMonth}
-            offerFrom={dict.plans.offerFrom}
-            offerDaysLeft={dict.plans.offerDaysLeft}
-            offerLastDay={dict.plans.offerLastDay}
-          />
-        )}
         {/* Studio stories : le coach poste SES chiffres (jamais l'argent)
             ou le fait sport du jour, aux couleurs de sa page, avec son lien
             de résa. L'explication du POURQUOI est le cœur du bloc : sans
@@ -312,8 +298,17 @@ export default async function StatsPage() {
           <StatCard label={s.cancelRate} value={`${cancelRate}%`} />
         </div>
 
+        {/* Statistiques avancées : réservées à Pro, floutées sinon (les
+            vrais chiffres du coach, derrière un cadenas). */}
         {/* Héros : revenus 12 mois en aire */}
-        <div className="mt-4 sm:mt-5">
+        <ProBlur
+          locked={!statsPro}
+          title={dict.overview.proStats.lockedTitle}
+          desc={dict.overview.proStats.lockedDesc}
+          cta={dict.plans.lock.cta}
+          className="mt-4 sm:mt-5"
+        >
+        <div className={statsPro ? "mt-4 sm:mt-5" : ""}>
           <AreaChartCard
             title={`${dict.overview.chartRevenue} · ${s.last12Months}`}
             data={revenueByMonth}
@@ -322,9 +317,16 @@ export default async function StatsPage() {
             mode="months"
           />
         </div>
+        </ProBlur>
 
         {/* Séances par semaine + donut des statuts */}
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:mt-5 lg:grid-cols-2">
+        <ProBlur
+          locked={!statsPro}
+          title={dict.overview.proStats.lockedTitle}
+          cta={dict.plans.lock.cta}
+          className="mt-4 sm:mt-5"
+        >
+        <div className={`grid grid-cols-1 gap-4 lg:grid-cols-2 ${statsPro ? "mt-4 sm:mt-5" : ""}`}>
           <ChartCard
             title={s.perWeek}
             data={sessionsByWeek}
@@ -382,9 +384,16 @@ export default async function StatsPage() {
             )}
           </section>
         </div>
+        </ProBlur>
 
         {/* Jours de la semaine + revenus par prestation */}
-        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <ProBlur
+          locked={!statsPro}
+          title={dict.overview.proStats.lockedTitle}
+          cta={dict.plans.lock.cta}
+          className="mt-4"
+        >
+        <div className={`grid grid-cols-1 gap-4 lg:grid-cols-2 ${statsPro ? "mt-4" : ""}`}>
           <section className="rounded-2xl border border-border bg-bg-card p-5">
             <h2 className="text-base font-semibold text-text-base">
               {s.byWeekday}
@@ -447,6 +456,7 @@ export default async function StatsPage() {
             )}
           </section>
         </div>
+        </ProBlur>
       </main>
     </>
   );
