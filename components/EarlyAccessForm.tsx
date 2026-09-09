@@ -293,7 +293,7 @@ export default function EarlyAccessForm() {
                 {step === 0
                   ? "Quatre questions sur ton activité. On te dit ce que tu perds chaque mois, en heures et en euros, avec tes chiffres à toi."
                   : step === 1
-                  ? "Dis-nous qui tu es : on te l'affiche tout de suite et on te l'envoie par email."
+                  ? "Dis-nous à qui l'envoyer."
                   : `${firstName}, ton numéro pour t'appeler quand ton accès est prêt.`}
               </p>
 
@@ -443,8 +443,8 @@ export default function EarlyAccessForm() {
                     {alreadyRegistered
                       ? "Cette adresse fait déjà partie de la liste, ta place est bien gardée. On te contacte dès que Madger est disponible."
                       : joinedWaitlist
-                      ? "Les places fondateurs sont parties, mais tu es prioritaire sur la prochaine vague. Ton résultat t'attend aussi par email."
-                      : "On te contacte dès que ton accès est prêt. Ton résultat t'attend aussi par email."}
+                      ? "Les places fondateurs sont parties, mais tu es prioritaire sur la prochaine vague. Tu retrouveras ce résultat dans ta boîte mail."
+                      : "On te contacte dès que ton accès est prêt. Tu retrouveras ce résultat dans ta boîte mail."}
                   </p>
                 </div>
               </motion.div>
