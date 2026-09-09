@@ -17,9 +17,10 @@ export default function Footer({ launched = false }: { launched?: boolean }) {
           </a>
 
           <div className="flex flex-wrap justify-center gap-6 text-sm">
-            <a href="#fonctionnement" className="text-text-muted hover:text-white transition-colors duration-200">Fonctionnement</a>
-            <a href="#dashboard" className="text-text-muted hover:text-white transition-colors duration-200">Dashboard</a>
-            <a href="#tarifs" className="text-text-muted hover:text-white transition-colors duration-200">Tarifs</a>
+            <a href="/#fonctionnement" className="text-text-muted hover:text-white transition-colors duration-200">Fonctionnement</a>
+            <Link href="/fonctionnalites" className="text-text-muted hover:text-white transition-colors duration-200">Fonctionnalités</Link>
+            <a href="/#dashboard" className="text-text-muted hover:text-white transition-colors duration-200">Dashboard</a>
+            <a href="/#tarifs" className="text-text-muted hover:text-white transition-colors duration-200">Tarifs</a>
             <Link href="/blog" className="text-text-muted hover:text-white transition-colors duration-200">Blog</Link>
             {launched ? (
               <>
@@ -30,7 +31,7 @@ export default function Footer({ launched = false }: { launched?: boolean }) {
                 <Link href="/espace" className="text-text-muted hover:text-white transition-colors duration-200">Espace client</Link>
               </>
             ) : (
-              <a href="#early-access" className="text-text-muted hover:text-white transition-colors duration-200">Accès anticipé</a>
+              <a href="/#early-access" className="text-text-muted hover:text-white transition-colors duration-200">Accès anticipé</a>
             )}
             <a href="mailto:contact@madger.app" className="text-text-muted hover:text-white transition-colors duration-200">Contact</a>
           </div>

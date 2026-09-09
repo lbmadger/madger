@@ -14,7 +14,7 @@ export default function CtaClickTracker() {
       const a = (e.target as HTMLElement | null)?.closest?.("a");
       if (!a) return;
       const href = a.getAttribute("href") || "";
-      if (href !== "/signup" && href !== "#early-access") return;
+      if (href !== "/signup" && href !== "#early-access" && href !== "/#early-access") return;
       // Section porteuse : l'ancêtre le plus proche avec un id, sinon la
       // balise section, sinon "page".
       const section =

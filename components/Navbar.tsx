@@ -5,15 +5,19 @@ import MadgerLogo from "@/components/ui/MadgerLogo";
 import MagneticButton from "@/components/ui/MagneticButton";
 
 
+// Ancres absolues (/#…) : la navbar sert aussi sur /fonctionnalites, d'où
+// « #tarifs » seul ne mènerait nulle part. Sur la landing, le navigateur
+// traite /#tarifs comme un simple saut d'ancre.
 const LINKS = [
-  { label: "Fonctionnement", href: "#fonctionnement" },
-  { label: "Dashboard", href: "#dashboard" },
-  { label: "Tarifs", href: "#tarifs" },
+  { label: "Fonctionnement", href: "/#fonctionnement" },
+  { label: "Fonctionnalités", href: "/fonctionnalites" },
+  { label: "Dashboard", href: "/#dashboard" },
+  { label: "Tarifs", href: "/#tarifs" },
 ];
 
 export default function Navbar({ launched = false }: { launched?: boolean }) {
   // Après le lancement, les CTA mènent directement à la création de compte.
-  const ctaHref = launched ? "/signup" : "#early-access";
+  const ctaHref = launched ? "/signup" : "/#early-access";
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
