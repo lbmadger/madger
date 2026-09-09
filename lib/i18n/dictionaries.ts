@@ -132,6 +132,9 @@ const fr = {
     notifEmpty:
       "C'est tout calme ici. Dès qu'un client fait une demande, elle atterrit juste là.",
     toConfirm: "À confirmer",
+    refund: "Remboursement",
+    refundLine: "Demande le remboursement de {n} séance de pack",
+    refundLinePlural: "Demande le remboursement de {n} séances de pack",
   },
   auth: {
     emailLabel: "Adresse email",
@@ -931,6 +934,9 @@ const fr = {
     sessionsWeek: "Séances cette semaine",
     activeClients: "Clients actifs",
     pendingPayments: "En attente de versement",
+    refundBanner: "demande de remboursement de pack à traiter",
+    refundBannerPlural: "demandes de remboursement de pack à traiter",
+    refundBannerCta: "Répondre",
     vsLastMonth: "vs mois dernier",
     vsLastWeek: "vs semaine dernière",
     newThisMonth: "ce mois-ci",
@@ -2032,6 +2038,9 @@ const en: Dictionary = {
     notifEmpty:
       "All quiet here. As soon as a client sends a request, it lands right here.",
     toConfirm: "To confirm",
+    refund: "Refund",
+    refundLine: "Asks for a refund of {n} pack session",
+    refundLinePlural: "Asks for a refund of {n} pack sessions",
   },
   auth: {
     emailLabel: "Email address",
@@ -2828,6 +2837,9 @@ const en: Dictionary = {
     sessionsWeek: "Sessions this week",
     activeClients: "Active clients",
     pendingPayments: "Pending payout",
+    refundBanner: "pack refund request to handle",
+    refundBannerPlural: "pack refund requests to handle",
+    refundBannerCta: "Answer",
     vsLastMonth: "vs last month",
     vsLastWeek: "vs last week",
     newThisMonth: "this month",

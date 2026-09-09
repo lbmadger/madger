@@ -16,6 +16,17 @@ type PendingItem = {
   clients: { first_name: string; last_name: string | null } | null;
 };
 
+// Demande de remboursement du reste d'un pack (le coach a 7 jours pour
+// répondre depuis la fiche client).
+type RefundItem = {
+  id: string;
+  client_id: string;
+  refund_requested_at: string | null;
+  total: number;
+  used: number;
+  clients: { first_name: string; last_name: string | null } | null;
+};
+
 export function CopyLinkPill() {
   const { slug } = useSession();
   const { t } = useI18n();
@@ -266,23 +277,36 @@ export function NotificationBell() {
   const loc = locale === "fr" ? "fr-FR" : "en-GB";
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<PendingItem[]>([]);
+  const [refunds, setRefunds] = useState<RefundItem[]>([]);
   const ref = useRef<HTMLDivElement>(null);
 
-  // Demandes en attente (à confirmer), rafraîchies toutes les 2 min et en
-  // pause quand l'onglet est en arrière-plan (économise la base à l'échelle).
+  // Demandes en attente (séances à confirmer, remboursements de pack à
+  // traiter), rafraîchies toutes les 2 min et en pause quand l'onglet est en
+  // arrière-plan (économise la base à l'échelle).
   useEffect(() => {
     let alive = true;
     async function load() {
       if (document.hidden) return;
       const supabase = createClient();
-      const { data } = await supabase
-        .from("bookings")
-        .select("id, starts_at, clients(first_name, last_name)")
-        .eq("status", "pending")
-        .gte("ends_at", new Date().toISOString())
-        .order("starts_at", { ascending: true })
-        .limit(8);
-      if (alive && data) setItems(data as unknown as PendingItem[]);
+      const [{ data }, { data: packs }] = await Promise.all([
+        supabase
+          .from("bookings")
+          .select("id, starts_at, clients(first_name, last_name)")
+          .eq("status", "pending")
+          .gte("ends_at", new Date().toISOString())
+          .order("starts_at", { ascending: true })
+          .limit(8),
+        supabase
+          .from("pack_credits")
+          .select("id, client_id, refund_requested_at, total, used, clients(first_name, last_name)")
+          .eq("refund_request_status", "pending")
+          .eq("status", "active")
+          .order("refund_requested_at", { ascending: true })
+          .limit(8),
+      ]);
+      if (!alive) return;
+      if (data) setItems(data as unknown as PendingItem[]);
+      if (packs) setRefunds(packs as unknown as RefundItem[]);
     }
     load();
     const id = setInterval(load, 120_000);
@@ -292,7 +316,7 @@ export function NotificationBell() {
     document.addEventListener("visibilitychange", onVisible);
 
     // Temps réel : une nouvelle demande fait sonner la cloche immédiatement
-    // (publication bookings activée par la migration 0031).
+    // (publications bookings et pack_credits, migrations 0031 et 0075).
     const supabase = createClient();
     let channel: ReturnType<typeof supabase.channel> | null = null;
     supabase.auth.getUser().then(({ data }) => {
@@ -305,6 +329,16 @@ export function NotificationBell() {
             event: "*",
             schema: "public",
             table: "bookings",
+            filter: `coach_id=eq.${data.user.id}`,
+          },
+          () => load()
+        )
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "pack_credits",
             filter: `coach_id=eq.${data.user.id}`,
           },
           () => load()
@@ -338,7 +372,7 @@ export function NotificationBell() {
     };
   }, []);
 
-  const count = items.length;
+  const count = items.length + refunds.length;
 
   return (
     <div className="relative" ref={ref}>
@@ -371,6 +405,36 @@ export function NotificationBell() {
             </p>
           ) : (
             <ul>
+              {refunds.map((p) => {
+                const remaining = Math.max(0, p.total - p.used);
+                return (
+                  <li key={p.id}>
+                    <Link
+                      href={`/dashboard/clients/${p.client_id}`}
+                      onClick={() => setOpen(false)}
+                      className="flex items-center gap-3 border-b border-border/60 px-4 py-2.5 transition-colors hover:bg-bg-card"
+                    >
+                      <span className="h-2 w-2 shrink-0 rounded-full bg-danger" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm text-text-base">
+                          {[p.clients?.first_name, p.clients?.last_name]
+                            .filter(Boolean)
+                            .join(" ") || "-"}
+                        </span>
+                        <span className="block text-[11px] text-text-dim">
+                          {t(remaining > 1 ? "topbar.refundLinePlural" : "topbar.refundLine").replace(
+                            "{n}",
+                            String(remaining)
+                          )}
+                        </span>
+                      </span>
+                      <span className="shrink-0 rounded-full bg-danger/10 px-2 py-0.5 text-[10px] font-semibold text-danger">
+                        {t("topbar.refund")}
+                      </span>
+                    </Link>
+                  </li>
+                );
+              })}
               {items.map((b) => (
                 <li key={b.id}>
                   <Link

@@ -74,6 +74,7 @@ export default async function OverviewPage() {
     breakdownRes,
     totalBookingsRes,
     tomorrowRes,
+    refundReqRes,
     { coach },
   ] = await Promise.all([
     supabase.from("clients").select("*", { count: "exact", head: true }),
@@ -188,6 +189,14 @@ export default async function OverviewPage() {
         .lt("starts_at", tomorrowEnd.toISOString())
         .neq("status", "cancelled")
         .eq("is_block", false),
+      // Demandes de remboursement de pack en attente (7 jours pour répondre
+      // depuis la fiche client, sinon Madger rembourse automatiquement).
+      supabase
+        .from("pack_credits")
+        .select("client_id")
+        .eq("refund_request_status", "pending")
+        .eq("status", "active")
+        .limit(20),
       // Profil du coach (objectifs, checklist, salutation, plan).
       getCoach(),
     ]);
@@ -259,6 +268,12 @@ export default async function OverviewPage() {
   const serviceRows = servicesRes.data ?? [];
   const servicesDone = serviceRows.length > 0;
   const pendingCount = pendingRes.count ?? 0;
+  const refundReqs = refundReqRes.data ?? [];
+  const refundCount = refundReqs.length;
+  const refundHref =
+    refundCount === 1
+      ? `/dashboard/clients/${refundReqs[0].client_id as string}`
+      : "/dashboard/clients";
 
   const pro = isPro(coach?.pro_until);
 
@@ -818,6 +833,22 @@ export default async function OverviewPage() {
             </p>
             <span className="shrink-0 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-black">
               {dict.agenda.confirm}
+            </span>
+          </Link>
+        )}
+
+        {/* Remboursement de pack demandé par un client : à traiter sous 7 jours. */}
+        {refundCount > 0 && (
+          <Link
+            href={refundHref}
+            className="mb-4 flex items-center justify-between gap-3 rounded-2xl border border-danger/30 bg-danger/[0.06] px-4 py-3 transition-colors hover:border-danger/50"
+          >
+            <p className="text-sm font-semibold text-text-base">
+              {refundCount}{" "}
+              {refundCount > 1 ? o.refundBannerPlural : o.refundBanner}
+            </p>
+            <span className="shrink-0 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-black">
+              {o.refundBannerCta}
             </span>
           </Link>
         )}
