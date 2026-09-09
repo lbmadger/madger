@@ -28,7 +28,7 @@ const proFeatures = [
   "Annulation automatique",
   "Relances de renouvellement",
   "Écran encaissements",
-  "Alerte churn",
+  "Alerte clients qui décrochent",
   "Statistiques avancées",
 ];
 
@@ -124,7 +124,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
                   0 €<span style={{ fontSize: "0.45em", fontWeight: 700, color: "#9a9a9a" }}> / mois</span>
                 </div>
                 <div className="text-white text-sm">
-                  7 % de frais de transaction, tout compris.
+                  {FEE_RATE_BPS.essential / 100} % de frais de transaction, tout compris.
                 </div>
                 <div className="text-text-muted text-xs">
                   Sans abonnement, sans minimum : tu ne vends pas, tu ne paies pas.
@@ -202,14 +202,16 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
                   )}
                   <span style={{ fontSize: "0.45em", fontWeight: 700, color: "#9a9a9a" }}>/ mois</span>
                 </div>
+                {/* Le taux juste sous le prix, comme sur la carte Essentiel :
+                    les deux lignes se lisent d'un coup. */}
+                <div className="text-white text-sm">
+                  + {FEE_RATE_BPS.pro / 100} % de frais de transaction, tout compris.
+                </div>
                 {launchOfferActive() && (
                   <div className="text-[11px]" style={{ color: "#8C8C8C" }}>
                     <span style={{ color: "#F87171" }}>{LAUNCH_OFFER.regularMonthlyCents / 100} €</span> tarif à partir du {launchOfferRegularFromLabel("fr")}
                   </div>
                 )}
-                <div className="text-white text-sm">
-                  3 % de frais de transaction, tout compris.
-                </div>
                 <div className="text-text-muted text-xs">
                   ou {annual} € par an (2 mois offerts) · 7 jours d'essai gratuits
                 </div>

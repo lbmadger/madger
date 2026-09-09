@@ -117,6 +117,14 @@ export default function SidebarProfile() {
           <span className="block truncate text-sm font-semibold text-text-base">
             {displayName}
           </span>
+          {/* Email du compte sous le nom : le coach voit tout de suite avec
+              quelle adresse il est connecté (celle des factures et des
+              notifications). */}
+          {name && (
+            <span className="block truncate text-[11px] text-text-muted" title={email}>
+              {email}
+            </span>
+          )}
           <span className="block text-[11px] text-text-dim">
             {pro ? t("plans.pro") : t("plans.free")}
           </span>

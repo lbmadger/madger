@@ -483,7 +483,7 @@ const fr = {
     pro: "Madger Pro",
     proActive: "Pro actif",
     welcomePro:
-      "Bienvenue en Pro. Annulation automatique, relances, écran encaissements, alertes churn et statistiques avancées débloqués.",
+      "Bienvenue en Pro. Annulation automatique, relances, écran encaissements, alertes clients qui décrochent et statistiques avancées débloqués.",
     proUntil: "Pro jusqu'au",
     daysLeft: "j restants",
     freeDesc: "Pour démarrer.",
@@ -503,7 +503,7 @@ const fr = {
     trialTitle: "Il te reste {n} jours de Pro offert",
     trialTitleLast: "Dernier jour de Pro offert",
     trialDesc:
-      "Annulation automatique, relances, écran encaissements, alertes churn et statistiques avancées sont actifs. Bloque ton tarif avant la fin pour ne rien perdre.",
+      "Annulation automatique, relances, écran encaissements, alertes clients qui décrochent et statistiques avancées sont actifs. Bloque ton tarif avant la fin pour ne rien perdre.",
     trialCta: "Garder Pro",
     featuresFree: [
       "Lien public personnalisé",
@@ -516,7 +516,7 @@ const fr = {
       "Annulation automatique",
       "Relances de renouvellement",
       "Écran encaissements",
-      "Alerte churn",
+      "Alerte clients qui décrochent",
       "Statistiques avancées",
     ],
     upgrade: "Passer à Pro",
@@ -538,7 +538,7 @@ const fr = {
       intro:
         "Voilà ce que tu perds en repassant en Essentiel :",
       lossCommission:
-        "Fin de l'annulation automatique, des relances de renouvellement, de l'écran encaissements et des alertes churn. Tes packs restent en vente.",
+        "Fin de l'annulation automatique, des relances de renouvellement, de l'écran encaissements et des alertes clients qui décrochent. Tes packs restent en vente.",
       lossBadge:
         "Tu perds l'annulation automatique, les relances et les statistiques avancées de Madger Pro.",
       stay: "Je reste en Pro",
@@ -585,7 +585,7 @@ const fr = {
       confirmTitle: "Tu es sûr de vouloir arrêter Pro ?",
       confirmIntro: "Ton abonnement s'arrêtera à la fin de la période déjà payée. D'ici là, tu peux le réactiver en un clic. Voilà ce qui change ensuite :",
       confirmLoss: [
-        "Fin de l'annulation automatique, des relances de renouvellement, de l'écran encaissements et des alertes churn. Tes packs restent en vente.",
+        "Fin de l'annulation automatique, des relances de renouvellement, de l'écran encaissements et des alertes clients qui décrochent. Tes packs restent en vente.",
         "Fin des statistiques avancées.",
         "Tu perds ton prix de lancement : si tu reviens plus tard, c'est le tarif en vigueur.",
       ],
@@ -603,7 +603,7 @@ const fr = {
     },
     currentBadge: "Ton offre actuelle",
     upsellTitle: "Passe à Pro",
-    upsellDesc: "Annulation automatique, relances, écran encaissements, alertes churn, statistiques avancées.",
+    upsellDesc: "Annulation automatique, relances, écran encaissements, alertes clients qui décrochent, statistiques avancées.",
     upsellCta: "Découvrir Pro",
     perMonth: "/ mois",
     perYear: "/ an",
@@ -622,7 +622,7 @@ const fr = {
     modalPoints: [
       "Relances de renouvellement de tes packs",
       "Annulation automatique selon tes règles",
-      "Écran encaissements par client et alertes churn",
+      "Écran encaissements par client et alertes clients qui décrochent",
       "Prix de lancement gardé tant que tu restes abonné, 7 jours d'essai, résiliable en un clic",
     ],
     modalCta: "Bloquer mon tarif et essayer Pro 7 jours",
@@ -630,7 +630,7 @@ const fr = {
     upsellPaymentsTitle: "Tes encaissements par client, en Pro",
     upsellPaymentsDesc: "Qui a payé quoi, ce qui reste à venir, les packs en cours. Un no-show évité par mois et Pro est remboursé.",
     upsellStatsTitle: "Tes statistiques avancées t'attendent en Pro",
-    upsellStatsDesc: "Annulation automatique, relances de renouvellement, écran encaissements, alerte churn. Et ces statistiques détaillées.",
+    upsellStatsDesc: "Annulation automatique, relances de renouvellement, écran encaissements, alerte clients qui décrochent. Et ces statistiques détaillées.",
     upsellInvoicesTitle: "Des relances et l'annulation automatique, en Pro",
     upsellInvoicesDesc: "Relance les renouvellements de packs, laisse l'annulation automatique gérer les imprévus et suis tes encaissements par client.",
     upsellCardCta: "Bloquer le prix Pro",
@@ -643,7 +643,7 @@ const fr = {
         "En Pro, tu choisis ton délai (12, 24 ou 48 h) et ce que le client récupère s'il annule tôt ou tard. Appliqué automatiquement, sans intervention.",
       cancellationFixed:
         "Ta règle actuelle, fixe : remboursement intégral si le client annule plus de 24 h avant la séance, aucun remboursement en deçà. Tu peux toujours rembourser manuellement depuis la fiche client.",
-      followUpTitle: "Alerte churn : fonctionnalité Pro",
+      followUpTitle: "Clients qui décrochent : fonctionnalité Pro",
       followUpDesc:
         "Chaque matin, la liste des clients sans séance depuis 14 jours et des packs qui expirent, ici et par email.",
       paymentsTitle: "Écran encaissements : fonctionnalité Pro",
@@ -2327,7 +2327,7 @@ const en: Dictionary = {
     pro: "Madger Pro",
     proActive: "Pro active",
     welcomePro:
-      "Welcome to Pro. Automatic cancellation, renewal reminders, payments screen, churn alerts and advanced statistics unlocked.",
+      "Welcome to Pro. Automatic cancellation, renewal reminders, payments screen, inactive-client alerts and advanced statistics unlocked.",
     proUntil: "Pro until",
     daysLeft: "days left",
     freeDesc: "To get started.",
@@ -2347,7 +2347,7 @@ const en: Dictionary = {
     trialTitle: "{n} days of free Pro left",
     trialTitleLast: "Last day of free Pro",
     trialDesc:
-      "Automatic cancellation, renewal reminders, payments screen, churn alerts and advanced statistics are on. Lock your price before it ends so you lose nothing.",
+      "Automatic cancellation, renewal reminders, payments screen, inactive-client alerts and advanced statistics are on. Lock your price before it ends so you lose nothing.",
     trialCta: "Keep Pro",
     featuresFree: [
       "Personalized public link",
@@ -2360,7 +2360,7 @@ const en: Dictionary = {
       "Automatic cancellation",
       "Renewal reminders",
       "Payments screen",
-      "Churn alert",
+      "Inactive-client alert",
       "Advanced statistics",
     ],
     upgrade: "Upgrade to Pro",
@@ -2382,7 +2382,7 @@ const en: Dictionary = {
       intro:
         "Here is what you lose by going back to Essential:",
       lossCommission:
-        "End of automatic cancellation, renewal reminders, the payments screen and churn alerts. Your packs stay on sale.",
+        "End of automatic cancellation, renewal reminders, the payments screen and inactive-client alerts. Your packs stay on sale.",
       lossBadge:
         "You lose automatic cancellation, renewal reminders and the advanced stats of Madger Pro.",
       stay: "I'm staying on Pro",
@@ -2429,7 +2429,7 @@ const en: Dictionary = {
       confirmTitle: "Are you sure you want to stop Pro?",
       confirmIntro: "Your subscription will stop at the end of the paid period. Until then, you can reactivate it in one click. Here is what changes afterwards:",
       confirmLoss: [
-        "End of automatic cancellation, renewal reminders, the payments screen and churn alerts. Your packs stay on sale.",
+        "End of automatic cancellation, renewal reminders, the payments screen and inactive-client alerts. Your packs stay on sale.",
         "End of advanced statistics.",
         "You lose your launch price: if you come back later, the current rate applies.",
       ],
@@ -2447,7 +2447,7 @@ const en: Dictionary = {
     },
     currentBadge: "Your current plan",
     upsellTitle: "Go Pro",
-    upsellDesc: "Automatic cancellation, renewal reminders, payments screen, churn alerts, advanced statistics.",
+    upsellDesc: "Automatic cancellation, renewal reminders, payments screen, inactive-client alerts, advanced statistics.",
     upsellCta: "Discover Pro",
     perMonth: "/ month",
     perYear: "/ year",
@@ -2466,7 +2466,7 @@ const en: Dictionary = {
     modalPoints: [
       "Renewal reminders for your packs",
       "Automatic cancellation on your terms",
-      "Payments per client and churn alerts",
+      "Payments per client and inactive-client alerts",
       "Launch price kept as long as you stay subscribed, 7-day trial, cancel in one click",
     ],
     modalCta: "Lock my price and try Pro for 7 days",
@@ -2474,7 +2474,7 @@ const en: Dictionary = {
     upsellPaymentsTitle: "Your payments per client, on Pro",
     upsellPaymentsDesc: "Who paid what, what is still to come, packs in progress. One no-show avoided per month and Pro pays for itself.",
     upsellStatsTitle: "Your advanced statistics are waiting on Pro",
-    upsellStatsDesc: "Automatic cancellation, renewal reminders, payments screen, churn alerts. And these detailed statistics.",
+    upsellStatsDesc: "Automatic cancellation, renewal reminders, payments screen, inactive-client alerts. And these detailed statistics.",
     upsellInvoicesTitle: "Renewal reminders and automatic cancellation, on Pro",
     upsellInvoicesDesc: "Send pack renewal reminders, let automatic cancellation handle the unexpected and track payments per client.",
     upsellCardCta: "Lock the Pro price",
@@ -2486,7 +2486,7 @@ const en: Dictionary = {
         "On Pro, you choose your window (12, 24 or 48 h) and what the client gets back when cancelling early or late. Applied automatically, no action needed.",
       cancellationFixed:
         "Your current rule, fixed: full refund if the client cancels more than 24 h before the session, no refund after that. You can always refund manually from the client sheet.",
-      followUpTitle: "Churn alert: a Pro feature",
+      followUpTitle: "Inactive clients: a Pro feature",
       followUpDesc:
         "Every morning, the list of clients without a session for 14 days and packs about to expire, here and by email.",
       paymentsTitle: "Payments screen: a Pro feature",

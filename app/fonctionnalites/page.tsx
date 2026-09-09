@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 // aujourd'hui (rien d'annoncé), groupée par usage, puis le comparatif
 // Essentiel / Pro avec coches et croix. Les verrous Pro listés ici sont ceux
 // réellement posés dans le code (annulation paramétrable, relances, écran
-// encaissements, alertes churn, statistiques avancées, export clients).
+// encaissements, alertes clients qui décrochent, statistiques avancées, export clients).
 
 type Feature = { title: string; desc: string };
 type Group = { label: string; title: string; features: Feature[] };
@@ -103,7 +103,7 @@ function buildRows(): Row[] {
     { label: "Règle d'annulation", essential: "Fixe : remboursé à 100 % à plus de 24 h, rien en deçà", pro: "Tes règles : 12, 24 ou 48 h, pourcentages au choix" },
     { label: "Relances de renouvellement de packs", essential: false, pro: true },
     { label: "Écran encaissements par client, export clients", essential: false, pro: true },
-    { label: "Alertes churn chaque matin", essential: false, pro: true },
+    { label: "Alerte clients qui décrochent, chaque matin", essential: false, pro: true },
     { label: "Statistiques avancées", essential: false, pro: true },
     { label: "Prix de lancement gardé tant que tu restes abonné", essential: false, pro: true },
   ];
