@@ -23,7 +23,12 @@ Règles strictes :
 Réponds UNIQUEMENT avec la bio, sans préambule, sans guillemets, sans titre.`;
 
 async function viaAnthropic(prompt: string): Promise<string> {
-  const anthropic = new Anthropic();
+  // Clé non rattachée à un espace de travail : l'API exige alors l'identifiant
+  // du workspace (ANTHROPIC_WORKSPACE_ID dans Vercel) dans un en-tête.
+  const workspace = process.env.ANTHROPIC_WORKSPACE_ID;
+  const anthropic = new Anthropic({
+    defaultHeaders: workspace ? { "anthropic-workspace-id": workspace } : undefined,
+  });
   const msg = await anthropic.messages.create({
     model: "claude-haiku-4-5",
     max_tokens: 400,
@@ -142,10 +147,11 @@ function templateBio(c: CoachFacts | null, notes: string): string {
     `J'accompagne celles et ceux qui veulent progresser, retrouver la forme ou se dépasser${placeStr}.`,
     "Chaque séance est construite autour de toi : ton niveau, ton emploi du temps, tes objectifs. Tu gagnes un cadre clair, des progrès que tu vois et un coach qui te suit entre les séances.",
   ];
-  const n = notes.replace(/\s+/g, " ").trim();
-  if (n && n.length <= 300) parts.push(n.endsWith(".") ? n : `${n}.`);
   parts.push("Réserve ta première séance, on commence cette semaine.");
-  return parts.join(" ");
+  // Les notes du coach ne sont pas mêlées au texte : elles restent dessous,
+  // intactes, pour qu'il les intègre à sa façon.
+  const n = notes.trim();
+  return n ? `${parts.join(" ")}\n\n${n}` : parts.join(" ");
 }
 
 export async function POST(req: NextRequest) {
