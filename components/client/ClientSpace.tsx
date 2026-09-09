@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
-import ClientBell from "@/components/client/ClientBell";
 import { useConfirm } from "@/components/ui/useConfirm";
 import { TicketIcon, RepeatIcon, StarIcon } from "@/components/ui/icons";
 import SlotPickerModal from "@/components/client/SlotPickerModal";
@@ -98,10 +97,13 @@ export default function ClientSpace({
   bookings,
   packs = [],
   subs = [],
+  profileIncomplete = false,
 }: {
   bookings: ClientBooking[];
   packs?: ClientPack[];
   subs?: ClientSub[];
+  // Profil sportif pas encore rempli : bandeau vers /onboarding-client.
+  profileIncomplete?: boolean;
 }) {
   const { t, locale } = useI18n();
   const router = useRouter();
@@ -534,8 +536,16 @@ export default function ClientSpace({
         >
           {t("clientSpace.myProfile")}
         </Link>
-        <ClientBell />
       </nav>
+
+      {profileIncomplete && (
+        <div className="mt-4 flex flex-col gap-2 rounded-2xl border border-accent/30 bg-accent/[0.06] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-text-base">{t("clientSpace.profileBanner")}</p>
+          <Link href="/onboarding-client" className="shrink-0 rounded-full bg-accent px-4 py-2 text-center text-xs font-semibold text-black transition-opacity hover:opacity-90">
+            {t("clientSpace.profileBannerCta")}
+          </Link>
+        </div>
+      )}
 
       {/* Mini-stats : uniquement quand il y a de la matière, un espace vide
           n'a pas besoin de compteurs à zéro. */}

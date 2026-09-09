@@ -200,11 +200,17 @@ export default async function ClientSpacePage() {
     }
   }
 
+  // Profil sportif rempli ? Sinon, bandeau d'invitation avant la séance.
+  const { data: clientProfile } = user
+    ? await supabase.from("client_profiles").select("completed").eq("id", user.id).maybeSingle()
+    : { data: null };
+  const profileIncomplete = !clientProfile?.completed;
+
   return (
     <I18nProvider locale={locale} dict={dict}>
       <div className="min-h-screen bg-bg">
         <PublicHeader />
-        <ClientSpace bookings={bookings} packs={packs} subs={subs} />
+        <ClientSpace bookings={bookings} packs={packs} subs={subs} profileIncomplete={profileIncomplete} />
       </div>
     </I18nProvider>
   );

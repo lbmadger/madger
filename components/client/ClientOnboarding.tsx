@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import AvatarCropper, { fileFromUrl } from "@/components/ui/AvatarCropper";
 import Button from "@/components/ui/Button";
 import AccountSwitchBar from "@/components/auth/AccountSwitchBar";
 import Select from "@/components/ui/Select";
@@ -39,6 +40,13 @@ export default function ClientOnboarding() {
   const [goals, setGoals] = useState<string[]>([]);
   const [level, setLevel] = useState<"beginner" | "intermediate" | "advanced" | "">("");
   const [note, setNote] = useState("");
+  // Photo de profil : envoyée tout de suite dans avatars/<uid>/avatar, l'URL
+  // part avec le reste du profil à l'enregistrement.
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [userId, setUserId] = useState<string | null>(null);
+  const [cropFile, setCropFile] = useState<File | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
@@ -106,12 +114,14 @@ export default function ClientOnboarding() {
     const supabase = createClient();
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return;
+      setUserId(user.id);
       const { data: p } = await supabase
         .from("client_profiles")
         .select("*")
         .eq("id", user.id)
         .maybeSingle();
       if (draftRestoredRef.current) return;
+      if (p?.avatar_url) setAvatarUrl(p.avatar_url as string);
       if (p) {
         setFirstName(p.first_name ?? "");
         setLastName(p.last_name ?? "");
@@ -141,6 +151,49 @@ export default function ClientOnboarding() {
     setGoals((prev) =>
       prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]
     );
+  }
+
+  function pickAvatar(file: File) {
+    setAvatarError(false);
+    if (!file.type.startsWith("image/") || file.size > 10 * 1024 * 1024) {
+      setAvatarError(true);
+      return;
+    }
+    setCropFile(file);
+  }
+
+  async function recropAvatar() {
+    if (!avatarUrl) return;
+    const f = await fileFromUrl(avatarUrl);
+    if (!f) return setAvatarError(true);
+    setCropFile(f);
+  }
+
+  async function uploadAvatar(file: File) {
+    setAvatarError(false);
+    setAvatarUploading(true);
+    try {
+      const supabase = createClient();
+      const uid =
+        userId ?? (await supabase.auth.getSession()).data.session?.user.id ?? null;
+      if (!uid) return setAvatarError(true);
+      const path = `${uid}/avatar`;
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) return setAvatarError(true);
+      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+      const url = `${data.publicUrl}?v=${Date.now()}`;
+      setAvatarUrl(url);
+      // Enregistrée tout de suite : la photo ne dépend pas de la fin du parcours.
+      await supabase
+        .from("client_profiles")
+        .upsert({ id: uid, avatar_url: url, updated_at: new Date().toISOString() });
+    } catch {
+      setAvatarError(true);
+    } finally {
+      setAvatarUploading(false);
+    }
   }
 
   function next() {
@@ -184,6 +237,7 @@ export default function ClientOnboarding() {
         level: level || null,
         note: note.trim() || null,
         completed: true,
+        avatar_url: avatarUrl || null,
         updated_at: new Date().toISOString(),
       });
       if (err && /jwt|expired|401/i.test(err.message ?? "")) {
@@ -202,6 +256,7 @@ export default function ClientOnboarding() {
           level: level || null,
           note: note.trim() || null,
           completed: true,
+          avatar_url: avatarUrl || null,
           updated_at: new Date().toISOString(),
         });
         err = again.error;
@@ -296,6 +351,59 @@ export default function ClientOnboarding() {
         {/* ── Étape 1 : identité ─────────────────────────────────────────── */}
         {step === 0 && (
           <>
+            <div className="flex items-center gap-4">
+              <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full border border-border-strong bg-bg-elevated">
+                {avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center font-display text-2xl font-extrabold text-text-dim">
+                    {(firstName.trim()[0] ?? "?").toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <span className={labelClass}>{t("clientOnboarding.photoLabel")}</span>
+                <div className="flex flex-wrap gap-2">
+                  <label className="cursor-pointer rounded-full border border-accent/40 px-3.5 py-1.5 text-xs font-semibold text-accent transition-colors hover:bg-accent/10">
+                    {avatarUploading
+                      ? t("clientOnboarding.photoUploading")
+                      : avatarUrl
+                      ? t("clientOnboarding.photoChange")
+                      : t("clientOnboarding.photoAdd")}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="sr-only"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) pickAvatar(f);
+                        e.target.value = "";
+                      }}
+                    />
+                  </label>
+                  {avatarUrl && (
+                    <button type="button" onClick={recropAvatar} className="rounded-full border border-border-strong px-3.5 py-1.5 text-xs font-medium text-text-muted hover:text-text-base">
+                      {t("clientOnboarding.photoRecrop")}
+                    </button>
+                  )}
+                </div>
+                <span className="text-[11px] text-text-dim">{t("clientOnboarding.photoHint")}</span>
+                {avatarError && (
+                  <span role="alert" className="text-xs text-danger">{t("clientOnboarding.photoErr")}</span>
+                )}
+              </div>
+            </div>
+            {cropFile && (
+              <AvatarCropper
+                file={cropFile}
+                onCancel={() => setCropFile(null)}
+                onDone={(f) => {
+                  setCropFile(null);
+                  uploadAvatar(f);
+                }}
+              />
+            )}
             <div className="grid grid-cols-2 gap-3">
               <label className="flex flex-col gap-1.5">
                 <span className={labelClass}>{t("clientOnboarding.firstName")}</span>
