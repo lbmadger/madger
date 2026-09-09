@@ -137,12 +137,24 @@ export default function EarlyAccessForm({ launched = false }: { launched?: boole
   const proCost = proMonthly + revenue * proRate;
   const breakeven = proMonthly / (essentialRate - proRate);
   const proCheaper = proCost < essentialCost;
+  // L'argent derrière le temps : si chaque heure d'administratif était une
+  // séance au prix du coach (hypothèse écrite à l'écran : une heure par
+  // séance). Ajouté aux séances non payées, c'est ce qui ne rentre pas par an.
+  const timeValueYear = adminHoursYear * price;
+  const lostYear = timeValueYear + noShowLossYear;
+  const proYear = proCost * 12;
+  // Séances qu'il suffit de récupérer chaque mois pour rembourser Pro, face
+  // à l'équivalent en séances de ce qui part chaque mois.
+  const proPaybackSessions = Math.max(1, Math.ceil(proCost / price));
+  const lostSessionsMonth = Math.round(adminHoursMonth + noShows);
 
   const simulationSummary =
     `${sessionsWeek} séances/semaine à ${price} €, ${minutesPerSession} min de messages par séance, ` +
     `${noShows} séance${noShows > 1 ? "s" : ""} perdue${noShows > 1 ? "s" : ""}/mois : ` +
-    `environ ${hours(adminHoursMonth)} d'administratif et ${eur(noShowLossMonth)} perdus par mois ` +
-    `(${hours(adminHoursYear)} et ${eur(noShowLossYear)} par an).`;
+    `environ ${hours(adminHoursMonth)} d'administratif et ${eur(noShowLossMonth)} perdus par mois. ` +
+    `Sur un an : ${hours(adminHoursYear)} (${eur(timeValueYear)} si ces heures étaient des séances) ` +
+    `et ${eur(noShowLossYear)} de séances non payées, soit ${eur(lostYear)} qui ne rentrent pas. ` +
+    `Madger Pro à ce volume : ${eur(proYear)} par an, tout compris.`;
 
   const [fields, setFields] = useState({
     prenom: "",
@@ -403,6 +415,43 @@ export default function EarlyAccessForm({ launched = false }: { launched?: boole
                   </div>
                 </div>
 
+                {/* L'argent derrière le temps : la friction voulue à cette
+                    étape. Tout vient des réponses du coach et de l'hypothèse
+                    « une heure par séance », écrite en clair. */}
+                <div className="mt-3 rounded-2xl p-5" style={{ background: "rgba(203,255,3,0.08)", border: "1px solid rgba(203,255,3,0.35)" }}>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-3" style={{ color: "#CBFF03" }}>
+                    Sur un an, en euros
+                  </p>
+                  <div className="flex flex-col gap-2 text-sm" style={{ color: "#C9C9C4" }}>
+                    <p className="flex items-baseline justify-between gap-3">
+                      <span>{hours(adminHoursYear)} d&apos;administratif, si c&apos;étaient des séances à {eur(price)}</span>
+                      <span className="text-white font-bold tabular-nums shrink-0">{eur(timeValueYear)}</span>
+                    </p>
+                    <p className="flex items-baseline justify-between gap-3">
+                      <span>Séances annulées tard ou oubliées, non payées</span>
+                      <span className="text-white font-bold tabular-nums shrink-0">{eur(noShowLossYear)}</span>
+                    </p>
+                  </div>
+                  <div className="mt-3 border-t pt-3" style={{ borderColor: "rgba(203,255,3,0.25)" }}>
+                    <p className="text-white font-extrabold tabular-nums" style={{ fontSize: "clamp(32px, 6vw, 44px)", letterSpacing: "-0.03em", lineHeight: 1 }}>
+                      {eur(lostYear)}
+                    </p>
+                    <p className="mt-1.5 text-sm font-semibold text-white">par an qui ne rentrent pas dans ta poche.</p>
+                  </div>
+                  <div className="mt-4 rounded-xl p-3.5" style={{ background: "rgba(0,0,0,0.35)" }}>
+                    <p className="text-sm text-white">
+                      <span className="font-bold">Madger Pro : {eur(proYear)} par an</span>, tout compris.
+                      <span style={{ color: "#C9C9C4" }}> Soit {eur(proMonthly)} par mois et {FEE_RATE_BPS.pro / 100} % de frais de transaction sur tes {eur(revenue)} encaissés, carte, remboursements et litiges inclus.</span>
+                    </p>
+                    <p className="mt-2 text-sm font-semibold" style={{ color: "#CBFF03" }}>
+                      Pro est remboursé dès {proPaybackSessions} séance{proPaybackSessions > 1 ? "s" : ""} récupérée{proPaybackSessions > 1 ? "s" : ""} par mois. Tu en laisses filer l&apos;équivalent de {lostSessionsMonth}.
+                    </p>
+                  </div>
+                  <p className="mt-3 text-[11px] leading-relaxed" style={{ color: "#8C8C8C" }}>
+                    Hypothèses : tes réponses ci-dessus, une heure par séance, 12 mois. Madger ne fait pas coacher plus, il rend le temps et le paiement.
+                  </p>
+                </div>
+
                 <div className="mt-4 rounded-2xl p-5" style={{ background: "#0f0f0f", border: "1px solid rgba(255,255,255,0.08)" }}>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.12em] mb-3" style={{ color: "#CBFF03" }}>
                     Ce que Madger change
@@ -421,25 +470,28 @@ export default function EarlyAccessForm({ launched = false }: { launched?: boole
                       Payée à la réservation, une séance annulée tard reste due selon ta règle : tu ne perds plus {eur(price)} d&apos;office.
                     </li>
                   </ul>
-                  <div className="mt-4 grid grid-cols-2 gap-3">
+                  <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.12em]" style={{ color: "#8A8A8A" }}>
+                    Ce que Madger te coûte, à {eur(revenue)} encaissés par mois
+                  </p>
+                  <div className="mt-2 grid grid-cols-2 gap-3">
                     <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.03)" }}>
-                      <p className="text-[11px] uppercase tracking-widest font-semibold" style={{ color: "#8A8A8A" }}>Essentiel</p>
-                      <p className="mt-0.5 text-white font-bold tabular-nums">{eur(essentialCost)}<span className="text-[11px] font-medium" style={{ color: "#9a9a9a" }}> / mois</span></p>
-                      <p className="text-[11px]" style={{ color: "#8C8C8C" }}>0 € tant que tu ne vends pas</p>
+                      <p className="text-[11px] uppercase tracking-widest font-semibold" style={{ color: "#8A8A8A" }}>Essentiel · 0 € / mois</p>
+                      <p className="mt-0.5 text-white font-bold tabular-nums">{eur(essentialCost)}<span className="text-[11px] font-medium" style={{ color: "#9a9a9a" }}> de frais / mois</span></p>
+                      <p className="text-[11px]" style={{ color: "#8C8C8C" }}>{FEE_RATE_BPS.essential / 100} % de {eur(revenue)}, 0 € si tu ne vends pas</p>
                     </div>
                     <div className="rounded-xl p-3" style={{ background: "rgba(203,255,3,0.05)", border: proCheaper ? "1px solid rgba(203,255,3,0.35)" : "1px solid transparent" }}>
-                      <p className="text-[11px] uppercase tracking-widest font-semibold" style={{ color: "#CBFF03" }}>Pro</p>
-                      <p className="mt-0.5 text-white font-bold tabular-nums">{eur(proCost)}<span className="text-[11px] font-medium" style={{ color: "#9a9a9a" }}> / mois</span></p>
+                      <p className="text-[11px] uppercase tracking-widest font-semibold" style={{ color: "#CBFF03" }}>Pro · {eur(proMonthly)} / mois</p>
+                      <p className="mt-0.5 text-white font-bold tabular-nums">{eur(proCost)}<span className="text-[11px] font-medium" style={{ color: "#9a9a9a" }}> tout compris / mois</span></p>
                       <p className="text-[11px]" style={{ color: "#8C8C8C" }}>
-                        {launched ? "7 jours d'essai, sans débit" : "offert 1 mois aux premiers membres"}
+                        {eur(proMonthly)} + {FEE_RATE_BPS.pro / 100} % de {eur(revenue)}
+                        {launched ? " · 7 jours d'essai" : " · offert 1 mois aux premiers membres"}
                       </p>
                     </div>
                   </div>
                   <p className="mt-3 text-xs" style={{ color: "#8C8C8C" }}>
-                    Sur environ {eur(revenue)} encaissés par mois.{" "}
                     {proCheaper
-                      ? `À ton volume, Pro te coûte ${eur(essentialCost - proCost)} de moins qu'Essentiel.`
-                      : `Au-delà de ${eur(breakeven)} par mois, Pro te coûte moins cher qu'Essentiel.`}
+                      ? `À ton volume, Pro te coûte ${eur(essentialCost - proCost)} de moins qu'Essentiel chaque mois.`
+                      : `Au-delà de ${eur(breakeven)} encaissés par mois, Pro te coûte moins cher qu'Essentiel.`}
                   </p>
                 </div>
 

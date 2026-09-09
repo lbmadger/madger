@@ -723,32 +723,32 @@ function ScreenProfile() {
     <div style={{ paddingTop: 52, height: "100%", display: "flex", flexDirection: "column" }}>
       <div style={{ padding: "8px 14px 0", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
         <div style={{ fontSize: 9, color: "var(--text-dim)", marginBottom: 8, fontFamily: "monospace" }}>
-          madger.app/<span style={{ color: "#CBFF03" }}>marie</span>
+          madger.app/<span style={{ color: "#CBFF03" }}>emma-laurent</span>
         </div>
         <div style={{ width: 56, height: 56, borderRadius: "50%", overflow: "hidden", marginBottom: 7, border: "2px solid rgba(203,255,3,0.35)", boxShadow: "0 0 18px rgba(203,255,3,0.18)" }}>
-          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=140&h=140&fit=crop&auto=format&q=85" alt="Marie" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          <img src="https://images.unsplash.com/photo-1594381898411-846e7d193883?auto=format&fit=crop&w=140&q=80" alt="Emma" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
         </div>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 2 }}>Marie Laurent</div>
-        <div style={{ fontSize: 10, color: "#8A8A8A", marginBottom: 4 }}>Coach sportif · Paris 11e</div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 2 }}>Emma Laurent</div>
+        <div style={{ fontSize: 10, color: "#8A8A8A", marginBottom: 4 }}>Coach musculation & remise en forme · Paris</div>
         <div style={{ display: "flex", alignItems: "center", gap: 3, marginBottom: 6 }}>
           {[1,2,3,4,5].map(i => (
             <svg key={i} width="9" height="9" viewBox="0 0 10 10">
               <path d="M5 1L6.2 3.8H9L6.7 5.6L7.6 8.5L5 6.8L2.4 8.5L3.3 5.6L1 3.8H3.8L5 1Z" fill="#CBFF03" />
             </svg>
           ))}
-          <span style={{ fontSize: 9, color: "#8A8A8A", marginLeft: 2 }}>4.9 · 38 avis</span>
+          <span style={{ fontSize: 9, color: "#8A8A8A", marginLeft: 2 }}>4,9 · 27 avis</span>
         </div>
         <div style={{ fontSize: 9, color: "#8A8A8A", lineHeight: 1.5, maxWidth: 210, marginBottom: 8 }}>
-          Spécialisée en remise en forme et prépa physique. Séances en présentiel ou visio.
+          Diplômée d'État, en salle, à domicile ou en visio. Un programme sur mesure, à ton rythme.
         </div>
       </div>
       <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "0 14px 8px" }} />
       <div style={{ padding: "0 14px", flex: 1 }}>
         <div style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-dim)", marginBottom: 6 }}>Séances disponibles</div>
         {[
-          { n: "Découverte", d: "45 min", t: "Visio", p: "Gratuit" },
-          { n: "Coaching individuel", d: "60 min", t: "Présentiel", p: "50 €", a: true },
-          { n: "Suivi mensuel", d: "4 séances", t: "Présentiel", p: "160 €" },
+          { n: "Séance individuelle", d: "60 min", t: "Présentiel", p: "45 €", a: true },
+          { n: "Pack 10 séances", d: "39 € / séance", t: "Présentiel", p: "390 €" },
+          { n: "Suivi mensuel illimité", d: "Abonnement", t: "Visio ou salle", p: "120 € / mois" },
         ].map((s) => (
           <div key={s.n} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", borderRadius: 10, border: s.a ? "1px solid #CBFF03" : "1px solid rgba(255,255,255,0.06)", background: s.a ? "rgba(203,255,3,0.05)" : "transparent", marginBottom: 5 }}>
             <div>
@@ -779,16 +779,16 @@ function ScreenSeance() {
         <MadgerLogo size={22} />
       </div>
       <div style={{ padding: "11px", borderRadius: 13, background: "rgba(203,255,3,0.05)", border: "1px solid rgba(203,255,3,0.2)", marginBottom: 10 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 5 }}>Coaching individuel</div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 5 }}>Séance individuelle</div>
         <div style={{ display: "flex", gap: 5, marginBottom: 6 }}>
-          {["60 min","Présentiel","Paris 11e"].map(t => (
+          {["60 min","Présentiel","Paris"].map(t => (
             <span key={t} style={{ fontSize: 8, color: "#8A8A8A", background: "rgba(255,255,255,0.06)", padding: "2px 6px", borderRadius: 20 }}>{t}</span>
           ))}
         </div>
         <div style={{ fontSize: 9, color: "#8A8A8A", lineHeight: 1.5, marginBottom: 6 }}>
-          Séance personnalisée en salle ou en plein air selon tes objectifs.
+          Séance sur mesure en salle ou à domicile, selon ton objectif.
         </div>
-        <div style={{ fontSize: 16, fontWeight: 800, color: "#CBFF03" }}>50 €</div>
+        <div style={{ fontSize: 16, fontWeight: 800, color: "#CBFF03" }}>45 €</div>
       </div>
       <div style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-dim)", marginBottom: 6 }}>Sélectionner une date</div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 3, marginBottom: 8 }}>
@@ -808,8 +808,8 @@ function ScreenSeance() {
       <div style={{ padding: "8px 10px", borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", marginBottom: 8, display: "flex", alignItems: "center", gap: 7 }}>
         <svg width="11" height="11" viewBox="0 0 24 24" fill="var(--text-dim)"><path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" /></svg>
         <div>
-          <div style={{ fontSize: 9, color: "#fff", fontWeight: 500 }}>Salle BodyFit</div>
-          <div style={{ fontSize: 8, color: "var(--text-dim)" }}>14 rue de la Roquette, Paris 11e</div>
+          <div style={{ fontSize: 9, color: "#fff", fontWeight: 500 }}>Basic-Fit Paris Rue de Rivoli</div>
+          <div style={{ fontSize: 8, color: "var(--text-dim)" }}>Paris 1er · à 12 min à pied</div>
         </div>
       </div>
       <div style={{ flex: 1, display: "flex", alignItems: "center", padding: "0 0 14px" }}>
@@ -831,12 +831,12 @@ function ScreenPaiement() {
       <div style={{ padding: "10px 12px", borderRadius: 12, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", marginBottom: 8 }}>
         <div style={{ fontSize: 9, color: "#8A8A8A", marginBottom: 5 }}>Récapitulatif</div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: "#fff" }}>Coaching individuel</div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: "#CBFF03" }}>50 €</div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: "#fff" }}>Séance individuelle</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#CBFF03" }}>45 €</div>
         </div>
         <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "5px 0" }} />
-        <div style={{ fontSize: 9, color: "#8A8A8A" }}>Mer. 9 mai · 10:00 · Présentiel · Paris 11e</div>
-        <div style={{ fontSize: 9, color: "#8A8A8A", marginTop: 1 }}>avec Marie Laurent</div>
+        <div style={{ fontSize: 9, color: "#8A8A8A" }}>Mer. 9 sept. · 10:00 · Présentiel · Paris</div>
+        <div style={{ fontSize: 9, color: "#8A8A8A", marginTop: 1 }}>avec Emma Laurent</div>
       </div>
       <div style={{ fontSize: 9, color: "var(--text-dim)", textAlign: "center", marginBottom: 6 }}>Paiement rapide</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5, marginBottom: 8 }}>
@@ -886,7 +886,7 @@ function ScreenPaiement() {
         <svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="var(--text-dim)" strokeWidth="2" /></svg>
         Paiement sécurisé par Stripe
       </div>
-      <div style={{ padding: "10px", borderRadius: 100, background: "#CBFF03", textAlign: "center", fontSize: 11, fontWeight: 700, color: "#000" }}>Payer 50 €</div>
+      <div style={{ padding: "10px", borderRadius: 100, background: "#CBFF03", textAlign: "center", fontSize: 11, fontWeight: 700, color: "#000" }}>Payer 45 €</div>
     </div>
   );
 }
@@ -921,7 +921,7 @@ function ScreenDashboard() {
 
         {/* Stats row */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 4 }}>
-          {[["12","Séances"],["600 €","Total"],["2","Ce mois"]].map(([v, l]) => (
+          {[["12","Séances"],["540 €","Total"],["2","Ce mois"]].map(([v, l]) => (
             <div key={l} style={{ padding: "7px 6px", borderRadius: 9, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", textAlign: "center" }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#CBFF03", lineHeight: 1 }}>{v}</div>
               <div style={{ fontSize: 7, color: "#8A8A8A", marginTop: 2 }}>{l}</div>
@@ -939,16 +939,16 @@ function ScreenDashboard() {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
             <div style={{ width: 26, height: 26, borderRadius: "50%", overflow: "hidden", flexShrink: 0, border: "1.5px solid rgba(203,255,3,0.4)" }}>
-              <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&auto=format&q=80" alt="Marie" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              <img src="https://images.unsplash.com/photo-1594381898411-846e7d193883?auto=format&fit=crop&w=140&q=80" alt="Emma" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 10, fontWeight: 600, color: "#fff" }}>Coaching individuel</div>
-              <div style={{ fontSize: 8, color: "#8A8A8A" }}>Marie Laurent</div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: "#fff" }}>Séance individuelle</div>
+              <div style={{ fontSize: 8, color: "#8A8A8A" }}>Emma Laurent</div>
             </div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#CBFF03" }}>50 €</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "#CBFF03" }}>45 €</div>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 3 }}>
-            {[["📅","Mer. 9 mai"],["🕙","10:00"],["📍","Paris 11e"]].map(([ic, v]) => (
+            {[["📅","Mer. 9 sept."],["🕙","10:00"],["📍","Paris"]].map(([ic, v]) => (
               <div key={v} style={{ padding: "4px 5px", borderRadius: 6, background: "rgba(255,255,255,0.04)", textAlign: "center" }}>
                 <div style={{ fontSize: 8, color: "#fff", fontWeight: 600 }}>{v}</div>
               </div>
@@ -968,8 +968,8 @@ function ScreenDashboard() {
             <span style={{ fontSize: 8, color: "#CBFF03" }}>Voir tout</span>
           </div>
           {[
-            { ref: "FAC-024", date: "2 mai", montant: "50 €" },
-            { ref: "FAC-023", date: "25 avr.", montant: "50 €" },
+            { ref: "FAC-024", date: "2 sept.", montant: "45 €" },
+            { ref: "FAC-023", date: "26 août", montant: "45 €" },
           ].map((f, i) => (
             <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 9px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", marginBottom: 3 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -978,7 +978,7 @@ function ScreenDashboard() {
                 </div>
                 <div>
                   <div style={{ fontSize: 9, color: "#fff", fontWeight: 500 }}>{f.ref}</div>
-                  <div style={{ fontSize: 7, color: "#8A8A8A" }}>{f.date} · Coaching individuel</div>
+                  <div style={{ fontSize: 7, color: "#8A8A8A" }}>{f.date} · Séance individuelle</div>
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
@@ -996,9 +996,9 @@ function ScreenDashboard() {
             <span style={{ fontSize: 8, color: "#CBFF03" }}>Voir tout</span>
           </div>
           {[
-            { label: "Coaching individuel", date: "Mer. 2 mai", montant: "50 €", done: true },
-            { label: "Coaching individuel", date: "Mer. 25 avr.", montant: "50 €", done: true },
-            { label: "Séance découverte", date: "Mer. 18 avr.", montant: "Gratuit", done: true },
+            { label: "Séance individuelle", date: "Mer. 2 sept.", montant: "45 €", done: true },
+            { label: "Séance individuelle", date: "Mer. 26 août", montant: "45 €", done: true },
+            { label: "Séance individuelle", date: "Mer. 19 août", montant: "45 €", done: true },
           ].map((s, i) => (
             <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 9px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", marginBottom: 3 }}>
               <div>
@@ -1015,10 +1015,10 @@ function ScreenDashboard() {
         {/* Contacter le coach */}
         <div style={{ padding: "9px 10px", borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", gap: 8 }}>
           <div style={{ width: 26, height: 26, borderRadius: "50%", overflow: "hidden", flexShrink: 0 }}>
-            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&auto=format&q=80" alt="Marie" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            <img src="https://images.unsplash.com/photo-1594381898411-846e7d193883?auto=format&fit=crop&w=140&q=80" alt="Emma" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 9, fontWeight: 600, color: "#fff" }}>Marie Laurent</div>
+            <div style={{ fontSize: 9, fontWeight: 600, color: "#fff" }}>Emma Laurent</div>
             <div style={{ fontSize: 7, color: "#8A8A8A" }}>Ton coach</div>
           </div>
           <div style={{ display: "flex", gap: 5 }}>
