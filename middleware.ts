@@ -15,6 +15,8 @@ const PUBLIC_EXACT = new Set([
   // Page Fonctionnalités : liée depuis la navbar de la landing, publique
   // comme elle.
   "/fonctionnalites",
+  // Page de référencement « application coach sportif », publique comme la landing.
+  "/application-coach-sportif",
   // Réinitialisation de mot de passe : accessible sans code d'accès pour que
   // le lien reçu par email fonctionne dans n'importe quel navigateur.
   "/forgot-password",

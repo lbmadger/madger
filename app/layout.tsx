@@ -38,8 +38,8 @@ export const metadata: Metadata = {
   // iOS transforme adresses/téléphones en liens soulignés pointillés (très
   // visible sur la facture) : détection coupée, nos liens restent explicites.
   formatDetection: { telephone: false, address: false, email: false },
-  title: "Madger · L'app préférée des coachs sportifs",
-  description: "Ton lien de réservation, tes paiements sécurisés, tes factures automatiques. Tes clients réservent seuls, ton planning se remplit. Fait pour les coachs sportifs indépendants.",
+  title: "Application coach sportif : réservation et paiement | Madger",
+  description: "L'outil de paiement des coachs sportifs. Ton client réserve et paie en ligne, chaque séance est payée d'avance : plus de no-show, facture envoyée automatiquement.",
   // PWA iOS : ajoutée à l'écran d'accueil, l'app s'ouvre en plein écran
   // sans le chrome Safari (la barre du bas ne bouge plus jamais).
   appleWebApp: {
@@ -47,10 +47,10 @@ export const metadata: Metadata = {
     title: "Madger",
     statusBarStyle: "black",
   },
-  keywords: ["réservation coach sportif", "coach sportif", "logiciel réservation sport", "prise de rendez-vous coach", "application coach sportif", "paiement en ligne coach", "facturation coach"],
+  keywords: ["application coach sportif", "application pour coach sportif", "logiciel coach sportif", "réservation coach sportif", "paiement en ligne coach sportif", "no-show coach sportif", "facturation coach sportif", "prise de rendez-vous coach"],
   openGraph: {
-    title: "Madger · L'app préférée des coachs sportifs",
-    description: "Ton lien de réservation, tes paiements sécurisés, tes factures automatiques. Tes clients réservent seuls, ton planning se remplit.",
+    title: "Application coach sportif : réservation et paiement | Madger",
+    description: "L'outil de paiement des coachs sportifs. Ton client réserve et paie en ligne, chaque séance est payée d'avance : plus de no-show, facture envoyée automatiquement.",
     url: "https://madger.app",
     siteName: "Madger",
     locale: "fr_FR",
@@ -58,8 +58,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Madger · L'app préférée des coachs sportifs",
-    description: "Ton lien de réservation, tes paiements sécurisés, tes factures automatiques. Tes clients réservent seuls, ton planning se remplit.",
+    title: "Application coach sportif : réservation et paiement | Madger",
+    description: "L'outil de paiement des coachs sportifs. Ton client réserve et paie en ligne, chaque séance est payée d'avance : plus de no-show, facture envoyée automatiquement.",
   },
 };
 
@@ -70,9 +70,40 @@ const organizationJsonLd = {
   url: "https://madger.app",
   logo: "https://madger.app/logo.png",
   description:
-    "Réservations, paiements et facturation automatique en un seul lien, pour les coachs sportifs en France.",
+    "L'outil de paiement des coachs sportifs : réservation, paiement à la réservation et facture automatique en un seul lien.",
   email: "contact@madger.app",
   founder: { "@type": "Person", name: "Léonard Bondeau" },
+};
+
+// Fiche « application » pour Google : catégorie, plateforme web, plan de
+// départ sans abonnement. Aucune note ni nombre d'avis inventé.
+const softwareJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Madger",
+  url: "https://madger.app",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
+  inLanguage: "fr",
+  description:
+    "Application pour coach sportif : lien de réservation, paiement en ligne à la réservation, facture automatique. Plus de no-show, zéro relance.",
+  audience: { "@type": "Audience", audienceType: "Coachs sportifs indépendants" },
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "EUR",
+    description: "Plan Essentiel sans abonnement, frais de transaction sur chaque séance encaissée.",
+  },
+  featureList: [
+    "Lien de réservation à ton nom",
+    "Paiement en ligne au moment de la réservation",
+    "Politique d'annulation appliquée automatiquement",
+    "Facture envoyée automatiquement",
+    "Packs, abonnements et cours collectifs",
+    "Rappels automatiques par email",
+    "Espace client",
+  ],
+  publisher: { "@type": "Organization", name: "Madger", url: "https://madger.app" },
 };
 
 export default function RootLayout({
@@ -88,6 +119,10 @@ export default function RootLayout({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareJsonLd) }}
         />
       </head>
       <body

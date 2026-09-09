@@ -328,13 +328,13 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
           {/* H1 */}
           <motion.h1
             className="font-extrabold text-white mb-3 sm:mb-6"
-            style={{ fontSize: "clamp(38px, 7.5vw, 92px)", letterSpacing: "-0.04em", lineHeight: 0.97 }}
+            style={{ fontSize: "clamp(32px, 6.4vw, 80px)", letterSpacing: "-0.04em", lineHeight: 0.98 }}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
-            Coach sportif,<br />
-            <span className="text-shimmer">chaque séance réservée<br className="hidden sm:block" /> est déjà payée.</span>
+            L&apos;outil de paiement<br className="hidden sm:block" /> des coachs sportifs.<br />
+            <span className="text-shimmer">Chaque séance réservée<br className="hidden sm:block" /> est payée d&apos;avance.</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -345,9 +345,7 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.22 }}
           >
-            Ton client réserve et paie en ligne. Annulation à moins de 24 h : facturée automatiquement, selon tes règles.{" "}
-            <br className="hidden sm:block" />
-            Facture envoyée. Zéro relance.
+            Ton client réserve, paie en ligne et reçoit sa facture. Plus de no-show, zéro relance.
           </motion.p>
 
           {/* CTAs */}

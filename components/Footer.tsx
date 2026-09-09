@@ -19,6 +19,7 @@ export default function Footer({ launched = false }: { launched?: boolean }) {
           <div className="flex flex-wrap justify-center gap-6 text-sm">
             <a href="/#fonctionnement" className="text-text-muted hover:text-white transition-colors duration-200">Fonctionnement</a>
             <Link href="/fonctionnalites" className="text-text-muted hover:text-white transition-colors duration-200">Fonctionnalités</Link>
+            <Link href="/application-coach-sportif" className="text-text-muted hover:text-white transition-colors duration-200">Application coach sportif</Link>
             <a href="/#dashboard" className="text-text-muted hover:text-white transition-colors duration-200">Dashboard</a>
             <a href="/#tarifs" className="text-text-muted hover:text-white transition-colors duration-200">Tarifs</a>
             <Link href="/blog" className="text-text-muted hover:text-white transition-colors duration-200">Blog</Link>

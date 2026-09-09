@@ -47,6 +47,14 @@ export const faqs = [
     a: "Oui. Chaque séance encaissée génère une facture numérotée avec tes mentions légales (SIRET, TVA), Madger t'adresse une facture mensuelle pour ses frais de transaction, et ta comptabilité s'exporte en un clic pour ton expert-comptable. Tes factures portent déjà toutes les mentions obligatoires, sont numérotées sans trou et conservées dans ton espace. Le format Factur-X prévu par la réforme sera proposé quand le calendrier l'exigera pour ton statut.",
   },
   {
+    q: "Comment Madger supprime-t-il les no-shows ?",
+    a: "Ton client paie au moment où il réserve : la séance est payée avant d'être donnée. S'il annule dans les délais que tu as fixés, il est remboursé selon tes règles. S'il annule trop tard ou ne vient pas, ta politique d'annulation s'applique automatiquement, sans discussion. Les rappels automatiques la veille et une heure avant suppriment l'oubli.",
+  },
+  {
+    q: "Quelle application choisir quand on est coach sportif ?",
+    a: "Celle qui te fait payer pour chaque séance sans courir après tes clients. Une application pour coach sportif doit au minimum offrir un lien de réservation, le paiement en ligne au moment de la réservation, une politique d'annulation appliquée toute seule et la facture envoyée sans intervention. Madger fait tout ça en un seul lien, sans site à construire.",
+  },
+  {
     q: "Puis-je gérer plusieurs types de séances ?",
     a: "Oui. Tu crées autant de prestations que tu veux : séance découverte, coaching individuel, suivi mensuel, pack séances… Chaque prestation a son tarif, sa durée et ses disponibilités. Tes clients voient tout et choisissent ce qui leur convient.",
   },

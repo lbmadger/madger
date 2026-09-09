@@ -20,6 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const fixed: MetadataRoute.Sitemap = [
     { url: "https://madger.app", lastModified: now, changeFrequency: "weekly", priority: 1 },
     { url: "https://madger.app/fonctionnalites", lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    { url: "https://madger.app/application-coach-sportif", lastModified: now, changeFrequency: "monthly", priority: 0.9 },
     // Page vitrine (exemple de page coach) : publique avant même le lancement.
     { url: "https://madger.app/exemple", lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: "https://madger.app/exemple/dashboard", lastModified: now, changeFrequency: "monthly", priority: 0.4 },
