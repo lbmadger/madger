@@ -10,7 +10,7 @@ import ClientBell from "@/components/client/ClientBell";
 // En-tête léger des pages publiques de la marketplace. Le choix de la langue
 // vit dans les réglages, pas ici. Un client connecté y retrouve sa cloche et
 // sa photo (vers son profil) à côté de « Mes séances ».
-type Me = { firstName: string; lastName: string; avatarUrl: string | null };
+type Me = { firstName: string; lastName: string; avatarUrl: string | null; isCoach: boolean };
 
 export default function PublicHeader() {
   const { t } = useI18n();
@@ -25,11 +25,15 @@ export default function PublicHeader() {
       if (!user) return;
       // Tout compte connecté a sa cloche et son profil ici (un coach peut
       // aussi réserver chez un autre coach avec le même compte).
-      const { data: cp } = await supabase
-        .from("client_profiles")
-        .select("first_name, last_name, avatar_url")
-        .eq("id", user.id)
-        .maybeSingle();
+      const [{ data: cp }, { data: coachRow }] = await Promise.all([
+        supabase
+          .from("client_profiles")
+          .select("first_name, last_name, avatar_url")
+          .eq("id", user.id)
+          .maybeSingle(),
+        // Aussi coach ? (RLS : seule sa propre ligne est lisible.)
+        supabase.from("coaches").select("id").eq("id", user.id).maybeSingle(),
+      ]);
       if (!alive) return;
       const meta = (user.user_metadata ?? {}) as Record<string, string | undefined>;
       const first =
@@ -43,7 +47,12 @@ export default function PublicHeader() {
         meta.last_name ||
         (meta.full_name ?? "").split(" ").slice(1).join(" ") ||
         "";
-      setMe({ firstName: first, lastName: last, avatarUrl: (cp?.avatar_url as string | null) ?? null });
+      setMe({
+        firstName: first,
+        lastName: last,
+        avatarUrl: (cp?.avatar_url as string | null) ?? null,
+        isCoach: !!coachRow,
+      });
     })();
     return () => {
       alive = false;
@@ -77,6 +86,23 @@ export default function PublicHeader() {
           </Link>
           {me && (
             <>
+              {me.isCoach && (
+                // Même compte côté coach : retour au dashboard sans reconnexion.
+                <Link
+                  href="/dashboard"
+                  title={t("clientSpace.coachView")}
+                  aria-label={t("clientSpace.coachView")}
+                  className="flex h-9 items-center justify-center gap-1.5 rounded-full border border-accent/40 bg-accent/[0.06] px-2.5 text-xs font-semibold text-accent transition-colors hover:bg-accent/10 sm:px-3.5"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                    <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                    <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                    <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                  </svg>
+                  <span className="hidden sm:inline">{t("clientSpace.coachView")}</span>
+                </Link>
+              )}
               <ClientBell />
               {/* Photo + nom du client : un clic ouvre son profil. */}
               <Link

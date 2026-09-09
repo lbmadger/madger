@@ -52,6 +52,7 @@ const fr = {
     stats: "Statistiques",
     settings: "Réglages",
     publicPage: "Ma page publique",
+    clientView: "Mon espace client",
     subscription: "Abonnement",
   },
   story: {
@@ -1630,6 +1631,7 @@ const fr = {
     past: "Passées",
     noUpcoming: "Aucune séance à venir. Trouve ton coach et réserve ta première séance.",
     connectedAs: "Connecté avec {email}.",
+    coachView: "Mon dashboard coach",
     switchAccount: "Changer de compte",
     connectedHint: "Tes séances sont rattachées à l'email utilisé pour réserver.",
     with: "avec",
@@ -1942,6 +1944,7 @@ const en: Dictionary = {
     stats: "Statistics",
     settings: "Settings",
     publicPage: "My public page",
+    clientView: "My client space",
     subscription: "Subscription",
   },
   story: {
@@ -3509,6 +3512,7 @@ const en: Dictionary = {
     past: "Past",
     noUpcoming: "No upcoming sessions. Find your coach and book your first session.",
     connectedAs: "Signed in as {email}.",
+    coachView: "My coach dashboard",
     switchAccount: "Switch account",
     connectedHint: "Your sessions are tied to the email used to book.",
     with: "with",

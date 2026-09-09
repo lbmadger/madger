@@ -105,6 +105,19 @@ export default function AccountMenu() {
                 {t("nav.publicPage")}
               </Link>
             )}
+            {/* Le même compte réserve aussi chez d'autres coachs : bascule
+                vers sa vue client, sans reconnexion. */}
+            <Link
+              href="/espace"
+              onClick={() => setOpen(false)}
+              className="flex w-full items-center gap-2 border-b border-border px-4 py-2.5 text-left text-sm text-text-muted transition-colors hover:bg-bg-card hover:text-text-base"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              {t("nav.clientView")}
+            </Link>
           </div>
 
           <form action="/auth/signout" method="post">
