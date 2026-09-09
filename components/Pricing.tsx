@@ -83,10 +83,10 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
-            }}>7 % par séance encaissée, tout compris.</span>
+            }}>Essentiel : {FEE_RATE_BPS.essential / 100} % par séance. Pro : {monthly} € par mois et {FEE_RATE_BPS.pro / 100} %.</span>
           </h2>
           <p className="text-text-muted text-lg max-w-lg mx-auto mb-6" style={{ lineHeight: 1.6 }}>
-            Essentiel pour démarrer sans risque : 0 € tant que tu n&apos;encaisses rien. Pro pour automatiser tes annulations, relancer tes clients et garder plus sur chaque séance. 7 jours d&apos;essai, sans engagement.
+            Essentiel pour démarrer sans risque. Pro pour garder plus sur chaque séance et automatiser le reste. 7 jours d&apos;essai, sans engagement.
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8" style={{ background: "rgba(203,255,3,0.07)", border: "1px solid rgba(203,255,3,0.18)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-accent block" style={{ background: "#CBFF03" }} />
