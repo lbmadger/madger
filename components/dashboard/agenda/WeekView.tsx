@@ -73,6 +73,26 @@ export default function WeekView({
 
   const today = ymd(new Date());
 
+  // Mobile : vue JOUR (une colonne lisible) ou SEMAINE (7 colonnes serrées),
+  // au choix du coach, mémorisé sur l'appareil.
+  const [mobileMode, setMobileMode] = useState<"day" | "week">("day");
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem("madger:agenda-mobile-mode");
+      if (v === "week" || v === "day") setMobileMode(v);
+    } catch {
+      /* stockage indisponible */
+    }
+  }, []);
+  function chooseMode(m: "day" | "week") {
+    setMobileMode(m);
+    try {
+      localStorage.setItem("madger:agenda-mobile-mode", m);
+    } catch {
+      /* stockage indisponible */
+    }
+  }
+
   // Jour affiché en mobile : aujourd'hui si la semaine courante, sinon lundi.
   const [mobileDayIdx, setMobileDayIdx] = useState(0);
   useEffect(() => {
@@ -299,7 +319,7 @@ export default function WeekView({
             </>
           );
           const cls =
-            "absolute inset-x-1 overflow-hidden rounded-md border-l-2 border-sky-400 bg-sky-400/10 px-1.5 py-0.5 text-left";
+            "absolute inset-x-0.5 overflow-hidden rounded-md border-l-2 border-sky-400 bg-sky-400/10 px-1 py-0.5 text-left sm:inset-x-1 sm:px-1.5";
           return onGroupClick ? (
             <button
               key={g.id}
@@ -347,7 +367,7 @@ export default function WeekView({
               )}
             </>
           );
-          const cls = `absolute inset-x-1 overflow-hidden rounded-md border-l-2 px-1.5 py-0.5 text-left ${
+          const cls = `absolute inset-x-0.5 overflow-hidden rounded-md border-l-2 px-1 py-0.5 text-left sm:inset-x-1 sm:px-1.5 ${
             b.is_block
               ? "border-border-strong bg-white/[0.06]"
               : b.status === "pending"
@@ -417,8 +437,66 @@ export default function WeekView({
         </div>
       </div>
 
-      {/* ── Mobile : vue JOUR ─────────────────────────────────────────────── */}
+      {/* ── Mobile : vue JOUR ou SEMAINE ─────────────────────────────────── */}
       <div className="sm:hidden">
+        {/* Bascule jour / semaine */}
+        <div className="flex items-center gap-1 border-b border-border px-2 py-2">
+          {(["day", "week"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => chooseMode(m)}
+              aria-pressed={mobileMode === m}
+              className={`flex-1 rounded-lg py-1.5 text-xs font-semibold transition-colors ${
+                mobileMode === m
+                  ? "bg-accent/10 text-accent"
+                  : "text-text-muted hover:text-text-base"
+              }`}
+            >
+              {m === "day" ? t("agenda.modeDay") : t("agenda.modeWeek")}
+            </button>
+          ))}
+        </div>
+
+        {mobileMode === "week" ? (
+          <>
+            {/* Semaine compacte : 7 colonnes, un tap sur un jour ouvre sa vue jour */}
+            <div className="grid grid-cols-[30px_repeat(7,1fr)] border-b border-border">
+              <div />
+              {days.map((d, i) => {
+                const isToday = ymd(d) === today;
+                return (
+                  <button
+                    key={ymd(d)}
+                    type="button"
+                    onClick={() => {
+                      setMobileDayIdx(i);
+                      chooseMode("day");
+                    }}
+                    className="px-0.5 py-1.5 text-center"
+                    aria-label={d.toLocaleDateString(loc, { weekday: "long", day: "numeric", month: "long" })}
+                  >
+                    <span className="block text-[9px] font-medium uppercase tracking-wide text-text-dim">
+                      {d.toLocaleDateString(loc, { weekday: "short" }).slice(0, 2)}
+                    </span>
+                    <span
+                      className={`mx-auto mt-0.5 flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-bold ${
+                        isToday ? "bg-accent text-black" : "text-text-base"
+                      }`}
+                    >
+                      {d.getDate()}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="grid grid-cols-[30px_repeat(7,1fr)] pr-1">
+              {hourGutter()}
+              {days.map((d) => dayColumn(d))}
+            </div>
+          </>
+        ) : (
+        <>
         {/* Pastilles des 7 jours de la semaine */}
         <div className="flex gap-1 overflow-x-auto border-b border-border px-2 py-2">
           {days.map((d, i) => {
@@ -464,6 +542,8 @@ export default function WeekView({
           {hourGutter()}
           {dayColumn(days[mobileDayIdx])}
         </div>
+        </>
+        )}
       </div>
 
       {/* ── Desktop : grille SEMAINE (7 colonnes) ────────────────────────── */}
