@@ -10,7 +10,7 @@ import { twMerge } from "tailwind-merge";
 // propres effets (scale au hover/tap), aucun conflit de transform.
 export default function MagneticButton({
   children,
-  strength = 0.4,
+  strength = 0.12,
   className,
   style,
 }: {
@@ -35,8 +35,10 @@ export default function MagneticButton({
       return;
     }
     const r = el.getBoundingClientRect();
-    const x = (e.clientX - (r.left + r.width / 2)) * strength;
-    const y = (e.clientY - (r.top + r.height / 2)) * strength;
+    // Amplitude bornée à 6 px : un frémissement, pas un bouton qui fuit.
+    const clamp = (v: number) => Math.max(-6, Math.min(6, v));
+    const x = clamp((e.clientX - (r.left + r.width / 2)) * strength);
+    const y = clamp((e.clientY - (r.top + r.height / 2)) * strength);
     el.style.transform = `translate(${x}px, ${y}px)`;
   };
 

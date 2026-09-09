@@ -339,7 +339,7 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
               <span style={{ color: "#CBFF03", fontSize: 11, letterSpacing: "0.06em" }}>
                 {launched
                   ? "Inscriptions ouvertes · Essentiel à 0 € par mois"
-                  : "Accès anticipé · Plan Pro offert 1 mois"}
+                  : "Accès anticipé · Madger Pro offert 1 mois aux premiers membres"}
               </span>
             </span>
           </motion.div>
@@ -375,13 +375,13 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
             transition={{ duration: 0.7, delay: 0.32 }}
           >
             <div className="flex w-full flex-col items-center gap-1.5 sm:w-auto">
-              <MagneticButton className="w-full sm:w-auto" strength={0.45}>
+              <MagneticButton className="w-full sm:w-auto" strength={0.12}>
                 <motion.a
                   href={ctaHref}
                   className="cta-shine block w-full sm:w-auto sm:inline-block font-semibold text-sm px-8 py-4 rounded-full text-center"
                   style={{ background: "#CBFF03", color: "#000" }}
-                  whileHover={{ scale: 1.04, boxShadow: "0 0 30px rgba(203,255,3,0.5), 0 0 60px rgba(203,255,3,0.2)" }}
-                  whileTap={{ scale: 0.97 }}
+                  whileHover={{ scale: 1.015, boxShadow: "0 0 24px rgba(203,255,3,0.35), 0 0 48px rgba(203,255,3,0.12)" }}
+                  whileTap={{ scale: 0.99 }}
                   transition={{ duration: 0.2 }}
                 >
                   {ctaLabel}
@@ -393,7 +393,7 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
                 </span>
               )}
             </div>
-            <MagneticButton className="w-full sm:w-auto sm:self-start" strength={0.45}>
+            <MagneticButton className="w-full sm:w-auto sm:self-start" strength={0.12}>
               <motion.a
                 href={launched ? "#early-access" : "#fonctionnement"}
                 className="block w-full sm:w-auto sm:inline-block text-white font-semibold text-sm px-8 py-4 rounded-full text-center"

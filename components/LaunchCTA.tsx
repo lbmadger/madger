@@ -42,7 +42,7 @@ export default function LaunchCTA() {
           lien. Tes clients réservent seuls, Madger gère le reste.
         </p>
         <div className="anim-fade-up" style={{ animationDelay: "0.16s" }}>
-          <MagneticButton className="inline-block" strength={0.45}>
+          <MagneticButton className="inline-block" strength={0.12}>
             <a
               href="/signup"
               className="cta-shine inline-flex items-center justify-center font-semibold text-sm px-9 py-4 rounded-full transition-[transform,box-shadow] duration-200 hover:scale-[1.03] hover:shadow-[0_0_30px_rgba(203,255,3,0.5)] active:scale-[0.97]"
