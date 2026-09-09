@@ -618,8 +618,8 @@ const fr = {
     offerKeep: "Abonne-toi avant : tu gardes 49 € tant que tu restes abonné.",
     offerKeepAnnual: "Abonne-toi avant : tu gardes 490 € tant que tu restes abonné.",
     offerFrom: "tarif à partir du {date}",
-    offerDaysLeft: "Plus que {n} jours pour bloquer ce prix",
-    offerLastDay: "Dernier jour pour bloquer ce prix",
+    offerDaysLeft: "{name} : plus que {n} jours pour bloquer ce prix",
+    offerLastDay: "{name} : dernier jour pour bloquer ce prix",
     offerLocked: "Prix de lancement, bloqué tant que tu restes abonné.",
     modalTitle: "Pro, c'est ce qui fait rester tes clients",
     modalBody:
@@ -2484,8 +2484,8 @@ const en: Dictionary = {
     offerKeep: "Subscribe before: you keep 49 € as long as you stay subscribed.",
     offerKeepAnnual: "Subscribe before: you keep 490 € as long as you stay subscribed.",
     offerFrom: "price from {date}",
-    offerDaysLeft: "Only {n} days left to lock this price",
-    offerLastDay: "Last day to lock this price",
+    offerDaysLeft: "{name}: only {n} days left to lock this price",
+    offerLastDay: "{name}: last day to lock this price",
     offerLocked: "Launch price, locked as long as you stay subscribed.",
     modalTitle: "Pro is what keeps your clients coming back",
     modalBody:

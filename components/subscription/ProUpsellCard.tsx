@@ -1,8 +1,7 @@
 import Link from "next/link";
 import {
   launchOfferActive,
-  launchOfferDaysLeft,
-  launchOfferUrgent,
+  monthlyOffer,
 } from "@/lib/subscription/offer";
 import LaunchPrice from "@/components/subscription/LaunchPrice";
 
@@ -33,7 +32,7 @@ export default function ProUpsellCard({
   className?: string;
 }) {
   const offer = launchOfferActive();
-  const days = launchOfferDaysLeft();
+  const month = monthlyOffer(locale);
   return (
     <div
       className={`flex flex-col gap-4 rounded-2xl border border-accent/25 bg-accent/[0.05] p-4 sm:flex-row sm:items-center sm:justify-between ${className}`}
@@ -49,9 +48,9 @@ export default function ProUpsellCard({
       </div>
       <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
         <LaunchPrice locale={locale} suffix={perMonth} fromLabel={offerFrom} size="sm" />
-        {offer && launchOfferUrgent() && (
+        {offer && month && (
           <p className="text-[11px] font-semibold text-accent">
-            {days <= 1 ? offerLastDay : offerDaysLeft.replace("{n}", String(days))}
+            {(month.daysLeft <= 1 ? offerLastDay : offerDaysLeft.replace("{n}", String(month.daysLeft))).replace("{name}", month.name)}
           </p>
         )}
         <Link

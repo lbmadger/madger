@@ -79,8 +79,47 @@ export function launchOfferDaysLeft(now: Date = new Date()): number {
   return Math.max(0, Math.ceil((offerEnd().getTime() - now.getTime()) / 86400000));
 }
 
-// Le compte à rebours n'est affiché que sur les 30 derniers jours de l'offre :
-// « plus que 114 jours » ne presse personne, « plus que 12 jours » si.
-export function launchOfferUrgent(now: Date = new Date()): boolean {
-  return launchOfferActive(now) && launchOfferDaysLeft(now) <= 30;
+// Offre du mois : tant que l'offre de lancement court, elle porte un nom qui
+// change chaque mois (rentrée, automne, Black Friday, Noël) et un compte à
+// rebours jusqu'à la fin du mois en cours. Le prix, lui, est celui de
+// LAUNCH_OFFER (49 € jusqu'au 31 décembre, 69 € ensuite) : les textes qui
+// l'entourent doivent toujours dire le tarif 2027 et sa date, jamais qu'il
+// change le 1er du mois suivant.
+const MONTHLY_OFFER_NAMES: Record<number, { fr: string; en: string }> = {
+  1: { fr: "Offre de nouvelle année", en: "New year offer" },
+  2: { fr: "Offre d'hiver", en: "Winter offer" },
+  3: { fr: "Offre de printemps", en: "Spring offer" },
+  4: { fr: "Offre de printemps", en: "Spring offer" },
+  5: { fr: "Offre de mai", en: "May offer" },
+  6: { fr: "Offre d'été", en: "Summer offer" },
+  7: { fr: "Offre d'été", en: "Summer offer" },
+  8: { fr: "Offre de rentrée", en: "Back-to-school offer" },
+  9: { fr: "Offre de rentrée", en: "Back-to-school offer" },
+  10: { fr: "Offre d'automne", en: "Autumn offer" },
+  11: { fr: "Black Friday", en: "Black Friday" },
+  12: { fr: "Offre de Noël", en: "Christmas offer" },
+};
+
+export type MonthlyOffer = {
+  name: string;
+  // Jours restants jusqu'à la fin du mois (1 = dernier jour).
+  daysLeft: number;
+  // Dernier jour du mois, formaté (« 30 septembre »).
+  endsLabel: string;
+};
+
+export function monthlyOffer(locale: string = "fr", now: Date = new Date()): MonthlyOffer | null {
+  if (!launchOfferActive(now)) return null;
+  const month = now.getMonth() + 1;
+  const names = MONTHLY_OFFER_NAMES[month];
+  // Fin du mois : dernier instant du dernier jour, heure locale du serveur ou
+  // du navigateur (précision au jour, l'offre de lancement borne le reste).
+  const end = new Date(now.getFullYear(), month, 0, 23, 59, 59, 999);
+  const capped = Math.min(end.getTime(), offerEnd().getTime());
+  const daysLeft = Math.max(1, Math.ceil((capped - now.getTime()) / 86400000));
+  const endsLabel = new Date(capped).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB", {
+    day: "numeric",
+    month: "long",
+  });
+  return { name: locale === "fr" ? names.fr : names.en, daysLeft, endsLabel };
 }

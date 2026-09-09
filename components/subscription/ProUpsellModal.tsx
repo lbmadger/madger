@@ -8,8 +8,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import Dialog from "@/components/ui/Dialog";
 import {
   launchOfferActive,
-  launchOfferDaysLeft,
-  launchOfferUrgent,
+  monthlyOffer,
 } from "@/lib/subscription/offer";
 import LaunchPrice from "@/components/subscription/LaunchPrice";
 
@@ -59,7 +58,7 @@ export default function ProUpsellModal() {
 
   if (!open) return null;
   const offer = launchOfferActive();
-  const daysLeft = launchOfferDaysLeft();
+  const month = monthlyOffer(locale);
 
   return (
     <Dialog
@@ -99,10 +98,11 @@ export default function ProUpsellModal() {
         />
         {offer ? (
           <p className="mt-2 text-xs font-semibold text-accent">
-            {launchOfferUrgent() &&
-              (daysLeft <= 1
+            {month &&
+              (month.daysLeft <= 1
                 ? t("plans.offerLastDay")
-                : t("plans.offerDaysLeft").replace("{n}", String(daysLeft)))}
+                : t("plans.offerDaysLeft").replace("{n}", String(month.daysLeft))
+              ).replace("{name}", month.name)}
             <span className="block font-normal text-text-muted">{t("plans.offerLocked")}</span>
           </p>
         ) : (

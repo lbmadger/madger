@@ -5,8 +5,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import PromoCode from "@/components/subscription/PromoCode";
 import {
   launchOfferActive,
-  launchOfferDaysLeft,
-  launchOfferUrgent,
+  monthlyOffer,
   currentMonthlyCents,
   currentAnnualCents,
   euros,
@@ -166,15 +165,17 @@ export default function PricingPlans({
             reste abonné. */}
         {launchOfferActive() && (
           <p className="mt-2 rounded-xl border border-accent/25 bg-accent/[0.06] px-3 py-2 text-xs leading-relaxed text-text-base">
-            {launchOfferUrgent() && (
-              <>
-                <span className="font-bold text-accent">
-                  {launchOfferDaysLeft() <= 1
-                    ? p.offerLastDay
-                    : p.offerDaysLeft.replace("{n}", String(launchOfferDaysLeft()))}
-                </span>{" "}
-              </>
-            )}
+            {(() => {
+              const o = monthlyOffer(locale);
+              if (!o) return null;
+              return (
+                <>
+                  <span className="font-bold text-accent">
+                    {(o.daysLeft <= 1 ? p.offerLastDay : p.offerDaysLeft.replace("{n}", String(o.daysLeft))).replace("{name}", o.name)}
+                  </span>{" "}
+                </>
+              );
+            })()}
             {p.offerLocked}
           </p>
         )}
