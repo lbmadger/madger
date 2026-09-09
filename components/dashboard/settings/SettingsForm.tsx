@@ -32,7 +32,12 @@ import AvatarCropper, { fileFromUrl } from "@/components/ui/AvatarCropper";
 import Select from "@/components/ui/Select";
 import { inputClass, labelClass } from "@/lib/ui/styles";
 import { withTimeout } from "@/lib/utils/withTimeout";
-import { installmentFeeApproxPct, installmentFeeLabel } from "@/lib/stripe/installments";
+import {
+  installmentFeeApproxPct,
+  installmentFeeLabel,
+  INSTALLMENT_FEE_PCT,
+  INSTALLMENT_FEE_FIXED_CENTS,
+} from "@/lib/stripe/installments";
 import { VAT_RATE_CHOICES_BPS, clampVatRateBps, vatRateLabel } from "@/lib/invoices/vat";
 import { cleanSiret } from "@/lib/siret/siret";
 import AiBio from "@/components/ui/AiBio";
@@ -124,6 +129,15 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   );
   const [timezone, setTimezone] = useState(coach.timezone || "Europe/Paris");
   const [minNotice, setMinNotice] = useState(coach.min_notice_hours ?? 2);
+  // Exemple affiché sous le réglage du 3x : pack de 5 séances à 50 €, frais
+  // calculés depuis la grille réelle (4,99 % + 0,45 €).
+  const installmentExample = (() => {
+    const totalCents = 5 * 5000;
+    const feeCents = Math.round((totalCents * INSTALLMENT_FEE_PCT) / 100 + INSTALLMENT_FEE_FIXED_CENTS);
+    const fmt = (c: number) =>
+      (c / 100).toLocaleString(locale === "fr" ? "fr-FR" : "en-GB", { style: "currency", currency: "EUR" });
+    return { total: fmt(totalCents), fee: fmt(feeCents) };
+  })();
   // Paiement en 3x (Klarna) sur les packs dès 120 € (migration 0060).
   const [installments, setInstallments] = useState<boolean>(
     coach.installments_enabled === true
@@ -799,6 +813,12 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
                   .replace("{pct}", String(installmentFeeApproxPct()))
                   .replace("{grid}", installmentFeeLabel(locale))}
               </span>
+              {/* Exemple concret, calculé depuis la grille réelle. */}
+              <span className="mt-1 block text-xs text-text-dim">
+                {t("settings.installmentsExample")
+                  .replace("{total}", installmentExample.total)
+                  .replace("{fee}", installmentExample.fee)}
+              </span>
             </span>
             <span
               className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
@@ -896,7 +916,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
               ariaLabel={t("cancellation.overLabelH").replace("{h}", String(cancelHours))}
               options={REFUND_PCT_CHOICES.map((p) => ({
                 value: String(p),
-                label: `${t("cancellation.youKeep")} ${100 - p} % · ${p} % ${t("cancellation.refundedSuffix")}`,
+                label: `${100 - p} % ${t("cancellation.forYou")} · ${p} % ${t("cancellation.refundedSuffix")}`,
               }))}
             />
           </label>
@@ -914,7 +934,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
               ariaLabel={t("cancellation.underLabelH").replace("{h}", String(cancelHours))}
               options={REFUND_PCT_CHOICES.map((p) => ({
                 value: String(p),
-                label: `${t("cancellation.youKeep")} ${100 - p} % · ${p} % ${t("cancellation.refundedSuffix")}`,
+                label: `${100 - p} % ${t("cancellation.forYou")} · ${p} % ${t("cancellation.refundedSuffix")}`,
               }))}
             />
           </label>

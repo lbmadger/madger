@@ -293,7 +293,7 @@ export default function Select({
                     o.disabled && "cursor-not-allowed opacity-40"
                   )}
                 >
-                  <span className="truncate">{o.label}</span>
+                  <span className="min-w-0 whitespace-normal break-words">{o.label}</span>
                   {isSel && (
                     <svg
                       width="14"

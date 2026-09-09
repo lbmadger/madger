@@ -1311,6 +1311,8 @@ const fr = {
       "Tes clients peuvent régler un pack de 120 € ou plus en 3 fois via Klarna ou Alma. Tu touches tout de suite l'intégralité, l'organisme porte le risque. Les séances à l'unité restent en carte, Apple Pay et Google Pay.",
     installmentsFees:
       "Les frais du paiement en 3 fois sont à ta charge, environ {pct} % par transaction ({grid}), déduits de ton versement. Ils s'ajoutent à tes frais de transaction Madger.",
+    installmentsExample:
+      "Exemple : un pack de 5 séances à 50 € ({total}) réglé en 3 fois te coûte {fee} de frais de paiement en 3 fois, en plus de tes frais Madger.",
     timezone: "Fuseau horaire",
     timezoneHint:
       "Les créneaux proposés à tes clients et tes horaires s'affichent dans ce fuseau.",
@@ -1409,6 +1411,7 @@ const fr = {
     underDesc:
       "Le client annule au dernier moment (le jour même). Quelle part du prix gardes-tu ?",
     refundedSuffix: "remboursé",
+    forYou: "pour toi",
     youKeep: "Tu gardes",
     flexible: "Flexible",
     moderate: "Modérée",
@@ -3158,6 +3161,8 @@ const en: Dictionary = {
       "Your clients can pay a pack of 120 € or more in 3 instalments via Klarna or Alma. You receive the full amount right away, the provider carries the risk. Single sessions stay on card, Apple Pay and Google Pay.",
     installmentsFees:
       "Instalment fees are on you, about {pct}% per transaction ({grid}), deducted from your payout. They come on top of your Madger transaction fees.",
+    installmentsExample:
+      "Example: a 5-session pack at 50 € ({total}) paid in 3 instalments costs you {fee} in instalment fees, on top of your Madger fees.",
     timezone: "Time zone",
     timezoneHint:
       "Slots offered to your clients and your schedule are shown in this time zone.",
@@ -3255,6 +3260,7 @@ const en: Dictionary = {
     underDesc:
       "The client cancels last minute (same day). What share of the price do you keep?",
     refundedSuffix: "refunded",
+    forYou: "for you",
     youKeep: "You keep",
     flexible: "Flexible",
     moderate: "Moderate",
