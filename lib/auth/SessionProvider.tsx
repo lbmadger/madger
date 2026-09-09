@@ -15,6 +15,9 @@ export type SessionUser = {
   // Affichés dans le bloc profil de la sidebar (bas gauche).
   name: string | null;
   avatarUrl: string | null;
+  // Agenda Google connecté : condition pour proposer des séances en visio
+  // (le lien Meet est créé tout seul).
+  googleConnected: boolean;
 };
 
 const SessionContext = createContext<SessionUser | null>(null);

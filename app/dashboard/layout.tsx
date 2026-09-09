@@ -68,6 +68,7 @@ export default async function DashboardLayout({
             [coach?.first_name, coach?.last_name].filter(Boolean).join(" ") ||
             null,
           avatarUrl: coach?.avatar_url ?? null,
+          googleConnected: !!coach?.google_connected_at,
         }}
       >
         <div className="flex min-h-screen bg-bg text-text-base">

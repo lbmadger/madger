@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { useSession } from "@/lib/auth/SessionProvider";
 import Button from "@/components/ui/Button";
 import Dialog from "@/components/ui/Dialog";
 import Select from "@/components/ui/Select";
@@ -36,6 +37,7 @@ export default function AddServiceModal({
   packsAllowed?: boolean;
 }) {
   const { t } = useI18n();
+  const { googleConnected } = useSession();
   const [name, setName] = useState(service?.name ?? "");
   const [type, setType] = useState<ServiceType>(service?.type ?? "single");
   const [price, setPrice] = useState(
@@ -183,7 +185,7 @@ export default function AddServiceModal({
                     disabled={locked}
                     title={locked ? t("plans.lock.packType") : undefined}
                     onClick={() => !locked && setType(ty)}
-                    className={`flex-1 rounded-full border px-2 py-2 text-sm font-medium transition-colors ${
+                    className={`flex-1 rounded-full border px-2 py-2 text-sm font-medium transition-colors disabled:opacity-40 ${
                       type === ty
                         ? "border-accent bg-accent/10 text-accent"
                         : locked
@@ -397,6 +399,8 @@ export default function AddServiceModal({
                   key={opt}
                   type="button"
                   aria-pressed={location === opt}
+                  disabled={opt === "online" && !googleConnected && location !== "online"}
+                  title={opt === "online" && !googleConnected ? t("services.form.onlineNeedsGoogle") : undefined}
                   onClick={() => setLocation(opt)}
                   className={`flex-1 rounded-full border px-3 py-2 text-sm font-medium transition-colors ${
                     location === opt

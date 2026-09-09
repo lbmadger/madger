@@ -93,6 +93,8 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   );
   const [bio, setBio] = useState(coach.bio ?? "");
   const [acceptsOnline, setAcceptsOnline] = useState(coach.accepts_online);
+  // La visio exige l'agenda Google connecté (lien Meet créé tout seul).
+  const googleOk = !!coach.google_connected_at;
   const [slug, setSlug] = useState(coach.slug ?? "");
   const [listed, setListed] = useState(coach.listed);
   // Politique d'annulation : deux pourcentages indépendants (plus de 24 h
@@ -278,14 +280,14 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         lat: coords?.lat ?? null,
         lng: coords?.lng ?? null,
         bio: bio.trim() || null,
-        accepts_online: acceptsOnline,
+        accepts_online: acceptsOnline && googleOk,
         slug,
         listed,
       },
       activity: {
         sport: sport === "autre" ? customSport.trim() || "autre" : sport || null,
         specialties,
-        venues,
+        venues: googleOk ? venues : venues.filter((v) => v !== "online"),
         gym_name: gymName.trim() || null,
       },
       prefs: {
@@ -559,9 +561,14 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             )}
           </label>
 
-          <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3">
-            <input type="checkbox" checked={acceptsOnline} onChange={(e) => setAcceptsOnline(e.target.checked)} className="h-4 w-4 shrink-0 accent-accent" />
-            <span className="text-sm text-text-base">{t("settings.acceptsOnline")}</span>
+          <label className={`flex items-center gap-3 rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3 ${googleOk ? "cursor-pointer" : "opacity-70"}`}>
+            <input type="checkbox" checked={acceptsOnline && googleOk} disabled={!googleOk} onChange={(e) => setAcceptsOnline(e.target.checked)} className="h-4 w-4 shrink-0 accent-accent" />
+            <span>
+              <span className="block text-sm text-text-base">{t("settings.acceptsOnline")}</span>
+              {!googleOk && (
+                <a href="#google" className="block text-xs text-warning hover:underline">{t("settings.onlineNeedsGoogle")}</a>
+              )}
+            </span>
           </label>
 
           <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border-strong bg-white/[0.03] px-4 py-3">
@@ -661,18 +668,21 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             <p className={labelClass}>{t("settings.venuesLabel")}</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {VENUE_KEYS.map((v) => {
-                const active = venues.includes(v);
+                const active = venues.includes(v) && (v !== "online" || googleOk);
+                const locked = v === "online" && !googleOk;
                 return (
                   <button
                     key={v}
                     type="button"
                     aria-pressed={active}
+                    disabled={locked}
+                    title={locked ? t("settings.onlineNeedsGoogle") : undefined}
                     onClick={() =>
                       setVenues((prev) =>
                         active ? prev.filter((x) => x !== v) : [...prev, v]
                       )
                     }
-                    className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
+                    className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-40 ${
                       active
                         ? "border-accent bg-accent/10 text-accent"
                         : "border-border-strong text-text-muted hover:text-text-base"
@@ -683,6 +693,9 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
                 );
               })}
             </div>
+            {!googleOk && (
+              <a href="#google" className="mt-2 block text-xs text-warning hover:underline">{t("settings.onlineNeedsGoogle")}</a>
+            )}
           </div>
 
           {/* Nom de la salle : répond au « chez Basic Fit ou Fitness Park ? » */}
@@ -1132,7 +1145,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
 
         {/* Google Calendar + Meet */}
         <div className="mt-5 border-t border-border pt-4">
-          <p className={labelClass}>{t("settings.googleTitle")}</p>
+          <p id="google" className={`${labelClass} scroll-mt-28`}>{t("settings.googleTitle")}</p>
           <p className="mt-1 text-xs text-text-dim">
             {t("settings.googleHint")}
           </p>

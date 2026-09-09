@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { useSession } from "@/lib/auth/SessionProvider";
 import type { Booking, ClientOption, LocationKind } from "@/lib/bookings/types";
 import Button from "@/components/ui/Button";
 import Dialog from "@/components/ui/Dialog";
@@ -26,6 +27,7 @@ export default function AddSessionModal({
   onCreated: () => void;
 }) {
   const { t } = useI18n();
+  const { googleConnected } = useSession();
   const editing = !!booking;
   const init = booking ? new Date(booking.starts_at) : null;
   const initDuration = booking
@@ -272,8 +274,10 @@ export default function AddSessionModal({
                   key={opt}
                   type="button"
                   aria-pressed={location === opt}
+                  disabled={opt === "online" && !googleConnected && location !== "online"}
+                  title={opt === "online" && !googleConnected ? t("agenda.form.onlineNeedsGoogle") : undefined}
                   onClick={() => setLocation(opt)}
-                  className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                  className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors disabled:opacity-40 ${
                     location === opt
                       ? "border-accent bg-accent/10 text-accent"
                       : "border-border-strong text-text-muted hover:text-text-base"
