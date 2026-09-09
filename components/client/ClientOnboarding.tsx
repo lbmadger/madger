@@ -156,15 +156,23 @@ export default function ClientOnboarding() {
     setLoading(true);
     try {
       const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
+      // Session locale d'abord (pas d'aller-retour réseau), puis vérification
+      // serveur, puis rafraîchissement du jeton s'il vient d'expirer : on ne
+      // renvoie vers la connexion qu'en dernier recours, le brouillon reste
+      // dans le navigateur de toute façon.
+      let userId: string | null =
+        (await supabase.auth.getSession()).data.session?.user.id ?? null;
+      if (!userId) userId = (await supabase.auth.getUser()).data.user?.id ?? null;
+      if (!userId) {
+        const refreshed = await supabase.auth.refreshSession();
+        userId = refreshed.data.session?.user.id ?? null;
+      }
+      if (!userId) {
         router.push("/login?redirect=/onboarding-client");
         return;
       }
-      const { error: err } = await supabase.from("client_profiles").upsert({
-        id: user.id,
+      let { error: err } = await supabase.from("client_profiles").upsert({
+        id: userId,
         first_name: firstName.trim() || null,
         last_name: lastName.trim() || null,
         phone: phone.trim() || null,
@@ -178,6 +186,26 @@ export default function ClientOnboarding() {
         completed: true,
         updated_at: new Date().toISOString(),
       });
+      if (err && /jwt|expired|401/i.test(err.message ?? "")) {
+        // Jeton expiré pendant la saisie : on le rafraîchit et on réessaie une fois.
+        await supabase.auth.refreshSession();
+        const again = await supabase.from("client_profiles").upsert({
+          id: userId,
+          first_name: firstName.trim() || null,
+          last_name: lastName.trim() || null,
+          phone: phone.trim() || null,
+          birth_date: birthDate || null,
+          sex: sex || null,
+          height_cm: heightCm ? parseInt(heightCm, 10) : null,
+          weight_kg: weightKg ? parseFloat(weightKg) : null,
+          goals,
+          level: level || null,
+          note: note.trim() || null,
+          completed: true,
+          updated_at: new Date().toISOString(),
+        });
+        err = again.error;
+      }
       if (err) {
         setError(t("clientOnboarding.errors.generic"));
         return;
