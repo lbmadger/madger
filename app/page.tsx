@@ -15,12 +15,10 @@ export const revalidate = 3600;
 // Sections sous la ligne de flottaison : chargées dans des chunks séparés
 // pour alléger le JS initial (le hero GSAP est déjà lourd). Le SSR reste
 // actif, le contenu est donc toujours présent dans le HTML pour le SEO.
-const Problem = dynamic(() => import("@/components/Problem"));
-const Athletes = dynamic(() => import("@/components/Athletes"));
+const ThreeSteps = dynamic(() => import("@/components/ThreeSteps"));
 const CoachDashboard = dynamic(() => import("@/components/CoachDashboard"));
 const CoachPagePreview = dynamic(() => import("@/components/CoachPagePreview"));
 const Comparison = dynamic(() => import("@/components/Comparison"));
-const Compliance2026 = dynamic(() => import("@/components/Compliance2026"));
 const Testimonials = dynamic(() => import("@/components/Testimonials"));
 const Pricing = dynamic(() => import("@/components/Pricing"));
 const FAQ = dynamic(() => import("@/components/FAQ"));
@@ -60,12 +58,10 @@ export default function Home() {
           <HeroScrollExperience launched={launched} />
           <div id="after-hero" />
           <TrustBar />
-          <Problem />
-          <Athletes />
+          <ThreeSteps />
           <CoachDashboard />
           <CoachPagePreview />
           <Comparison launched={launched} />
-          <Compliance2026 />
           <Testimonials launched={launched} />
           <Pricing launched={launched} />
           <FAQ launched={launched} />
