@@ -64,7 +64,7 @@ export default function ProUpsellModal() {
     <Dialog
       onClose={close}
       label={t("plans.modalTitle")}
-      className="relative w-full max-w-md rounded-t-3xl border border-accent/30 bg-bg-card p-6 sm:rounded-3xl"
+      className="relative w-full max-w-md rounded-t-3xl border border-accent/30 bg-bg-card p-5 sm:rounded-3xl sm:p-6"
     >
       <button
         type="button"
@@ -83,14 +83,16 @@ export default function ProUpsellModal() {
           {t("plans.offerBadge")}
         </span>
       )}
-      <h2 className="mt-3 font-display text-2xl font-extrabold tracking-tight text-text-base">
+      <h2 className="mt-2 font-display text-xl font-extrabold tracking-tight text-text-base sm:mt-3 sm:text-2xl">
         {t("plans.modalTitle")}
       </h2>
-      <p className="mt-2 text-sm leading-relaxed text-text-muted">
+      {/* Le paragraphe d'explication ne s'affiche qu'à partir de la tablette :
+          sur téléphone, la fenêtre doit tenir sans défiler. */}
+      <p className="mt-2 hidden text-sm leading-relaxed text-text-muted sm:block">
         {t("plans.modalBody")}
       </p>
 
-      <div className="mt-4 rounded-2xl border border-border bg-bg-elevated p-4">
+      <div className="mt-3 rounded-2xl border border-border bg-bg-elevated p-3.5 sm:mt-4 sm:p-4">
         <LaunchPrice
           locale={locale}
           suffix={t("plans.perMonth")}
@@ -108,12 +110,14 @@ export default function ProUpsellModal() {
         ) : (
           <p className="mt-1 text-xs text-text-muted">{t("plans.proNote")}</p>
         )}
-        <ul className="mt-3 flex flex-col gap-1.5 text-sm text-text-base">
+        <ul className="mt-3 flex flex-col gap-1.5 text-[13px] text-text-base sm:text-sm">
           {(trialEligible
             ? dict.plans.modalPoints
             : [...dict.plans.modalPoints.slice(0, -1), t("plans.modalPointNoTrial")]
-          ).map((pt) => (
-            <li key={pt} className="flex items-start gap-2">
+          ).map((pt, i, arr) => (
+            // Le dernier point (prix gardé, essai, résiliation) répète la ligne
+            // sous le prix : masqué sur téléphone.
+            <li key={pt} className={`items-start gap-2 ${i === arr.length - 1 ? "hidden sm:flex" : "flex"}`}>
               <svg className="mt-0.5 shrink-0 text-accent" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 6L9 17l-5-5" />
               </svg>
@@ -126,14 +130,14 @@ export default function ProUpsellModal() {
       <Link
         href="/dashboard/abonnement"
         onClick={close}
-        className="mt-4 block w-full rounded-full bg-accent px-4 py-3 text-center text-sm font-semibold text-black transition-opacity hover:opacity-90"
+        className="mt-3 block w-full rounded-full bg-accent px-4 py-3 text-center text-sm font-semibold text-black transition-opacity hover:opacity-90 sm:mt-4"
       >
         {trialEligible ? t("plans.modalCta") : t("plans.modalCtaNoTrial")}
       </Link>
       <button
         type="button"
         onClick={close}
-        className="mt-2 w-full py-2 text-center text-xs text-text-dim hover:text-text-muted"
+        className="mt-1 w-full py-1.5 text-center text-xs text-text-dim hover:text-text-muted sm:mt-2 sm:py-2"
       >
         {t("plans.modalLater")}
       </button>
