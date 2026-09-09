@@ -71,16 +71,16 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
             className="font-extrabold text-white mb-5"
             style={{ fontSize: "clamp(32px, 4.5vw, 58px)", letterSpacing: "-0.035em", lineHeight: 1.04 }}
           >
-            Transparent dès le départ.<br />
+            Tu ne vends pas ? Tu ne paies pas.<br />
             <span style={{
               background: "linear-gradient(90deg, #CBFF03, #a8e600)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
-            }}>Aucune surprise au lancement.</span>
+            }}>5 % par séance encaissée, tout compris.</span>
           </h2>
           <p className="text-text-muted text-lg max-w-lg mx-auto mb-6" style={{ lineHeight: 1.6 }}>
-            Essentiel pour encaisser, packs compris. Pro pour automatiser tes annulations, relancer tes clients et les garder. 7 jours d'essai, sans engagement.
+            Essentiel pour démarrer sans risque : 0 € tant que tu n&apos;encaisses rien. Pro pour automatiser tes annulations, relancer tes clients et garder plus sur chaque séance. 7 jours d&apos;essai, sans engagement.
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8" style={{ background: "rgba(203,255,3,0.07)", border: "1px solid rgba(203,255,3,0.18)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-accent block" style={{ background: "#CBFF03" }} />
@@ -121,7 +121,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
                   5 % de frais de transaction, tout compris.
                 </div>
                 <div className="text-text-muted text-xs">
-                  Sans abonnement. Tu ne paies que quand tu encaisses.
+                  Sans abonnement, sans minimum : tu ne vends pas, tu ne paies pas.
                 </div>
               </div>
               <a

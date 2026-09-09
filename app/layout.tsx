@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   // visible sur la facture) : détection coupée, nos liens restent explicites.
   formatDetection: { telephone: false, address: false, email: false },
   title: "Madger · L'app préférée des coachs sportifs",
-  description: "Ton lien de réservation, tes paiements sécurisés, tes factures automatiques. Tes clients réservent seuls, ton planning se remplit. Fait pour les coachs sportifs indépendants.",
+  description: "Ton lien de réservation, tes paiements sécurisés, tes factures automatiques. 0 € tant que tu ne vends pas. Fait pour les coachs sportifs indépendants.",
   // PWA iOS : ajoutée à l'écran d'accueil, l'app s'ouvre en plein écran
   // sans le chrome Safari (la barre du bas ne bouge plus jamais).
   appleWebApp: {

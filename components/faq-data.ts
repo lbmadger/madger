@@ -35,6 +35,10 @@ export const faqs = [
     a: "Ton client règle en ligne au moment où il réserve, par carte, Apple Pay ou Google Pay via Stripe. Les fonds sont sécurisés par Stripe, libérés 24 heures après la séance, puis virés sur ton compte bancaire chaque semaine, déduction faite des frais de transaction Madger. Si tu valides chaque demande à la main, la carte du client n'est débitée qu'au moment où tu acceptes. Fini les relances.",
   },
   {
+    q: "Combien ça coûte si je ne vends rien ?",
+    a: "Rien. Le plan Essentiel n'a ni abonnement ni minimum : 0 € tant que tu n'encaisses pas, puis 5 % de frais de transaction sur chaque séance vendue, tout compris (paiement par carte, Apple Pay, remboursements et litiges). Pro, à 49 € par mois et 3 %, ajoute l'annulation automatique selon tes règles, les relances, l'écran encaissements, les alertes churn et les statistiques avancées : tu l'essaies 7 jours sans être débité.",
+  },
+  {
     q: "Mes données et celles de mes clients sont-elles sécurisées ?",
     a: "Toutes les données sont hébergées en Europe. Les paiements transitent via Stripe, certifié PCI-DSS niveau 1, le standard de sécurité le plus élevé. Nous ne revendons aucune donnée. Tu gardes le contrôle total.",
   },

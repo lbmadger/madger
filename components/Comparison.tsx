@@ -209,7 +209,7 @@ export default function Comparison({ launched = false }: { launched?: boolean })
               }}
             >
               <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
-                ✓ Essentiel à 0 € par mois pour commencer
+                ✓ 0 € tant que tu ne vends pas, puis 5 % par séance encaissée
               </div>
               {cols.map(({ key, label, highlight }) => (
                 <div

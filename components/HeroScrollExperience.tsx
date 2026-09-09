@@ -320,7 +320,7 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
             <span className="w-1.5 h-1.5 rounded-full bg-accent glow-dot block" />
             <span style={{ color: "#CBFF03", fontSize: 11, letterSpacing: "0.06em" }}>
               {launched
-                ? "Inscriptions ouvertes · Essentiel à 0 € par mois"
+                ? "Inscriptions ouvertes · 0 € tant que tu ne vends pas"
                 : "Accès anticipé · Plan Pro offert 1 mois"}
             </span>
           </motion.div>
@@ -390,8 +390,8 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            <span className="flex items-center gap-1.5"><Check />Sans engagement</span>
-            <span className="hidden sm:flex items-center gap-1.5"><Check />{launched ? "Paiements sécurisés par Stripe" : "Accès sélectionné manuellement"}</span>
+            <span className="flex items-center gap-1.5"><Check />0 € tant que tu ne vends pas</span>
+            <span className="hidden sm:flex items-center gap-1.5"><Check />{launched ? "Paiements sécurisés par Stripe" : "Sans engagement"}</span>
             <span className="flex items-center gap-1.5"><Check />{launched ? "Pro essayable 7 jours" : full ? "Accès anticipé complet" : "Plan Pro offert 1 mois"}</span>
           </motion.div>
         </div>
