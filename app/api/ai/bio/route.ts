@@ -32,12 +32,27 @@ async function viaAnthropic(prompt: string): Promise<string> {
   return msg.content.find((b) => b.type === "text")?.text?.trim() ?? "";
 }
 
-async function viaGemini(prompt: string): Promise<string> {
+// Modèles Gemini essayés dans l'ordre : celui de GEMINI_MODEL (Vercel) puis
+// les repli connus. Google retire régulièrement les anciens (404 « no longer
+// available to new users ») : on ne dépend plus d'un seul identifiant.
+const GEMINI_MODELS = Array.from(
+  new Set(
+    [process.env.GEMINI_MODEL, "gemini-3.6-flash", "gemini-2.5-flash"].filter(
+      (m): m is string => !!m
+    )
+  )
+);
+
+async function callGemini(
+  model: string,
+  prompt: string,
+  withThinking: boolean
+): Promise<{ text: string; status: number }> {
   // API REST Gemini (pas de SDK à embarquer). thinkingBudget: 0 : sans lui,
-  // les modèles 2.5 dépensent le plafond de tokens en réflexion interne et
-  // peuvent renvoyer un texte vide.
+  // les modèles avec réflexion dépensent le plafond de tokens en interne et
+  // peuvent renvoyer un texte vide. Retiré si le modèle refuse l'option (400).
   const res = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
     {
       method: "POST",
       headers: {
@@ -49,7 +64,7 @@ async function viaGemini(prompt: string): Promise<string> {
         contents: [{ role: "user", parts: [{ text: prompt }] }],
         generationConfig: {
           maxOutputTokens: 800,
-          thinkingConfig: { thinkingBudget: 0 },
+          ...(withThinking ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
         },
       }),
     }
@@ -57,18 +72,37 @@ async function viaGemini(prompt: string): Promise<string> {
   if (!res.ok) {
     console.error(
       "ai/bio gemini failed:",
+      model,
+      withThinking ? "(thinking off)" : "(default)",
       res.status,
       (await res.text().catch(() => "")).slice(0, 300)
     );
-    return "";
+    return { text: "", status: res.status };
   }
   const data = await res.json().catch(() => null);
   const parts: { text?: string }[] =
     data?.candidates?.[0]?.content?.parts ?? [];
-  return parts
-    .map((p) => p.text ?? "")
-    .join("")
-    .trim();
+  return {
+    text: parts
+      .map((p) => p.text ?? "")
+      .join("")
+      .trim(),
+    status: res.status,
+  };
+}
+
+async function viaGemini(prompt: string): Promise<string> {
+  for (const model of GEMINI_MODELS) {
+    const first = await callGemini(model, prompt, true);
+    if (first.text) return first.text;
+    // Option de réflexion refusée : on réessaie le même modèle sans elle.
+    if (first.status === 400) {
+      const second = await callGemini(model, prompt, false);
+      if (second.text) return second.text;
+    }
+    // 404 (modèle retiré) ou réponse vide : modèle suivant.
+  }
+  return "";
 }
 
 export async function POST(req: NextRequest) {
