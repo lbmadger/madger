@@ -86,6 +86,10 @@ export async function POST(req: NextRequest) {
     // Carte demandée même pendant l'essai : c'est ce qui permet le
     // renouvellement automatique sans action du coach.
     payment_method_collection: "always",
+    // Carte et Link seulement (Apple Pay et Google Pay sont portés par
+    // "card"). Sans cette liste, Stripe propose tout ce qui est activé sur le
+    // compte (Revolut Pay, Amazon Pay…), sans intérêt pour un abonnement.
+    payment_method_types: ["card", "link"],
     metadata: { coach_id: coach.id, plan },
     // Paiement EMBARQUÉ : le formulaire s'affiche dans /paiement.
     ui_mode: "embedded_page",

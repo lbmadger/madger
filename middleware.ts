@@ -36,6 +36,11 @@ const PUBLIC_EXACT = new Set([
   "/apple-icon",
 ]);
 const PUBLIC_PREFIXES = [
+  // Fichiers de vérification de domaine (Apple Pay via Stripe :
+  // /.well-known/apple-developer-merchantid-domain-association). Apple et
+  // Stripe les lisent sans cookie : une redirection vers /acces fait échouer
+  // l'enregistrement du domaine, donc Apple Pay n'apparaît jamais.
+  "/.well-known",
   // Blog : public même avant le lancement (référencement / contenu), pour
   // construire de l'autorité SEO en amont de l'ouverture.
   "/blog",
