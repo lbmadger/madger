@@ -11,7 +11,8 @@ export const maxDuration = 30;
 // (les clés ne vivent QUE côté serveur) :
 //   1. ANTHROPIC_API_KEY (payant, qualité maximale) si présente ;
 //   2. sinon GEMINI_API_KEY (palier gratuit de Google AI Studio) ;
-//   3. sinon 503, et le bouton s'explique côté client.
+//   3. sinon (ou si tout échoue) une bio de départ écrite depuis le profil,
+//      signalée comme telle au coach.
 const SYSTEM = `Tu écris la bio publique d'un coach sportif indépendant pour sa page de réservation.
 Règles strictes :
 - 60 à 90 mots, en français, à la première personne (« je »).
@@ -105,15 +106,52 @@ async function viaGemini(prompt: string): Promise<string> {
   return "";
 }
 
+// Bio de repli, sans IA : construite depuis le profil et les notes du coach.
+// Jamais de diplôme, de chiffre ni d'expérience inventés ; juste une base
+// propre que le coach retouche. Sert quand aucun fournisseur ne répond
+// (crédits épuisés, panne, clé absente) : le bouton donne toujours un texte.
+type CoachFacts = {
+  first_name?: string | null;
+  specialty?: string | null;
+  sport?: string | null;
+  city?: string | null;
+  accepts_online?: boolean | null;
+  venues?: string[] | null;
+};
+
+function templateBio(c: CoachFacts | null, notes: string): string {
+  const who = c?.specialty?.trim() || (c?.sport ? `coach ${c.sport}` : "coach sportif");
+  const where = c?.city ? ` à ${c.city}` : "";
+  const venues = c?.venues ?? [];
+  const places: string[] = [];
+  if (venues.includes("coach_gym") || venues.includes("client_gym")) places.push("en salle");
+  if (venues.includes("outdoor")) places.push("en extérieur");
+  if (venues.includes("home")) places.push("à domicile");
+  if (venues.includes("online") || c?.accepts_online) places.push("en visio");
+  const placeStr =
+    places.length === 0
+      ? ""
+      : places.length === 1
+      ? ` ${places[0]}`
+      : ` ${places.slice(0, -1).join(", ")} ou ${places[places.length - 1]}`;
+  const intro = c?.first_name
+    ? `Je suis ${c.first_name}, ${who}${where}.`
+    : `Je suis ${who}${where}.`;
+  const parts = [
+    intro,
+    `J'accompagne celles et ceux qui veulent progresser, retrouver la forme ou se dépasser${placeStr}.`,
+    "Chaque séance est construite autour de toi : ton niveau, ton emploi du temps, tes objectifs. Tu gagnes un cadre clair, des progrès que tu vois et un coach qui te suit entre les séances.",
+  ];
+  const n = notes.replace(/\s+/g, " ").trim();
+  if (n && n.length <= 300) parts.push(n.endsWith(".") ? n : `${n}.`);
+  parts.push("Réserve ta première séance, on commence cette semaine.");
+  return parts.join(" ");
+}
+
 export async function POST(req: NextRequest) {
-  const provider = process.env.ANTHROPIC_API_KEY
-    ? "anthropic"
-    : process.env.GEMINI_API_KEY
-    ? "gemini"
-    : null;
-  if (!provider) {
-    return NextResponse.json({ error: "ai_not_configured" }, { status: 503 });
-  }
+  const providers: ("anthropic" | "gemini")[] = [];
+  if (process.env.ANTHROPIC_API_KEY) providers.push("anthropic");
+  if (process.env.GEMINI_API_KEY) providers.push("gemini");
 
   const supabase = createClient();
   const {
@@ -130,13 +168,14 @@ export async function POST(req: NextRequest) {
   // Contexte du profil (RLS : le coach ne lit que sa propre ligne).
   const { data: coach } = await supabase
     .from("coaches")
-    .select("first_name, specialty, city, accepts_online")
+    .select("first_name, specialty, sport, city, accepts_online, venues")
     .eq("id", user.id)
     .maybeSingle();
 
   const facts = [
     coach?.first_name ? `Prénom : ${coach.first_name}` : null,
     coach?.specialty ? `Spécialité : ${coach.specialty}` : null,
+    coach?.sport ? `Sport principal : ${coach.sport}` : null,
     coach?.city ? `Ville : ${coach.city}` : null,
     coach?.accepts_online ? "Propose aussi des séances en visio." : null,
     notes ? `Ce que le coach dit de lui, en vrac : ${notes}` : null,
@@ -147,30 +186,32 @@ export async function POST(req: NextRequest) {
     facts ||
     "Aucune information fournie : écris une bio de coach sportif chaleureuse et facile à personnaliser.";
 
-  try {
-    const text =
-      provider === "anthropic"
-        ? await viaAnthropic(prompt)
-        : await viaGemini(prompt);
-    if (!text) {
+  // Chaque fournisseur disponible est essayé à son tour ; la cause de chaque
+  // échec part dans les logs Vercel (jamais de clé dedans).
+  for (const provider of providers) {
+    try {
+      const text =
+        provider === "anthropic"
+          ? await viaAnthropic(prompt)
+          : await viaGemini(prompt);
+      if (text) return NextResponse.json({ bio: text, provider });
       console.error("ai/bio empty answer from", provider);
-      return NextResponse.json({ error: "ai_failed", provider }, { status: 502 });
+    } catch (e) {
+      const status = e instanceof Anthropic.APIError ? e.status : undefined;
+      console.error(
+        "ai/bio failed:",
+        provider,
+        status ?? "",
+        e instanceof Error ? e.message.slice(0, 300) : e
+      );
     }
-    return NextResponse.json({ bio: text });
-  } catch (e) {
-    // Panne, clé invalide ou quota côté API : le coach garde la main, il
-    // écrit lui-même. La cause est tracée dans les logs Vercel (jamais de
-    // clé dedans) pour ne plus diagnostiquer à l'aveugle.
-    const status = e instanceof Anthropic.APIError ? e.status : undefined;
-    console.error(
-      "ai/bio failed:",
-      provider,
-      status ?? "",
-      e instanceof Error ? e.message.slice(0, 300) : e
-    );
-    return NextResponse.json(
-      { error: "ai_failed", provider, status: status ?? null },
-      { status: 502 }
-    );
   }
+
+  // Aucun fournisseur (ou tous en panne) : bio de départ depuis le profil.
+  console.error("ai/bio fallback template, providers tried:", providers.join(",") || "none");
+  return NextResponse.json({
+    bio: templateBio(coach as CoachFacts | null, notes),
+    provider: "template",
+    fallback: true,
+  });
 }

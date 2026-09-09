@@ -16,10 +16,12 @@ export default function AiBio({
   const { t } = useI18n();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [note, setNote] = useState<string | null>(null);
 
   async function generate() {
     setLoading(true);
     setError(null);
+    setNote(null);
     try {
       const res = await fetch("/api/ai/bio", {
         method: "POST",
@@ -36,6 +38,7 @@ export default function AiBio({
         return;
       }
       onChange(data.bio as string);
+      if (data.fallback) setNote(t("settings.aiBioFallback"));
       // Import différé : `track` tire posthog-js (~74 Ko) dans le bundle de
       // la route qui l'importe statiquement. Réglages n'a pas à le payer au
       // premier rendu pour un événement qui ne part qu'après un clic.
@@ -57,6 +60,11 @@ export default function AiBio({
       {error && (
         <p role="alert" className="mt-2 text-xs text-danger">
           {error}
+        </p>
+      )}
+      {note && (
+        <p role="status" className="mt-2 text-xs text-warning">
+          {note}
         </p>
       )}
       <button
