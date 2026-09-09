@@ -93,7 +93,7 @@ function Slider({
   );
 }
 
-export default function EarlyAccessForm() {
+export default function EarlyAccessForm({ launched = false }: { launched?: boolean }) {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -109,8 +109,10 @@ export default function EarlyAccessForm() {
     }
   }, [submitted]);
 
-  // État "complet" partagé avec le hero (aucun nombre exposé).
-  const full = useEarlyAccessFull();
+  // État "complet" partagé avec le hero (aucun nombre exposé). Après le
+  // lancement, plus de places fondateurs : la simulation reste, le résultat
+  // débouche sur la création de compte.
+  const full = useEarlyAccessFull() && !launched;
   const [joinedWaitlist, setJoinedWaitlist] = useState(false);
   // Adresse déjà inscrite : on le dit franchement au lieu d'un faux succès.
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
@@ -237,6 +239,13 @@ export default function EarlyAccessForm() {
   }
 
   const firstName = fields.prenom.trim();
+  // Inscription préremplie (email, prénom, nom, téléphone) : lue par AuthForm.
+  const signupHref = `/signup?${new URLSearchParams({
+    email: fields.email.trim(),
+    prenom: firstName,
+    nom: fields.nom.trim(),
+    tel: fields.telephone.trim(),
+  }).toString()}`;
 
   return (
     <section id="early-access" className="py-20 sm:py-28 relative overflow-hidden">
@@ -294,6 +303,8 @@ export default function EarlyAccessForm() {
                   ? "Quatre questions sur ton activité. On te dit ce que tu perds chaque mois, en heures et en euros, avec tes chiffres à toi."
                   : step === 1
                   ? "Dis-nous à qui l'envoyer."
+                  : launched
+                  ? `${firstName}, ton numéro si tu veux qu'on t'aide à démarrer.`
                   : `${firstName}, ton numéro pour t'appeler quand ton accès est prêt.`}
               </p>
 
@@ -306,7 +317,9 @@ export default function EarlyAccessForm() {
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="#CBFF03" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 <span style={{ fontSize: 12, color: "#CBFF03", fontWeight: 600 }}>
-                  {full
+                  {launched
+                    ? "Essentiel à 0 € par mois · Pro essayable 7 jours"
+                    : full
                     ? "Accès anticipé complet · liste d'attente ouverte"
                     : "Accès anticipé · Plan Pro offert 1 mois aux premiers membres"}
                 </span>
@@ -417,7 +430,9 @@ export default function EarlyAccessForm() {
                     <div className="rounded-xl p-3" style={{ background: "rgba(203,255,3,0.05)", border: proCheaper ? "1px solid rgba(203,255,3,0.35)" : "1px solid transparent" }}>
                       <p className="text-[11px] uppercase tracking-widest font-semibold" style={{ color: "#CBFF03" }}>Pro</p>
                       <p className="mt-0.5 text-white font-bold tabular-nums">{eur(proCost)}<span className="text-[11px] font-medium" style={{ color: "#9a9a9a" }}> / mois</span></p>
-                      <p className="text-[11px]" style={{ color: "#8C8C8C" }}>offert 1 mois aux premiers membres</p>
+                      <p className="text-[11px]" style={{ color: "#8C8C8C" }}>
+                        {launched ? "7 jours d'essai, sans débit" : "offert 1 mois aux premiers membres"}
+                      </p>
                     </div>
                   </div>
                   <p className="mt-3 text-xs" style={{ color: "#8C8C8C" }}>
@@ -428,25 +443,66 @@ export default function EarlyAccessForm() {
                   </p>
                 </div>
 
-                <div
-                  className="mt-4 rounded-2xl px-5 py-4 text-center"
-                  style={{ background: "rgba(203,255,3,0.08)", border: "1px solid rgba(203,255,3,0.2)" }}
-                >
-                  <p className="font-bold text-white" style={{ fontSize: 16 }}>
-                    {alreadyRegistered
-                      ? "Tu étais déjà inscrit."
-                      : joinedWaitlist
-                      ? "Tu es sur la liste."
-                      : "Ta place est réservée."}
-                  </p>
-                  <p className="mt-1" style={{ color: "#8A8A8A", fontSize: 13, lineHeight: 1.7 }}>
-                    {alreadyRegistered
-                      ? "Cette adresse fait déjà partie de la liste, ta place est bien gardée. On te contacte dès que Madger est disponible."
-                      : joinedWaitlist
-                      ? "Les places fondateurs sont parties, mais tu es prioritaire sur la prochaine vague. Tu retrouveras ce résultat dans ta boîte mail."
-                      : "On te contacte dès que ton accès est prêt. Tu retrouveras ce résultat dans ta boîte mail."}
-                  </p>
-                </div>
+                {launched ? (
+                  /* Site lancé : le compte se crée tout de suite, email et
+                     coordonnées déjà repris. Google en alternative. */
+                  <div
+                    className="mt-4 rounded-2xl px-5 py-5 text-center"
+                    style={{ background: "rgba(203,255,3,0.08)", border: "1px solid rgba(203,255,3,0.2)" }}
+                  >
+                    <p className="font-bold text-white" style={{ fontSize: 17 }}>
+                      Récupère ces heures dès cette semaine.
+                    </p>
+                    <p className="mt-1 mb-4" style={{ color: "#8A8A8A", fontSize: 13, lineHeight: 1.7 }}>
+                      Ton compte se crée en deux minutes, ton lien est prêt aujourd&apos;hui. 0 € tant que tu ne vends pas.
+                    </p>
+                    <a
+                      href={signupHref}
+                      className="cta-shine block w-full py-4 rounded-xl text-black font-bold text-sm"
+                      style={{ background: "#CBFF03" }}
+                    >
+                      Créer mon compte avec {fields.email.trim()} →
+                    </a>
+                    <a
+                      href={`${signupHref}&google=1`}
+                      className="mt-2 flex w-full items-center justify-center gap-2 py-3.5 rounded-xl text-white font-semibold text-sm"
+                      style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)" }}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden>
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z" />
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0012 23z" />
+                        <path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 010-4.2V7.06H2.18a11 11 0 000 9.88l3.66-2.84z" />
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z" />
+                      </svg>
+                      Continuer avec Google
+                    </a>
+                    <p className="mt-3 text-[11px]" style={{ color: "#5A5A5A" }}>
+                      {alreadyRegistered
+                        ? "Tu retrouveras ce résultat dans ta boîte mail."
+                        : "Ce résultat t'attend aussi dans ta boîte mail."}
+                    </p>
+                  </div>
+                ) : (
+                  <div
+                    className="mt-4 rounded-2xl px-5 py-4 text-center"
+                    style={{ background: "rgba(203,255,3,0.08)", border: "1px solid rgba(203,255,3,0.2)" }}
+                  >
+                    <p className="font-bold text-white" style={{ fontSize: 16 }}>
+                      {alreadyRegistered
+                        ? "Tu étais déjà inscrit."
+                        : joinedWaitlist
+                        ? "Tu es sur la liste."
+                        : "Ta place est réservée."}
+                    </p>
+                    <p className="mt-1" style={{ color: "#8A8A8A", fontSize: 13, lineHeight: 1.7 }}>
+                      {alreadyRegistered
+                        ? "Cette adresse fait déjà partie de la liste, ta place est bien gardée. On te contacte dès que Madger est disponible."
+                        : joinedWaitlist
+                        ? "Les places fondateurs sont parties, mais tu es prioritaire sur la prochaine vague. Tu retrouveras ce résultat dans ta boîte mail."
+                        : "On te contacte dès que ton accès est prêt. Tu retrouveras ce résultat dans ta boîte mail."}
+                    </p>
+                  </div>
+                )}
               </motion.div>
             ) : step === 0 ? (
               /* ── ÉTAPE 0 : l'activité du coach ── */

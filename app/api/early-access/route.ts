@@ -23,6 +23,7 @@ function getSupabase() {
 // inscriptions basculent automatiquement en liste d'attente. Réglable via
 // la variable d'env FOUNDER_CAP sans redéploiement de code.
 const FOUNDER_CAP = Number(process.env.FOUNDER_CAP ?? 50);
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
 // Les champs saisis par l'utilisateur sont injectés dans le HTML des emails :
 // sans échappement, n'importe qui pourrait faire envoyer du HTML arbitraire
@@ -134,9 +135,12 @@ export async function POST(req: NextRequest) {
 
     const normalizedEmail = email.trim().toLowerCase();
 
+    // Site lancé : plus de places fondateurs, la simulation sert d'aimant et
+    // l'email renvoie vers la création de compte préremplie.
+    const launched = process.env.SITE_LAUNCHED === "1";
     // Au-delà du cap fondateur, l'inscription bascule en liste d'attente.
     // (basé sur l'ordre d'arrivée : pas besoin de colonne dédiée)
-    const waitlist = (await getSignupCount()) >= FOUNDER_CAP;
+    const waitlist = !launched && (await getSignupCount()) >= FOUNDER_CAP;
 
     // Déduplication : si l'email est déjà inscrit, on ne ré-insère pas et on
     // ne renvoie pas d'emails, mais on le DIT au formulaire (already) pour
@@ -195,7 +199,7 @@ export async function POST(req: NextRequest) {
     const founderNotified = await sendEmail({
       to: process.env.FOUNDER_EMAIL ?? "",
       replyTo: normalizedEmail,
-      subject: `🟢 Nouvelle inscription${waitlist ? " (liste d'attente)" : ""} : ${prenom} ${nom || ""}`,
+      subject: `🟢 ${launched ? "Nouveau lead (simulation)" : `Nouvelle inscription${waitlist ? " (liste d'attente)" : ""}`} : ${prenom} ${nom || ""}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
           <h2 style="color: #CBFF03; background: #0A0A0A; padding: 16px; border-radius: 8px;">
@@ -218,18 +222,42 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Email de confirmation au coach (texte adapté fondateur / liste d'attente)
-    const greetingLabel = waitlist ? "Liste d'attente confirmée" : "Accès anticipé confirmé";
-    const heroTitle = waitlist
+    // Lien de création de compte prérempli (site lancé) : AuthForm relit
+    // email, prénom, nom et téléphone.
+    const signupUrl = `${APP_URL}/signup?${new URLSearchParams({
+      email: normalizedEmail,
+      prenom: String(prenom),
+      nom: String(nom || ""),
+      tel: String(telephone),
+    }).toString()}`;
+    const greetingLabel = launched
+      ? "Ton résultat Madger"
+      : waitlist
+      ? "Liste d'attente confirmée"
+      : "Accès anticipé confirmé";
+    const heroTitle = launched
+      ? `${safe.prenom}, voilà ce que<br>l'administratif te coûte.`
+      : waitlist
       ? `${safe.prenom}, tu es sur<br>la liste.`
       : `${safe.prenom}, tu fais partie<br>des premiers.`;
-    const badgeLabel = waitlist ? "Ta place sur la prochaine vague" : "Ton accès fondateur";
-    const badgeText = waitlist
+    const badgeLabel = launched
+      ? "Ton compte t'attend"
+      : waitlist
+      ? "Ta place sur la prochaine vague"
+      : "Ton accès fondateur";
+    const badgeText = launched
+      ? `Crée ton compte en deux minutes : ton lien est prêt le jour même. Essentiel à <strong style="color:#ffffff;">0 €</strong> tant que tu ne vends pas, Pro essayable 7 jours sans débit.`
+      : waitlist
       ? `Les places fondateurs (plan Pro offert 1 mois) sont déjà toutes prises. Mais tu es <strong style="color:#ffffff;">prioritaire</strong> sur la prochaine vague d'ouverture. On te contacte dès qu'une place se libère.`
       : `Plan Pro offert <strong style="color:#ffffff;">1 mois</strong> dès le lancement, réservé aux membres fondateurs. Tu fais partie des premiers coachs sélectionnés. On te contacte directement dès que ton accès est prêt.`;
+    const ctaUrl = launched ? signupUrl : "https://madger.app";
+    const ctaLabel = launched ? "Créer mon compte →" : "Voir madger.app →";
 
     await sendEmail({
       to: normalizedEmail,
-      subject: waitlist
+      subject: launched
+        ? `${prenom}, ton résultat Madger et ton compte en deux minutes.`
+        : waitlist
         ? `${prenom}, tu es sur la liste d'attente Madger.`
         : `${prenom}, tu es dans les premiers. Voilà ce qui t'attend.`,
       html: `<!DOCTYPE html>
@@ -337,16 +365,18 @@ ${simulationBlock}
             </table>
 
             <!-- Pendant ce temps -->
-            <p style="margin:0 0 16px;font-size:16px;font-weight:700;color:#ffffff;">En attendant, une chose à faire :</p>
+            <p style="margin:0 0 16px;font-size:16px;font-weight:700;color:#ffffff;">${launched ? "La prochaine étape :" : "En attendant, une chose à faire :"}</p>
             <p style="margin:0 0 28px;font-size:14px;color:#9a9a9a;line-height:1.8;">
-              Note le temps que tu passes cette semaine sur l'administratif : relances, factures, calage de créneaux. Juste pour avoir un chiffre réel. Tu seras surpris. Et dans 3 mois, on compare.
+              ${launched
+                ? "Crée ton compte, ajoute une prestation et tes disponibilités, partage ton lien. Dix minutes, montre en main. Et dans 3 mois, on compare avec ton résultat ci-dessus."
+                : "Note le temps que tu passes cette semaine sur l'administratif : relances, factures, calage de créneaux. Juste pour avoir un chiffre réel. Tu seras surpris. Et dans 3 mois, on compare."}
             </p>
 
             <!-- CTA -->
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
               <tr><td align="center">
-                <a href="https://madger.app" style="display:inline-block;background:#cbff03;color:#000000;font-size:14px;font-weight:800;padding:15px 36px;border-radius:100px;text-decoration:none;letter-spacing:-0.3px;">
-                  Voir madger.app →
+                <a href="${ctaUrl}" style="display:inline-block;background:#cbff03;color:#000000;font-size:14px;font-weight:800;padding:15px 36px;border-radius:100px;text-decoration:none;letter-spacing:-0.3px;">
+                  ${ctaLabel}
                 </a>
               </td></tr>
             </table>

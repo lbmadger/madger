@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, useRef, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { startRouteProgress } from "@/components/ui/RouteProgress";
@@ -52,7 +52,17 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     }
   }, [searchParams, role]);
 
-  const [email, setEmail] = useState("");
+  // Préremplissage depuis la simulation de la landing (?email=, ?prenom=,
+  // ?nom=, ?tel=) : le coach ne ressaisit pas ce qu'il vient de donner. Les
+  // noms et le téléphone partent dans les métadonnées du compte, lues par
+  // l'onboarding (nameFromMetadata).
+  const prefill = {
+    email: isSignup ? (searchParams.get("email") ?? "").trim().slice(0, 254) : "",
+    firstName: (searchParams.get("prenom") ?? "").trim().slice(0, 60),
+    lastName: (searchParams.get("nom") ?? "").trim().slice(0, 80),
+    phone: (searchParams.get("tel") ?? "").trim().slice(0, 25),
+  };
+  const [email, setEmail] = useState(prefill.email);
   const [password, setPassword] = useState("");
   const [emailSent, setEmailSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -76,7 +86,12 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           email,
           password,
           options: {
-            data: { role },
+            data: {
+              role,
+              ...(prefill.firstName ? { first_name: prefill.firstName } : {}),
+              ...(prefill.lastName ? { last_name: prefill.lastName } : {}),
+              ...(prefill.phone ? { phone: prefill.phone } : {}),
+            },
             emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`,
           },
         });
@@ -146,6 +161,18 @@ export default function AuthForm({ mode }: { mode: Mode }) {
       setGoogleLoading(false);
     }
   }
+
+  // ?google=1 (bouton « Continuer avec Google » du résultat de la
+  // simulation) : la page part vers Google sans clic supplémentaire.
+  const autoGoogleRef = useRef(false);
+  useEffect(() => {
+    if (!isSignup || autoGoogleRef.current) return;
+    if (searchParams.get("google") !== "1") return;
+    autoGoogleRef.current = true;
+    handleGoogle();
+    // handleGoogle est stable au sens de l'usage (une seule fois au montage).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSignup, searchParams]);
 
   // État "vérifie ta boîte mail" (lien de confirmation envoyé).
   if (emailSent) {

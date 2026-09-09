@@ -636,7 +636,7 @@ const fr = {
     upsellCardCta: "Bloquer le prix Pro",
     // Sections verrouillées pour un coach Essentiel.
     lock: {
-      cta: "Passer en Pro",
+      cta: "Mettre à niveau",
       packType: "Réservé au plan Pro",
       cancellationTitle: "Annulation automatique : fonctionnalité Pro",
       cancellationDesc:
@@ -2479,7 +2479,7 @@ const en: Dictionary = {
     upsellInvoicesDesc: "Send pack renewal reminders, let automatic cancellation handle the unexpected and track payments per client.",
     upsellCardCta: "Lock the Pro price",
     lock: {
-      cta: "Upgrade to Pro",
+      cta: "Upgrade",
       packType: "Pro plan only",
       cancellationTitle: "Automatic cancellation: a Pro feature",
       cancellationDesc:

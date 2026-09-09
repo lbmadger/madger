@@ -69,7 +69,10 @@ export default function Home() {
           <Testimonials launched={launched} />
           <Pricing launched={launched} />
           <FAQ launched={launched} />
-          {launched ? <LaunchCTA /> : <EarlyAccessForm />}
+          {/* La simulation reste après le lancement : c'est l'aimant à
+              coachs. Son résultat mène alors à la création de compte. */}
+          <EarlyAccessForm launched={launched} />
+          {launched && <LaunchCTA />}
           <Footer launched={launched} />
         </main>
       </MotionSettings>

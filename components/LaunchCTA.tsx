@@ -2,13 +2,12 @@
 
 import MagneticButton from "@/components/ui/MagneticButton";
 
-// Section finale de la landing APRÈS le lancement (SITE_LAUNCHED=1) : elle
-// remplace le formulaire d'accès anticipé. Même id "early-access" pour que
-// les ancres résiduelles et la logique du CTA mobile collant continuent de
-// fonctionner sans rien changer ailleurs.
+// Section finale de la landing APRÈS le lancement (SITE_LAUNCHED=1), sous
+// la simulation (qui garde l'id "early-access" pour les ancres et le CTA
+// mobile collant) : le rappel direct « crée ton compte ».
 export default function LaunchCTA() {
   return (
-    <section id="early-access" className="relative overflow-hidden py-24 sm:py-32">
+    <section id="launch-cta" className="relative overflow-hidden py-24 sm:py-32">
       {/* Halo d'accent, même langage visuel que le hero */}
       <div
         className="absolute inset-0 pointer-events-none"
