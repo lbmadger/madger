@@ -1,9 +1,8 @@
 import { ImageResponse } from "next/og";
 import { NextRequest, NextResponse } from "next/server";
-import { readFile } from "fs/promises";
-import path from "path";
 import { createClient } from "@/lib/supabase/server";
 import { factOfTheDay } from "@/lib/story/facts";
+import { ACCENT, DIM, MUTED, Card, Frame, Kicker, Stars, loadFonts } from "@/lib/story/cards";
 
 export const dynamic = "force-dynamic";
 
@@ -12,164 +11,6 @@ export const dynamic = "force-dynamic";
 // jour. Chaque carte porte son lien madger.app/slug : le coach fait sa pub,
 // Madger gagne en visibilité devant ses clients et les autres coachs.
 // JAMAIS d'argent sur ces cartes : un coach ne partage pas ses revenus.
-
-const ACCENT = "#CBFF03";
-const BG = "#0A0A0A";
-const MUTED = "#9A9A9A";
-const DIM = "#6E6E6E";
-
-// Icône iOS de l'app (la même que apple-icon.tsx), embarquée en data URI.
-const LOGO_SVG = `<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="180" height="180" rx="40" fill="#111111"/><rect x="1.5" y="1.5" width="177" height="177" rx="38.5" stroke="rgba(255,255,255,0.14)" stroke-width="3" fill="none"/><path d="M 22 146 L 53 56 L 84 104 L 115 50 L 132 107 C 140 104 149 67 155 31" fill="none" stroke="#CBFF03" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/><circle cx="155" cy="31" r="7.3" fill="#CBFF03"/></svg>`;
-const LOGO_SRC = `data:image/svg+xml;base64,${Buffer.from(LOGO_SVG).toString("base64")}`;
-
-async function loadFonts() {
-  const dir = path.join(process.cwd(), "assets", "fonts");
-  const [grotesk, inter, interSemi] = await Promise.all([
-    readFile(path.join(dir, "SpaceGrotesk-Bold.ttf")),
-    readFile(path.join(dir, "Inter-Regular.ttf")),
-    readFile(path.join(dir, "Inter-SemiBold.ttf")),
-  ]);
-  return [
-    { name: "Grotesk", data: grotesk, weight: 700 as const },
-    { name: "Inter", data: inter, weight: 400 as const },
-    { name: "Inter", data: interSemi, weight: 600 as const },
-  ];
-}
-
-function Star({ filled, size }: { filled: boolean; size: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24">
-      <path
-        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
-        fill={filled ? ACCENT : "rgba(255,255,255,0.14)"}
-      />
-    </svg>
-  );
-}
-
-function Stars({ rating, size }: { rating: number; size: number }) {
-  return (
-    <div style={{ display: "flex", gap: size * 0.14 }}>
-      {[0, 1, 2, 3, 4].map((i) => (
-        <Star key={i} filled={i < rating} size={size} />
-      ))}
-    </div>
-  );
-}
-
-// Cadre commun : fond noir + halo vert, wordmark en haut, lien du coach en
-// bas. Le contenu de la carte vit au centre.
-function Frame({
-  slug,
-  children,
-}: {
-  slug: string | null;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        backgroundColor: BG,
-        backgroundImage:
-          "radial-gradient(circle at 50% 0%, rgba(203,255,3,0.14), rgba(10,10,10,0) 55%), radial-gradient(circle at 50% 100%, rgba(203,255,3,0.10), rgba(10,10,10,0) 45%)",
-        padding: "110px 90px 100px",
-        alignItems: "center",
-      }}
-    >
-      {/* Branding discret : l'icône iOS de l'app au-dessus du wordmark en
-          filigrane. La story appartient au coach, pas à Madger. */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 20,
-        }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={LOGO_SRC} width={76} height={76} alt="" />
-        <div
-          style={{
-            display: "flex",
-            fontFamily: "Grotesk",
-            fontSize: 28,
-            color: "rgba(255,255,255,0.32)",
-            letterSpacing: 8,
-          }}
-        >
-          MADGER
-        </div>
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          flexGrow: 1,
-          width: "100%",
-        }}
-      >
-        {children}
-      </div>
-
-      {/* Pied discret : sur une story rien n'est cliquable, le réflexe
-          Instagram c'est le lien en bio (où vit déjà madger.app/slug). Pas
-          de grosse pastille : la carte reste celle du coach. */}
-      <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-        <div
-          style={{
-            display: "flex",
-            fontFamily: "Inter",
-            fontWeight: 600,
-            fontSize: 27,
-            color: DIM,
-            letterSpacing: 5,
-          }}
-        >
-          {slug ? "RÉSERVE TA SÉANCE ·" : "L'APP DES COACHS SPORTIFS"}
-        </div>
-        {slug && (
-          <div
-            style={{
-              display: "flex",
-              fontFamily: "Inter",
-              fontWeight: 600,
-              fontSize: 27,
-              color: ACCENT,
-              letterSpacing: 5,
-            }}
-          >
-            LIEN EN BIO
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function Kicker({ children }: { children: string }) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        fontFamily: "Inter",
-        fontWeight: 600,
-        fontSize: 34,
-        color: ACCENT,
-        letterSpacing: 12,
-        marginBottom: 56,
-      }}
-    >
-      {children.toUpperCase()}
-    </div>
-  );
-}
 
 export async function GET(req: NextRequest) {
   const supabase = createClient();
@@ -204,7 +45,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "no_reviews" }, { status: 400 });
     }
     card = (
-      <>
+      <Card>
         <Kicker>Merci à mes clients</Kicker>
         <div
           style={{
@@ -234,7 +75,7 @@ export async function GET(req: NextRequest) {
         >
           {count} avis client{count > 1 ? "s" : ""} · {coachName}
         </div>
-      </>
+      </Card>
     );
   } else if (type === "sessions") {
     // Séances déjà coachées ce mois-ci (les annulations et blocs exclus).
@@ -255,7 +96,7 @@ export async function GET(req: NextRequest) {
       timeZone: tz,
     });
     card = (
-      <>
+      <Card>
         <Kicker>{monthLabel}</Kicker>
         <div
           style={{
@@ -290,7 +131,7 @@ export async function GET(req: NextRequest) {
         >
           {coachName}
         </div>
-      </>
+      </Card>
     );
   } else if (type === "review") {
     const reviewId = req.nextUrl.searchParams.get("review_id") ?? "";
@@ -309,7 +150,7 @@ export async function GET(req: NextRequest) {
     const raw = ((review.comment as string | null) ?? "").trim();
     const comment = raw.length > 220 ? raw.slice(0, 217).trimEnd() + "…" : raw;
     card = (
-      <>
+      <Card>
         <Kicker>Avis client</Kicker>
         <Stars rating={review.rating as number} size={78} />
         {comment ? (
@@ -351,14 +192,14 @@ export async function GET(req: NextRequest) {
         >
           {(cl?.first_name as string | undefined) ?? "Un client"} · séance avec {coachName}
         </div>
-      </>
+      </Card>
     );
   } else if (type === "fact") {
     const offsetRaw = Number(req.nextUrl.searchParams.get("i") ?? "0");
     const offset = Number.isFinite(offsetRaw) ? Math.trunc(offsetRaw) : 0;
     const fact = factOfTheDay(offset);
     card = (
-      <>
+      <Card>
         <Kicker>{fact.kicker}</Kicker>
         <div
           style={{
@@ -373,7 +214,7 @@ export async function GET(req: NextRequest) {
         >
           {fact.text}
         </div>
-      </>
+      </Card>
     );
   } else {
     return NextResponse.json({ error: "unknown_type" }, { status: 400 });
