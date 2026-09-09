@@ -12,6 +12,9 @@ const PUBLIC_EXACT = new Set([
   // publiques même avant le lancement pour les montrer aux futurs coachs.
   "/exemple",
   "/exemple/dashboard",
+  // Page Fonctionnalités : liée depuis la navbar de la landing, publique
+  // comme elle.
+  "/fonctionnalites",
   // Réinitialisation de mot de passe : accessible sans code d'accès pour que
   // le lien reçu par email fonctionne dans n'importe quel navigateur.
   "/forgot-password",
