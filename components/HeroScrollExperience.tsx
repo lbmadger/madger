@@ -36,7 +36,7 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
   // les CTA mènent directement à la création de compte.
   const full = useEarlyAccessFull() && !launched;
   const ctaLabel = launched
-    ? "Créer mon lien en 5 minutes"
+    ? "Créer mon lien maintenant"
     : full
     ? "Rejoindre la liste d'attente"
     : "Calculer ce que je perds sans Madger";
@@ -328,13 +328,13 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
           {/* H1 */}
           <motion.h1
             className="font-extrabold text-white mb-3 sm:mb-6"
-            style={{ fontSize: "clamp(32px, 6.4vw, 80px)", letterSpacing: "-0.04em", lineHeight: 0.98 }}
+            style={{ fontSize: "clamp(36px, 7vw, 88px)", letterSpacing: "-0.04em", lineHeight: 0.97 }}
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
-            L&apos;outil de paiement<br className="hidden sm:block" /> des coachs sportifs.<br />
-            <span className="text-shimmer">Chaque séance réservée<br className="hidden sm:block" /> est payée d&apos;avance.</span>
+            Coach sportif ?<br />
+            <span className="text-shimmer">Crée ton lien de réservation<br className="hidden sm:block" /> en 5 minutes.</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -345,7 +345,7 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.22 }}
           >
-            Ton client réserve, paie en ligne et reçoit sa facture. Plus de no-show, zéro relance.
+            Simple, flexible et 100 % français, Madger est l&apos;outil qu&apos;il te faut pour réserver, encaisser et facturer.
           </motion.p>
 
           {/* CTAs */}
