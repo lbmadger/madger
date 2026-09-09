@@ -525,7 +525,8 @@ const fr = {
       "Statistiques avancées",
     ],
     upgrade: "Passer à Pro",
-    trialButton: "Essayer Pro 7 jours gratuits",
+    trialButton: "Essayer Pro",
+    trialButtonSub: "7 jours gratuits",
     trialNoteMonthly:
       "Rien n'est débité pendant 7 jours, puis {price} par mois. Tu arrêtes quand tu veux depuis cette page, en un clic.",
     trialNoteAnnual:
@@ -640,7 +641,7 @@ const fr = {
     upsellStatsDesc: "Annulation automatique, relances de renouvellement, écran encaissements, alerte clients qui décrochent. Et ces statistiques détaillées.",
     upsellInvoicesTitle: "Des relances et l'annulation automatique, en Pro",
     upsellInvoicesDesc: "Relance les renouvellements de packs, laisse l'annulation automatique gérer les imprévus et suis tes encaissements par client.",
-    upsellCardCta: "Bloquer le prix Pro",
+    upsellCardCta: "Passer à Pro",
     // Sections verrouillées pour un coach Essentiel.
     lock: {
       cta: "Mettre à niveau",
@@ -2391,7 +2392,8 @@ const en: Dictionary = {
       "Advanced statistics",
     ],
     upgrade: "Upgrade to Pro",
-    trialButton: "Try Pro free for 7 days",
+    trialButton: "Try Pro",
+    trialButtonSub: "7 days free",
     trialNoteMonthly:
       "Nothing is charged for 7 days, then {price} per month. Stop whenever you want from this page, in one click.",
     trialNoteAnnual:
@@ -2506,7 +2508,7 @@ const en: Dictionary = {
     upsellStatsDesc: "Automatic cancellation, renewal reminders, payments screen, inactive-client alerts. And these detailed statistics.",
     upsellInvoicesTitle: "Renewal reminders and automatic cancellation, on Pro",
     upsellInvoicesDesc: "Send pack renewal reminders, let automatic cancellation handle the unexpected and track payments per client.",
-    upsellCardCta: "Lock the Pro price",
+    upsellCardCta: "Go Pro",
     lock: {
       cta: "Upgrade",
       packType: "Pro plan only",

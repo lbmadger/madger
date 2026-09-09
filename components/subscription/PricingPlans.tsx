@@ -196,11 +196,17 @@ export default function PricingPlans({
               disabled={loading}
               className="mt-5 w-full rounded-full bg-accent px-4 py-2.5 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-60"
             >
-              {loading
-                ? t("plans.upgrading")
-                : trialEligible
-                ? t("plans.trialButton")
-                : t("plans.upgrade")}
+              {loading ? (
+                t("plans.upgrading")
+              ) : trialEligible ? (
+                <span className="inline-flex items-center justify-center gap-2">
+                  <span>{t("plans.trialButton")}</span>
+                  <span aria-hidden className="h-4 w-px bg-black/25" />
+                  <span className="font-medium text-black/70">{t("plans.trialButtonSub")}</span>
+                </span>
+              ) : (
+                t("plans.upgrade")
+              )}
             </button>
             {/* Le seul argument chiffré autorisé sous le bouton Pro. */}
             <p className="mt-2 text-center text-xs font-semibold text-accent">
