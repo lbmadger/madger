@@ -333,7 +333,7 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
-            L'app <span className="text-shimmer">tout-en-un</span><br />
+            L'app <span className="text-shimmer">de réservation</span><br />
             des coachs sportifs.
           </motion.h1>
 

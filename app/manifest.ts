@@ -9,7 +9,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Madger",
     short_name: "Madger",
     description:
-      "L'app tout-en-un des coachs sportifs : réservation, paiement et facture dans un seul lien.",
+      "L'app de réservation des coachs sportifs : réservation, paiement et facture dans un seul lien.",
     start_url: "/dashboard",
     display: "standalone",
     background_color: "#0A0A0A",
