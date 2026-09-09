@@ -100,6 +100,7 @@ export default function PublicHeader() {
                     <rect x="3" y="14" width="7" height="7" rx="1.5" />
                     <rect x="14" y="14" width="7" height="7" rx="1.5" />
                   </svg>
+                  <span className="sm:hidden">{t("clientSpace.coachViewShort")}</span>
                   <span className="hidden sm:inline">{t("clientSpace.coachView")}</span>
                 </Link>
               )}
