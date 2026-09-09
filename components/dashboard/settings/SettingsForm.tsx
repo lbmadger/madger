@@ -70,6 +70,7 @@ const TIMEZONES = [
 ];
 import {
   SPORT_KEYS,
+  isSportKey,
   VENUE_KEYS,
   specialtiesForSport,
 } from "@/lib/coaches/taxonomy";
@@ -106,7 +107,13 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   const [bookingMode, setBookingMode] = useState<"instant" | "approval">(
     coach.booking_mode === "instant" ? "instant" : "approval"
   );
-  const [sport, setSport] = useState(coach.sport ?? "");
+  // Sport hors liste : la liste affiche « Autre » et le texte saisi vit à part.
+  const [sport, setSport] = useState(
+    coach.sport && !isSportKey(coach.sport) ? "autre" : coach.sport ?? ""
+  );
+  const [customSport, setCustomSport] = useState(
+    coach.sport && !isSportKey(coach.sport) ? coach.sport : ""
+  );
   const [specialties, setSpecialties] = useState<string[]>(
     coach.specialties ?? []
   );
@@ -276,7 +283,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         listed,
       },
       activity: {
-        sport: sport || null,
+        sport: sport === "autre" ? customSport.trim() || "autre" : sport || null,
         specialties,
         venues,
         gym_name: gymName.trim() || null,
@@ -608,6 +615,19 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
               ]}
             />
           </label>
+          {sport === "autre" && (
+            <label className="flex flex-col gap-1.5">
+              <span className={labelClass}>{t("settings.sportOther")}</span>
+              <input
+                type="text"
+                value={customSport}
+                onChange={(e) => setCustomSport(e.target.value)}
+                maxLength={40}
+                placeholder={t("settings.sportOtherPlaceholder")}
+                className={inputClass}
+              />
+            </label>
+          )}
 
           <div>
             <p className={labelClass}>{t("settings.specialtiesLabel")}</p>

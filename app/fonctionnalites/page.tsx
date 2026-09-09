@@ -27,7 +27,7 @@ const GROUPS: Group[] = [
     label: "Vendre",
     title: "Ta page, ton lien, tes offres.",
     features: [
-      { title: "Page publique à ton nom", desc: "madger.app/toi : bio, sport, ville, salle, visio, photos avant/après, avis. Ta vitrine, sans site à construire." },
+      { title: "Page publique à ton nom", desc: "madger.app/toi : bio, sport, ville, salle, visio, photos, avis. Ta vitrine, sans site à construire." },
       { title: "Prestations à ta façon", desc: "Séance à l'unité, pack de 5, 10 ou 20 séances, abonnement mensuel, cours collectif avec places limitées, pack de places collectives." },
       { title: "Lien prêt à partager", desc: "Copie en un clic, WhatsApp, SMS, bio Instagram, feuille de partage native sur mobile. Story Instagram générée pour tes chiffres et tes avis." },
       { title: "Annuaire des coachs", desc: "Ta page apparaît dans la recherche par sport et par ville. Classement par ancienneté et complétude du profil, jamais sponsorisé." },

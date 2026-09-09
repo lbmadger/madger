@@ -15,10 +15,9 @@ import {
   MapPinIcon,
   BuildingIcon,
   StarIcon,
-  ZapIcon,
-  LockIcon,
   CalendarIcon,
 } from "@/components/ui/icons";
+import { sportLabel } from "@/lib/coaches/taxonomy";
 import { resolveRefundPolicy } from "@/lib/booking/cancellation";
 import {
   type PublicCoach,
@@ -475,10 +474,6 @@ export default function CoachProfile({
                 Pas de « répond en moins de X h » tant que rien ne le mesure. */}
             {coach.stripe_charges_enabled && (
               <div className="mt-2 flex flex-wrap justify-center gap-1.5 sm:justify-start">
-                <span className="inline-flex items-center gap-1 rounded-full border border-accent/30 bg-accent/[0.06] px-2 py-0.5 text-[11px] font-medium text-accent">
-                  {instant ? <ZapIcon size={11} /> : <LockIcon size={11} />}
-                  {instant ? t("coachProfile.badgeInstant") : t("coachProfile.badgeApproval")}
-                </span>
                 {freeCancelHours !== null && (
                   <span className="inline-flex items-center gap-1 rounded-full border border-accent/30 bg-accent/[0.06] px-2 py-0.5 text-[11px] font-medium text-accent">
                     <CalendarIcon size={11} />
@@ -511,7 +506,7 @@ export default function CoachProfile({
             <div className="mt-3 flex flex-wrap justify-center gap-1.5 sm:justify-start">
               {coach.sport && (
                 <span className="rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent">
-                  {t(`taxonomy.sports.${coach.sport}`)}
+                  {sportLabel(coach.sport, t)}
                 </span>
               )}
               {coach.city && (

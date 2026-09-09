@@ -11,7 +11,7 @@ import Select from "@/components/ui/Select";
 import CityAutocomplete from "@/components/ui/CityAutocomplete";
 import Stars from "@/components/reviews/Stars";
 import { geocodeCity, type City } from "@/lib/geo/cities";
-import { SPORT_KEYS, SPECIALTY_KEYS } from "@/lib/coaches/taxonomy";
+import { SPORT_KEYS, SPECIALTY_KEYS, sportLabel } from "@/lib/coaches/taxonomy";
 import { formatPrice } from "@/lib/services/types";
 import { interactiveCardClass } from "@/lib/ui/styles";
 import {
@@ -579,7 +579,7 @@ export default function MarketplaceView({
                       <div className="mt-3 flex flex-wrap items-center gap-1.5">
                         {c.sport && (
                           <span className="rounded-full bg-accent/10 px-2 py-0.5 text-[11px] font-medium text-accent">
-                            {t(`taxonomy.sports.${c.sport}`)}
+                            {sportLabel(c.sport, t)}
                           </span>
                         )}
                         {c.city && (

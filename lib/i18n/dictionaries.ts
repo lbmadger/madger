@@ -1058,7 +1058,7 @@ const fr = {
     escrowTrust:
       "Paiement sécurisé : ton argent est protégé et versé au coach seulement après ta séance.",
     about: "À propos",
-    results: "Résultats",
+    results: "Photos",
     zoom: "Agrandir la photo",
     before: "Avant",
     after: "Après",
@@ -1242,17 +1242,17 @@ const fr = {
     availabilityDesc:
       "Tes horaires d'ouverture récurrents, jour par jour : c'est là-dedans que tes clients réservent.",
     availabilityCta: "Gérer mes disponibilités",
-    galleryTitle: "Résultats (avant/après)",
+    galleryTitle: "Photos",
     galleryDesc:
-      "Jusqu'à 6 photos des résultats de tes clients, affichées sur ta page publique. Toujours avec leur accord écrit.",
+      "Jusqu'à 6 photos sur ta page publique : ta salle, tes séances, tes résultats. Pour un avant/après, ajoute la photo après. Photos de clients toujours avec leur accord écrit.",
     galleryAdd: "Ajouter une photo",
     galleryUploading: "Envoi…",
-    galleryCaption: "Légende (ex : -8 kg en 4 mois)",
+    galleryCaption: "Légende (ex : séance du samedi, -8 kg en 4 mois)",
     galleryLimit: "6 photos maximum.",
     galleryConsent:
       "Photos de clients : assure-toi d'avoir leur accord écrit avant de les publier.",
     galleryEmpty:
-      "Aucune photo pour l'instant. Les pages qui montrent des résultats réels convainquent bien plus.",
+      "Aucune photo pour l'instant. Une page avec de vraies photos convainc bien plus.",
     galleryDelete: "Supprimer la photo",
     galleryDeleteConfirm:
       "La photo (et sa version après, le cas échéant) sera supprimée définitivement de ta page.",
@@ -1262,6 +1262,8 @@ const fr = {
     activityDesc:
       "Ton sport, tes accompagnements et tes lieux de séance, utilisés par les filtres de la marketplace.",
     sport: "Sport principal",
+    sportOther: "Précise ton sport",
+    sportOtherPlaceholder: "Ex. Escalade, Padel, Trail",
     specialtiesLabel: "Types d'accompagnement",
     venuesLabel: "Où se passent tes séances ?",
     gymName: "Nom de ta salle",
@@ -1536,6 +1538,7 @@ const fr = {
       football: "Football",
       basket: "Basket",
       danse: "Danse",
+      hyrox: "Hyrox",
       autre: "Autre",
     },
     venues: {
@@ -2923,7 +2926,7 @@ const en: Dictionary = {
     escrowTrust:
       "Secure payment: your money is protected and released to the coach only after your session.",
     about: "About",
-    results: "Results",
+    results: "Photos",
     zoom: "Enlarge photo",
     before: "Before",
     after: "After",
@@ -3106,17 +3109,17 @@ const en: Dictionary = {
     availabilityDesc:
       "Your recurring opening hours, day by day: this is what your clients book into.",
     availabilityCta: "Manage my availability",
-    galleryTitle: "Results (before/after)",
+    galleryTitle: "Photos",
     galleryDesc:
-      "Up to 6 photos of your clients' results, shown on your public page. Always with their written consent.",
+      "Up to 6 photos on your public page: your gym, your sessions, your results. For a before/after, add the after photo. Client photos always with their written consent.",
     galleryAdd: "Add a photo",
     galleryUploading: "Uploading…",
-    galleryCaption: "Caption (e.g. -8 kg in 4 months)",
+    galleryCaption: "Caption (e.g. Saturday session, -8 kg in 4 months)",
     galleryLimit: "6 photos max.",
     galleryConsent:
       "Client photos: make sure you have their written consent before publishing.",
     galleryEmpty:
-      "No photos yet. Pages that show real results convert far better.",
+      "No photos yet. A page with real photos converts far better.",
     galleryDelete: "Delete photo",
     galleryDeleteConfirm:
       "The photo (and its after version, if any) will be permanently removed from your page.",
@@ -3126,6 +3129,8 @@ const en: Dictionary = {
     activityDesc:
       "Your sport, coaching types and session venues, used by marketplace filters.",
     sport: "Main sport",
+    sportOther: "Which sport?",
+    sportOtherPlaceholder: "E.g. Climbing, Padel, Trail",
     specialtiesLabel: "Coaching types",
     venuesLabel: "Where do your sessions happen?",
     gymName: "Your gym's name",
@@ -3395,6 +3400,7 @@ const en: Dictionary = {
       football: "Football",
       basket: "Basketball",
       danse: "Dance",
+      hyrox: "Hyrox",
       autre: "Other",
     },
     venues: {

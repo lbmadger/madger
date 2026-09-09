@@ -18,6 +18,7 @@ export const SPORT_KEYS = [
   "football",
   "basket",
   "danse",
+  "hyrox",
   "autre",
 ] as const;
 export type SportKey = (typeof SPORT_KEYS)[number];
@@ -47,6 +48,7 @@ const COMPETITIVE_SPORTS = new Set<string>([
   "tennis",
   "football",
   "basket",
+  "hyrox",
 ]);
 
 // Objectifs proposés à un coach selon son sport : « compétition » seulement
@@ -90,6 +92,7 @@ const DEFAULT_SERVICE: Record<string, DefaultService> = {
   football: { price: 45, duration: 60 },
   basket: { price: 45, duration: 60 },
   danse: { price: 40, duration: 60 },
+  hyrox: { price: 55, duration: 60 },
 };
 
 const FALLBACK_SERVICE: DefaultService = { price: 50, duration: 60 };
@@ -98,4 +101,19 @@ export function defaultServiceForSport(
   sport: string | null | undefined
 ): DefaultService {
   return (sport && DEFAULT_SERVICE[sport]) || FALLBACK_SERVICE;
+}
+
+// Sport libre : « autre » ouvre un champ texte, et c'est ce texte qui est
+// enregistré dans coaches.sport. Une valeur hors liste est donc un sport
+// saisi par le coach : on l'affiche tel quel.
+export function isSportKey(v: string | null | undefined): v is SportKey {
+  return !!v && (SPORT_KEYS as readonly string[]).includes(v);
+}
+
+export function sportLabel(
+  sport: string | null | undefined,
+  t: (key: string) => string
+): string {
+  if (!sport) return "";
+  return isSportKey(sport) ? t(`taxonomy.sports.${sport}`) : sport;
 }

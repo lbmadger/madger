@@ -66,6 +66,7 @@ export default function OnboardingForm({
 
   // Étape 2 : ce que tu proposes
   const [sport, setSport] = useState("");
+  const [customSport, setCustomSport] = useState("");
   const [serviceName, setServiceName] = useState("");
   const [servicePrice, setServicePrice] = useState("");
   const [serviceDuration, setServiceDuration] = useState(60);
@@ -240,7 +241,10 @@ export default function OnboardingForm({
     try {
       const supabase = createClient();
       const { error: sportErr } = await withTimeout(
-        supabase.from("coaches").update({ sport }).eq("id", userId)
+        supabase
+          .from("coaches")
+          .update({ sport: sport === "autre" ? customSport.trim() || "autre" : sport })
+          .eq("id", userId)
       );
       if (sportErr) {
         setError(t("onboarding.errors.generic"));
@@ -705,6 +709,17 @@ export default function OnboardingForm({
                   </button>
                 ))}
               </div>
+              {sport === "autre" && (
+                <input
+                  type="text"
+                  value={customSport}
+                  onChange={(e) => setCustomSport(e.target.value)}
+                  maxLength={40}
+                  placeholder={t("settings.sportOtherPlaceholder")}
+                  aria-label={t("settings.sportOther")}
+                  className={`${inputClass} mt-2`}
+                />
+              )}
             </div>
 
             {/* L'offre n'apparaît qu'une fois le sport choisi : un seul choix
