@@ -1,5 +1,6 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { splitVat, vatApplies, vatRateLabel } from "@/lib/invoices/vat";
+import { MADGER_ICON_PNG_BASE64 } from "@/lib/invoices/logo";
 
 // Facture ou avoir en PDF, généré côté serveur (pdf-lib : pur JS, aucune
 // police à charger, fonctionne sur Vercel). Mise en page sobre, noir sur
@@ -76,7 +77,8 @@ export async function renderInvoicePdf(input: InvoicePdfInput): Promise<Uint8Arr
   const black = rgb(0.06, 0.06, 0.06);
   const grey = rgb(0.45, 0.45, 0.45);
   const light = rgb(0.85, 0.85, 0.85);
-  const accent = rgb(0.6, 0.78, 0);
+  // Vert Madger (#CBFF03), le même que sur le site et l'icône.
+  const accent = rgb(0.796, 1, 0.012);
   const M = 50;
   const W = page.getWidth() - 2 * M;
   let y = page.getHeight() - M;
@@ -100,15 +102,19 @@ export async function renderInvoicePdf(input: InvoicePdfInput): Promise<Uint8Arr
     });
   };
 
-  // Liseré accent + marque
+  // Liseré accent + icône Madger (celle de l'app) en haut à droite
   page.drawRectangle({ x: M, y: y - 4, width: W, height: 4, color: accent });
+  const icon = await pdf.embedPng(Buffer.from(MADGER_ICON_PNG_BASE64, "base64"));
+  const iconSize = 40;
+  page.drawImage(icon, { x: M + W - iconSize, y: y - 14 - iconSize, width: iconSize, height: iconSize });
   y -= 30;
   const isCredit = input.kind === "credit_note";
   text(isCredit ? "AVOIR" : "FACTURE", M, y, { size: 22, b: true });
-  text("MADGER", M + W, y + 2, { size: 14, b: true, right: true, color: accent });
   y -= 18;
   text(input.number, M, y, { size: 11, b: true, color: grey });
+  y -= 14;
   text("madger.app", M + W, y, { size: 9, right: true, color: grey });
+  y += 14;
   y -= 14;
   text(`Émise le ${dateFr(input.issuedAt)}`, M, y, { size: 9, color: grey });
   if (isCredit && input.linkedNumber) {
@@ -189,14 +195,24 @@ export async function renderInvoicePdf(input: InvoicePdfInput): Promise<Uint8Arr
   }
   text(money(amount, input.currency), M + W, y, { size: 15, b: true, right: true });
   y -= 16;
-  text(
-    isCredit
+  // Pastille verte, texte noir : le vert Madger seul n'est pas lisible sur
+  // fond blanc.
+  {
+    const label = isCredit
       ? `Remboursé le ${dateFr(input.issuedAt)}`
-      : `Acquittée le ${dateFr(input.issuedAt)}`,
-    M + W,
-    y,
-    { size: 9, right: true, color: accent, b: true }
-  );
+      : `Acquittée le ${dateFr(input.issuedAt)}`;
+    const lw = bold.widthOfTextAtSize(safe(label), 9);
+    page.drawRectangle({
+      x: M + W - lw - 16,
+      y: y - 5,
+      width: lw + 16,
+      height: 18,
+      color: accent,
+      borderColor: accent,
+      borderWidth: 0,
+    });
+    text(label, M + W - 8, y, { size: 9, right: true, color: black, b: true });
+  }
 
   // Mentions
   y -= 34;
