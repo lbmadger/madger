@@ -37,6 +37,13 @@ export default function AuthForm({ mode }: { mode: Mode }) {
       : fallback;
 
   const isSignup = mode === "signup";
+  // Un client arrive aussi par sa destination (« Mes séances », profil,
+  // messages) sans ?role=client : mêmes titres dédiés.
+  const clientFlow =
+    role === "client" ||
+    ["/espace", "/onboarding-client", "/messages"].some(
+      (p) => redirectTo === p || redirectTo.startsWith(p + "/") || redirectTo.startsWith(p + "?")
+    );
 
   // Parrainage : un lien /signup?ref=CODE mémorise le code localement. Il
   // survit au détour Google (même origine) et sera rattaché au compte à la
@@ -196,14 +203,12 @@ export default function AuthForm({ mode }: { mode: Mode }) {
 
   const titleKey = isSignup ? "auth.signup" : "auth.login";
   // Parcours client (?role=client) : titres dédiés, pas « compte coach ».
-  const title =
-    isSignup && role === "client"
-      ? t("auth.signup.clientTitle")
-      : t(`${titleKey}.title`);
-  const subtitle =
-    isSignup && role === "client"
-      ? t("auth.signup.clientSubtitle")
-      : t(`${titleKey}.subtitle`);
+  const title = clientFlow
+    ? t(`${titleKey}.clientTitle`)
+    : t(`${titleKey}.title`);
+  const subtitle = clientFlow
+    ? t(`${titleKey}.clientSubtitle`)
+    : t(`${titleKey}.subtitle`);
 
   return (
     <div className="rounded-2xl border border-border bg-bg-card p-6">

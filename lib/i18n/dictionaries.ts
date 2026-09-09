@@ -170,6 +170,8 @@ const fr = {
     login: {
       title: "Connexion à Madger",
       subtitle: "Ravi de te revoir. Connecte-toi pour gérer ton activité.",
+      clientTitle: "Connexion à mes séances",
+      clientSubtitle: "Retrouve tes séances, tes packs et tes factures avec l'email utilisé pour réserver.",
       submit: "Se connecter",
       noAccount: "Pas encore de compte ?",
       link: "Créer un compte",
@@ -2058,6 +2060,8 @@ const en: Dictionary = {
     login: {
       title: "Sign in to Madger",
       subtitle: "Welcome back. Sign in to manage your business.",
+      clientTitle: "Sign in to my sessions",
+      clientSubtitle: "Find your sessions, packs and invoices with the email you booked with.",
       submit: "Sign in",
       noAccount: "No account yet?",
       link: "Create an account",

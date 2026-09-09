@@ -119,9 +119,9 @@ export default function Navbar({ launched = false }: { launched?: boolean }) {
               {l.label}
             </a>
           ))}
-          {/* Après le lancement : porte d'entrée discrète du client d'un
-              coach (la landing vend aux coachs, lui cherche ses séances). */}
-          {launched && (
+          {/* Porte d'entrée discrète du client d'un coach (la landing vend
+              aux coachs, lui cherche ses séances). */}
+          {(
             <a
               href="/espace"
               className="text-sm font-medium transition-colors duration-200"
@@ -261,8 +261,8 @@ export default function Navbar({ launched = false }: { launched?: boolean }) {
               Inscriptions ouvertes · Sans engagement
             </p>
 
-            {/* Client d'un coach : accès discret à ses séances (lancé) */}
-            {launched && (
+            {/* Client d'un coach : accès discret à ses séances */}
+            {(
               <a
                 href="/espace"
                 className={open ? "anim-fade-in text-center text-sm font-medium py-2" : "text-center text-sm font-medium py-2"}
