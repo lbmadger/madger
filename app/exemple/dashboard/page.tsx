@@ -281,7 +281,7 @@ export default function ExampleDashboardPage() {
               href={ctaHref}
               className="mt-5 inline-block rounded-full bg-accent px-6 py-3 text-sm font-semibold text-black transition-opacity hover:opacity-90"
             >
-              {launched ? "Créer mon compte gratuitement" : "Rejoindre l'accès anticipé"}
+              {launched ? "Créer mon lien en 5 minutes" : "Rejoindre l'accès anticipé"}
             </Link>
           </div>
         </main>

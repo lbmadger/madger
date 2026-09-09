@@ -153,7 +153,7 @@ export default function Testimonials({ launched = false }: { launched?: boolean 
             whileTap={{ scale: 0.98 }}
             transition={{ duration: 0.2 }}
           >
-            {launched ? "Créer mon compte gratuitement" : "Rejoindre les premiers coachs"}
+            {launched ? "Créer mon lien en 5 minutes" : "Rejoindre les premiers coachs"}
             <span style={{ fontSize: 15 }}>→</span>
           </motion.a>
         </motion.div>

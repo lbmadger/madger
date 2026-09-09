@@ -48,7 +48,7 @@ export default function LaunchCTA() {
               className="cta-shine inline-flex items-center justify-center font-semibold text-sm px-9 py-4 rounded-full transition-[transform,box-shadow] duration-200 hover:scale-[1.03] hover:shadow-[0_0_30px_rgba(203,255,3,0.5)] active:scale-[0.97]"
               style={{ background: "#CBFF03", color: "#000" }}
             >
-              Créer mon compte gratuitement →
+              Créer mon lien en 5 minutes →
             </a>
           </MagneticButton>
         </div>

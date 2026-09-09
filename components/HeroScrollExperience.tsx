@@ -36,7 +36,7 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
   // les CTA mènent directement à la création de compte.
   const full = useEarlyAccessFull() && !launched;
   const ctaLabel = launched
-    ? "Créer mon compte gratuitement"
+    ? "Créer mon lien en 5 minutes"
     : full
     ? "Rejoindre la liste d'attente"
     : "Calculer ce que je perds";
@@ -333,8 +333,8 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
-            Coach sportif ?<br />
-            <span className="text-shimmer">Le lien qui vend<br className="hidden sm:block" /> tes séances.</span>
+            Coach sportif,<br />
+            <span className="text-shimmer">chaque séance réservée<br className="hidden sm:block" /> est déjà payée.</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -345,9 +345,9 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.22 }}
           >
-            Tes clients réservent, paient et reçoivent leur facture, tout seuls.{" "}
+            Ton client réserve et paie en ligne. Annulation à moins de 24 h : facturée automatiquement, selon tes règles.{" "}
             <br className="hidden sm:block" />
-            Ton agenda se remplit, tu es payé sans relancer personne. Tu coaches, Madger gère le reste.
+            Facture envoyée. Zéro relance.
           </motion.p>
 
           {/* CTAs */}
@@ -357,27 +357,34 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.32 }}
           >
-            <MagneticButton className="w-full sm:w-auto" strength={0.45}>
+            <div className="flex w-full flex-col items-center gap-1.5 sm:w-auto">
+              <MagneticButton className="w-full sm:w-auto" strength={0.45}>
+                <motion.a
+                  href={ctaHref}
+                  className="cta-shine block w-full sm:w-auto sm:inline-block font-semibold text-sm px-8 py-4 rounded-full text-center"
+                  style={{ background: "#CBFF03", color: "#000" }}
+                  whileHover={{ scale: 1.04, boxShadow: "0 0 30px rgba(203,255,3,0.5), 0 0 60px rgba(203,255,3,0.2)" }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {ctaLabel}
+                </motion.a>
+              </MagneticButton>
+              {launched && (
+                <span className="text-xs" style={{ color: "var(--text-dim)" }}>
+                  Sans carte bancaire. Sans engagement.
+                </span>
+              )}
+            </div>
+            <MagneticButton className="w-full sm:w-auto sm:self-start" strength={0.45}>
               <motion.a
-                href={ctaHref}
-                className="cta-shine block w-full sm:w-auto sm:inline-block font-semibold text-sm px-8 py-4 rounded-full text-center"
-                style={{ background: "#CBFF03", color: "#000" }}
-                whileHover={{ scale: 1.04, boxShadow: "0 0 30px rgba(203,255,3,0.5), 0 0 60px rgba(203,255,3,0.2)" }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ duration: 0.2 }}
-              >
-                {ctaLabel}
-              </motion.a>
-            </MagneticButton>
-            <MagneticButton className="w-full sm:w-auto" strength={0.45}>
-              <motion.a
-                href="#fonctionnement"
+                href={launched ? "#early-access" : "#fonctionnement"}
                 className="block w-full sm:w-auto sm:inline-block text-white font-semibold text-sm px-8 py-4 rounded-full text-center"
                 style={{ border: "1px solid rgba(255,255,255,0.12)" }}
                 whileHover={{ backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.22)" }}
                 transition={{ duration: 0.2 }}
               >
-                Voir le fonctionnement
+                {launched ? "Calculer ce que je perds" : "Voir le fonctionnement"}
               </motion.a>
             </MagneticButton>
           </motion.div>
