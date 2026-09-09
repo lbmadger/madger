@@ -30,6 +30,14 @@ const STEPS = [
   },
 ];
 
+function Dumbbell() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#CBFF03" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11" />
+    </svg>
+  );
+}
+
 export default function HeroScrollExperience({ launched = false }: { launched?: boolean }) {
   // Accès anticipé complet → on bascule les CTA / badges du hero en liste
   // d'attente. Après le lancement (SITE_LAUNCHED=1), plus d'accès anticipé :
@@ -309,19 +317,30 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
             <img src="/logo.png" alt="Madger" width={900} height={360} fetchPriority="high" style={{ height: "clamp(120px, 32vw, 150px)", width: "auto", objectFit: "contain", display: "block" }} />
           </motion.div>
 
-          {/* Badge */}
+          {/* Cible + offre : deux pastilles, la cible d'abord */}
           <motion.div
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full font-medium mb-4 sm:mb-8"
-            style={{ background: "rgba(203,255,3,0.07)", border: "1px solid rgba(203,255,3,0.22)" }}
+            className="flex flex-wrap items-center justify-center gap-2 mb-4 sm:mb-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.05 }}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-accent glow-dot block" />
-            <span style={{ color: "#CBFF03", fontSize: 11, letterSpacing: "0.06em" }}>
-              {launched
-                ? "Inscriptions ouvertes · Essentiel à 0 € par mois"
-                : "Accès anticipé · Plan Pro offert 1 mois"}
+            <span
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full font-semibold text-white"
+              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.14)", fontSize: 12, letterSpacing: "0.02em" }}
+            >
+              <Dumbbell />
+              Fait pour les coachs sportifs
+            </span>
+            <span
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full font-medium"
+              style={{ background: "rgba(203,255,3,0.07)", border: "1px solid rgba(203,255,3,0.22)" }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-accent glow-dot block" />
+              <span style={{ color: "#CBFF03", fontSize: 11, letterSpacing: "0.06em" }}>
+                {launched
+                  ? "Inscriptions ouvertes · Essentiel à 0 € par mois"
+                  : "Accès anticipé · Plan Pro offert 1 mois"}
+              </span>
             </span>
           </motion.div>
 
@@ -333,8 +352,8 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
-            Coach sportif ?<br />
-            <span className="text-shimmer">Crée ton lien de réservation<br className="hidden sm:block" /> en&nbsp;5&nbsp;minutes.</span>
+            Crée ton lien<br className="sm:hidden" /> de réservation<br />
+            <span className="text-shimmer">en&nbsp;5&nbsp;minutes.</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -345,7 +364,7 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.22 }}
           >
-            Simple, flexible et 100 % français, Madger est l&apos;outil qu&apos;il te faut pour réserver, encaisser et facturer.
+            Simple, flexible et 100 % français, Madger est l&apos;outil qu&apos;il faut aux coachs sportifs pour réserver, encaisser et facturer.
           </motion.p>
 
           {/* CTAs */}
