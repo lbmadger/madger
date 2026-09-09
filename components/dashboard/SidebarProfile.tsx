@@ -125,7 +125,7 @@ export default function SidebarProfile() {
               {email}
             </span>
           )}
-          <span className="block text-[11px] text-text-dim">
+          <span className={`block text-[11px] ${pro ? "font-semibold text-accent" : "text-text-dim"}`}>
             {pro ? t("plans.pro") : t("plans.free")}
           </span>
         </span>

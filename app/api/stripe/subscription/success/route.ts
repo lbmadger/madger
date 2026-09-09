@@ -46,13 +46,12 @@ export async function GET(req: NextRequest) {
       const periodEnd = subPeriodEnd(sub);
 
       const supabase = createClient(SUPABASE_URL, serviceKey);
-      if (sub.status === "trialing") {
-        await supabase
-          .from("coaches")
-          .update({ pro_trial_used_at: new Date().toISOString() })
-          .eq("id", coachId)
-          .is("pro_trial_used_at", null);
-      }
+      // Premier abonnement = essai consommé, avec ou sans période d'essai.
+      await supabase
+        .from("coaches")
+        .update({ pro_trial_used_at: new Date().toISOString() })
+        .eq("id", coachId)
+        .is("pro_trial_used_at", null);
       await supabase.rpc("apply_pro_subscription", {
         p_coach_id: coachId,
         p_customer_id: customerId,

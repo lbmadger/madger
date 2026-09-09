@@ -1,5 +1,6 @@
 import Topbar from "@/components/dashboard/Topbar";
 import ConversationList from "@/components/messaging/ConversationList";
+import ShareLinkCard from "@/components/dashboard/ShareLinkCard";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
 import { SUPABASE_URL } from "@/lib/supabase/config";
@@ -80,6 +81,10 @@ export default async function CoachMessagesPage() {
     <>
       <Topbar title={dict.messages.title} />
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+        {/* Aucune conversation : le remède, c'est le lien qui circule. */}
+        {(data ?? []).length === 0 && (
+          <ShareLinkCard title={dict.messages.shareTitle} desc={dict.messages.fewHintCoach} />
+        )}
         <ConversationList
           conversations={(data ?? []) as Conversation[]}
           perspective="coach"

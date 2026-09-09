@@ -9,6 +9,9 @@ export type SessionUser = {
   email: string;
   slug: string | null;
   pro: boolean;
+  // Essai Pro de 7 jours encore possible (jamais eu d'abonnement) : les
+  // textes d'upsell ne promettent l'essai qu'à ceux qui peuvent l'avoir.
+  trialEligible: boolean;
   // Affichés dans le bloc profil de la sidebar (bas gauche).
   name: string | null;
   avatarUrl: string | null;

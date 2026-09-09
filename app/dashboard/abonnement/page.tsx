@@ -166,7 +166,9 @@ export default async function SubscriptionPage({
             coach?.subscription_status ?? ""
           )}
           trialEligible={
-            !coach?.stripe_subscription_id && !coach?.pro_trial_used_at
+            !coach?.stripe_subscription_id &&
+            !coach?.pro_trial_used_at &&
+            coach?.subscription_status !== "canceled"
           }
         />
 

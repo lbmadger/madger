@@ -54,7 +54,14 @@ async function viaGemini(prompt: string): Promise<string> {
       }),
     }
   );
-  if (!res.ok) return "";
+  if (!res.ok) {
+    console.error(
+      "ai/bio gemini failed:",
+      res.status,
+      (await res.text().catch(() => "")).slice(0, 300)
+    );
+    return "";
+  }
   const data = await res.json().catch(() => null);
   const parts: { text?: string }[] =
     data?.candidates?.[0]?.content?.parts ?? [];
@@ -112,11 +119,24 @@ export async function POST(req: NextRequest) {
         ? await viaAnthropic(prompt)
         : await viaGemini(prompt);
     if (!text) {
-      return NextResponse.json({ error: "ai_failed" }, { status: 502 });
+      console.error("ai/bio empty answer from", provider);
+      return NextResponse.json({ error: "ai_failed", provider }, { status: 502 });
     }
     return NextResponse.json({ bio: text });
-  } catch {
-    // Panne ou quota côté API : le coach garde la main, il écrit lui-même.
-    return NextResponse.json({ error: "ai_failed" }, { status: 502 });
+  } catch (e) {
+    // Panne, clé invalide ou quota côté API : le coach garde la main, il
+    // écrit lui-même. La cause est tracée dans les logs Vercel (jamais de
+    // clé dedans) pour ne plus diagnostiquer à l'aveugle.
+    const status = e instanceof Anthropic.APIError ? e.status : undefined;
+    console.error(
+      "ai/bio failed:",
+      provider,
+      status ?? "",
+      e instanceof Error ? e.message.slice(0, 300) : e
+    );
+    return NextResponse.json(
+      { error: "ai_failed", provider, status: status ?? null },
+      { status: 502 }
+    );
   }
 }

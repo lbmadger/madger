@@ -57,7 +57,11 @@ export async function POST(req: NextRequest) {
   // Essai de 7 jours : carte enregistrée, rien débité pendant l'essai, puis
   // renouvellement automatique par Stripe sauf résiliation. Une seule fois
   // par coach (jamais d'abonnement auparavant, essai jamais consommé).
-  const trial = !coach.stripe_subscription_id && !coach.pro_trial_used_at;
+  // Essai réservé au tout premier abonnement : jamais après une résiliation.
+  const trial =
+    !coach.stripe_subscription_id &&
+    !coach.pro_trial_used_at &&
+    coach.subscription_status !== "canceled";
 
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",

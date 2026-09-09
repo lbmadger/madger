@@ -7,9 +7,10 @@ import { getCoach } from "@/lib/coach/getCoach";
 import type { Service } from "@/lib/services/types";
 
 // Page Prestations : les offres du coach (séance, pack, abonnement).
-// Deux prérequis pour créer des prestations : un compte Stripe actif (sinon
-// les offres seraient affichées sans pouvoir être réglées) et un SIRET
-// (sinon les factures émises au premier encaissement ne sont pas conformes).
+// Créer une prestation n'exige rien (l'onboarding en crée déjà une sans
+// Stripe) : les bandeaux rappellent ce qui manque pour ENCAISSER, un compte
+// Stripe actif et un SIRET (factures conformes). L'encaissement lui-même est
+// bloqué côté serveur dans /api/stripe/checkout tant que Stripe n'est pas prêt.
 export default async function ServicesPage() {
   const { dict } = getServerDictionary();
   const supabase = createClient();
@@ -68,7 +69,7 @@ export default async function ServicesPage() {
         {/* Packs ouverts à tous les plans (migration 0070). */}
         <ServicesView
           initialServices={(data ?? []) as Service[]}
-          canCreate={stripeReady}
+          canCreate
           packsAllowed
         />
       </main>

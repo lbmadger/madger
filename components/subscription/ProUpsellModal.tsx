@@ -20,7 +20,7 @@ const OPEN_DELAY_MS = 2500;
 // d'une croix, revient au plus tôt 7 jours plus tard. Jamais sur la page
 // Abonnement (le coach y est déjà) ni pendant l'onboarding.
 export default function ProUpsellModal() {
-  const { pro } = useSession();
+  const { pro, trialEligible } = useSession();
   const { t, dict, locale } = useI18n();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -107,7 +107,10 @@ export default function ProUpsellModal() {
           <p className="mt-1 text-xs text-text-muted">{t("plans.proNote")}</p>
         )}
         <ul className="mt-3 flex flex-col gap-1.5 text-sm text-text-base">
-          {dict.plans.modalPoints.map((pt) => (
+          {(trialEligible
+            ? dict.plans.modalPoints
+            : [...dict.plans.modalPoints.slice(0, -1), t("plans.modalPointNoTrial")]
+          ).map((pt) => (
             <li key={pt} className="flex items-start gap-2">
               <svg className="mt-0.5 shrink-0 text-accent" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20 6L9 17l-5-5" />
@@ -123,7 +126,7 @@ export default function ProUpsellModal() {
         onClick={close}
         className="mt-4 block w-full rounded-full bg-accent px-4 py-3 text-center text-sm font-semibold text-black transition-opacity hover:opacity-90"
       >
-        {t("plans.modalCta")}
+        {trialEligible ? t("plans.modalCta") : t("plans.modalCtaNoTrial")}
       </Link>
       <button
         type="button"

@@ -107,6 +107,9 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   );
   const [venues, setVenues] = useState<string[]>(coach.venues ?? []);
   const [gymName, setGymName] = useState(coach.gym_name ?? "");
+  // Salle absente de la recherche : nom libre + adresse saisie à la main
+  // (sans coordonnées, la page publique et les confirmations l'affichent).
+  const [gymAddress, setGymAddress] = useState(coach.gym_address ?? "");
   // Salle validée (recherche OpenStreetMap) : adresse + coordonnées.
   const [gymPlace, setGymPlace] = useState<GymPlace | null>(
     coach.gym_place_id && coach.gym_lat != null && coach.gym_lng != null
@@ -327,7 +330,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           .from("coaches")
           .update({
             gym_place_id: gymPlace?.id ?? null,
-            gym_address: gymPlace?.address ?? null,
+            gym_address: gymPlace?.address ?? (gymAddress.trim() || null),
             gym_lat: gymPlace?.lat ?? null,
             gym_lng: gymPlace?.lng ?? null,
           })
@@ -386,6 +389,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
       <SettingsSection
         icon={<UserIcon size={18} />}
         title={t("settings.profileSection")}
+        todo={!avatarUrl || !bio.trim() ? t("settings.toFill") : undefined}
         desc={t("settings.profileDesc")}
         defaultOpen
       >
@@ -535,6 +539,11 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
       <SettingsSection
         icon={<ActivityIcon size={18} />}
         title={t("settings.activitySection")}
+        todo={
+          !sport || venues.length === 0 || (venues.includes("coach_gym") && !gymName.trim())
+            ? t("settings.toFill")
+            : undefined
+        }
         desc={t("settings.activityDesc")}
       >
         <div className="flex flex-col gap-4">
@@ -630,6 +639,18 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
               />
             </label>
           )}
+          {/* Salle introuvable dans la recherche : adresse à la main. */}
+          {venues.includes("coach_gym") && !gymPlace && gymName.trim() && (
+            <label className="flex flex-col gap-1.5">
+              <span className={labelClass}>{t("settings.gymAddressLabel")}</span>
+              <AddressAutocomplete
+                value={gymAddress}
+                onChange={setGymAddress}
+                placeholder="12 rue de Rivoli 75004 Paris"
+              />
+              <span className="text-xs text-text-dim">{t("settings.gymAddressHint")}</span>
+            </label>
+          )}
 
           <div className="flex items-center gap-3">
             <Button onClick={() => handleSave("activity")} disabled={loading} className="self-start">
@@ -645,6 +666,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
       <SettingsSection
         icon={<ShieldIcon size={18} />}
         title={t("verification.title")}
+        todo={(coach.verification_status ?? "none") === "none" ? t("settings.toFill") : undefined}
         desc={t("verification.desc")}
       >
         <VerificationSection
@@ -660,6 +682,11 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         id="objectif"
         icon={<TrophyIcon size={18} />}
         title={t("goal.settingsTitle")}
+        todo={
+          !coach.monthly_revenue_goal_cents && !coach.monthly_sessions_goal
+            ? t("settings.toFill")
+            : undefined
+        }
         desc={t("goal.settingsDesc")}
       >
         <GoalSettings
@@ -914,6 +941,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
       <SettingsSection
         icon={<FileTextIcon size={18} />}
         title={t("settings.billingSection")}
+        todo={!siret.trim() ? t("settings.toFill") : undefined}
         desc={t("settings.billingDesc")}
       >
         <div className="flex flex-col gap-3">

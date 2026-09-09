@@ -11,6 +11,7 @@ export default function SettingsSection({
   icon,
   title,
   desc,
+  todo,
   defaultOpen = false,
   children,
 }: {
@@ -18,6 +19,9 @@ export default function SettingsSection({
   icon: ReactNode;
   title: string;
   desc?: string;
+  // Libellé du badge « À remplir » quand la section manque d'une donnée
+  // importante (photo, bio, sport, salle, SIRET, diplôme…).
+  todo?: string;
   defaultOpen?: boolean;
   children: ReactNode;
 }) {
@@ -56,8 +60,13 @@ export default function SettingsSection({
           {icon}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-semibold text-text-base">
-            {title}
+          <span className="flex items-center gap-2 text-sm font-semibold text-text-base">
+            <span className="truncate">{title}</span>
+            {todo && (
+              <span className="shrink-0 rounded-full border border-warning/40 bg-warning/[0.08] px-2 py-0.5 text-[10px] font-semibold text-warning">
+                {todo}
+              </span>
+            )}
           </span>
           {desc && (
             <span className="mt-0.5 block truncate text-xs text-text-muted">

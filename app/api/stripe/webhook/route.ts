@@ -59,14 +59,14 @@ export async function POST(req: NextRequest) {
     const coachId = sub.metadata?.coach_id;
     if (!coachId) return;
     const periodEnd = subPeriodEnd(sub);
-    // Essai de 7 jours consommé : un seul par coach (migration 0062).
-    if (sub.status === "trialing") {
-      await supabase
-        .from("coaches")
-        .update({ pro_trial_used_at: new Date().toISOString() })
-        .eq("id", coachId)
-        .is("pro_trial_used_at", null);
-    }
+    // Essai de 7 jours consommé dès le PREMIER abonnement, avec ou sans
+    // période d'essai (CGV : un seul essai par coach, migration 0062). Un
+    // coach qui résilie puis revient ne se voit plus proposer 7 jours.
+    await supabase
+      .from("coaches")
+      .update({ pro_trial_used_at: new Date().toISOString() })
+      .eq("id", coachId)
+      .is("pro_trial_used_at", null);
     // Statut local normalisé : « canceling » = encore actif OU en essai mais
     // arrêt programmé en fin de période (réactivable depuis l'app) ; les
     // statuts Stripe unpaid / incomplete / paused sont ramenés aux valeurs

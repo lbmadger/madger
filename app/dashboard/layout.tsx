@@ -60,6 +60,10 @@ export default async function DashboardLayout({
           email: user.email ?? "",
           slug: coach?.slug ?? null,
           pro: isPro(coach?.pro_until),
+          trialEligible:
+            !coach?.stripe_subscription_id &&
+            !coach?.pro_trial_used_at &&
+            coach?.subscription_status !== "canceled",
           name:
             [coach?.first_name, coach?.last_name].filter(Boolean).join(" ") ||
             null,
