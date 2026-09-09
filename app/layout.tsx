@@ -50,7 +50,7 @@ export const metadata: Metadata = {
   keywords: ["réservation coach sportif", "coach sportif", "logiciel réservation sport", "prise de rendez-vous coach", "application coach sportif", "paiement en ligne coach", "facturation coach"],
   openGraph: {
     title: "Madger · L'app préférée des coachs sportifs",
-    description: "Ton lien de réservation, tes paiements sécurisés, tes factures automatiques. Tes clients réservent seuls, ton planning se remplit.",
+    description: "Ton lien de réservation, tes paiements sécurisés, tes factures automatiques. 0 € tant que tu ne vends pas.",
     url: "https://madger.app",
     siteName: "Madger",
     locale: "fr_FR",
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Madger · L'app préférée des coachs sportifs",
-    description: "Ton lien de réservation, tes paiements sécurisés, tes factures automatiques. Tes clients réservent seuls, ton planning se remplit.",
+    description: "Ton lien de réservation, tes paiements sécurisés, tes factures automatiques. 0 € tant que tu ne vends pas.",
   },
 };
 
