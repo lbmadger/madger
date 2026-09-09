@@ -131,7 +131,10 @@ export async function renderInvoicePdf(input: InvoicePdfInput): Promise<Uint8Arr
   issuerLines.push(c.businessName?.trim() || c.name);
   if (c.businessName && c.businessName.trim() !== c.name.trim()) issuerLines.push(c.name);
   if (c.address) issuerLines.push(c.address);
-  if (c.city) issuerLines.push(c.city);
+  // La ville du profil (celle de l'annuaire) ne complète l'adresse que si
+  // aucune adresse de facturation n'est renseignée : une adresse BAN porte
+  // déjà son code postal et sa ville.
+  if (c.city && !c.address) issuerLines.push(c.city);
   if (c.siret) issuerLines.push(`SIRET : ${c.siret}`);
   if (c.vatNumber) issuerLines.push(`TVA : ${c.vatNumber}`);
   const clientLines = [input.clientName || "-", ...(input.clientEmail ? [input.clientEmail] : [])];
