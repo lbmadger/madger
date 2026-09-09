@@ -77,13 +77,13 @@ function layout(opts: {
   const F =
     locale === "en"
       ? {
-          tagline: "Madger · the booking app for sports coaches.",
+          tagline: "Madger · the link that sells sports coaches' sessions.",
           charter: "Payment charter",
           legal:
             "You are receiving this email because of activity linked to your Madger account or booking.",
         }
       : {
-          tagline: "Madger · l'app de réservation des coachs sportifs.",
+          tagline: "Madger · le lien qui vend les séances des coachs sportifs.",
           charter: "Charte de paiement",
           legal:
             "Tu reçois cet email car une activité est liée à ton compte ou ta réservation Madger.",

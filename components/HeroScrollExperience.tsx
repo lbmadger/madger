@@ -333,8 +333,8 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
-            L'app <span className="text-shimmer">de réservation</span><br />
-            des coachs sportifs.
+            Coach sportif ?<br />
+            <span className="text-shimmer">Le lien qui vend<br className="hidden sm:block" /> tes séances.</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -345,9 +345,9 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.22 }}
           >
-            Réservation, paiement et facture réunis dans un seul lien à partager.{" "}
+            Tes clients réservent, paient et reçoivent leur facture, tout seuls.{" "}
             <br className="hidden sm:block" />
-            Tu coaches, Madger gère l'administratif.
+            Ton agenda se remplit, tu es payé sans relancer personne. Tu coaches, Madger gère le reste.
           </motion.p>
 
           {/* CTAs */}
