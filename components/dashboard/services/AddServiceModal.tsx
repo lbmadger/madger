@@ -80,6 +80,9 @@ export default function AddServiceModal({
     if (!name.trim()) return setError(t("services.errors.nameRequired"));
 
     const priceCents = Math.round((parseFloat(price.replace(",", ".")) || 0) * 100);
+    // Jamais de prestation gratuite : une offre à 0 € serait réservable par
+    // n'importe qui sans engagement (et bloquée en base, contrainte 0074).
+    if (priceCents < 100) return setError(t("services.errors.priceMin"));
     if (type === "pack" && packGroup && !groupServiceId) {
       return setError(t("services.form.packGroupRequired"));
     }

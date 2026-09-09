@@ -860,6 +860,7 @@ const fr = {
     errors: {
       generic: "Une erreur est survenue. Réessaie.",
       nameRequired: "Le nom est obligatoire.",
+      priceMin: "Le prix doit être d'au moins 1 €.",
       packLimit:
         "3 packs actifs maximum. Désactive ou supprime un pack pour en ajouter un autre.",
     },
@@ -2741,6 +2742,7 @@ const en: Dictionary = {
     errors: {
       generic: "Something went wrong. Please try again.",
       nameRequired: "Name is required.",
+      priceMin: "The price must be at least €1.",
       packLimit:
         "3 active packs maximum. Deactivate or delete a pack to add another one.",
     },

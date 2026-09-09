@@ -80,6 +80,17 @@ export async function POST(req: NextRequest) {
     !clientRow?.email ||
     clientRow.email.trim().toLowerCase() !== user.email.trim().toLowerCase()
   ) {
+    // Diagnostic (emails masqués) : qui tente d'annuler la séance de qui.
+    const mask = (e: string | null | undefined) =>
+      e ? `${e.slice(0, 3)}…@${e.split("@")[1] ?? ""}` : "(vide)";
+    console.error(
+      "client-cancel forbidden:",
+      bookingId,
+      "compte",
+      mask(user.email),
+      "client de la séance",
+      mask(clientRow?.email as string | null)
+    );
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
