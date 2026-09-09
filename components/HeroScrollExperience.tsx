@@ -334,7 +334,7 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
             transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
             Coach sportif ?<br />
-            <span className="text-shimmer">Crée ton lien de réservation<br className="hidden sm:block" /> en 5 minutes.</span>
+            <span className="text-shimmer">Crée ton lien de réservation<br className="hidden sm:block" /> en&nbsp;5&nbsp;minutes.</span>
           </motion.h1>
 
           {/* Subtitle */}
