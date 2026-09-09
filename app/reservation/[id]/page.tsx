@@ -140,7 +140,7 @@ export default async function ReservationPage({
             <div className="rounded-2xl border border-border bg-bg-card p-6 sm:p-8">
               {searchParams.paid === "1" && (
                 <div className="mb-5 rounded-xl border border-accent/20 bg-accent/[0.06] px-4 py-3 text-sm font-medium text-accent">
-                  {r.paidBanner}
+                  {booking.status === "pending" ? r.pendingBanner : r.paidBanner}
                 </div>
               )}
               <h1 className="text-xl font-extrabold tracking-tight text-text-base">
