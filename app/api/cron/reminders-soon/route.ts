@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { coachPlaceStr } from "@/lib/coach/place";
 import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
@@ -56,7 +57,7 @@ export async function GET(req: NextRequest) {
     const { data: bookings } = await supabase
       .from("bookings")
       .select(
-        "id, starts_at, location, meeting_url, reminder_soon_sent_at, status, clients(first_name, email), coaches(first_name, last_name, timezone, gym_name, gym_address)"
+        "id, starts_at, location, meeting_url, reminder_soon_sent_at, status, clients(first_name, email), coaches(first_name, last_name, timezone, gym_name, gym_address, outdoor_address)"
       )
       .eq("status", "confirmed")
       .eq("is_block", false)
@@ -87,10 +88,7 @@ export async function GET(req: NextRequest) {
           }
         );
         const online = b.location === "online";
-        const address =
-          !online && coach?.gym_address
-            ? [coach.gym_name, coach.gym_address].filter(Boolean).join(" · ")
-            : undefined;
+        const address = !online ? coachPlaceStr(coach) ?? undefined : undefined;
         const t = sessionReminderSoonClient({
           coachName,
           timeStr,

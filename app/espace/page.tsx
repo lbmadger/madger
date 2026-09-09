@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { coachPlaceStr } from "@/lib/coach/place";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
@@ -68,7 +69,7 @@ export default async function ClientSpacePage() {
           admin
             .from("bookings")
             .select(
-              "id, starts_at, ends_at, status, location, location_text, reschedule_pending_until, rescheduled_from, pack_credit_id, pack_credits(cancel_hours), group_sessions(name), coaches(first_name, last_name, slug, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, cancel_hours, gym_name, gym_address, pro_until, pro_bonus_until)"
+              "id, starts_at, ends_at, status, location, location_text, reschedule_pending_until, rescheduled_from, pack_credit_id, pack_credits(cancel_hours), group_sessions(name), coaches(first_name, last_name, slug, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, cancel_hours, gym_name, gym_address, outdoor_address, pro_until, pro_bonus_until)"
             )
             .in("client_id", clientIds)
             .order("starts_at", { ascending: false })
@@ -155,7 +156,7 @@ export default async function ClientSpacePage() {
             b.location === "online"
               ? null
               : (b.location_text as string | null) ||
-                [co?.gym_name, co?.gym_address].filter(Boolean).join(" · ") ||
+                coachPlaceStr(co) ||
                 null,
           coach_name:
             [co?.first_name, co?.last_name].filter(Boolean).join(" ") || "-",

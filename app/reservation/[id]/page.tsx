@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { coachPlaceStr } from "@/lib/coach/place";
 import { createClient } from "@supabase/supabase-js";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { getServerDictionary } from "@/lib/i18n/server";
@@ -39,7 +40,7 @@ async function getBooking(id: string): Promise<BookingInfo | null> {
   const { data: booking } = await admin
     .from("bookings")
     .select(
-      "starts_at, ends_at, status, location, location_text, meeting_url, coaches(first_name, last_name, gym_name, gym_address)"
+      "starts_at, ends_at, status, location, location_text, meeting_url, coaches(first_name, last_name, gym_name, gym_address, outdoor_address)"
     )
     .eq("id", id)
     .maybeSingle();
@@ -54,6 +55,7 @@ async function getBooking(id: string): Promise<BookingInfo | null> {
     last_name: string | null;
     gym_name: string | null;
     gym_address: string | null;
+    outdoor_address?: string | null;
   };
   const coach = booking.coaches as CoachRow | CoachRow[] | null;
   const c = Array.isArray(coach) ? coach[0] : coach;
@@ -74,7 +76,7 @@ async function getBooking(id: string): Promise<BookingInfo | null> {
       booking.location === "online"
         ? null
         : (booking.location_text as string | null) ||
-          [c?.gym_name, c?.gym_address].filter(Boolean).join(" · ") ||
+          coachPlaceStr(c) ||
           null,
   };
 }

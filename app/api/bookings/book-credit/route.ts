@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { coachPlaceStr } from "@/lib/coach/place";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
 import { SUPABASE_URL } from "@/lib/supabase/config";
@@ -63,7 +64,7 @@ export async function POST(req: NextRequest) {
   const { data: coach } = await admin
     .from("coaches")
     .select(
-      "id, slug, first_name, last_name, booking_mode, min_notice_hours, timezone, locale, gym_name, gym_address"
+      "id, slug, first_name, last_name, booking_mode, min_notice_hours, timezone, locale, gym_name, gym_address, outdoor_address"
     )
     .eq("id", coachId)
     .maybeSingle();
@@ -289,7 +290,7 @@ export async function POST(req: NextRequest) {
 
     const placeStr = online
       ? undefined
-      : [coach.gym_name, coach.gym_address].filter(Boolean).join(" · ") ||
+      : coachPlaceStr(coach) ||
         undefined;
     const tplClient = packSessionBookedClient({
       coachName,

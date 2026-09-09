@@ -1299,6 +1299,8 @@ const fr = {
     siretUnavailableHint: "Annuaire officiel indisponible à l'instant : ton SIRET est enregistré, il sera vérifié au prochain enregistrement.",
     toFill: "À remplir",
     gymAddressLabel: "Adresse de la salle",
+    outdoorAddressLabel: "Lieu habituel en extérieur",
+    outdoorAddressHint: "Parc, stade, plage… l'adresse où tes clients te retrouvent. Affichée sur ta page et dans les confirmations de séance quand tu n'as pas de salle.",
     gymAddressHint: "Ta salle n'est pas dans la liste ? Garde son nom tel quel et indique son adresse ici : elle apparaît sur ta page et dans les confirmations de séance.",
     billingCompliance:
       "Avec ces informations, chaque facture émise via Madger porte tes mentions légales obligatoires. Elles sont numérotées sans trou par année et conservées dans ton espace, prêtes pour ton expert-comptable.",
@@ -3149,6 +3151,8 @@ const en: Dictionary = {
     siretUnavailableHint: "Official register unavailable right now: your SIRET is saved and will be checked on your next save.",
     toFill: "To fill in",
     gymAddressLabel: "Gym address",
+    outdoorAddressLabel: "Usual outdoor spot",
+    outdoorAddressHint: "Park, stadium, beach… the address where your clients meet you. Shown on your page and in session confirmations when you have no gym.",
     gymAddressHint: "Your gym is not in the list? Keep its name as typed and enter its address here: it shows on your page and in session confirmations.",
     billingCompliance:
       "With these details, every invoice issued via Madger carries your mandatory legal mentions. They are numbered sequentially per year and kept in your space, ready for your accountant.",

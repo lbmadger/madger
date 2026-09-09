@@ -35,6 +35,9 @@ export type PublicCoach = {
   specialties: string[];
   venues: string[];
   gym_name: string | null;
+  // Adresses exposées par la vue publique (migration 0072).
+  gym_address?: string | null;
+  outdoor_address?: string | null;
   // Prix d'appel « à partir de » (min des prestations actives, migration 0042).
   from_price_cents: number | null;
   // Diplôme vérifié par l'équipe Madger (migration 0044).

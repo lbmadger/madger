@@ -1,4 +1,5 @@
 import type Stripe from "stripe";
+import { coachPlaceStr } from "@/lib/coach/place";
 import { createClient } from "@supabase/supabase-js";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
@@ -477,7 +478,7 @@ export async function fulfillCheckoutSession(
     const [{ data: coachRow }, { data: coachAuth }] = await Promise.all([
       supabase
         .from("coaches")
-        .select("first_name, last_name, timezone, locale, gym_name, gym_address")
+        .select("first_name, last_name, timezone, locale, gym_name, gym_address, outdoor_address")
         .eq("id", m.coach_id)
         .maybeSingle(),
       supabase.auth.admin.getUserById(m.coach_id),
@@ -516,9 +517,7 @@ export async function fulfillCheckoutSession(
     // client sache OÙ aller sans écrire au coach.
     const placeStr = online
       ? undefined
-      : [coachRow?.gym_name, coachRow?.gym_address]
-          .filter(Boolean)
-          .join(" · ") || undefined;
+      : coachPlaceStr(coachRow) || undefined;
     const reservationUrl = `${APP_URL}/reservation/${result.bookingId}`;
     // Cours collectif : lieu et lien visio du cours, nom du cours.
     let groupName: string | undefined;

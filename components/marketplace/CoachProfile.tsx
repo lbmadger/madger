@@ -523,6 +523,7 @@ export default function CoachProfile({
               {coach.gym_name && (coach.venues ?? []).includes("coach_gym") && (
                 <span className="rounded-full border border-border-strong px-2.5 py-1 text-xs text-text-muted">
                   <BuildingIcon size={12} className="mr-1 inline-block align-[-2px]" />{coach.gym_name}
+                  {coach.gym_address ? <span className="text-text-dim"> · {coach.gym_address}</span> : null}
                 </span>
               )}
               {(coach.venues ?? [])
@@ -533,6 +534,9 @@ export default function CoachProfile({
                     className="rounded-full border border-border-strong px-2.5 py-1 text-xs text-text-muted"
                   >
                     {t(`taxonomy.venues.${v}`)}
+                    {v === "outdoor" && coach.outdoor_address ? (
+                      <span className="text-text-dim"> · {coach.outdoor_address}</span>
+                    ) : null}
                   </span>
                 ))}
               {coach.accepts_online && (

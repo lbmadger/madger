@@ -115,6 +115,8 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   // Salle absente de la recherche : nom libre + adresse saisie à la main
   // (sans coordonnées, la page publique et les confirmations l'affichent).
   const [gymAddress, setGymAddress] = useState(coach.gym_address ?? "");
+  // Lieu habituel en extérieur (parc, stade…), migration 0072.
+  const [outdoorAddress, setOutdoorAddress] = useState(coach.outdoor_address ?? "");
   // Salle validée (recherche OpenStreetMap) : adresse + coordonnées.
   const [gymPlace, setGymPlace] = useState<GymPlace | null>(
     coach.gym_place_id && coach.gym_lat != null && coach.gym_lng != null
@@ -361,6 +363,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             gym_address: gymPlace?.address ?? (gymAddress.trim() || null),
             gym_lat: gymPlace?.lat ?? null,
             gym_lng: gymPlace?.lng ?? null,
+            outdoor_address: venues.includes("outdoor") ? outdoorAddress.trim() || null : null,
           })
           .eq("id", coach.id);
       }
@@ -665,6 +668,18 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
                 onSelect={setGymPlace}
                 inputClassName={inputClass}
               />
+            </label>
+          )}
+          {/* Lieu en extérieur : l'adresse où le client retrouve le coach. */}
+          {venues.includes("outdoor") && (
+            <label className="flex flex-col gap-1.5">
+              <span className={labelClass}>{t("settings.outdoorAddressLabel")}</span>
+              <AddressAutocomplete
+                value={outdoorAddress}
+                onChange={setOutdoorAddress}
+                placeholder="Parc des Buttes-Chaumont, 75019 Paris"
+              />
+              <span className="text-xs text-text-dim">{t("settings.outdoorAddressHint")}</span>
             </label>
           )}
           {/* Salle introuvable dans la recherche : adresse à la main. */}
