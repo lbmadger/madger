@@ -38,6 +38,7 @@ export default function PaymentEmbed() {
     let instance: { destroy: () => void } | null = null;
     (async () => {
       try {
+        if (!STRIPE_PUBLISHABLE_KEY) throw new Error("missing NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY");
         const stripe = await loadStripe(STRIPE_PUBLISHABLE_KEY);
         if (!stripe) throw new Error("stripe_load_failed");
         const checkout = await stripe.createEmbeddedCheckoutPage({
@@ -49,7 +50,11 @@ export default function PaymentEmbed() {
         }
         instance = checkout;
         checkout.mount(mountRef.current!);
-      } catch {
+      } catch (e) {
+        // La cause (clé publique absente, session expirée, Stripe.js bloqué)
+        // est lisible dans la console du navigateur : le message à l'écran
+        // reste générique pour le client.
+        console.error("paiement: formulaire Stripe impossible à monter", e);
         if (!destroyed) setError(true);
       }
     })();
