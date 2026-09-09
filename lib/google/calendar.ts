@@ -128,23 +128,34 @@ export async function attachMeetToBooking(
   }
 ): Promise<string | null> {
   try {
-    if (!googleConfigured()) return null;
+    // Mode et lieu de la séance : visio ou présentiel (adresse de la séance,
+    // sinon salle du coach, sinon sa ville).
+    const { data: bk } = await supabase
+      .from("bookings")
+      .select("location, location_text, meeting_url")
+      .eq("id", p.bookingId)
+      .maybeSingle();
+    const online = bk?.location === "online";
+    const existing = (bk?.meeting_url as string | null) ?? null;
+
+    // Sans Google (non configuré ou agenda du coach non connecté), une séance
+    // en visio reçoit quand même un lien : salle Jitsi unique, posée une fois.
+    const fallback = async (): Promise<string | null> => {
+      if (!online) return null;
+      if (existing) return existing;
+      const url = fallbackMeetUrl(p.bookingId);
+      await supabase.from("bookings").update({ meeting_url: url }).eq("id", p.bookingId);
+      return url;
+    };
+
+    if (!googleConfigured()) return fallback();
     const { data: coach } = await supabase
       .from("coaches")
       .select("google_refresh_token, first_name, last_name, gym_name, city")
       .eq("id", p.coachId)
       .maybeSingle();
     const refreshToken = coach?.google_refresh_token as string | null;
-    if (!refreshToken) return null;
-
-    // Mode et lieu de la séance : visio ou présentiel (adresse de la séance,
-    // sinon salle du coach, sinon sa ville).
-    const { data: bk } = await supabase
-      .from("bookings")
-      .select("location, location_text")
-      .eq("id", p.bookingId)
-      .maybeSingle();
-    const online = bk?.location === "online";
+    if (!refreshToken) return fallback();
     const place = online
       ? ""
       : ((bk?.location_text as string | null) ||
@@ -183,19 +194,27 @@ export async function attachMeetToBooking(
       withMeet: online,
       location: !online && place ? place : undefined,
     });
-    if (!created) return null;
+    if (!created) return fallback();
 
     await supabase
       .from("bookings")
       .update({
-        meeting_url: created.meetUrl,
+        // Un lien déjà posé par le coach (le sien) garde la priorité.
+        meeting_url: existing ?? created.meetUrl,
         google_event_id: created.eventId,
       })
       .eq("id", p.bookingId);
-    return created.meetUrl;
+    return existing ?? created.meetUrl;
   } catch {
     return null;
   }
+}
+
+// Salle visio de secours, sans Google : Jitsi Meet, gratuit, sans compte,
+// un nom de salle unique par séance dérivé de son identifiant (aléatoire,
+// non devinable). Le coach peut la remplacer par son propre lien.
+export function fallbackMeetUrl(bookingId: string): string {
+  return `https://meet.jit.si/Madger-${bookingId.replace(/-/g, "").slice(0, 16)}`;
 }
 
 // Supprime l'événement Google d'une séance annulée. Best-effort.
