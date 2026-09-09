@@ -559,12 +559,6 @@ export default function ClientSpace({
         >
           {t("clientSpace.messages")}
         </Link>
-        <Link
-          href="/onboarding-client"
-          className="-mb-px border-b-2 border-transparent pb-2.5 text-sm font-medium text-text-muted transition-colors hover:text-text-base"
-        >
-          {t("clientSpace.myProfile")}
-        </Link>
       </nav>
 
       {profileIncomplete && (

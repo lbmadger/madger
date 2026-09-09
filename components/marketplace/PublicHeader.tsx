@@ -67,9 +67,11 @@ export default function PublicHeader() {
           >
             Blog
           </Link>
+          {/* Sur téléphone, connecté : la cloche et la photo suffisent, le
+              lien « Mes séances » ne tient pas à côté. */}
           <Link
             href="/espace"
-            className="rounded-full border border-border-strong px-3.5 py-1.5 text-sm font-medium text-text-muted transition-colors hover:border-accent hover:text-text-base"
+            className={`whitespace-nowrap rounded-full border border-border-strong px-3.5 py-1.5 text-sm font-medium text-text-muted transition-colors hover:border-accent hover:text-text-base ${me ? "hidden sm:inline-block" : ""}`}
           >
             {t("clientSpace.title")}
           </Link>
@@ -80,7 +82,7 @@ export default function PublicHeader() {
               <Link
                 href="/onboarding-client"
                 title={t("clientSpace.myProfile")}
-                className="flex items-center gap-2 rounded-full border border-border-strong bg-bg-card py-1 pl-1 pr-3 transition-colors hover:border-accent"
+                className="flex items-center gap-2 rounded-full border border-border-strong bg-bg-card p-1 transition-colors hover:border-accent sm:pr-3"
               >
                 <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-bg-elevated">
                   {me.avatarUrl ? (
@@ -92,7 +94,7 @@ export default function PublicHeader() {
                     </span>
                   )}
                 </span>
-                <span className="max-w-[140px] truncate text-sm font-medium text-text-base">
+                <span className="hidden max-w-[160px] truncate text-sm font-medium text-text-base sm:inline">
                   {[me.firstName, me.lastName].filter(Boolean).join(" ") || t("clientSpace.myProfile")}
                 </span>
               </Link>
