@@ -1382,6 +1382,8 @@ const fr = {
     statusAuthorized:
       "En attente d'acceptation du coach, aucun débit pour l'instant",
     joinMeeting: "Rejoindre la visio",
+    copyLink: "Copier",
+    copied: "Copié",
     meetPending: "Le lien visio apparaîtra ici dès que ton coach l'aura ajouté. Tu le recevras aussi par email.",
     addToCalendar: "Ajouter à Google Calendar",
     notFound: "Réservation introuvable.",
@@ -3268,6 +3270,8 @@ const en: Dictionary = {
     statusDisputed: "Problem reported, under review",
     statusAuthorized: "Waiting for the coach to accept, no charge yet",
     joinMeeting: "Join the video call",
+    copyLink: "Copy",
+    copied: "Copied",
     meetPending: "The video link will appear here as soon as your coach adds it. You will also get it by email.",
     addToCalendar: "Add to Google Calendar",
     notFound: "Booking not found.",

@@ -1,3 +1,4 @@
+import CopyField from "@/components/ui/CopyField";
 import Link from "next/link";
 import { coachPlaceStr } from "@/lib/coach/place";
 import { createClient } from "@supabase/supabase-js";
@@ -190,14 +191,18 @@ export default async function ReservationPage({
                       </p>
                     )}
                     {booking.location === "online" && booking.meeting_url && (
-                      <a
-                        href={booking.meeting_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="rounded-full bg-accent px-4 py-2 text-xs font-semibold text-black transition-opacity hover:opacity-90"
-                      >
-                        <VideoIcon size={13} className="mr-1.5 inline-block align-[-2px]" />{r.joinMeeting}
-                      </a>
+                      <div className="flex w-full flex-col gap-2">
+                        <a
+                          href={booking.meeting_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="self-start rounded-full bg-accent px-4 py-2 text-xs font-semibold text-black transition-opacity hover:opacity-90"
+                        >
+                          <VideoIcon size={13} className="mr-1.5 inline-block align-[-2px]" />{r.joinMeeting}
+                        </a>
+                        {/* Le lien en clair, à copier pour l'envoyer ou l'ouvrir ailleurs. */}
+                        <CopyField value={booking.meeting_url} copyLabel={r.copyLink} copiedLabel={r.copied} />
+                      </div>
                     )}
                     {(() => {
                       const calEvent = {
