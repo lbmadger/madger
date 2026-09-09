@@ -35,6 +35,24 @@ const INTEGRATIONS = [
       </svg>
     ),
   },
+  {
+    name: "Klarna",
+    label: "Paiement en 3x",
+    logo: (
+      <svg width="54" height="20" viewBox="0 0 54 20" fill="none">
+        <text x="0" y="15.5" fontFamily="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" fontSize="15" fontWeight="700" letterSpacing="-0.4" fill="#FFB3C7">Klarna.</text>
+      </svg>
+    ),
+  },
+  {
+    name: "Alma",
+    label: "Paiement en 3x",
+    logo: (
+      <svg width="42" height="20" viewBox="0 0 42 20" fill="none">
+        <text x="0" y="15.5" fontFamily="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" fontSize="15" fontWeight="700" letterSpacing="-0.4" fill="#FA5022">alma</text>
+      </svg>
+    ),
+  },
 ];
 
 export default function TrustBar() {
@@ -49,9 +67,9 @@ export default function TrustBar() {
       }}
     >
       <div className="max-w-5xl mx-auto px-5 sm:px-6">
-        <div className="flex flex-nowrap items-center justify-center gap-3 sm:flex-wrap sm:gap-10">
+        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-4 sm:gap-10">
           <span
-            className="text-[10px] sm:text-[11px]"
+            className="basis-full text-center text-[10px] sm:basis-auto sm:text-[11px]"
             style={{
               fontWeight: 600,
               letterSpacing: "0.08em",
@@ -60,9 +78,7 @@ export default function TrustBar() {
               whiteSpace: "nowrap",
             }}
           >
-            {/* Court sur mobile pour laisser les 3 logos sur la même ligne */}
-            <span className="sm:hidden">Sécurisé</span>
-            <span className="hidden sm:inline">Sécurisé &amp; certifié</span>
+            <span className="block w-full text-center sm:w-auto sm:inline">Sécurisé &amp; certifié</span>
           </span>
 
           <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.06)" }} className="hidden sm:block" />
