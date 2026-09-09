@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { createClient } from "@/lib/supabase/client";
@@ -15,6 +15,23 @@ type Me = { firstName: string; lastName: string; avatarUrl: string | null; isCoa
 export default function PublicHeader() {
   const { t } = useI18n();
   const [me, setMe] = useState<Me | null>(null);
+  // Menu du compte (profil, déconnexion) sous la photo.
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    function onDoc(e: MouseEvent) {
+      if (!menuRef.current?.contains(e.target as Node)) setMenuOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setMenuOpen(false);
+    }
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -105,26 +122,59 @@ export default function PublicHeader() {
                 </Link>
               )}
               <ClientBell />
-              {/* Photo + nom du client : un clic ouvre son profil. */}
-              <Link
-                href="/onboarding-client"
-                title={t("clientSpace.myProfile")}
-                className="flex items-center gap-2 rounded-full border border-border-strong bg-bg-card p-1 transition-colors hover:border-accent sm:pr-3"
-              >
-                <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-bg-elevated">
-                  {me.avatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={me.avatarUrl} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <span className="text-xs font-bold text-text-muted">
-                      {(me.firstName[0] ?? "?").toUpperCase()}
-                    </span>
-                  )}
-                </span>
-                <span className="hidden max-w-[160px] truncate text-sm font-medium text-text-base sm:inline">
-                  {[me.firstName, me.lastName].filter(Boolean).join(" ") || t("clientSpace.myProfile")}
-                </span>
-              </Link>
+              {/* Photo + nom du client : un clic ouvre le menu du compte
+                  (profil, déconnexion). */}
+              <div className="relative" ref={menuRef}>
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen((v) => !v)}
+                  aria-haspopup="menu"
+                  aria-expanded={menuOpen}
+                  aria-label={t("topbar.account")}
+                  className="flex items-center gap-2 rounded-full border border-border-strong bg-bg-card p-1 transition-colors hover:border-accent sm:pr-3"
+                >
+                  <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-bg-elevated">
+                    {me.avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={me.avatarUrl} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="text-xs font-bold text-text-muted">
+                        {(me.firstName[0] ?? "?").toUpperCase()}
+                      </span>
+                    )}
+                  </span>
+                  <span className="hidden max-w-[160px] truncate text-sm font-medium text-text-base sm:inline">
+                    {[me.firstName, me.lastName].filter(Boolean).join(" ") || t("clientSpace.myProfile")}
+                  </span>
+                </button>
+                {menuOpen && (
+                  <div
+                    role="menu"
+                    className="anim-menu-in absolute right-0 top-11 z-30 w-56 overflow-hidden rounded-xl border border-border bg-bg-elevated shadow-xl"
+                  >
+                    <p className="border-b border-border px-4 py-2.5 text-xs text-text-dim">
+                      {[me.firstName, me.lastName].filter(Boolean).join(" ")}
+                    </p>
+                    <Link
+                      role="menuitem"
+                      href="/onboarding-client"
+                      onClick={() => setMenuOpen(false)}
+                      className="block border-b border-border px-4 py-2.5 text-sm text-text-muted transition-colors hover:bg-bg-card hover:text-text-base"
+                    >
+                      {t("clientSpace.myProfile")}
+                    </Link>
+                    <form action="/auth/signout" method="post">
+                      <button
+                        type="submit"
+                        role="menuitem"
+                        className="block w-full px-4 py-2.5 text-left text-sm text-danger transition-colors hover:bg-bg-card"
+                      >
+                        {t("account.signout")}
+                      </button>
+                    </form>
+                  </div>
+                )}
+              </div>
             </>
           )}
         </div>
