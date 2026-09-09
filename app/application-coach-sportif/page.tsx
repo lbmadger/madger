@@ -7,12 +7,12 @@ import { FEE_RATE_BPS } from "@/lib/subscription/plan";
 import { currentMonthlyCents } from "@/lib/subscription/offer";
 
 export const metadata: Metadata = {
-  title: "Application coach sportif : réservation, paiement et facture | Madger",
+  title: "Madger, l'application des coachs sportifs : réservation, paiement, facture",
   description:
     "Madger est l'application des coachs sportifs pour vendre leurs séances : lien de réservation, paiement en ligne à la réservation, facture automatique. Plus de no-show, zéro relance.",
   alternates: { canonical: "/application-coach-sportif" },
   openGraph: {
-    title: "Application coach sportif : réservation, paiement et facture | Madger",
+    title: "Madger, l'application des coachs sportifs : réservation, paiement, facture",
     description:
       "Lien de réservation, paiement en ligne à la réservation, facture automatique. Plus de no-show, zéro relance.",
     url: "https://madger.app/application-coach-sportif",

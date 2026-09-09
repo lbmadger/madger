@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   // iOS transforme adresses/téléphones en liens soulignés pointillés (très
   // visible sur la facture) : détection coupée, nos liens restent explicites.
   formatDetection: { telephone: false, address: false, email: false },
-  title: "Application coach sportif : réservation et paiement | Madger",
+  title: "Madger · L'app préférée des coachs sportifs",
   description: "L'outil de paiement des coachs sportifs. Ton client réserve et paie en ligne, chaque séance est payée d'avance : plus de no-show, facture envoyée automatiquement.",
   // PWA iOS : ajoutée à l'écran d'accueil, l'app s'ouvre en plein écran
   // sans le chrome Safari (la barre du bas ne bouge plus jamais).
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
   },
   keywords: ["application coach sportif", "application pour coach sportif", "logiciel coach sportif", "réservation coach sportif", "paiement en ligne coach sportif", "no-show coach sportif", "facturation coach sportif", "prise de rendez-vous coach"],
   openGraph: {
-    title: "Application coach sportif : réservation et paiement | Madger",
+    title: "Madger · L'app préférée des coachs sportifs",
     description: "L'outil de paiement des coachs sportifs. Ton client réserve et paie en ligne, chaque séance est payée d'avance : plus de no-show, facture envoyée automatiquement.",
     url: "https://madger.app",
     siteName: "Madger",
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Application coach sportif : réservation et paiement | Madger",
+    title: "Madger · L'app préférée des coachs sportifs",
     description: "L'outil de paiement des coachs sportifs. Ton client réserve et paie en ligne, chaque séance est payée d'avance : plus de no-show, facture envoyée automatiquement.",
   },
 };
