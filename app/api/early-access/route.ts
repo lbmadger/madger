@@ -67,6 +67,8 @@ const MAX_LEN: Record<string, number> = {
   nb_clients: 40,
   instagram_site: 200,
   defi: 2000,
+  // Résultat de la simulation (texte libre repris dans l'email du coach).
+  simulation: 600,
 };
 
 // Compte réel des inscrits en base. En cas d'erreur Supabase, on renvoie 0
@@ -111,7 +113,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, waitlist: false });
     }
 
-    const { prenom, nom, email, telephone, type_coaching, nb_clients, instagram_site, defi } = body;
+    const { prenom, nom, email, telephone, type_coaching, nb_clients, instagram_site, defi, simulation } = body;
 
     // Validation serveur (le client valide aussi, mais l'API doit se suffire)
     if (!prenom || !email || !telephone || !type_coaching || !nb_clients || !defi) {
@@ -170,7 +172,19 @@ export async function POST(req: NextRequest) {
       nb_clients: escapeHtml(nb_clients),
       instagram_site: escapeHtml(instagram_site || ""),
       defi: escapeHtml(defi),
+      simulation: typeof simulation === "string" ? escapeHtml(simulation.trim()) : "",
     };
+    // Bloc « Ton résultat » de l'email du coach : la simulation qu'il a vue
+    // à l'écran, pour que la promesse « on te l'envoie par email » soit tenue.
+    const simulationBlock = safe.simulation
+      ? `
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(203,255,3,0.06);border:1px solid rgba(203,255,3,0.18);border-radius:12px;margin-bottom:32px;">
+              <tr><td style="padding:20px 24px;">
+                <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:#cbff03;letter-spacing:0.06em;text-transform:uppercase;">Ton résultat</p>
+                <p style="margin:0;font-size:14px;color:#ffffff;line-height:1.7;">${safe.simulation}</p>
+              </td></tr>
+            </table>`
+      : "";
 
     // Email de notification à toi (fondateur). Échec rendu VISIBLE dans les
     // logs Vercel : FOUNDER_EMAIL absente ou envoi Resend refusé ne doivent
@@ -240,7 +254,7 @@ export async function POST(req: NextRequest) {
             <!-- Greeting -->
             <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#cbff03;letter-spacing:0.08em;text-transform:uppercase;">${greetingLabel}</p>
             <p style="margin:0 0 28px;font-size:26px;font-weight:800;color:#ffffff;line-height:1.2;letter-spacing:-0.5px;">${heroTitle}</p>
-
+${simulationBlock}
             <p style="margin:0 0 20px;font-size:15px;color:#9a9a9a;line-height:1.8;">
               On a créé Madger parce qu'on a vu des coachs incroyables perdre des heures chaque semaine sur WhatsApp, Excel et des relances qui ne devraient pas exister.
             </p>

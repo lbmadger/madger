@@ -39,7 +39,7 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
     ? "Créer mon compte gratuitement"
     : full
     ? "Rejoindre la liste d'attente"
-    : "Rejoindre l'accès anticipé";
+    : "Calculer ce que je perds";
   const ctaHref = launched ? "/signup" : "#early-access";
 
   // ── Scroll section refs ──────────────────────────────────────

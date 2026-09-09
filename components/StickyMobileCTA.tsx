@@ -60,7 +60,7 @@ export default function StickyMobileCTA({ launched = false }: { launched?: boole
           boxShadow: "0 6px 20px rgba(0,0,0,0.5), 0 0 18px rgba(203,255,3,0.22)",
         }}
       >
-        <span>{launched ? "Créer mon compte" : "Réserver ma place"}</span>
+        <span>{launched ? "Créer mon compte" : "Calculer ce que je perds"}</span>
         <span style={{ fontSize: 16 }}>→</span>
       </a>
     </div>
