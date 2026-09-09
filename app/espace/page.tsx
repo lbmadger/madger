@@ -210,7 +210,7 @@ export default async function ClientSpacePage() {
     <I18nProvider locale={locale} dict={dict}>
       <div className="min-h-screen bg-bg">
         <PublicHeader />
-        <ClientSpace bookings={bookings} packs={packs} subs={subs} profileIncomplete={profileIncomplete} />
+        <ClientSpace bookings={bookings} packs={packs} subs={subs} profileIncomplete={profileIncomplete} userEmail={user?.email ?? null} />
       </div>
     </I18nProvider>
   );

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
+import { createClient } from "@/lib/supabase/client";
 import Button from "@/components/ui/Button";
 import { useConfirm } from "@/components/ui/useConfirm";
 import { TicketIcon, RepeatIcon, StarIcon } from "@/components/ui/icons";
@@ -98,12 +99,15 @@ export default function ClientSpace({
   packs = [],
   subs = [],
   profileIncomplete = false,
+  userEmail = null,
 }: {
   bookings: ClientBooking[];
   packs?: ClientPack[];
   subs?: ClientSub[];
   // Profil sportif pas encore rempli : bandeau vers /onboarding-client.
   profileIncomplete?: boolean;
+  // Email du compte connecté : les séances y sont rattachées, on le dit.
+  userEmail?: string | null;
 }) {
   const { t, locale } = useI18n();
   const router = useRouter();
@@ -979,6 +983,24 @@ export default function ClientSpace({
           >
             {t("clientSpace.findCoach")}
           </Link>
+          {userEmail && (
+            // Séances introuvables ? Elles sont rattachées à l'email de la
+            // réservation : on affiche le compte ouvert et de quoi en changer.
+            <p className="mt-4 text-xs text-text-dim">
+              {t("clientSpace.connectedAs").replace("{email}", userEmail)}{" "}
+              <button
+                type="button"
+                onClick={async () => {
+                  await createClient().auth.signOut();
+                  router.push("/login?redirect=/espace");
+                }}
+                className="font-medium text-accent hover:underline"
+              >
+                {t("clientSpace.switchAccount")}
+              </button>
+              <span className="block">{t("clientSpace.connectedHint")}</span>
+            </p>
+          )}
         </div>
       ) : (
         <ul className="mt-3 flex flex-col gap-2">
