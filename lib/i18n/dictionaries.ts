@@ -1262,7 +1262,9 @@ const fr = {
     gymLabel: "Salle de sport",
     gymSearchPlaceholder: "Cherche ta salle (ex. Basic Fit Dijon)",
     gymVerified: "Salle validée",
-    gymNoResult: "Aucune salle trouvée. Vérifie l'orthographe ou ajoute la ville.",
+    gymNoResult: "Aucune salle trouvée. Ajoute la ville, ou saisis-la à la main juste en dessous.",
+    gymManual: "Ma salle n'est pas dans la liste : je la saisis à la main",
+    gymSearchHint: "Tape le nom de ta salle. Si elle n'apparaît pas, garde son nom et indique son adresse en dessous.",
     bookingSection: "Réservations",
     bookingSectionDesc:
       "Comment les nouvelles demandes de séance sont acceptées.",
@@ -1301,7 +1303,7 @@ const fr = {
     gymAddressLabel: "Adresse de la salle",
     outdoorAddressLabel: "Lieu habituel en extérieur",
     outdoorAddressHint: "Parc, stade, plage… l'adresse où tes clients te retrouvent. Affichée sur ta page et dans les confirmations de séance quand tu n'as pas de salle.",
-    gymAddressHint: "Ta salle n'est pas dans la liste ? Garde son nom tel quel et indique son adresse ici : elle apparaît sur ta page et dans les confirmations de séance.",
+    gymAddressHint: "Salle saisie à la main : son nom et cette adresse apparaissent sur ta page et dans les confirmations de séance.",
     billingCompliance:
       "Avec ces informations, chaque facture émise via Madger porte tes mentions légales obligatoires. Elles sont numérotées sans trou par année et conservées dans ton espace, prêtes pour ton expert-comptable.",
     minNotice: "Délai minimum de réservation",
@@ -3117,7 +3119,9 @@ const en: Dictionary = {
     gymLabel: "Gym",
     gymSearchPlaceholder: "Search your gym (e.g. Basic Fit Dijon)",
     gymVerified: "Gym verified",
-    gymNoResult: "No gym found. Check the spelling or add the city.",
+    gymNoResult: "No gym found. Add the city, or enter it manually just below.",
+    gymManual: "My gym is not in the list: I will enter it manually",
+    gymSearchHint: "Type your gym's name. If it does not show up, keep the name and enter its address below.",
     bookingSection: "Bookings",
     bookingSectionDesc: "How new session requests get accepted.",
     bookingMode: {
@@ -3153,7 +3157,7 @@ const en: Dictionary = {
     gymAddressLabel: "Gym address",
     outdoorAddressLabel: "Usual outdoor spot",
     outdoorAddressHint: "Park, stadium, beach… the address where your clients meet you. Shown on your page and in session confirmations when you have no gym.",
-    gymAddressHint: "Your gym is not in the list? Keep its name as typed and enter its address here: it shows on your page and in session confirmations.",
+    gymAddressHint: "Manually entered gym: its name and this address show on your page and in session confirmations.",
     billingCompliance:
       "With these details, every invoice issued via Madger carries your mandatory legal mentions. They are numbered sequentially per year and kept in your space, ready for your accountant.",
     minNotice: "Minimum booking notice",

@@ -21,6 +21,7 @@ export default function GymAutocomplete({
   selectedAddress,
   onChange,
   onSelect,
+  onManual,
   inputClassName = "",
 }: {
   value: string;
@@ -29,6 +30,9 @@ export default function GymAutocomplete({
   // Saisie libre : le nom change, la validation saute (onSelect(null)).
   onChange: (v: string) => void;
   onSelect: (gym: GymPlace | null) => void;
+  // « Ma salle n'est pas dans la liste » : le parent affiche / focalise le
+  // champ d'adresse manuelle.
+  onManual?: () => void;
   inputClassName?: string;
 }) {
   const { t } = useI18n();
@@ -141,7 +145,22 @@ export default function GymAutocomplete({
             <li className="px-3 py-2 text-xs text-text-dim">
               {t("settings.gymNoResult")}
             </li>
-          ) : (
+          ) : null}
+          {!loading && onManual && (
+            <li role="option" aria-selected={false}>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  onManual();
+                }}
+                className="block w-full rounded-lg border-t border-white/5 px-3 py-2 text-left text-sm text-accent transition-colors hover:bg-accent/10"
+              >
+                {t("settings.gymManual")}
+              </button>
+            </li>
+          )}
+          {gyms.length > 0 &&
             gyms.map((g, i) => (
               <li
                 key={g.id}
@@ -168,8 +187,7 @@ export default function GymAutocomplete({
                   )}
                 </button>
               </li>
-            ))
-          )}
+            ))}
         </ul>
       )}
     </div>

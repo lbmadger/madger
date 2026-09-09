@@ -15,6 +15,7 @@ export default function AddressAutocomplete({
   className,
   inputClassName,
   ariaLabel,
+  inputRef,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -23,6 +24,8 @@ export default function AddressAutocomplete({
   className?: string;
   inputClassName?: string;
   ariaLabel?: string;
+  // Pour donner le focus au champ depuis le parent (saisie manuelle de salle).
+  inputRef?: React.RefObject<HTMLInputElement>;
 }) {
   const [suggestions, setSuggestions] = useState<Address[]>([]);
   const [open, setOpen] = useState(false);
@@ -90,6 +93,7 @@ export default function AddressAutocomplete({
   return (
     <div className={`relative ${className ?? ""}`} ref={ref}>
       <input
+        ref={inputRef}
         type="text"
         value={value}
         onChange={(e) => handleChange(e.target.value)}

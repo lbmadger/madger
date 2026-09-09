@@ -9,11 +9,15 @@ export type Address = {
   street: string;
   postcode: string;
   city: string;
+  // Coordonnées GPS de l'adresse (WGS84), quand la BAN les renvoie.
+  lat?: number;
+  lng?: number;
 };
 
 const ENDPOINT = "https://api-adresse.data.gouv.fr/search/";
 
 type Feature = {
+  geometry?: { coordinates?: [number, number] };
   properties?: {
     label?: string;
     name?: string;
@@ -37,11 +41,17 @@ export async function searchAddresses(query: string): Promise<Address[]> {
       .map((f): Address | null => {
         const p = f.properties;
         if (!p?.label || !p.postcode || !p.city) return null;
+        const coords = f.geometry?.coordinates;
+        const hasCoords =
+          Array.isArray(coords) &&
+          typeof coords[0] === "number" &&
+          typeof coords[1] === "number";
         return {
           label: p.label,
           street: p.name ?? "",
           postcode: p.postcode,
           city: p.city,
+          ...(hasCoords ? { lng: coords[0], lat: coords[1] } : {}),
         };
       })
       .filter((a): a is Address => a !== null);

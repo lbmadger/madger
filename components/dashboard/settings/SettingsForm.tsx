@@ -115,6 +115,14 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   // Salle absente de la recherche : nom libre + adresse saisie à la main
   // (sans coordonnées, la page publique et les confirmations l'affichent).
   const [gymAddress, setGymAddress] = useState(coach.gym_address ?? "");
+  // Coordonnées de l'adresse manuelle (BAN) : gardées pour la carte et les
+  // filtres marketplace ; sans elles la salle reste juste affichée.
+  const [gymCoords, setGymCoords] = useState<{ lat: number; lng: number } | null>(
+    !coach.gym_place_id && coach.gym_lat != null && coach.gym_lng != null
+      ? { lat: coach.gym_lat, lng: coach.gym_lng }
+      : null
+  );
+  const gymAddressRef = useRef<HTMLInputElement>(null);
   // Lieu habituel en extérieur (parc, stade…), migration 0072.
   const [outdoorAddress, setOutdoorAddress] = useState(coach.outdoor_address ?? "");
   // Salle validée (recherche OpenStreetMap) : adresse + coordonnées.
@@ -361,8 +369,8 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
           .update({
             gym_place_id: gymPlace?.id ?? null,
             gym_address: gymPlace?.address ?? (gymAddress.trim() || null),
-            gym_lat: gymPlace?.lat ?? null,
-            gym_lng: gymPlace?.lng ?? null,
+            gym_lat: gymPlace?.lat ?? (gymAddress.trim() ? gymCoords?.lat ?? null : null),
+            gym_lng: gymPlace?.lng ?? (gymAddress.trim() ? gymCoords?.lng ?? null : null),
             outdoor_address: venues.includes("outdoor") ? outdoorAddress.trim() || null : null,
           })
           .eq("id", coach.id);
@@ -666,8 +674,32 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
                 selectedAddress={gymPlace?.address || null}
                 onChange={setGymName}
                 onSelect={setGymPlace}
+                onManual={() => setTimeout(() => gymAddressRef.current?.focus(), 50)}
                 inputClassName={inputClass}
               />
+              {!gymPlace && !gymName.trim() && (
+                <span className="text-xs text-text-dim">{t("settings.gymSearchHint")}</span>
+              )}
+            </label>
+          )}
+          {/* Salle introuvable dans la recherche : nom libre + adresse à la main. */}
+          {venues.includes("coach_gym") && !gymPlace && gymName.trim() && (
+            <label className="flex flex-col gap-1.5">
+              <span className={labelClass}>{t("settings.gymAddressLabel")}</span>
+              <AddressAutocomplete
+                value={gymAddress}
+                onChange={(v) => {
+                  setGymAddress(v);
+                  setGymCoords(null);
+                }}
+                onSelect={(a) =>
+                  setGymCoords(a.lat != null && a.lng != null ? { lat: a.lat, lng: a.lng } : null)
+                }
+                inputRef={gymAddressRef}
+                inputClassName={inputClass}
+                placeholder="12 rue de Rivoli 75004 Paris"
+              />
+              <span className="text-xs text-text-dim">{t("settings.gymAddressHint")}</span>
             </label>
           )}
           {/* Lieu en extérieur : l'adresse où le client retrouve le coach. */}
@@ -680,18 +712,6 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
                 placeholder="Parc des Buttes-Chaumont, 75019 Paris"
               />
               <span className="text-xs text-text-dim">{t("settings.outdoorAddressHint")}</span>
-            </label>
-          )}
-          {/* Salle introuvable dans la recherche : adresse à la main. */}
-          {venues.includes("coach_gym") && !gymPlace && gymName.trim() && (
-            <label className="flex flex-col gap-1.5">
-              <span className={labelClass}>{t("settings.gymAddressLabel")}</span>
-              <AddressAutocomplete
-                value={gymAddress}
-                onChange={setGymAddress}
-                placeholder="12 rue de Rivoli 75004 Paris"
-              />
-              <span className="text-xs text-text-dim">{t("settings.gymAddressHint")}</span>
             </label>
           )}
 
