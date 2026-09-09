@@ -10,6 +10,7 @@ import {
   LAUNCH_OFFER,
   launchOfferActive,
   launchOfferDaysLeft,
+  launchOfferUrgent,
   launchOfferRegularFromLabel,
   currentMonthlyCents,
   currentAnnualCents,
@@ -93,7 +94,9 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
             <span style={{ color: "#CBFF03", fontSize: 12, fontWeight: 600 }}>
               {launched
                 ? launchOfferActive()
-                  ? `Prix de lancement : ${launchOfferDaysLeft() <= 1 ? "dernier jour" : `plus que ${launchOfferDaysLeft()} jours`} pour bloquer ${monthly} € par mois`
+                  ? launchOfferUrgent()
+                    ? `Prix de lancement : ${launchOfferDaysLeft() <= 1 ? "dernier jour" : `plus que ${launchOfferDaysLeft()} jours`} pour bloquer ${monthly} € par mois`
+                    : `Prix de lancement : ${monthly} € par mois, bloqué tant que tu restes abonné`
                   : `Pro : 7 jours d'essai gratuits, puis ${monthly} € par mois · Résiliable à tout moment`
                 : "Accès anticipé · Madger Pro offert 1 mois pour les premiers membres"}
             </span>
@@ -218,7 +221,9 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
               </div>
               {launchOfferActive() && (
                 <div className="mt-4 mb-6 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold leading-snug sm:mb-8" style={{ background: "rgba(203,255,3,0.08)", border: "1px solid rgba(203,255,3,0.25)", color: "#CBFF03" }}>
-                  {launchOfferDaysLeft() <= 1 ? "Dernier jour" : `Plus que ${launchOfferDaysLeft()} jours`} pour bloquer {monthly} € par mois, garanti tant que tu restes abonné
+                  {launchOfferUrgent()
+                    ? `${launchOfferDaysLeft() <= 1 ? "Dernier jour" : `Plus que ${launchOfferDaysLeft()} jours`} pour bloquer ${monthly} € par mois`
+                    : "Prix de lancement, bloqué tant que tu restes abonné"}
                 </div>
               )}
 

@@ -78,3 +78,9 @@ export function launchOfferRegularFromLabel(locale: string): string {
 export function launchOfferDaysLeft(now: Date = new Date()): number {
   return Math.max(0, Math.ceil((offerEnd().getTime() - now.getTime()) / 86400000));
 }
+
+// Le compte à rebours n'est affiché que sur les 30 derniers jours de l'offre :
+// « plus que 114 jours » ne presse personne, « plus que 12 jours » si.
+export function launchOfferUrgent(now: Date = new Date()): boolean {
+  return launchOfferActive(now) && launchOfferDaysLeft(now) <= 30;
+}

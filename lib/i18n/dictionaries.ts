@@ -620,7 +620,7 @@ const fr = {
     offerFrom: "tarif à partir du {date}",
     offerDaysLeft: "Plus que {n} jours pour bloquer ce prix",
     offerLastDay: "Dernier jour pour bloquer ce prix",
-    offerLocked: "Bloqué tant que tu restes abonné, même après la hausse.",
+    offerLocked: "Prix de lancement, bloqué tant que tu restes abonné.",
     modalTitle: "Pro, c'est ce qui fait rester tes clients",
     modalBody:
       "Laisse l'annulation automatique appliquer tes règles, relance les renouvellements, suis tes encaissements par client et repère ceux qui décrochent. Un no-show évité par mois et Pro est remboursé.",
@@ -2486,7 +2486,7 @@ const en: Dictionary = {
     offerFrom: "price from {date}",
     offerDaysLeft: "Only {n} days left to lock this price",
     offerLastDay: "Last day to lock this price",
-    offerLocked: "Locked as long as you stay subscribed, even after the increase.",
+    offerLocked: "Launch price, locked as long as you stay subscribed.",
     modalTitle: "Pro is what keeps your clients coming back",
     modalBody:
       "Let automatic cancellation apply your rules, send renewal reminders, track payments per client and spot the ones drifting away. One no-show avoided per month and Pro pays for itself.",

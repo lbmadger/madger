@@ -9,6 +9,7 @@ import Dialog from "@/components/ui/Dialog";
 import {
   launchOfferActive,
   launchOfferDaysLeft,
+  launchOfferUrgent,
 } from "@/lib/subscription/offer";
 import LaunchPrice from "@/components/subscription/LaunchPrice";
 
@@ -98,9 +99,10 @@ export default function ProUpsellModal() {
         />
         {offer ? (
           <p className="mt-2 text-xs font-semibold text-accent">
-            {daysLeft <= 1
-              ? t("plans.offerLastDay")
-              : t("plans.offerDaysLeft").replace("{n}", String(daysLeft))}
+            {launchOfferUrgent() &&
+              (daysLeft <= 1
+                ? t("plans.offerLastDay")
+                : t("plans.offerDaysLeft").replace("{n}", String(daysLeft)))}
             <span className="block font-normal text-text-muted">{t("plans.offerLocked")}</span>
           </p>
         ) : (

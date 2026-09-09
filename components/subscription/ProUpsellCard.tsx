@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   launchOfferActive,
   launchOfferDaysLeft,
+  launchOfferUrgent,
 } from "@/lib/subscription/offer";
 import LaunchPrice from "@/components/subscription/LaunchPrice";
 
@@ -48,7 +49,7 @@ export default function ProUpsellCard({
       </div>
       <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
         <LaunchPrice locale={locale} suffix={perMonth} fromLabel={offerFrom} size="sm" />
-        {offer && (
+        {offer && launchOfferUrgent() && (
           <p className="text-[11px] font-semibold text-accent">
             {days <= 1 ? offerLastDay : offerDaysLeft.replace("{n}", String(days))}
           </p>

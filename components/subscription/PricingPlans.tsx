@@ -6,6 +6,7 @@ import PromoCode from "@/components/subscription/PromoCode";
 import {
   launchOfferActive,
   launchOfferDaysLeft,
+  launchOfferUrgent,
   currentMonthlyCents,
   currentAnnualCents,
   euros,
@@ -165,11 +166,15 @@ export default function PricingPlans({
             reste abonné. */}
         {launchOfferActive() && (
           <p className="mt-2 rounded-xl border border-accent/25 bg-accent/[0.06] px-3 py-2 text-xs leading-relaxed text-text-base">
-            <span className="font-bold text-accent">
-              {launchOfferDaysLeft() <= 1
-                ? p.offerLastDay
-                : p.offerDaysLeft.replace("{n}", String(launchOfferDaysLeft()))}
-            </span>{" "}
+            {launchOfferUrgent() && (
+              <>
+                <span className="font-bold text-accent">
+                  {launchOfferDaysLeft() <= 1
+                    ? p.offerLastDay
+                    : p.offerDaysLeft.replace("{n}", String(launchOfferDaysLeft()))}
+                </span>{" "}
+              </>
+            )}
             {p.offerLocked}
           </p>
         )}
