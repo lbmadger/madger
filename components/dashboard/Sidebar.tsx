@@ -8,6 +8,7 @@ import MadgerLogo from "@/components/ui/MadgerLogo";
 import SidebarProfile from "@/components/dashboard/SidebarProfile";
 import { isNavActive } from "@/lib/ui/nav";
 import { useUnreadCount } from "@/lib/messaging/useUnreadCount";
+import { useNavBadges } from "@/lib/dashboard/useNavBadges";
 
 // Élément de navigation. `soon` grise l'entrée et la rend non cliquable tant
 // que le module n'existe pas (Phase 0 : seul "Vue d'ensemble" est actif).
@@ -71,11 +72,11 @@ const NAV: NavItem[] = [
 // et les Réglages portent l'entrée dédiée (c'est de la configuration).
 const SECONDARY: NavItem[] = [];
 
-function NavLink({ item, unread = 0 }: { item: NavItem; unread?: number }) {
+function NavLink({ item, badge = 0 }: { item: NavItem; badge?: number }) {
   const pathname = usePathname();
   const { t } = useI18n();
   const active = isNavActive(pathname, item.href, item.href === "/dashboard");
-  const showBadge = item.href === "/dashboard/messages" && unread > 0;
+  const showBadge = badge > 0;
 
   const content = (
     <>
@@ -96,9 +97,9 @@ function NavLink({ item, unread = 0 }: { item: NavItem; unread?: number }) {
       {showBadge && (
         <span
           className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[10px] font-bold text-black"
-          aria-label={`${unread} ${t("messages.unread")}`}
+          aria-label={t("nav.badge").replace("{n}", String(badge))}
         >
-          {unread > 9 ? "9+" : unread}
+          {badge > 9 ? "9+" : badge}
         </span>
       )}
       {item.soon && (
@@ -145,6 +146,7 @@ let lastRailIndex: number | null = null;
 
 export default function Sidebar() {
   const unread = useUnreadCount();
+  const badges: Record<string, number> = { ...useNavBadges(), "/dashboard/messages": unread };
   const pathname = usePathname();
   // Surlignage glissant : entrées de hauteur fixe (36 px + 4 px de gap), la
   // position active est une simple translation. Animée par l'API Web
@@ -194,7 +196,7 @@ export default function Sidebar() {
           />
         )}
         {NAV.map((item) => (
-          <NavLink key={item.href} item={item} unread={unread} />
+          <NavLink key={item.href} item={item} badge={badges[item.href] ?? 0} />
         ))}
 
         {SECONDARY.length > 0 && <div className="my-4 h-px bg-border" />}

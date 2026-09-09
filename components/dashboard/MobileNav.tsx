@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { isNavActive } from "@/lib/ui/nav";
 import { useUnreadCount } from "@/lib/messaging/useUnreadCount";
+import { useNavBadges } from "@/lib/dashboard/useNavBadges";
 
 // Barre d'onglets mobile flottante (façon app native) : capsule détachée du
 // bord, et une pastille accent qui GLISSE d'un onglet à l'autre au changement
@@ -54,6 +55,7 @@ export default function MobileNav() {
   const pathname = usePathname();
   const { t } = useI18n();
   const unread = useUnreadCount();
+  const badges: Record<string, number> = { ...useNavBadges(), "/dashboard/messages": unread };
 
   // Optimiste : la pastille part À L'INSTANT du toucher, sans attendre que
   // la nouvelle page soit rendue (sinon elle semble traîner du temps de
@@ -121,7 +123,8 @@ export default function MobileNav() {
         )}
         {TABS.map((tab, i) => {
           const active = i === activeIndex;
-          const showBadge = tab.href === "/dashboard/messages" && unread > 0;
+          const badge = badges[tab.href] ?? 0;
+          const showBadge = badge > 0;
           return (
             <Link
               key={tab.href}
@@ -149,9 +152,9 @@ export default function MobileNav() {
                     className={`absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-bold ${
                       active ? "bg-black text-accent" : "bg-accent text-black"
                     }`}
-                    aria-label={`${unread} ${t("messages.unread")}`}
+                    aria-label={t("nav.badge").replace("{n}", String(badge))}
                   >
-                    {unread > 9 ? "9+" : unread}
+                    {badge > 9 ? "9+" : badge}
                   </span>
                 )}
               </span>

@@ -37,6 +37,7 @@ const fr = {
     confirm: "Valider",
   },
   nav: {
+    badge: "{n} à voir",
     overview: "Accueil",
     // Barre mobile : 5 onglets se partagent l'écran, le libellé long ne
     // rentre pas et finissait tronqué en « Vue d'ens… ».
@@ -1945,6 +1946,7 @@ const en: Dictionary = {
     confirm: "Confirm",
   },
   nav: {
+    badge: "{n} to check",
     overview: "Dashboard",
     overviewShort: "Home",
     clients: "Clients",
