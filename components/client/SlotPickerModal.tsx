@@ -23,6 +23,8 @@ export default function SlotPickerModal({
   submitLabel,
   onSubmit,
   onClose,
+  maxPerWeek = null,
+  weekCounts = {},
 }: {
   coachSlug: string;
   coachName: string;
@@ -34,6 +36,11 @@ export default function SlotPickerModal({
   // Renvoie un message d'erreur (déjà traduit) ou null si tout est bon.
   onSubmit: (slots: string[]) => Promise<string | null>;
   onClose: () => void;
+  // Limite hebdomadaire du pack et séances déjà posées par semaine (clé =
+  // lundi AAAA-MM-JJ) : les semaines pleines sont grisées au lieu d'échouer
+  // à l'envoi.
+  maxPerWeek?: number | null;
+  weekCounts?: Record<string, number>;
 }) {
   const { t, locale } = useI18n();
   const loc = locale === "fr" ? "fr-FR" : "en-GB";
@@ -70,6 +77,27 @@ export default function SlotPickerModal({
   }, [coachSlug, durationMin, locale]);
 
   const currentDay = days?.[dayIdx];
+
+  // Semaine (lundi) d'une date locale AAAA-MM-JJ ou d'un instant ISO.
+  function weekOf(dateISO: string): string {
+    const d = dateISO.length === 10
+      ? (() => { const [y, m, dd] = dateISO.split("-").map(Number); return new Date(y, m - 1, dd); })()
+      : new Date(dateISO);
+    const monday = new Date(d);
+    monday.setHours(0, 0, 0, 0);
+    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+    const y = monday.getFullYear();
+    const m = String(monday.getMonth() + 1).padStart(2, "0");
+    const dd = String(monday.getDate()).padStart(2, "0");
+    return `${y}-${m}-${dd}`;
+  }
+  // Séances déjà posées + sélection en cours, par semaine.
+  function weekLoad(week: string): number {
+    return (weekCounts[week] ?? 0) + selected.filter((iso) => weekOf(iso) === week).length;
+  }
+  function weekFull(dateISO: string): boolean {
+    return !!maxPerWeek && weekLoad(weekOf(dateISO)) >= maxPerWeek;
+  }
   const noSlotsAtAll = useMemo(
     () => !!days && days.every((d) => d.slots.length === 0),
     [days]
@@ -144,21 +172,24 @@ export default function SlotPickerModal({
           <>
             <div className="flex gap-1.5 overflow-x-auto pb-1">
               {days.map((d, i) => {
-                const empty = d.slots.length === 0;
-                const active = i === dayIdx;
                 const picked = d.slots.filter((s) => selected.includes(s.iso)).length;
+                // Semaine au maximum du pack (hors jours où une sélection est déjà posée).
+                const blocked = picked === 0 && weekFull(d.date);
+                const empty = d.slots.length === 0 || blocked;
+                const active = i === dayIdx;
                 return (
                   <button
                     key={d.date}
                     type="button"
                     aria-pressed={active}
                     disabled={empty}
+                    title={blocked ? t("creditBooking.weekFull").replace("{n}", String(maxPerWeek)) : undefined}
                     onClick={() => setDayIdx(i)}
                     className={`relative shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
                       active
                         ? "border-accent bg-accent/10 text-accent"
                         : empty
-                        ? "border-border text-text-dim opacity-40"
+                        ? `border-border text-text-dim opacity-40 ${blocked ? "line-through" : ""}`
                         : "border-border-strong text-text-muted hover:text-text-base"
                     }`}
                   >
@@ -172,11 +203,18 @@ export default function SlotPickerModal({
                 );
               })}
             </div>
+            {maxPerWeek && (
+              <p className="text-[11px] text-text-dim">
+                {t("creditBooking.weekLimit").replace("{n}", String(maxPerWeek))}
+              </p>
+            )}
             {currentDay && currentDay.slots.length > 0 ? (
               <div className="grid grid-cols-4 gap-1.5">
                 {currentDay.slots.map((s) => {
                   const on = selected.includes(s.iso);
-                  const full = !on && maxSelect > 1 && selected.length >= maxSelect;
+                  const full =
+                    (!on && maxSelect > 1 && selected.length >= maxSelect) ||
+                    (!on && weekFull(currentDay.date));
                   return (
                     <button
                       key={s.iso}

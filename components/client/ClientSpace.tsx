@@ -172,7 +172,26 @@ export default function ClientSpace({
     credits: number;
     expires_at: string | null;
     cancel_hours: number | null;
+    max_per_week: number | null;
   };
+  // Lundi (AAAA-MM-JJ, heure locale) de la semaine d'un instant.
+  const weekOf = (iso: string) => {
+    const monday = new Date(iso);
+    monday.setHours(0, 0, 0, 0);
+    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+    return `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, "0")}-${String(monday.getDate()).padStart(2, "0")}`;
+  };
+  // Séances sur crédits déjà posées chez chaque coach, par semaine : le
+  // sélecteur grise les semaines qui ont atteint la limite du pack.
+  const creditWeekCounts = new Map<string, Record<string, number>>();
+  for (const b of bookings) {
+    if (!b.on_credit || !b.coach_slug) continue;
+    if (!["pending", "confirmed", "completed"].includes(b.status)) continue;
+    const rec = creditWeekCounts.get(b.coach_slug) ?? {};
+    const k = weekOf(b.starts_at);
+    rec[k] = (rec[k] ?? 0) + 1;
+    creditWeekCounts.set(b.coach_slug, rec);
+  }
   const byCoach = new Map<string, CoachCredits>();
   const nowMs = Date.now();
   // Packs collectifs actifs avec des places à poser (traités à part : une
@@ -199,6 +218,9 @@ export default function ClientSpace({
       ) {
         cur.expires_at = p.expires_at;
       }
+      if (p.max_per_week && (!cur.max_per_week || p.max_per_week < cur.max_per_week)) {
+        cur.max_per_week = p.max_per_week;
+      }
     } else {
       byCoach.set(p.coach_id, {
         coach_id: p.coach_id,
@@ -209,6 +231,7 @@ export default function ClientSpace({
         credits: left,
         expires_at: p.expires_at,
         cancel_hours: p.cancel_hours,
+        max_per_week: p.max_per_week ?? null,
       });
     }
   }
@@ -489,6 +512,8 @@ export default function ClientSpace({
           submitLabel={t("creditBooking.submit")}
           onSubmit={bookOnCredits}
           onClose={() => setCreditCoach(null)}
+          maxPerWeek={creditCoach.max_per_week}
+          weekCounts={creditCoach.coach_slug ? creditWeekCounts.get(creditCoach.coach_slug) ?? {} : {}}
         />
       )}
       {moveBooking && moveBooking.coach_slug && (
