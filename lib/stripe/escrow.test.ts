@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { coachBearsStripeFee, computePayout } from "./escrow";
 
 describe("computePayout", () => {
-  it("Essentiel : 5 % pour Madger, frais Stripe non déduits du coach", () => {
+  it("Taux 5 % (valeur libre) pour Madger, frais Stripe non déduits du coach", () => {
     const r = computePayout({ amountCents: 5_000, feeRateBps: 500, stripeFeeCents: 100 });
     expect(r).toEqual({
       refundCents: 0,

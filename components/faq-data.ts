@@ -36,7 +36,7 @@ export const faqs = [
   },
   {
     q: "Combien ça coûte si je ne vends rien ?",
-    a: "Rien. Le plan Essentiel n'a ni abonnement ni minimum : 0 € tant que tu n'encaisses pas, puis 5 % de frais de transaction sur chaque séance vendue, tout compris (paiement par carte, Apple Pay, remboursements et litiges). Pro, à 49 € par mois et 3 %, ajoute l'annulation automatique selon tes règles, les relances, l'écran encaissements, les alertes churn et les statistiques avancées : tu l'essaies 7 jours sans être débité.",
+    a: "Rien. Le plan Essentiel n'a ni abonnement ni minimum : 0 € tant que tu n'encaisses pas, puis 7 % de frais de transaction sur chaque séance vendue, tout compris (paiement par carte, Apple Pay, remboursements et litiges). Pro, à 49 € par mois et 3 %, ajoute l'annulation automatique selon tes règles, les relances, l'écran encaissements, les alertes churn et les statistiques avancées : tu l'essaies 7 jours sans être débité.",
   },
   {
     q: "Mes données et celles de mes clients sont-elles sécurisées ?",

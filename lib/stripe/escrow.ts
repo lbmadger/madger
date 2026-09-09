@@ -6,7 +6,7 @@
 //   prix = remboursement_client + frais_madger + frais_3x (le cas échéant) + versement_coach
 //
 // - frais_madger : taux du plan FIGÉ sur la transaction (payments.fee_rate_bps :
-//   5 % Essentiel, 3 % Pro, 0 Studio), appliqué au montant conservé.
+//   7 % Essentiel, 3 % Pro, 0 Studio), appliqué au montant conservé.
 //   « Tout compris » : les frais Stripe carte sont supportés par Madger, ils
 //   ne sont PAS déduits du coach (ils restent enregistrés dans
 //   payments.stripe_fee_cents pour la comptabilité interne et la marge).

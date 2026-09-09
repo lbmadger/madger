@@ -271,7 +271,7 @@ export default async function AdminOverview() {
             kind="currency"
             index={3}
             trend={pctTrend(commissionMonthCents, commissionPrevMonthCents, "vs mois dernier")}
-            info="Frais de transaction prélevés (5 % Essentiel, 3 % Pro), comptés le jour du versement au coach (pas le jour du paiement client) : c'est à ce moment qu'ils naissent, même règle que tes factures."
+            info="Frais de transaction prélevés (7 % Essentiel, 3 % Pro), comptés le jour du versement au coach (pas le jour du paiement client) : c'est à ce moment qu'ils naissent, même règle que tes factures."
           />
           <AnimatedStat
             label="Volume traité (30 j)"

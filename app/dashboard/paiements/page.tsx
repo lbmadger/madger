@@ -16,7 +16,7 @@ import ProLock from "@/components/subscription/ProLock";
 export const dynamic = "force-dynamic";
 
 // Page Paiements : connexion Stripe du coach. La note de frais dépend du plan
-// réel : frais de transaction au taux du plan (5 % Essentiel, 3 % Pro).
+// réel : frais de transaction au taux du plan (7 % Essentiel, 3 % Pro).
 export default async function PaymentsPage() {
   const { dict, locale } = getServerDictionary();
   const loc = locale === "fr" ? "fr-FR" : "en-GB";

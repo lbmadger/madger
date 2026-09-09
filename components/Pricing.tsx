@@ -5,6 +5,7 @@ import SectionLabel from "@/components/ui/SectionLabel";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 import CoachAside from "@/components/ui/CoachAside";
 import PricingCalculator from "@/components/PricingCalculator";
+import { FEE_RATE_BPS } from "@/lib/subscription/plan";
 import {
   LAUNCH_OFFER,
   launchOfferActive,
@@ -49,6 +50,11 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
   const ctaHref = launched ? "/signup" : "#early-access";
   const monthly = currentMonthlyCents() / 100;
   const annual = currentAnnualCents() / 100;
+  // Chiffre d'affaires mensuel au-delà duquel Pro coûte moins cher
+  // qu'Essentiel : abonnement / écart de taux (jamais un montant en dur).
+  const breakeven = Math.round(
+    monthly / ((FEE_RATE_BPS.essential - FEE_RATE_BPS.pro) / 10000)
+  ).toLocaleString("fr-FR");
   return (
     <section
       id="tarifs"
@@ -77,7 +83,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
-            }}>5 % par séance encaissée, tout compris.</span>
+            }}>7 % par séance encaissée, tout compris.</span>
           </h2>
           <p className="text-text-muted text-lg max-w-lg mx-auto mb-6" style={{ lineHeight: 1.6 }}>
             Essentiel pour démarrer sans risque : 0 € tant que tu n&apos;encaisses rien. Pro pour automatiser tes annulations, relancer tes clients et garder plus sur chaque séance. 7 jours d&apos;essai, sans engagement.
@@ -118,7 +124,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
                   0 €<span style={{ fontSize: "0.45em", fontWeight: 700, color: "#9a9a9a" }}> / mois</span>
                 </div>
                 <div className="text-white text-sm">
-                  5 % de frais de transaction, tout compris.
+                  7 % de frais de transaction, tout compris.
                 </div>
                 <div className="text-text-muted text-xs">
                   Sans abonnement, sans minimum : tu ne vends pas, tu ne paies pas.
@@ -255,8 +261,8 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
           className="max-w-3xl mx-auto mt-8 flex flex-col gap-2 text-center"
         >
           <p className="text-sm" style={{ color: "#C9C9C4" }}>
-            Au-delà de 2 450 € encaissés par mois, Pro te coûte moins cher qu&apos;Essentiel.
-            En dessous, tes relances, ton annulation automatique et tes statistiques te coûtent la différence, jamais plus de 49 € par mois.
+            Au-delà de {breakeven} € encaissés par mois, Pro te coûte moins cher qu&apos;Essentiel.
+            En dessous, tes relances, ton annulation automatique et tes statistiques te coûtent la différence, jamais plus de {monthly} € par mois.
           </p>
           <p className="text-xs" style={{ color: "#8C8C8C" }}>
             Tout compris : paiement par carte, Apple Pay, remboursements et litiges. Un seul pourcentage, rien d&apos;autre.

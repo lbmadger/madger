@@ -479,7 +479,7 @@ export async function POST(req: NextRequest) {
             if (reg) {
               // Le taux d'une subscription Stripe est figé à sa création : si
               // le plan du coach a changé depuis, on réaligne la subscription
-              // (5 % Essentiel, 3 % Pro) pour les échéances SUIVANTES. Le
+              // (7 % Essentiel, 3 % Pro) pour les échéances SUIVANTES. Le
               // taux réellement prélevé sur celle-ci est celui de la charge.
               // Best-effort.
               const currentFee =

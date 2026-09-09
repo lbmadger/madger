@@ -496,7 +496,7 @@ const fr = {
     billingAnnual: "Annuel",
     annualSave: "2 mois offerts",
     annualMonthlyEq: "soit {price} par mois",
-    feesFree: "5 % de frais de transaction, tout compris.",
+    feesFree: "7 % de frais de transaction, tout compris.",
     feesPro: "3 % de frais de transaction, tout compris.",
     proNoShow: "Un no-show évité par mois et Pro est remboursé.",
     upgrading: "Ouverture du paiement sécurisé…",
@@ -688,7 +688,7 @@ const fr = {
     feesNotePro:
       "Offre Pro : 3 % de frais de transaction, tout compris.",
     feesNoteFree:
-      "Offre Essentiel : 5 % de frais de transaction, tout compris.",
+      "Offre Essentiel : 7 % de frais de transaction, tout compris.",
     notConfigured: "Paiements bientôt disponibles.",
     historyTitle: "Historique des paiements",
     historyEmpty:
@@ -2340,7 +2340,7 @@ const en: Dictionary = {
     billingAnnual: "Annual",
     annualSave: "2 months free",
     annualMonthlyEq: "i.e. {price} per month",
-    feesFree: "5% transaction fees, all inclusive.",
+    feesFree: "7% transaction fees, all inclusive.",
     feesPro: "3% transaction fees, all inclusive.",
     proNoShow: "One no-show avoided per month and Pro pays for itself.",
     upgrading: "Opening secure payment…",
@@ -2530,7 +2530,7 @@ const en: Dictionary = {
     feesNotePro:
       "Pro plan: 3% transaction fees, all inclusive.",
     feesNoteFree:
-      "Essential plan: 5% transaction fees, all inclusive.",
+      "Essential plan: 7% transaction fees, all inclusive.",
     notConfigured: "Payments coming soon.",
     historyTitle: "Payment history",
     historyEmpty:

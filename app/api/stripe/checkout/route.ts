@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 //   (24 h) si rien n'est signalé.
 // - Abonnement mensuel : souscription récurrente versée directement au coach
 //   (transfer_data), frais de transaction Madger en application_fee (taux du
-//   plan : 5 % Essentiel, 3 % Pro). Sur une destination charge, Stripe
+//   plan : 7 % Essentiel, 3 % Pro). Sur une destination charge, Stripe
 //   prélève ses frais sur la plateforme : « tout compris » de fait. Pas de
 //   séquestre sur du récurrent.
 export async function POST(req: NextRequest) {
@@ -197,7 +197,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "group_requires_session" }, { status: 400 });
   }
   // Packs ouverts à tous les plans depuis la migration 0070 : chaque pack
-  // vendu en Essentiel rapporte 5 % à Madger, le verrou Pro se privait de
+  // vendu en Essentiel rapporte 7 % à Madger, le verrou Pro se privait de
   // cette commission et poussait les coachs à packs vers la concurrence.
 
   // ── Pack collectif : crédits seuls, les places se posent sur les cours ────

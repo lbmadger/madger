@@ -46,7 +46,7 @@ export default function CGV() {
             <h2 className="text-white font-bold mb-3" style={{ fontSize: 17 }}>Offres et tarifs</h2>
             <p>Madger propose deux formules :</p>
             <ul className="mt-3 flex flex-col gap-2" style={{ paddingLeft: 20, listStyleType: "disc" }}>
-              <li><strong className="text-white">Essentiel</strong> : 0 € par mois, 5 % de frais de transaction sur chaque paiement encaissé, tout compris</li>
+              <li><strong className="text-white">Essentiel</strong> : 0 € par mois, 7 % de frais de transaction sur chaque paiement encaissé, tout compris</li>
               <li><strong className="text-white">Madger Pro</strong> : 49 € par mois ou 490 € par an, 3 % de frais de transaction sur chaque paiement encaissé, tout compris</li>
             </ul>
             <p className="mt-3">
@@ -206,7 +206,7 @@ export default function CGV() {
           </section>
 
           <p style={{ fontSize: 13, color: "#3A3A3A", marginTop: 8 }}>
-            Dernière mise à jour : septembre 2026, version 2026-09b
+            Dernière mise à jour : septembre 2026, version 2026-09c
           </p>
         </div>
       </div>

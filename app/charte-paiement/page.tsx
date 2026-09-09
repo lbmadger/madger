@@ -254,7 +254,7 @@ export default function ChartePaiement() {
               Sur chaque séance, pack ou échéance d'abonnement payé, Madger
               prélève des{" "}
               <strong className="text-white">frais de transaction, tout compris</strong>,
-              sur la part effectivement conservée par le coach : 5 % pour un
+              sur la part effectivement conservée par le coach : 7 % pour un
               coach Essentiel, 3 % pour un coach Pro. Les frais de traitement
               du paiement par carte sont inclus dans ce taux et supportés par
               Madger. Le taux applicable est celui du plan du coach au moment
@@ -296,7 +296,7 @@ export default function ChartePaiement() {
               .
             </p>
             <p style={{ fontSize: 13, color: "#3A3A3A", marginTop: 8 }}>
-              Dernière mise à jour : septembre 2026, version 2026-09b
+              Dernière mise à jour : septembre 2026, version 2026-09c
             </p>
           </section>
         </div>

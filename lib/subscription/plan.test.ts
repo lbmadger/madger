@@ -22,15 +22,15 @@ const future = new Date(Date.now() + 7 * 86400000).toISOString();
 const past = new Date(Date.now() - 7 * 86400000).toISOString();
 
 describe("plans et taux", () => {
-  it("fixe les taux : Essentiel 5 %, Pro 3 %, Studio 0 %", () => {
-    expect(FEE_RATE_BPS).toEqual({ essential: 500, pro: 300, studio: 0 });
-    expect(feeRatePercent("essential")).toBe(5);
+  it("fixe les taux : Essentiel 7 %, Pro 3 %, Studio 0 %", () => {
+    expect(FEE_RATE_BPS).toEqual({ essential: 700, pro: 300, studio: 0 });
+    expect(feeRatePercent("essential")).toBe(7);
     expect(feeRatePercent("pro")).toBe(3);
     expect(feeRatePercent("studio")).toBe(0);
   });
 
   it("retrouve le plan depuis un taux réellement prélevé, null pour un taux manuel", () => {
-    expect(planForRateBps(500)).toBe("essential");
+    expect(planForRateBps(700)).toBe("essential");
     expect(planForRateBps(300)).toBe("pro");
     expect(planForRateBps(0)).toBe("studio");
     expect(planForRateBps(250)).toBeNull();
@@ -51,7 +51,7 @@ describe("plans et taux", () => {
     expect(planOf({ pro_until: future })).toBe("pro");
     expect(planOf({ pro_until: past })).toBe("essential");
     expect(planOf(null)).toBe("essential");
-    expect(feeRateBps(planOf(null))).toBe(500);
+    expect(feeRateBps(planOf(null))).toBe(700);
   });
 });
 

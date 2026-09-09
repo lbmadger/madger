@@ -14,7 +14,7 @@ import MadgerLogo from "@/components/ui/MadgerLogo";
 export const dynamic = "force-dynamic";
 
 // Facture de commission Madger → coach pour un mois donné (AAAA-MM) : le
-// récapitulatif des 5 % prélevés sur chaque séance encaissée du mois.
+// récapitulatif des frais prélevés sur chaque séance encaissée du mois.
 // Imprimable (→ « Enregistrer en PDF »), même gabarit que la facture client.
 export default async function MadgerInvoicePage({
   params,

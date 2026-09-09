@@ -1,6 +1,6 @@
 // Plans Madger et taux de frais de transaction.
 //
-//   essential : 0 € / mois, 5 % de frais de transaction, tout compris
+//   essential : 0 € / mois, 7 % de frais de transaction, tout compris
 //   pro       : 49 € / mois, 3 % de frais de transaction, tout compris
 //   studio    : 149 € / mois, 0 % de frais Madger, frais Stripe au coût réel
 //               (présent dans le modèle et le calcul UNIQUEMENT : aucune
@@ -21,7 +21,7 @@ export const PLANS: readonly Plan[] = ["essential", "pro", "studio"] as const;
 
 // Taux Madger en points de base (1 % = 100 bps).
 export const FEE_RATE_BPS: Record<Plan, number> = {
-  essential: 500,
+  essential: 700,
   pro: 300,
   studio: 0,
 };
