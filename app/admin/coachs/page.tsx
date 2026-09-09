@@ -73,16 +73,16 @@ export default async function AdminCoaches() {
       </p>
 
       <div className="mt-6 overflow-x-auto rounded-2xl border border-border">
-        <table className="w-full text-sm">
+        <table className="w-full min-w-[760px] text-sm">
           <thead>
             <tr className="border-b border-border bg-bg-card text-left text-xs uppercase tracking-wide text-text-dim">
-              <th className="px-4 py-3">Nom</th>
-              <th className="px-4 py-3">Email</th>
-              <th className="px-4 py-3">Ville</th>
-              <th className="px-4 py-3">Offre</th>
-              <th className="px-4 py-3">Encaisse</th>
-              <th className="px-4 py-3">En ligne</th>
-              <th className="px-4 py-3">Public</th>
+              <th className="whitespace-nowrap px-4 py-3">Nom</th>
+              <th className="whitespace-nowrap px-4 py-3">Email</th>
+              <th className="whitespace-nowrap px-4 py-3">Ville</th>
+              <th className="whitespace-nowrap px-4 py-3">Offre</th>
+              <th className="whitespace-nowrap px-4 py-3">Encaisse</th>
+              <th className="whitespace-nowrap px-4 py-3">En ligne</th>
+              <th className="whitespace-nowrap px-4 py-3">Public</th>
             </tr>
           </thead>
           <tbody>
@@ -94,7 +94,7 @@ export default async function AdminCoaches() {
               const abandoned = !c.onboarding_completed;
               return (
                 <tr key={c.id as string} className="border-b border-border/60">
-                  <td className="px-4 py-3 font-medium text-text-base">
+                  <td className="whitespace-nowrap px-4 py-3 font-medium text-text-base">
                     {c.slug ? (
                       <Link href={`/${c.slug}`} target="_blank" className="hover:text-accent">
                         {name}
@@ -103,14 +103,14 @@ export default async function AdminCoaches() {
                       <span>
                         {name}
                         {abandoned && (
-                          <span className="ml-2 rounded-full border border-warning/40 px-2 py-0.5 text-[10px] font-medium text-warning">
+                          <span className="ml-2 whitespace-nowrap rounded-full border border-warning/40 px-2 py-0.5 text-[10px] font-medium text-warning">
                             onboarding abandonné
                           </span>
                         )}
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-text-muted">
+                  <td className="whitespace-nowrap px-4 py-3 text-text-muted">
                     {email ? (
                       <a href={`mailto:${email}`} className="hover:text-accent">
                         {email}
@@ -119,13 +119,13 @@ export default async function AdminCoaches() {
                       "-"
                     )}
                   </td>
-                  <td className="px-4 py-3 text-text-muted">{c.city || "-"}</td>
-                  <td className="px-4 py-3">
+                  <td className="whitespace-nowrap px-4 py-3 text-text-muted">{c.city || "-"}</td>
+                  <td className="whitespace-nowrap px-4 py-3">
                     <span className={pro ? "text-accent" : "text-text-muted"}>
                       {pro ? "Pro" : "Essentiel"}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-text-muted">
+                  <td className="whitespace-nowrap px-4 py-3 text-text-muted">
                     {c.stripe_charges_enabled ? "✅" : "-"}
                   </td>
                   {(() => {
@@ -136,7 +136,7 @@ export default async function AdminCoaches() {
                     const suspicious = past >= 5 && paid / past < 0.5;
                     return (
                       <td
-                        className={`px-4 py-3 tabular-nums ${
+                        className={`whitespace-nowrap px-4 py-3 tabular-nums ${
                           suspicious ? "font-semibold text-warning" : "text-text-muted"
                         }`}
                         title="Séances payées en ligne / séances passées (hors annulées)"
@@ -145,7 +145,7 @@ export default async function AdminCoaches() {
                       </td>
                     );
                   })()}
-                  <td className="px-4 py-3 text-text-muted">
+                  <td className="whitespace-nowrap px-4 py-3 text-text-muted">
                     {c.listed ? "✅" : "-"}
                   </td>
                 </tr>
