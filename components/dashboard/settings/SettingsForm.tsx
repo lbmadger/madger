@@ -133,6 +133,9 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   // Mentions légales de facturation (SIRET, TVA, adresse).
   const [businessName, setBusinessName] = useState(coach.business_name ?? "");
   const [siret, setSiret] = useState(coach.siret ?? "");
+  // Annuaire officiel injoignable au moment de l'enregistrement : dit
+  // clairement, au lieu du « non vérifié » muet.
+  const [siretNotice, setSiretNotice] = useState<string | null>(null);
   const [vatNumber, setVatNumber] = useState(coach.vat_number ?? "");
   const [billingAddress, setBillingAddress] = useState(
     coach.billing_address ?? ""
@@ -289,7 +292,16 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
       // des factures.
       if (section === "billing") {
         const next = cleanSiret(siret);
-        if (next && next !== cleanSiret(coach.siret ?? "")) {
+        // L'adresse de facturation figure sur chaque facture émise : dès
+        // qu'un SIRET est renseigné, elle est obligatoire.
+        if (next && !billingAddress.trim()) {
+          setError(t("settings.errors.billingAddressRequired"));
+          return;
+        }
+        // Vérifié dans l'annuaire officiel si le SIRET change OU s'il n'a
+        // jamais été vérifié (saisi à l'onboarding, avant la vérification).
+        setSiretNotice(null);
+        if (next && (next !== cleanSiret(coach.siret ?? "") || !coach.siret_verified_at)) {
           const res = await fetch("/api/siret/verify", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -310,6 +322,8 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
             return;
           }
           payload.siret = next;
+          const j = await res.json().catch(() => ({}));
+          if (j?.status === "unavailable") setSiretNotice(t("settings.siretUnavailableHint"));
         }
       }
       const { error } = await supabase
@@ -941,7 +955,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
       <SettingsSection
         icon={<FileTextIcon size={18} />}
         title={t("settings.billingSection")}
-        todo={!siret.trim() ? t("settings.toFill") : undefined}
+        todo={!siret.trim() || !billingAddress.trim() ? t("settings.toFill") : undefined}
         desc={t("settings.billingDesc")}
       >
         <div className="flex flex-col gap-3">
@@ -966,7 +980,9 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
                   {t("settings.siretVerified").replace("{name}", coach.siret_legal_name)}
                 </span>
               ) : siret.trim() ? (
-                <span className="text-xs text-text-dim">{t("settings.siretUnverifiedHint")}</span>
+                <span className="text-xs text-text-dim">
+                  {siretNotice ?? (coach.siret ? t("settings.siretSavedUnverifiedHint") : t("settings.siretUnverifiedHint"))}
+                </span>
               ) : null}
             </label>
           </div>
