@@ -62,6 +62,8 @@ export type ClientBooking = {
   ends_at: string;
   status: string;
   location: string;
+  // Lien visio (Google Meet ou lien posé par le coach), null sinon.
+  meeting_url?: string | null;
   // Lieu de la séance en présentiel (salle + adresse), null en visio.
   place: string | null;
   coach_name: string;
@@ -1085,11 +1087,21 @@ export default function ClientSpace({
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border pt-2.5">
                 {/* Accès direct au suivi : lien visio, ajout calendrier,
                     détails. Sans dépendre de l'email de confirmation. */}
+                {b.location === "online" && b.meeting_url && (
+                  <a
+                    href={b.meeting_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full bg-accent px-3 py-1 text-xs font-semibold text-black transition-opacity hover:opacity-90"
+                  >
+                    {t("reservation.joinMeeting")}
+                  </a>
+                )}
                 <Link
                   href={`/reservation/${b.id}`}
                   className="text-xs font-semibold text-accent hover:underline"
                 >
-                  {b.location === "online"
+                  {b.location === "online" && b.meeting_url
                     ? t("clientSpace.viewBookingOnline")
                     : t("clientSpace.viewBooking")}{" "}
                   ›

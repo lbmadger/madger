@@ -69,7 +69,7 @@ export default async function ClientSpacePage() {
           admin
             .from("bookings")
             .select(
-              "id, starts_at, ends_at, status, location, location_text, reschedule_pending_until, rescheduled_from, pack_credit_id, pack_credits(cancel_hours), group_sessions(name), coaches(first_name, last_name, slug, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, cancel_hours, gym_name, gym_address, outdoor_address, pro_until, pro_bonus_until)"
+              "id, starts_at, ends_at, status, location, location_text, meeting_url, reschedule_pending_until, rescheduled_from, pack_credit_id, pack_credits(cancel_hours), group_sessions(name), coaches(first_name, last_name, slug, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, cancel_hours, gym_name, gym_address, outdoor_address, pro_until, pro_bonus_until)"
             )
             .in("client_id", clientIds)
             .order("starts_at", { ascending: false })
@@ -150,6 +150,7 @@ export default async function ClientSpacePage() {
           ends_at: b.ends_at as string,
           status: b.status as string,
           location: b.location as string,
+          meeting_url: (b.meeting_url as string | null) ?? null,
           // Lieu de la séance en présentiel : texte posé sur la séance,
           // sinon salle + adresse du coach.
           place:

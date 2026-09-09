@@ -184,6 +184,11 @@ export default async function ReservationPage({
               {booking.status !== "cancelled" &&
                 new Date(booking.ends_at).getTime() > Date.now() && (
                   <div className="mt-5 flex flex-wrap gap-2">
+                    {booking.location === "online" && !booking.meeting_url && (
+                      <p className="w-full rounded-xl border border-border bg-bg-elevated px-4 py-3 text-xs text-text-muted">
+                        {r.meetPending}
+                      </p>
+                    )}
                     {booking.location === "online" && booking.meeting_url && (
                       <a
                         href={booking.meeting_url}

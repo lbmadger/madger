@@ -126,17 +126,31 @@ export default function AddSessionModal({
         notes: notes.trim() || null,
       };
 
-      const { error } = editing
-        ? await supabase.from("bookings").update(payload).eq("id", booking!.id)
-        : await supabase.from("bookings").insert({
-            ...payload,
-            coach_id: user.id,
-            status: "confirmed",
-          });
+      const { data: saved, error } = editing
+        ? await supabase.from("bookings").update(payload).eq("id", booking!.id).select("id").single()
+        : await supabase
+            .from("bookings")
+            .insert({
+              ...payload,
+              coach_id: user.id,
+              status: "confirmed",
+            })
+            .select("id")
+            .single();
 
       if (error) {
         setError(t("agenda.errors.generic"));
         return;
+      }
+      // Visio sans lien : un événement Google Meet est créé si l'agenda
+      // Google du coach est connecté (fire-and-forget, la séance est déjà
+      // enregistrée ; le lien apparaît ensuite chez le client).
+      if (location === "online" && !meetingUrl.trim() && saved?.id) {
+        fetch("/api/bookings/google-sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ booking_id: saved.id }),
+        }).catch(() => {});
       }
       // Séance CONFIRMÉE déplacée : le client est prévenu par email et
       // l'événement Google est recalé (fire-and-forget : l'update est déjà
@@ -299,6 +313,7 @@ export default function AddSessionModal({
                 placeholder={t("agenda.form.meetingUrlPlaceholder")}
                 className={`${fieldClass} placeholder:text-text-dim`}
               />
+              <span className="text-[11px] text-text-dim">{t("agenda.form.meetingUrlHint")}</span>
             </label>
           )}
 
