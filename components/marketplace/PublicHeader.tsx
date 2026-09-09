@@ -10,7 +10,7 @@ import ClientBell from "@/components/client/ClientBell";
 // En-tête léger des pages publiques de la marketplace. Le choix de la langue
 // vit dans les réglages, pas ici. Un client connecté y retrouve sa cloche et
 // sa photo (vers son profil) à côté de « Mes séances ».
-type Me = { firstName: string; avatarUrl: string | null };
+type Me = { firstName: string; lastName: string; avatarUrl: string | null };
 
 export default function PublicHeader() {
   const { t } = useI18n();
@@ -23,22 +23,27 @@ export default function PublicHeader() {
       const { data } = await supabase.auth.getSession();
       const user = data.session?.user;
       if (!user) return;
-      const [{ data: prof }, { data: cp }] = await Promise.all([
-        supabase.from("profiles").select("role").eq("id", user.id).maybeSingle(),
-        supabase
-          .from("client_profiles")
-          .select("first_name, avatar_url")
-          .eq("id", user.id)
-          .maybeSingle(),
-      ]);
-      // Seuls les clients ont cloche et profil ici : un coach a son dashboard.
-      if (!alive || prof?.role === "coach") return;
+      // Tout compte connecté a sa cloche et son profil ici (un coach peut
+      // aussi réserver chez un autre coach avec le même compte).
+      const { data: cp } = await supabase
+        .from("client_profiles")
+        .select("first_name, last_name, avatar_url")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (!alive) return;
+      const meta = (user.user_metadata ?? {}) as Record<string, string | undefined>;
       const first =
         (cp?.first_name as string | null) ||
-        (user.user_metadata?.first_name as string | undefined) ||
+        meta.first_name ||
+        (meta.full_name ?? "").split(" ")[0] ||
         (user.email ?? "").split("@")[0] ||
         "";
-      setMe({ firstName: first, avatarUrl: (cp?.avatar_url as string | null) ?? null });
+      const last =
+        (cp?.last_name as string | null) ||
+        meta.last_name ||
+        (meta.full_name ?? "").split(" ").slice(1).join(" ") ||
+        "";
+      setMe({ firstName: first, lastName: last, avatarUrl: (cp?.avatar_url as string | null) ?? null });
     })();
     return () => {
       alive = false;
@@ -71,20 +76,25 @@ export default function PublicHeader() {
           {me && (
             <>
               <ClientBell />
+              {/* Photo + nom du client : un clic ouvre son profil. */}
               <Link
                 href="/onboarding-client"
-                aria-label={t("clientSpace.myProfile")}
                 title={t("clientSpace.myProfile")}
-                className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-border-strong bg-bg-card transition-colors hover:border-accent"
+                className="flex items-center gap-2 rounded-full border border-border-strong bg-bg-card py-1 pl-1 pr-3 transition-colors hover:border-accent"
               >
-                {me.avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={me.avatarUrl} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <span className="text-xs font-bold text-text-muted">
-                    {(me.firstName[0] ?? "?").toUpperCase()}
-                  </span>
-                )}
+                <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-bg-elevated">
+                  {me.avatarUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={me.avatarUrl} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-xs font-bold text-text-muted">
+                      {(me.firstName[0] ?? "?").toUpperCase()}
+                    </span>
+                  )}
+                </span>
+                <span className="max-w-[140px] truncate text-sm font-medium text-text-base">
+                  {[me.firstName, me.lastName].filter(Boolean).join(" ") || t("clientSpace.myProfile")}
+                </span>
               </Link>
             </>
           )}
