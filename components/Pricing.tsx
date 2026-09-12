@@ -83,7 +83,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
-            }}>Essentiel : {FEE_RATE_BPS.essential / 100} % par séance. Pro : {monthly} € par mois et {FEE_RATE_BPS.pro / 100} %.</span>
+            }}>Essentiel : {FEE_RATE_BPS.essential / 100} % par séance. Pro : {monthly} € par mois et {FEE_RATE_BPS.pro / 100} %. Frais de transaction inclus.</span>
           </h2>
           <p className="text-text-muted text-lg max-w-lg mx-auto mb-6" style={{ lineHeight: 1.6 }}>
             Essentiel pour démarrer sans risque. Pro pour garder plus sur chaque séance et automatiser le reste. 7 jours d&apos;essai, sans engagement.
@@ -127,7 +127,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
                   0 €<span style={{ fontSize: "0.45em", fontWeight: 700, color: "#9a9a9a" }}> / mois</span>
                 </div>
                 <div className="text-white text-sm">
-                  {FEE_RATE_BPS.essential / 100} % de frais de transaction, tout compris.
+                  {FEE_RATE_BPS.essential / 100} % par séance encaissée, frais de transaction inclus.
                 </div>
                 <div className="text-text-muted text-xs">
                   Sans abonnement, sans minimum : tu ne vends pas, tu ne paies pas.
@@ -208,7 +208,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
                 {/* Le taux juste sous le prix, comme sur la carte Essentiel :
                     les deux lignes se lisent d'un coup. */}
                 <div className="text-white text-sm">
-                  + {FEE_RATE_BPS.pro / 100} % de frais de transaction, tout compris.
+                  + {FEE_RATE_BPS.pro / 100} % par séance encaissée, frais de transaction inclus.
                 </div>
                 {launchOfferActive() && (
                   <div className="text-[11px]" style={{ color: "#8C8C8C" }}>

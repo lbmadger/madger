@@ -108,7 +108,7 @@ export default function PricingCalculator() {
             <span className="text-xs font-semibold" style={{ color: "#9a9a9a" }}> / mois</span>
           </p>
           <p className="mt-1 text-[11px]" style={{ color: "#8C8C8C" }}>
-            {FEE_RATE_BPS.essential / 100} % de {eur(revenue)}
+            {FEE_RATE_BPS.essential / 100} % de {eur(revenue)}, frais de transaction inclus
           </p>
         </div>
         <div
@@ -126,7 +126,7 @@ export default function PricingCalculator() {
             <span className="text-xs font-semibold" style={{ color: "#9a9a9a" }}> / mois</span>
           </p>
           <p className="mt-1 text-[11px]" style={{ color: "#8C8C8C" }}>
-            {eur(proMonthly)} + {FEE_RATE_BPS.pro / 100} % de {eur(revenue)}
+            {eur(proMonthly)} + {FEE_RATE_BPS.pro / 100} % de {eur(revenue)}, frais de transaction inclus
           </p>
         </div>
       </div>

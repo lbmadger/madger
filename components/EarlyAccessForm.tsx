@@ -477,13 +477,13 @@ export default function EarlyAccessForm({ launched = false }: { launched?: boole
                     <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.03)" }}>
                       <p className="text-[11px] uppercase tracking-widest font-semibold" style={{ color: "#8A8A8A" }}>Essentiel · 0 € / mois</p>
                       <p className="mt-0.5 text-white font-bold tabular-nums">{eur(essentialCost)}<span className="text-[11px] font-medium" style={{ color: "#9a9a9a" }}> de frais / mois</span></p>
-                      <p className="text-[11px]" style={{ color: "#8C8C8C" }}>{FEE_RATE_BPS.essential / 100} % de {eur(revenue)}, 0 € si tu ne vends pas</p>
+                      <p className="text-[11px]" style={{ color: "#8C8C8C" }}>{FEE_RATE_BPS.essential / 100} % de {eur(revenue)}, frais de transaction inclus, 0 € si tu ne vends pas</p>
                     </div>
                     <div className="rounded-xl p-3" style={{ background: "rgba(203,255,3,0.05)", border: proCheaper ? "1px solid rgba(203,255,3,0.35)" : "1px solid transparent" }}>
                       <p className="text-[11px] uppercase tracking-widest font-semibold" style={{ color: "#CBFF03" }}>Pro · {eur(proMonthly)} / mois</p>
                       <p className="mt-0.5 text-white font-bold tabular-nums">{eur(proCost)}<span className="text-[11px] font-medium" style={{ color: "#9a9a9a" }}> tout compris / mois</span></p>
                       <p className="text-[11px]" style={{ color: "#8C8C8C" }}>
-                        {eur(proMonthly)} + {FEE_RATE_BPS.pro / 100} % de {eur(revenue)}
+                        {eur(proMonthly)} + {FEE_RATE_BPS.pro / 100} % de {eur(revenue)}, frais de transaction inclus
                         {launched ? " · 7 jours d'essai" : " · offert 1 mois aux premiers membres"}
                       </p>
                     </div>
