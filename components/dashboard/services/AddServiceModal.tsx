@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useSession } from "@/lib/auth/SessionProvider";
@@ -59,6 +59,16 @@ export default function AddServiceModal({
   const groupServices = services.filter(
     (s) => s.type === "single" && (s.capacity ?? 1) > 1 && s.id !== service?.id
   );
+  // Séance de référence d'un pack : sert uniquement à pré-remplir le nom, le
+  // prix et la durée. Non enregistrée : une fois créé, le pack est autonome
+  // (changer le prix de la séance ne touche pas aux packs déjà vendus).
+  const individualServices = services.filter(
+    (s) => s.type === "single" && (s.capacity ?? 1) === 1 && s.id !== service?.id
+  );
+  const [baseServiceId, setBaseServiceId] = useState("");
+  // À l'édition, les valeurs du coach priment : rien n'est jamais réécrit.
+  const [nameTouched, setNameTouched] = useState(!!service);
+  const [priceTouched, setPriceTouched] = useState(!!service);
   const [packGroup, setPackGroup] = useState(!!service?.group_service_id);
   const [groupServiceId, setGroupServiceId] = useState(
     service?.group_service_id ?? groupServices[0]?.id ?? ""
@@ -75,6 +85,41 @@ export default function AddServiceModal({
   const [description, setDescription] = useState(service?.description ?? "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Pack : le nom, le prix et la durée suivent la séance choisie et le nombre
+  // de séances, tant que le coach n'a pas écrit lui-même dans ces champs.
+  const packBaseId = packGroup ? groupServiceId : baseServiceId;
+  useEffect(() => {
+    if (type !== "pack" || !packBaseId) return;
+    const base = services.find((s) => s.id === packBaseId);
+    if (!base) return;
+    const n = Math.max(1, Number(packSize) || 1);
+    if (!nameTouched) {
+      setName(t("services.form.packAutoName").replace("{n}", String(n)).replace("{name}", base.name));
+    }
+    if (!priceTouched) {
+      setPrice(String((base.price_cents * n) / 100).replace(".", ","));
+    }
+    if (base.duration_min) setDuration(base.duration_min);
+  }, [type, packBaseId, packSize, nameTouched, priceTouched, services, t]);
+
+  // Repère sous le prix : prix plein de la séance × quantité, et la remise
+  // réellement consentie quand le coach baisse le total.
+  const packBase = type === "pack" && packBaseId ? services.find((s) => s.id === packBaseId) : undefined;
+  const packHint = (() => {
+    if (!packBase) return null;
+    const n = Math.max(1, Number(packSize) || 1);
+    const cents = Math.round((parseFloat(price.replace(",", ".")) || 0) * 100);
+    const eur = (c: number) =>
+      (c / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" });
+    const full = packBase.price_cents * n;
+    if (!cents) return t("services.form.packPriceFull").replace("{n}", String(n)).replace("{unit}", eur(packBase.price_cents)).replace("{total}", eur(full));
+    const unit = Math.round(cents / n);
+    const pct = full > 0 ? Math.round((1 - cents / full) * 100) : 0;
+    return pct > 0
+      ? t("services.form.packPriceDiscount").replace("{unit}", eur(unit)).replace("{pct}", String(pct))
+      : t("services.form.packPricePerSession").replace("{unit}", eur(unit));
+  })();
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -163,7 +208,10 @@ export default function AddServiceModal({
             <input
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                setNameTouched(true);
+              }}
               placeholder={t("services.form.namePlaceholder")}
               required
               autoFocus
@@ -203,6 +251,32 @@ export default function AddServiceModal({
               <span className="text-xs text-text-dim">{t("plans.lock.packType")}</span>
             )}
           </div>
+
+          {/* Pack individuel : la séance vendue par lot. Le nom, le prix et la
+              durée se remplissent d'eux-mêmes, le coach garde la main. */}
+          {type === "pack" && !packGroup && (
+            <div className="flex flex-col gap-1.5">
+              <span className={labelClass}>{t("services.form.packBase")}</span>
+              {individualServices.length === 0 ? (
+                <p className="text-xs leading-relaxed text-text-dim">
+                  {t("services.form.packBaseNone")}
+                </p>
+              ) : (
+                <Select
+                  value={baseServiceId}
+                  onChange={setBaseServiceId}
+                  ariaLabel={t("services.form.packBase")}
+                  options={[
+                    { value: "", label: t("services.form.packBaseFree") },
+                    ...individualServices.map((s) => ({
+                      value: s.id,
+                      label: `${s.name} · ${(s.price_cents / 100).toLocaleString("fr-FR", { style: "currency", currency: "EUR" })}`,
+                    })),
+                  ]}
+                />
+              )}
+            </div>
+          )}
 
           {/* Format : individuelle ou collective (séance simple seulement) */}
           {type === "single" && (
@@ -244,7 +318,10 @@ export default function AddServiceModal({
                 type="text"
                 inputMode="decimal"
                 value={price}
-                onChange={(e) => setPrice(e.target.value)}
+                onChange={(e) => {
+                  setPrice(e.target.value);
+                  setPriceTouched(true);
+                }}
                 placeholder="0"
                 className={inputClass}
               />
@@ -278,6 +355,10 @@ export default function AddServiceModal({
               <div />
             )}
           </div>
+
+          {packHint && (
+            <p className="-mt-1.5 text-xs leading-relaxed text-text-dim">{packHint}</p>
+          )}
 
           {/* Places d'un cours collectif */}
           {type === "single" && group && (
