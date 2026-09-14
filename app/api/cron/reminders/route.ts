@@ -192,7 +192,12 @@ export async function GET(req: NextRequest) {
       .select(
         "id, coach_id, client_id, clients(email), coaches(first_name, last_name)"
       )
-      .eq("status", "completed")
+      // "completed" n'est posé que par le versement (cron release) : une
+      // séance ajoutée à la main par le coach, payée en espèces ou hors
+      // Madger, resterait "confirmed" à vie et son client ne recevrait
+      // jamais la demande d'avis. On prend donc aussi les séances confirmées
+      // dont l'heure de fin est passée (la fenêtre 3-10 jours s'en charge).
+      .in("status", ["completed", "confirmed"])
       .eq("is_block", false)
       .is("review_reminder_sent_at", null)
       .gte("ends_at", from)
