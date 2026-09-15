@@ -63,7 +63,7 @@ const fr = {
     fact: "Le fait sport du jour",
     studioTitle: "Tes stories, prêtes à poster",
     studioDesc:
-      "Madger génère des images à tes couleurs avec ton lien de réservation écrit dessus : ta note, tes séances du mois, ou un fait sport qui change chaque jour. Partage-les en story : tes abonnés voient un coach actif et pro, découvrent que tu prends des réservations en ligne, et réservent en un clic. Zéro montage : tu appuies, tu partages.",
+      "Une image à tes couleurs, ton lien de réservation dessus. Tu appuies, tu partages en story.",
     preparing: "Préparation…",
     error: "Impossible de générer l'image. Réessaie.",
   },
@@ -1977,7 +1977,7 @@ const en: Dictionary = {
     fact: "Sport fact of the day",
     studioTitle: "Your stories, ready to post",
     studioDesc:
-      "Madger generates images in your colors with your booking link written on them: your rating, your month's sessions, or a sport fact that changes daily. Share them to your story: your followers see an active, professional coach, discover you take online bookings, and book in one tap. Zero editing: you tap, you share.",
+      "An image in your colors, your booking link on it. Tap, share to your story.",
     preparing: "Preparing…",
     error: "Could not generate the image. Try again.",
   },

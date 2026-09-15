@@ -975,33 +975,44 @@ export default async function OverviewPage() {
             stats, pas en fond de page où personne ne les trouvait. */}
         <div className="mt-3 grid grid-cols-4 gap-2 md:hidden">
           {[
+            // Statistiques en premier et en vert : c'est la page que le coach
+            // ouvre le plus souvent, elle ne doit pas se fondre avec les
+            // écrans de gestion (paiements, factures, avis).
+            {
+              href: "/dashboard/stats",
+              label: dict.nav.stats,
+              d: "M18 20V10M12 20V4M6 20v-6",
+              accent: true,
+            },
             {
               href: "/dashboard/paiements",
               label: dict.nav.payments,
               d: "M2 8h20M5 5h14a3 3 0 013 3v8a3 3 0 01-3 3H5a3 3 0 01-3-3V8a3 3 0 013-3z",
+              accent: false,
             },
             {
               href: "/dashboard/factures",
               label: dict.nav.invoices,
               d: "M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zM14 2v6h6M9 13h6M9 17h6",
+              accent: false,
             },
             {
               href: "/dashboard/avis",
               label: dict.nav.reviews,
               d: "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z",
-            },
-            {
-              href: "/dashboard/stats",
-              label: dict.nav.stats,
-              d: "M18 20V10M12 20V4M6 20v-6",
+              accent: false,
             },
           ].map((s) => (
             <Link
               key={s.href}
               href={s.href}
-              className="flex min-w-0 flex-col items-center gap-1.5 rounded-2xl border border-border bg-bg-card px-1 py-3 text-xs font-medium text-text-muted transition-colors hover:border-accent/40 hover:text-text-base"
+              className={`flex min-w-0 flex-col items-center gap-1.5 rounded-2xl border px-1 py-3 text-xs font-medium transition-colors ${
+                s.accent
+                  ? "border-accent/50 bg-accent/[0.10] font-semibold text-text-base"
+                  : "border-border bg-bg-card text-text-muted hover:border-accent/40 hover:text-text-base"
+              }`}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={s.accent ? 2 : 1.6} strokeLinecap="round" strokeLinejoin="round" className={s.accent ? "text-accent" : undefined}>
                 <path d={s.d} />
               </svg>
               <span className="max-w-full truncate">{s.label}</span>

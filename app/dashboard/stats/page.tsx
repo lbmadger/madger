@@ -245,16 +245,16 @@ export default async function StatsPage() {
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
         {/* Studio stories : le coach poste SES chiffres (jamais l'argent)
             ou le fait sport du jour, aux couleurs de sa page, avec son lien
-            de résa. L'explication du POURQUOI est le cœur du bloc : sans
-            elle, personne ne clique. */}
-        <section className="mb-4 rounded-2xl border border-accent/20 bg-gradient-to-br from-accent/[0.06] to-transparent p-4 sm:mb-5 sm:p-5">
-          <h3 className="text-sm font-semibold text-text-base">
-            {dict.story.studioTitle}
-          </h3>
-          <p className="mt-1 max-w-2xl text-xs leading-relaxed text-text-muted">
-            {dict.story.studioDesc}
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
+            de résa. Une ligne d'explication, pas plus : les boutons parlent
+            d'eux-mêmes et la page doit garder ses chiffres en haut. */}
+        <section className="mb-4 rounded-2xl border border-accent/20 bg-gradient-to-br from-accent/[0.06] to-transparent p-3 sm:mb-5 sm:p-4">
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <h3 className="text-sm font-semibold text-text-base">
+              {dict.story.studioTitle}
+            </h3>
+            <p className="text-xs text-text-muted">{dict.story.studioDesc}</p>
+          </div>
+          <div className="mt-2.5 flex flex-wrap gap-2">
             <ShareStoryButton type="fact" label={dict.story.fact} />
             <ShareStoryButton type="sessions" label={dict.story.sessions} />
             {(storyCoach?.rating_count ?? 0) > 0 && (
