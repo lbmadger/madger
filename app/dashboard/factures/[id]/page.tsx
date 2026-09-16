@@ -99,7 +99,12 @@ export default async function InvoicePage({
               {inv.pdfDownload}
             </a>
           )}
-          <PrintButton label={inv.pdf} />
+          {/* Impression navigateur : seulement s'il n'existe pas de vrai PDF,
+              deux boutons « Télécharger » côte à côte prêtaient à confusion. */}
+          {!(creditNote?.id ||
+            invoiceRows?.find((r) => (r.kind ?? "invoice") === "invoice")?.id) && (
+            <PrintButton label={inv.pdf} />
+          )}
         </div>
       </div>
 
@@ -164,7 +169,12 @@ export default async function InvoicePage({
             {coach.billing_address && (
               <p className="text-text-muted">{coach.billing_address}</p>
             )}
-            {coach.city && <p className="text-text-muted">{coach.city}</p>}
+            {/* Ville du profil : seulement sans adresse de facturation, qui
+                contient déjà la sienne (sinon « Paris » sous une adresse
+                à Oléron). Même règle que le PDF. */}
+            {!coach.billing_address && coach.city && (
+              <p className="text-text-muted">{coach.city}</p>
+            )}
             {coach.siret && (
               <p className="text-text-muted">
                 {inv.siretLabel} {coach.siret}
