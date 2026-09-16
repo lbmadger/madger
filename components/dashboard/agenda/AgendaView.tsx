@@ -1,5 +1,7 @@
 "use client";
 
+import { durationLabel } from "@/lib/services/durations";
+
 import { useEffect, useState, useMemo, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -457,6 +459,16 @@ export default function AgendaView({
     return `${s} – ${e}`;
   }
 
+  // Sous l'heure de début déjà affichée en grand : durée et heure de fin
+  // (« 2 h · 18:00 »), au lieu de répéter l'heure de début.
+  function endLine(startsAt: string, endsAt: string): string {
+    const start = new Date(startsAt).getTime();
+    const end = new Date(endsAt).getTime();
+    const minutes = Math.max(0, Math.round((end - start) / 60000));
+    const e = new Date(endsAt).toLocaleTimeString(loc, { hour: "2-digit", minute: "2-digit" });
+    return `${durationLabel(minutes)} · ${e}`;
+  }
+
   function clientName(b: Booking): string {
     if (b.is_block) return t("agenda.blocked");
     if (!b.clients) return "-";
@@ -691,9 +703,7 @@ export default function AgendaView({
                               })}
                             </span>
                             <span className="text-[11px] text-text-dim">
-                              {new Date(g.starts_at).toLocaleTimeString(loc, { hour: "2-digit", minute: "2-digit" })}
-                              {" – "}
-                              {new Date(g.ends_at).toLocaleTimeString(loc, { hour: "2-digit", minute: "2-digit" })}
+                              {endLine(g.starts_at, g.ends_at)}
                             </span>
                           </div>
                           <div className="min-w-0 flex-1">
@@ -728,7 +738,7 @@ export default function AgendaView({
                         })}
                       </span>
                       <span className="text-[11px] text-text-dim">
-                        {timeRange(b)}
+                        {endLine(b.starts_at, b.ends_at)}
                       </span>
                     </div>
                     <div className="min-w-0 flex-1">
