@@ -68,6 +68,9 @@ export type ClientBooking = {
   place: string | null;
   coach_name: string;
   coach_slug: string | null;
+  coach_id?: string;
+  // Le client a déjà noté ce coach (un seul avis par coach).
+  reviewed?: boolean;
   // Place dans un cours collectif : nom du cours (migration 0068).
   group_name: string | null;
   cancellation_policy: string;
@@ -397,6 +400,23 @@ export default function ClientSpace({
   const past = bookings.filter(
     (b) => new Date(b.ends_at).getTime() < now || b.status === "cancelled"
   );
+  // « Noter » une seule fois par coach : sur la séance passée la plus
+  // récente (hors annulée), et seulement si le client n'a pas déjà noté ce
+  // coach. Le proposer sur chaque séance faisait croire à une note par
+  // séance alors qu'un client n'a qu'un avis par coach.
+  const rateIds = new Set<string>();
+  {
+    const seen = new Set<string>();
+    for (const b of [...past].sort(
+      (a, c) => new Date(c.ends_at).getTime() - new Date(a.ends_at).getTime()
+    )) {
+      if (b.status === "cancelled" || b.reviewed) continue;
+      const key = b.coach_id ?? b.coach_slug ?? b.coach_name;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      rateIds.add(b.id);
+    }
+  }
 
   // Petites stats du client : séances de la semaine en cours (lundi à
   // dimanche, passées et à venir) et total, annulations exclues. Calculées
@@ -1214,7 +1234,7 @@ export default function ClientSpace({
                   >
                     {statusChip[b.status]?.label ?? b.status}
                   </span>
-                  {b.status !== "cancelled" && (
+                  {rateIds.has(b.id) && (
                     <Link
                       href={`/reservation/${b.id}`}
                       className="rounded-full border border-accent/40 px-2.5 py-1 text-[11px] font-semibold text-accent transition-colors hover:bg-accent/10"

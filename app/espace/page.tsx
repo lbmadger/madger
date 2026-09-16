@@ -69,7 +69,7 @@ export default async function ClientSpacePage() {
           admin
             .from("bookings")
             .select(
-              "id, starts_at, ends_at, status, location, location_text, meeting_url, reschedule_pending_until, rescheduled_from, pack_credit_id, pack_credits(cancel_hours), group_sessions(name), coaches(first_name, last_name, slug, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, cancel_hours, gym_name, gym_address, outdoor_address, pro_until, pro_bonus_until)"
+              "id, coach_id, starts_at, ends_at, status, location, location_text, meeting_url, reschedule_pending_until, rescheduled_from, pack_credit_id, pack_credits(cancel_hours), group_sessions(name), coaches(first_name, last_name, slug, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, cancel_hours, gym_name, gym_address, outdoor_address, pro_until, pro_bonus_until)"
             )
             .in("client_id", clientIds)
             .order("starts_at", { ascending: false })
@@ -140,6 +140,13 @@ export default async function ClientSpacePage() {
       const packByPayment = new Map(
         (packRows ?? []).map((pc) => [pc.payment_id as string, pc])
       );
+      // Un client note un coach une seule fois : les coachs déjà notés ne
+      // proposent plus « Noter » sur leurs séances passées.
+      const { data: reviewRows } = await admin
+        .from("reviews")
+        .select("coach_id")
+        .in("client_id", clientIds);
+      const reviewedCoaches = new Set((reviewRows ?? []).map((r) => r.coach_id as string));
 
       for (const b of rows ?? []) {
         const co = Array.isArray(b.coaches) ? b.coaches[0] : b.coaches;
@@ -196,6 +203,8 @@ export default async function ClientSpacePage() {
           reschedule_pending_until:
             (b.reschedule_pending_until as string | null) ?? null,
           rescheduled_from: (b.rescheduled_from as string | null) ?? null,
+          coach_id: b.coach_id as string,
+          reviewed: reviewedCoaches.has(b.coach_id as string),
         });
       }
     }
