@@ -41,10 +41,12 @@ export type FulfillResult = {
 export async function fulfillCheckoutSession(
   sessionId: string
 ): Promise<FulfillResult> {
-  const stripe = getStripe();
+  const stripeOrNull = getStripe();
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const result: FulfillResult = { slug: "", bookingId: "", conflict: false };
-  if (!stripe || !serviceKey || !sessionId) return result;
+  if (!stripeOrNull || !serviceKey || !sessionId) return result;
+  // Constante non nulle : la fonction run() ci-dessous en hérite du type.
+  const stripe = stripeOrNull;
 
   const session = await stripe.checkout.sessions.retrieve(sessionId, {
     expand: ["payment_intent.latest_charge.balance_transaction"],
@@ -79,6 +81,43 @@ export async function fulfillCheckoutSession(
   const authorized = pi?.status === "requires_capture";
   if (session.payment_status !== "paid" && !authorized) return result;
 
+  // Verrou d'exécution (migration 0078) : le webhook et le retour navigateur
+  // arrivent souvent dans la même seconde. Sans verrou, chacun passait
+  // l'anti-doublon (aucun paiement encore écrit), le second voyait la séance
+  // que le premier venait de créer, la prenait pour celle d'un autre client
+  // et ANNULAIT le paiement (« créneau pris »). Un seul appel travaille ;
+  // l'autre attend la ligne de paiement et la renvoie.
+  const { error: claimError } = await supabase
+    .from("checkout_fulfillments")
+    .insert({ session_id: session.id });
+  if (claimError?.code === "23505") {
+    for (let i = 0; i < 20; i++) {
+      await new Promise((r) => setTimeout(r, 500));
+      const { data: done } = await supabase
+        .from("payments")
+        .select("booking_id")
+        .eq("stripe_payment_intent_id", piId)
+        .maybeSingle();
+      if (done) {
+        result.bookingId = (done.booking_id as string | null) ?? "";
+        return result;
+      }
+    }
+    // L'autre appel n'a rien écrit en 10 s (échec ou lenteur) : on rend la
+    // main sans conflit, le rejeu du webhook Stripe repassera.
+    return result;
+  }
+  // Autre erreur (table absente…) : on continue sans verrou, comme avant.
+
+  try {
+    return await run();
+  } catch (e) {
+    // Échec réel : le verrou est rendu pour que le rejeu du webhook retente.
+    await supabase.from("checkout_fulfillments").delete().eq("session_id", session.id);
+    throw e;
+  }
+
+  async function run(): Promise<FulfillResult> {
   // Anti-doublon : paiement déjà enregistré (webhook ou retour navigateur) ?
   const { data: existing } = await supabase
     .from("payments")
@@ -165,13 +204,17 @@ export async function fulfillCheckoutSession(
   // Client (réutilise l'existant par email chez ce coach).
   let clientId: string | null = null;
   if (m.email) {
+    // Le plus ancien : un doublon historique (deux fiches pour le même
+    // email) faisait échouer maybeSingle, et chaque paiement créait alors
+    // une fiche de plus.
     const { data: c } = await supabase
       .from("clients")
       .select("id")
       .eq("coach_id", m.coach_id)
       .ilike("email", m.email)
-      .maybeSingle();
-    clientId = c?.id ?? null;
+      .order("created_at", { ascending: true })
+      .limit(1);
+    clientId = (c?.[0]?.id as string | undefined) ?? null;
   }
   if (!clientId) {
     const { data: created } = await supabase
@@ -226,7 +269,7 @@ export async function fulfillCheckoutSession(
     if (seatError) console.error("[fulfill] group_seat_book", seatError.message);
     booking = seatId ? { id: seatId as string } : null;
   } else {
-    const { data: created } = await supabase
+    const { data: created, error: bookingError } = await supabase
       .from("bookings")
       .insert({
         coach_id: m.coach_id,
@@ -240,6 +283,9 @@ export async function fulfillCheckoutSession(
       })
       .select("id")
       .single();
+    // Tracé : un échec ici est traité comme un conflit de créneau plus bas,
+    // et sans cette ligne on ne savait jamais pourquoi.
+    if (bookingError) console.error("[fulfill] bookings insert", bookingError.message);
     booking = created ? { id: created.id as string } : null;
   }
   result.bookingId = booking?.id ?? "";
@@ -661,4 +707,5 @@ export async function fulfillCheckoutSession(
   }
 
   return result;
+  }
 }
