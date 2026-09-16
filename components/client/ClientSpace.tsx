@@ -243,14 +243,24 @@ export default function ClientSpace({
   }
   const inProgress = Array.from(byCoach.values());
   // Coachs dont le pack est épuisé ou expiré, sans crédit restant : on
-  // propose de reprendre un pack ou de réserver à l'unité.
+  // propose de reprendre un pack ou de réserver à l'unité. Un pack
+  // remboursé ou clôturé n'y figure pas : le client a demandé son argent,
+  // lui proposer d'en reprendre un serait déplacé.
   const exhausted = Array.from(
     new Map(
       packs
-        .filter((p) => !byCoach.has(p.coach_id) && p.coach_slug)
+        .filter(
+          (p) =>
+            !byCoach.has(p.coach_id) &&
+            p.coach_slug &&
+            (p.status === "active" || p.status === "expired")
+        )
         .map((p) => [p.coach_id, p])
     ).values()
   );
+  // Liste des packs : les remboursés et clôturés disparaissent, l'avoir
+  // et l'historique des paiements en gardent la trace.
+  const listedPacks = packs.filter((p) => p.status !== "refunded" && p.status !== "closed");
 
   async function bookGroupSeat(sessionId: string): Promise<string | null> {
     if (!seatPack) return null;
@@ -796,13 +806,13 @@ export default function ClientSpace({
       )}
 
       {/* Packs de séances */}
-      {packs.length > 0 && (
+      {listedPacks.length > 0 && (
         <>
           <h2 className="mt-8 text-xs font-semibold uppercase tracking-wide text-text-dim">
             {t("packs.title")}
           </h2>
           <ul className="mt-3 flex flex-col gap-2">
-            {packs.map((p) => {
+            {listedPacks.map((p) => {
               // Un pack inactif (expiré, remboursé, clôturé) n'a plus de
               // crédit utilisable, quel que soit son compteur.
               const active = p.status === "active";
