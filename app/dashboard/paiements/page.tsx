@@ -1,3 +1,4 @@
+import { computePayout, coachBearsStripeFee } from "@/lib/stripe/escrow";
 import Link from "next/link";
 import Topbar from "@/components/dashboard/Topbar";
 import StripeConnectButton from "@/components/dashboard/payments/StripeConnectButton";
@@ -64,7 +65,7 @@ export default async function PaymentsPage() {
   const [heldRes, releasedRes] = await Promise.all([
     supabase
       .from("payments")
-      .select("amount_cents, release_after")
+      .select("amount_cents, release_after, refunded_cents, fee_rate_bps, stripe_fee_cents, payment_method")
       .eq("escrow_status", "held")
       .not("paid_at", "is", null),
     supabase
@@ -75,8 +76,26 @@ export default async function PaymentsPage() {
   ]);
 
   const heldRows = heldRes.data ?? [];
-  const heldTotal = heldRows.reduce(
-    (sum, r) => sum + ((r.amount_cents as number) || 0),
+  // Le taux est figé au paiement : le net à venir est connu à la seconde
+  // où le client paie, autant l'afficher plutôt que le brut, qui laissait
+  // le coach deviner ce qu'il allait toucher.
+  const heldEstimate = (r: {
+    amount_cents: number | null;
+    refunded_cents?: number | null;
+    fee_rate_bps?: number | null;
+    stripe_fee_cents?: number | null;
+    payment_method?: string | null;
+  }) =>
+    computePayout({
+      amountCents: (r.amount_cents as number) || 0,
+      feeRateBps: (r.fee_rate_bps as number | null) ?? 700,
+      stripeFeeCents: (r.stripe_fee_cents as number | null) ?? 0,
+      coachBearsStripeFee: coachBearsStripeFee(r.payment_method as string | null),
+      refundCents: (r.refunded_cents as number | null) ?? 0,
+    });
+  const heldTotal = heldRows.reduce((sum, r) => sum + heldEstimate(r).payoutCents, 0);
+  const heldFees = heldRows.reduce(
+    (sum, r) => sum + heldEstimate(r).commissionCents + heldEstimate(r).providerFeeCents,
     0
   );
   // Prochaine libération : la plus proche échéance parmi les séquestres.
@@ -97,7 +116,7 @@ export default async function PaymentsPage() {
       supabase
         .from("payments")
         .select(
-          "id, amount_cents, currency, paid_at, escrow_status, release_after, payout_cents, refunded_cents, commission_cents, clients(first_name, last_name)"
+          "id, amount_cents, currency, paid_at, escrow_status, release_after, payout_cents, refunded_cents, commission_cents, fee_rate_bps, stripe_fee_cents, payment_method, clients(first_name, last_name)"
         )
         .not("paid_at", "is", null)
         .order("paid_at", { ascending: false })
@@ -243,7 +262,7 @@ export default async function PaymentsPage() {
                 </p>
                 <p className="mt-1 text-xs text-text-muted">
                   {nextRelease
-                    ? `${pay.releasePlanned} ${new Date(nextRelease).toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: "Europe/Paris" })}`
+                    ? `${heldFees > 0 ? `${pay.commissionLabel} ${euros(heldFees)} · ` : ""}${pay.releasePlanned} ${new Date(nextRelease).toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: "Europe/Paris" })}`
                     : pay.heldNone}
                 </p>
               </div>
@@ -429,7 +448,11 @@ export default async function PaymentsPage() {
                     </div>
                     <p className="mt-2 border-t border-border pt-2 text-xs text-text-dim">
                       {p.escrow_status === "held" && p.release_after
-                        ? `${pay.releasePlanned} ${new Date(p.release_after as string).toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: "Europe/Paris" })}`
+                        ? (() => {
+                            const est = heldEstimate(p as Parameters<typeof heldEstimate>[0]);
+                            const fees = est.commissionCents + est.providerFeeCents;
+                            return `${pay.netUpcoming} ${euros(est.payoutCents)}${fees > 0 ? ` · ${pay.commissionLabel} ${euros(fees)}` : ""} · ${pay.releasePlanned} ${new Date(p.release_after as string).toLocaleDateString(loc, { day: "numeric", month: "long", timeZone: "Europe/Paris" })}`;
+                          })()
                         : p.escrow_status === "released"
                         ? `${pay.netPaid} ${euros((p.payout_cents as number) || 0)}${((p.commission_cents as number) || 0) > 0 ? ` · ${pay.commissionLabel} ${euros((p.commission_cents as number) || 0)}` : ""}`
                         : refundedCents > 0
