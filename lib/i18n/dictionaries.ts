@@ -1490,6 +1490,9 @@ const fr = {
     reportTooLate: "Les fonds sont déjà libérés : contacte le support.",
   },
   clientOnboarding: {
+    healthConsent: "J'accepte de partager mes mesures et objectifs avec mon coach",
+    healthConsentHint:
+      "Taille, poids, IMC, objectifs et notes sont des données de santé. Elles servent uniquement à ton coach pour adapter tes séances, elles sont facultatives, et tu peux les modifier ou les effacer à tout moment depuis ton profil. Sans cette case, rien n'est enregistré.",
     billingAddress: "Adresse de facturation",
     billingAddressPlaceholder: "12 rue de Rivoli, 75001 Paris",
     billingAddressHint: "Elle figure sur les factures de ton coach. Indispensable si c'est ton entreprise qui paie.",
@@ -3403,6 +3406,9 @@ const en: Dictionary = {
     reportTooLate: "Funds are already released: contact support.",
   },
   clientOnboarding: {
+    healthConsent: "I agree to share my measurements and goals with my coach",
+    healthConsentHint:
+      "Height, weight, BMI, goals and notes are health data. They are used only by your coach to adapt your sessions, they are optional, and you can change or delete them at any time from your profile. Without this box, nothing is saved.",
     billingAddress: "Billing address",
     billingAddressPlaceholder: "12 rue de Rivoli, 75001 Paris",
     billingAddressHint: "Printed on your coach's invoices. Required if your company pays.",

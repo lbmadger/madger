@@ -40,6 +40,11 @@ export default function ClientOnboarding() {
   const [sex, setSex] = useState<"male" | "female" | "other" | "">("");
   const [heightCm, setHeightCm] = useState("");
   const [weightKg, setWeightKg] = useState("");
+  // Données de santé (taille, poids, IMC, objectifs, niveau, note) :
+  // consentement explicite, article 9 du RGPD. Sans la case, les champs
+  // sont verrouillés et rien de tout ça n'est enregistré.
+  const [healthConsent, setHealthConsent] = useState(false);
+  const [healthConsentAt, setHealthConsentAt] = useState<string | null>(null);
   const [goals, setGoals] = useState<string[]>([]);
   const [level, setLevel] = useState<"beginner" | "intermediate" | "advanced" | "">("");
   const [note, setNote] = useState("");
@@ -134,6 +139,8 @@ export default function ClientOnboarding() {
         setSex(p.sex ?? "");
         setHeightCm(p.height_cm ? String(p.height_cm) : "");
         setWeightKg(p.weight_kg ? String(p.weight_kg) : "");
+        setHealthConsent(!!p.health_consent_at);
+        setHealthConsentAt((p.health_consent_at as string | null) ?? null);
         setGoals(p.goals ?? []);
         setLevel(p.level ?? "");
         setNote(p.note ?? "");
@@ -236,11 +243,12 @@ export default function ClientOnboarding() {
         billing_address: billingAddress.trim() || null,
         birth_date: birthDate || null,
         sex: sex || null,
-        height_cm: heightCm ? parseInt(heightCm, 10) : null,
-        weight_kg: weightKg ? parseFloat(weightKg) : null,
-        goals,
-        level: level || null,
-        note: note.trim() || null,
+        health_consent_at: healthConsent ? healthConsentAt ?? new Date().toISOString() : null,
+        height_cm: healthConsent && heightCm ? parseInt(heightCm, 10) : null,
+        weight_kg: healthConsent && weightKg ? parseFloat(weightKg) : null,
+        goals: healthConsent ? goals : [],
+        level: healthConsent ? level || null : null,
+        note: healthConsent ? note.trim() || null : null,
         completed: true,
         avatar_url: avatarUrl || null,
         updated_at: new Date().toISOString(),
@@ -256,11 +264,12 @@ export default function ClientOnboarding() {
           billing_address: billingAddress.trim() || null,
           birth_date: birthDate || null,
           sex: sex || null,
-          height_cm: heightCm ? parseInt(heightCm, 10) : null,
-          weight_kg: weightKg ? parseFloat(weightKg) : null,
-          goals,
-          level: level || null,
-          note: note.trim() || null,
+          health_consent_at: healthConsent ? healthConsentAt ?? new Date().toISOString() : null,
+          height_cm: healthConsent && heightCm ? parseInt(heightCm, 10) : null,
+          weight_kg: healthConsent && weightKg ? parseFloat(weightKg) : null,
+          goals: healthConsent ? goals : [],
+          level: healthConsent ? level || null : null,
+          note: healthConsent ? note.trim() || null : null,
           completed: true,
           avatar_url: avatarUrl || null,
           updated_at: new Date().toISOString(),
@@ -435,7 +444,19 @@ export default function ClientOnboarding() {
         {/* ── Étape 2 : mesures + IMC en direct ──────────────────────────── */}
         {step === 1 && (
           <>
-            <div className="grid grid-cols-2 gap-3">
+            <label className="flex items-start gap-3 rounded-xl border border-accent/30 bg-accent/[0.05] px-4 py-3">
+              <input
+                type="checkbox"
+                checked={healthConsent}
+                onChange={(e) => setHealthConsent(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-accent"
+              />
+              <span className="flex flex-col gap-0.5">
+                <span className="text-sm font-medium text-text-base">{t("clientOnboarding.healthConsent")}</span>
+                <span className="text-xs leading-relaxed text-text-dim">{t("clientOnboarding.healthConsentHint")}</span>
+              </span>
+            </label>
+            <div className={`grid grid-cols-2 gap-3 ${healthConsent ? "" : "pointer-events-none opacity-40"}`}>
               <label className="flex flex-col gap-1.5">
                 <span className={labelClass}>{t("clientOnboarding.height")} <span className="font-normal text-text-dim">{t("common.optional")}</span></span>
                 <input type="number" inputMode="numeric" min={100} max={250} value={heightCm} onChange={(e) => setHeightCm(e.target.value)} className={inputClass} />
@@ -492,7 +513,23 @@ export default function ClientOnboarding() {
         {/* ── Étape 3 : objectifs ────────────────────────────────────────── */}
         {step === 2 && (
           <>
-            <div>
+            {/* Objectifs, niveau et note relèvent aussi des données de santé :
+                même consentement qu'à l'étape des mesures. */}
+            {!healthConsent && (
+              <label className="flex items-start gap-3 rounded-xl border border-accent/30 bg-accent/[0.05] px-4 py-3">
+                <input
+                  type="checkbox"
+                  checked={healthConsent}
+                  onChange={(e) => setHealthConsent(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-accent"
+                />
+                <span className="flex flex-col gap-0.5">
+                  <span className="text-sm font-medium text-text-base">{t("clientOnboarding.healthConsent")}</span>
+                  <span className="text-xs leading-relaxed text-text-dim">{t("clientOnboarding.healthConsentHint")}</span>
+                </span>
+              </label>
+            )}
+            <div className={healthConsent ? "" : "pointer-events-none opacity-40"}>
               <p className={labelClass}>{t("clientOnboarding.goalsLabel")}</p>
               <p className="mt-0.5 text-xs text-text-dim">
                 {t("clientOnboarding.goalsHint")}
