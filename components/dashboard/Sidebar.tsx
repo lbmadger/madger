@@ -96,7 +96,9 @@ function NavLink({ item, badge = 0 }: { item: NavItem; badge?: number }) {
       <span className="truncate">{t(item.labelKey)}</span>
       {showBadge && (
         <span
-          className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[10px] font-bold text-black"
+          className={`ml-auto flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
+            active ? "bg-black text-accent" : "bg-accent text-black"
+          }`}
           aria-label={t("nav.badge").replace("{n}", String(badge))}
         >
           {badge > 9 ? "9+" : badge}
@@ -111,7 +113,7 @@ function NavLink({ item, badge = 0 }: { item: NavItem; badge?: number }) {
   );
 
   const base =
-    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors";
+    "flex items-center gap-3 rounded-full px-3.5 py-2 text-sm transition-colors";
 
   if (item.soon) {
     return (
@@ -130,8 +132,8 @@ function NavLink({ item, badge = 0 }: { item: NavItem; badge?: number }) {
       aria-current={active ? "page" : undefined}
       className={`${base} relative ${
         active
-          ? "text-accent"
-          : "text-text-muted hover:bg-bg-elevated hover:text-text-base"
+          ? "text-black"
+          : "text-text-muted hover:bg-white/[0.05] hover:text-text-base"
       }`}
     >
       <span className="relative flex min-w-0 flex-1 items-center gap-3">
@@ -175,7 +177,10 @@ export default function Sidebar() {
     );
   }, [activeIndex]);
   return (
-    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col overflow-y-auto border-r border-border bg-bg-elevated p-4 md:flex">
+    // Capsule détachée du bord, comme la barre du téléphone : une carte
+    // flottante aux coins ronds, la pastille verte glisse d'un onglet à
+    // l'autre et l'entrée active se lit en noir sur vert.
+    <aside className="sticky top-4 mb-4 ml-4 mt-4 hidden h-[calc(100vh-2rem)] w-64 shrink-0 flex-col overflow-y-auto rounded-[28px] border border-border bg-bg-elevated p-4 shadow-[0_20px_60px_rgba(0,0,0,0.45)] md:flex">
       <Link href="/dashboard" className="mb-8 flex items-center gap-2.5 px-2">
         <MadgerLogo size={30} />
         <span className="text-xl font-extrabold tracking-tight text-text-base">
@@ -188,7 +193,7 @@ export default function Sidebar() {
           <span
             ref={railRef}
             aria-hidden
-            className="absolute left-0 right-0 top-0 h-9 rounded-lg bg-accent/10"
+            className="absolute left-0 right-0 top-0 h-9 rounded-full bg-accent"
             style={{
               transform: `translateY(${activeIndex * 40}px)`,
               willChange: "transform",
