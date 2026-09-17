@@ -472,7 +472,7 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
               {/* Hero intro */}
               <div ref={dHeroRef} style={{ position: "absolute", top: 0, left: 0, right: 0 }}>
                 <SectionLabel>Comment ça marche</SectionLabel>
-                <p style={{ fontSize: 17, color: "#8A8A8A", lineHeight: 1.6, marginTop: 4 }}>
+                <p style={{ fontSize: 17, color: "#A3A3A3", lineHeight: 1.6, marginTop: 4 }}>
                   Suis le scroll pour découvrir comment Madger automatise ton quotidien.
                 </p>
               </div>
@@ -488,7 +488,7 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
                     <h3 style={{ fontSize: "clamp(22px, 2.6vw, 34px)", fontWeight: 800, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1.08, marginBottom: 14 }}>
                       {step.title}
                     </h3>
-                    <p style={{ fontSize: 16, color: "#8A8A8A", lineHeight: 1.65, maxWidth: 340 }}>
+                    <p style={{ fontSize: 16, color: "#A3A3A3", lineHeight: 1.65, maxWidth: 340 }}>
                       {step.desc}
                     </p>
                   </div>
@@ -606,7 +606,7 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
                     <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em", lineHeight: 1.15, marginBottom: 8 }}>
                       {step.title}
                     </div>
-                    <p style={{ fontSize: 13, color: "#8A8A8A", lineHeight: 1.55 }}>
+                    <p style={{ fontSize: 13, color: "#A3A3A3", lineHeight: 1.55 }}>
                       {step.desc}
                     </p>
                   </div>
@@ -739,16 +739,16 @@ function ScreenProfile() {
           <img src="https://images.unsplash.com/photo-1594381898411-846e7d193883?auto=format&fit=crop&w=140&q=80" alt="Emma" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
         </div>
         <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 2 }}>Emma Laurent</div>
-        <div style={{ fontSize: 10, color: "#8A8A8A", marginBottom: 4 }}>Coach musculation & remise en forme · Paris</div>
+        <div style={{ fontSize: 10, color: "#A3A3A3", marginBottom: 4 }}>Coach musculation & remise en forme · Paris</div>
         <div style={{ display: "flex", alignItems: "center", gap: 3, marginBottom: 6 }}>
           {[1,2,3,4,5].map(i => (
             <svg key={i} width="9" height="9" viewBox="0 0 10 10">
               <path d="M5 1L6.2 3.8H9L6.7 5.6L7.6 8.5L5 6.8L2.4 8.5L3.3 5.6L1 3.8H3.8L5 1Z" fill="#CBFF03" />
             </svg>
           ))}
-          <span style={{ fontSize: 9, color: "#8A8A8A", marginLeft: 2 }}>4,9 · 27 avis</span>
+          <span style={{ fontSize: 9, color: "#A3A3A3", marginLeft: 2 }}>4,9 · 27 avis</span>
         </div>
-        <div style={{ fontSize: 9, color: "#8A8A8A", lineHeight: 1.5, maxWidth: 210, marginBottom: 8 }}>
+        <div style={{ fontSize: 9, color: "#A3A3A3", lineHeight: 1.5, maxWidth: 210, marginBottom: 8 }}>
           Diplômée d'État, en salle, à domicile ou en visio. Un programme sur mesure, à ton rythme.
         </div>
       </div>
@@ -763,7 +763,7 @@ function ScreenProfile() {
           <div key={s.n} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", borderRadius: 10, border: s.a ? "1px solid #CBFF03" : "1px solid rgba(255,255,255,0.06)", background: s.a ? "rgba(203,255,3,0.05)" : "transparent", marginBottom: 5 }}>
             <div>
               <div style={{ fontSize: 11, fontWeight: 500, color: "#fff" }}>{s.n}</div>
-              <div style={{ fontSize: 9, color: "#8A8A8A", marginTop: 1 }}>{s.d} · {s.t}</div>
+              <div style={{ fontSize: 9, color: "#A3A3A3", marginTop: 1 }}>{s.d} · {s.t}</div>
             </div>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#CBFF03" }}>{s.p}</div>
           </div>
@@ -783,8 +783,8 @@ function ScreenSeance() {
     <div style={{ paddingTop: 52, height: "100%", display: "flex", flexDirection: "column", padding: "52px 14px 0" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="#8A8A8A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          <span style={{ fontSize: 10, color: "#8A8A8A" }}>Retour</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="#A3A3A3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          <span style={{ fontSize: 10, color: "#A3A3A3" }}>Retour</span>
         </div>
         <MadgerLogo size={22} />
       </div>
@@ -792,10 +792,10 @@ function ScreenSeance() {
         <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 5 }}>Séance individuelle</div>
         <div style={{ display: "flex", gap: 5, marginBottom: 6 }}>
           {["60 min","Présentiel","Paris"].map(t => (
-            <span key={t} style={{ fontSize: 8, color: "#8A8A8A", background: "rgba(255,255,255,0.06)", padding: "2px 6px", borderRadius: 20 }}>{t}</span>
+            <span key={t} style={{ fontSize: 8, color: "#A3A3A3", background: "rgba(255,255,255,0.06)", padding: "2px 6px", borderRadius: 20 }}>{t}</span>
           ))}
         </div>
-        <div style={{ fontSize: 9, color: "#8A8A8A", lineHeight: 1.5, marginBottom: 6 }}>
+        <div style={{ fontSize: 9, color: "#A3A3A3", lineHeight: 1.5, marginBottom: 6 }}>
           Séance sur mesure en salle ou à domicile, selon ton objectif.
         </div>
         <div style={{ fontSize: 16, fontWeight: 800, color: "#CBFF03" }}>45 €</div>
@@ -803,7 +803,7 @@ function ScreenSeance() {
       <div style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-dim)", marginBottom: 6 }}>Sélectionner une date</div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 3, marginBottom: 8 }}>
         {[["L","7"],["M","8"],["M","9"],["J","10"],["V","11"]].map(([d, n], i) => (
-          <div key={i} style={{ padding: "5px 0", borderRadius: 7, textAlign: "center", background: i === 2 ? "#CBFF03" : "transparent", color: i === 2 ? "#000" : "#8A8A8A", border: i === 2 ? "none" : "1px solid rgba(255,255,255,0.06)" }}>
+          <div key={i} style={{ padding: "5px 0", borderRadius: 7, textAlign: "center", background: i === 2 ? "#CBFF03" : "transparent", color: i === 2 ? "#000" : "#A3A3A3", border: i === 2 ? "none" : "1px solid rgba(255,255,255,0.06)" }}>
             <div style={{ fontSize: 8 }}>{d}</div>
             <div style={{ fontSize: 11, fontWeight: 600 }}>{n}</div>
           </div>
@@ -812,7 +812,7 @@ function ScreenSeance() {
       <div style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--text-dim)", marginBottom: 6 }}>Créneaux disponibles</div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 4, marginBottom: 8 }}>
         {["9:00","10:00","11:00","14:00","15:00","17:00"].map((h) => (
-          <div key={h} style={{ padding: "7px 0", borderRadius: 7, textAlign: "center", fontSize: 10, fontWeight: h === "10:00" ? 600 : 400, background: h === "10:00" ? "#CBFF03" : "transparent", color: h === "10:00" ? "#000" : "#8A8A8A", border: h === "10:00" ? "none" : "1px solid rgba(255,255,255,0.06)" }}>{h}</div>
+          <div key={h} style={{ padding: "7px 0", borderRadius: 7, textAlign: "center", fontSize: 10, fontWeight: h === "10:00" ? 600 : 400, background: h === "10:00" ? "#CBFF03" : "transparent", color: h === "10:00" ? "#000" : "#A3A3A3", border: h === "10:00" ? "none" : "1px solid rgba(255,255,255,0.06)" }}>{h}</div>
         ))}
       </div>
       <div style={{ padding: "8px 10px", borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", marginBottom: 8, display: "flex", alignItems: "center", gap: 7 }}>
@@ -839,14 +839,14 @@ function ScreenPaiement() {
         <MadgerLogo size={22} />
       </div>
       <div style={{ padding: "10px 12px", borderRadius: 12, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", marginBottom: 8 }}>
-        <div style={{ fontSize: 9, color: "#8A8A8A", marginBottom: 5 }}>Récapitulatif</div>
+        <div style={{ fontSize: 9, color: "#A3A3A3", marginBottom: 5 }}>Récapitulatif</div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
           <div style={{ fontSize: 11, fontWeight: 600, color: "#fff" }}>Séance individuelle</div>
           <div style={{ fontSize: 13, fontWeight: 700, color: "#CBFF03" }}>45 €</div>
         </div>
         <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "5px 0" }} />
-        <div style={{ fontSize: 9, color: "#8A8A8A" }}>Mer. 9 sept. · 10:00 · Présentiel · Paris</div>
-        <div style={{ fontSize: 9, color: "#8A8A8A", marginTop: 1 }}>avec Emma Laurent</div>
+        <div style={{ fontSize: 9, color: "#A3A3A3" }}>Mer. 9 sept. · 10:00 · Présentiel · Paris</div>
+        <div style={{ fontSize: 9, color: "#A3A3A3", marginTop: 1 }}>avec Emma Laurent</div>
       </div>
       <div style={{ fontSize: 9, color: "var(--text-dim)", textAlign: "center", marginBottom: 6 }}>Paiement rapide</div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5, marginBottom: 8 }}>
@@ -889,7 +889,7 @@ function ScreenPaiement() {
         </div>
         <div>
           <div style={{ fontSize: 9, fontWeight: 600, color: "#CBFF03" }}>Confirmation et facture par email</div>
-          <div style={{ fontSize: 8, color: "#8A8A8A" }}>Envoyées automatiquement</div>
+          <div style={{ fontSize: 8, color: "#A3A3A3" }}>Envoyées automatiquement</div>
         </div>
       </div>
       <div style={{ fontSize: 9, color: "var(--text-dim)", textAlign: "center", marginBottom: 7, display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
@@ -909,14 +909,14 @@ function ScreenDashboard() {
         <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
           <MadgerLogo size={24} />
           <div>
-            <div style={{ fontSize: 9, color: "#8A8A8A" }}>Bonjour,</div>
+            <div style={{ fontSize: 9, color: "#A3A3A3" }}>Bonjour,</div>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>Léonard</div>
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           {/* Notif bell */}
           <div style={{ position: "relative", width: 26, height: 26, borderRadius: 8, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" stroke="#8A8A8A" strokeWidth="2" strokeLinecap="round"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" stroke="#A3A3A3" strokeWidth="2" strokeLinecap="round"/></svg>
             <div style={{ position: "absolute", top: 4, right: 4, width: 5, height: 5, borderRadius: "50%", background: "#CBFF03", border: "1px solid #0A0A0A" }} />
           </div>
           <div style={{ width: 28, height: 28, borderRadius: "50%", overflow: "hidden", border: "1.5px solid rgba(255,255,255,0.15)" }}>
@@ -934,7 +934,7 @@ function ScreenDashboard() {
           {[["12","Séances"],["540 €","Total"],["2","Ce mois"]].map(([v, l]) => (
             <div key={l} style={{ padding: "7px 6px", borderRadius: 9, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", textAlign: "center" }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#CBFF03", lineHeight: 1 }}>{v}</div>
-              <div style={{ fontSize: 7, color: "#8A8A8A", marginTop: 2 }}>{l}</div>
+              <div style={{ fontSize: 7, color: "#A3A3A3", marginTop: 2 }}>{l}</div>
             </div>
           ))}
         </div>
@@ -953,7 +953,7 @@ function ScreenDashboard() {
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 10, fontWeight: 600, color: "#fff" }}>Séance individuelle</div>
-              <div style={{ fontSize: 8, color: "#8A8A8A" }}>Emma Laurent</div>
+              <div style={{ fontSize: 8, color: "#A3A3A3" }}>Emma Laurent</div>
             </div>
             <div style={{ fontSize: 10, fontWeight: 700, color: "#CBFF03" }}>45 €</div>
           </div>
@@ -966,8 +966,8 @@ function ScreenDashboard() {
           </div>
           {/* Ajouter au calendrier */}
           <div style={{ marginTop: 6, padding: "5px 8px", borderRadius: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", gap: 5 }}>
-            <svg width="9" height="9" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#8A8A8A" strokeWidth="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="#8A8A8A" strokeWidth="2" strokeLinecap="round"/></svg>
-            <span style={{ fontSize: 8, color: "#8A8A8A" }}>Ajouter à mon calendrier</span>
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#A3A3A3" strokeWidth="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="#A3A3A3" strokeWidth="2" strokeLinecap="round"/></svg>
+            <span style={{ fontSize: 8, color: "#A3A3A3" }}>Ajouter à mon calendrier</span>
           </div>
         </div>
 
@@ -988,7 +988,7 @@ function ScreenDashboard() {
                 </div>
                 <div>
                   <div style={{ fontSize: 9, color: "#fff", fontWeight: 500 }}>{f.ref}</div>
-                  <div style={{ fontSize: 7, color: "#8A8A8A" }}>{f.date} · Séance individuelle</div>
+                  <div style={{ fontSize: 7, color: "#A3A3A3" }}>{f.date} · Séance individuelle</div>
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
@@ -1013,7 +1013,7 @@ function ScreenDashboard() {
             <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 9px", borderRadius: 8, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", marginBottom: 3 }}>
               <div>
                 <div style={{ fontSize: 9, color: "#fff", fontWeight: 500 }}>{s.label}</div>
-                <div style={{ fontSize: 7, color: "#8A8A8A" }}>{s.date} · {s.montant}</div>
+                <div style={{ fontSize: 7, color: "#A3A3A3" }}>{s.date} · {s.montant}</div>
               </div>
               <div style={{ padding: "2px 6px", borderRadius: 20, background: "rgba(74,222,128,0.1)", border: "1px solid rgba(74,222,128,0.2)", display: "flex", alignItems: "center", justifyContent: "center", alignSelf: "center", flexShrink: 0 }}>
                 <span style={{ fontSize: 7, color: "#4ADE80", fontWeight: 600, lineHeight: 1 }}>Terminée</span>
@@ -1029,14 +1029,14 @@ function ScreenDashboard() {
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 9, fontWeight: 600, color: "#fff" }}>Emma Laurent</div>
-            <div style={{ fontSize: 7, color: "#8A8A8A" }}>Ton coach</div>
+            <div style={{ fontSize: 7, color: "#A3A3A3" }}>Ton coach</div>
           </div>
           <div style={{ display: "flex", gap: 5 }}>
             <div style={{ width: 22, height: 22, borderRadius: 6, background: "rgba(203,255,3,0.1)", border: "1px solid rgba(203,255,3,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.07 11.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3 .82h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.09 8.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21 16z" stroke="#CBFF03" strokeWidth="2"/></svg>
             </div>
             <div style={{ width: 22, height: 22, borderRadius: 6, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="#8A8A8A" strokeWidth="2"/></svg>
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="#A3A3A3" strokeWidth="2"/></svg>
             </div>
           </div>
         </div>

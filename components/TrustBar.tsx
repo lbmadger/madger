@@ -92,7 +92,7 @@ export default function TrustBar() {
               onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)"}
             >
               <div style={{ height: 20, display: "flex", alignItems: "center" }}>{logo}</div>
-              <span style={{ fontSize: 9, fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(255,255,255,0.45)" }}>
+              <span style={{ fontSize: 9, fontWeight: 500, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(255,255,255,0.62)" }}>
                 {label}
               </span>
             </div>

@@ -518,3 +518,13 @@ textarea:focus-visible {
     scroll-behavior: auto !important;
   }
 }
+
+/* Accessibilité : un lien au milieu d'un paragraphe se reconnaît au
+   soulignement, pas seulement à sa couleur (Lighthouse link-in-text-block).
+   Les boutons stylés en lien (classes rounded-*) ne sont pas concernés. */
+p > a:not([class*="rounded"]),
+li > a:not([class*="rounded"]) {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}

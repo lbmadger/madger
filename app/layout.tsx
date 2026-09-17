@@ -23,13 +23,12 @@ const spaceGrotesk = Space_Grotesk({
   display: "swap",
 });
 
-// Un débordement horizontal accidentel ne doit plus jamais permettre de
-// dézoomer l'app entière sur mobile : échelle verrouillée à 1 et le corps
-// coupe tout dépassement (les zones qui défilent gardent leur propre scroll).
+// Le corps coupe tout débordement horizontal (les zones qui défilent gardent
+// leur propre scroll), ce qui suffit à éviter le dézoom accidentel : le zoom
+// reste donc autorisé, une personne malvoyante doit pouvoir agrandir.
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
 };
 
 export const metadata: Metadata = {

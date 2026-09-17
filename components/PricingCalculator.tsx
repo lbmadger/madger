@@ -149,7 +149,7 @@ export default function PricingCalculator() {
           <span>Calendly à {eur(CALENDLY_MONTHLY)}/mois, plus les frais Stripe standard</span>
           <span className="text-white font-semibold tabular-nums shrink-0">{eur(calendly)}</span>
         </p>
-        <p className="mt-2 text-[11px] leading-relaxed" style={{ color: "#6F6F6F" }}>
+        <p className="mt-2 text-[11px] leading-relaxed" style={{ color: "#8C8C8C" }}>
           Hypothèses : prix TTC, un paiement par carte par séance, frais Stripe standard en France de {STRIPE_PCT.toLocaleString("fr-FR")} % + {STRIPE_FIXED.toLocaleString("fr-FR", { style: "currency", currency: "EUR" })} par paiement (cartes européennes), abonnements des autres outils à leur tarif public indicatif, hors remboursements et litiges. Chez Madger, les frais de carte, les remboursements et les litiges sont compris dans le pourcentage.
         </p>
       </div>
