@@ -84,6 +84,17 @@ export default function SidebarProfile() {
             </svg>
             {t("nav.settings")}
           </Link>
+          {/* Un coach qui bloque doit trouver quelqu'un en deux clics. */}
+          <a
+            href="mailto:contact@madger.app?subject=Question%20Madger"
+            onClick={() => setOpen(false)}
+            className={itemCls}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" /><path d="M9.1 9a3 3 0 015.8 1c0 2-3 3-3 3M12 17h.01" />
+            </svg>
+            {t("nav.help")}
+          </a>
 
           <form action="/auth/signout" method="post" className="border-t border-border">
             <button type="submit" className={`${itemCls} hover:text-danger`}>

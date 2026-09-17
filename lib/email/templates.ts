@@ -2272,6 +2272,88 @@ export function onboardingNudgeCoachLater(p: {
   };
 }
 
+// ── Activation J+0 : la configuration est finie, le lien est prêt ───────────
+export function activationLinkReady(p: {
+  firstName: string | null;
+  publicUrl: string;
+  dashboardUrl: string;
+}): { subject: string; html: string } {
+  const short = p.publicUrl.replace(/^https?:\/\//, "");
+  return {
+    subject: `Ton lien est prêt : ${short}`,
+    html: layout({
+      preheader: "Mets-le dans ta bio, envoie-le à trois clients, et regarde.",
+      eyebrow: "Ton lien Madger",
+      title: p.firstName ? `${p.firstName}, ton lien est prêt` : "Ton lien est prêt",
+      intro: `Ta page est en ligne à l'adresse <b style="color:${C.text};">${short}</b>. À partir de maintenant, tout client qui l'ouvre peut réserver et payer sa séance sans que tu aies rien à faire. Il ne reste qu'une chose : le mettre sous les yeux de tes clients.`,
+      blocks: [
+        infoBox(
+          "Trois gestes, cinq minutes",
+          "1. Colle le lien dans ta bio Instagram, à la place de rien. 2. Envoie-le par message à tes trois clients les plus réguliers, avec une phrase du genre « je passe par ce lien pour les réservations maintenant, c'est plus simple pour nous deux ». 3. Poste une story avec le lien, depuis Statistiques, bouton « Mes séances du mois »."
+        ),
+      ],
+      cta: { label: "Copier mon lien depuis le tableau de bord", url: p.dashboardUrl },
+      outro:
+        "Si quelque chose ne marche pas comme tu veux, réponds à cet email : je lis tout et je réponds vite. Léonard, fondateur de Madger.",
+    }),
+  };
+}
+
+// ── Activation J+2 : lien prêt, aucune réservation ─────────────────────────
+export function activationBioLink(p: {
+  firstName: string | null;
+  publicUrl: string;
+}): { subject: string; html: string } {
+  const short = p.publicUrl.replace(/^https?:\/\//, "");
+  return {
+    subject: "Ton lien est-il dans ta bio ?",
+    html: layout({
+      preheader: "Aucune réservation pour l'instant : le lien n'est probablement pas visible.",
+      eyebrow: "Ton lien Madger",
+      title: p.firstName ? `${p.firstName}, ton lien est-il dans ta bio ?` : "Ton lien est-il dans ta bio ?",
+      intro: `Ta page est prête depuis deux jours et personne n'a encore réservé. Dans presque tous les cas, c'est que le lien n'est pas encore là où tes clients regardent. Un lien que personne ne voit ne vend rien, aussi bon soit-il.`,
+      blocks: [
+        infoBox(
+          "Où le mettre, dans l'ordre",
+          `Bio Instagram et TikTok : « Réserve ta séance » suivi de ${short}. Message épinglé dans tes groupes WhatsApp de clients. Réponse automatique quand un prospect t'écrit « t'as un créneau ? ». Et la prochaine fois qu'un client te demande une séance par message, ne réponds pas avec un horaire : réponds avec le lien.`
+        ),
+      ],
+      cta: { label: "Ouvrir ma page", url: p.publicUrl },
+      outro:
+        "Tu l'as déjà mis partout et rien ne bouge ? Réponds-moi, on regarde ta page ensemble. Léonard, fondateur de Madger.",
+    }),
+  };
+}
+
+// ── Activation J+7 : toujours aucun paiement ────────────────────────────────
+export function activationFirstClient(p: {
+  firstName: string | null;
+  publicUrl: string;
+  dashboardUrl: string;
+}): { subject: string; html: string } {
+  return {
+    subject: "Ton premier client a-t-il réservé ?",
+    html: layout({
+      preheader: "Une semaine sans paiement : dis-moi ce qui bloque, je regarde avec toi.",
+      eyebrow: "Ton lien Madger",
+      title: p.firstName
+        ? `${p.firstName}, ton premier client a-t-il réservé ?`
+        : "Ton premier client a-t-il réservé ?",
+      intro:
+        "Ça fait une semaine que ta page est en ligne et aucun paiement n'est passé. Ce n'est pas normal, et ce n'est probablement pas ta faute : soit le lien n'est pas assez visible, soit quelque chose sur ta page fait hésiter, soit tes clients ne comprennent pas pourquoi payer d'avance.",
+      blocks: [
+        infoBox(
+          "Ce qui débloque le plus souvent",
+          "Une photo où l'on voit ton visage, une première prestation à un prix simple, et une phrase à tes clients actuels : « à partir de maintenant je prends les réservations par ce lien, le paiement se fait à la réservation, comme chez le kiné ». Les clients acceptent quand c'est dit comme une règle, pas comme une question."
+        ),
+      ],
+      cta: { label: "Vérifier ma page", url: p.publicUrl },
+      outro:
+        "Réponds à cet email en me disant où tu en es, même en une ligne. Je regarde ta page et je te dis ce que je changerais. Léonard, fondateur de Madger.",
+    }),
+  };
+}
+
 // ── Liste d'attente : email 1, « voilà ce qu'on te prépare » ────────────────
 export function waitlistIntro(): { subject: string; html: string } {
   return {

@@ -7,6 +7,9 @@ import {
   sessionReminderClient,
   onboardingNudgeCoach,
   onboardingNudgeCoachLater,
+  activationLinkReady,
+  activationBioLink,
+  activationFirstClient,
   reviewReminderClient,
   packLowClient,
   packEmptyClient,
@@ -344,6 +347,70 @@ export async function GET(req: NextRequest) {
     /* colonnes 0059 absentes ou erreur : ne casse jamais les rappels */
   }
 
+  // ── Séquence d'activation (migration 0080), coachs dont la configuration
+  // est terminée : J+0 le lien est prêt ; J+2 sans aucune réservation, le
+  // lien n'est pas visible ; J+7 sans aucun paiement, on demande ce qui
+  // bloque. Une colonne par email : un cron rejoué ne double jamais.
+  let activated = 0;
+  try {
+    const steps = [
+      { column: "activation_email1_at", minAgeMs: 0, floorMs: 3 * 86400000, kind: "ready" as const },
+      { column: "activation_email2_at", minAgeMs: 2 * 86400000, floorMs: 30 * 86400000, kind: "bio" as const },
+      { column: "activation_email3_at", minAgeMs: 7 * 86400000, floorMs: 30 * 86400000, kind: "first" as const },
+    ];
+    for (const w of steps) {
+      const cutoff = new Date(now - w.minAgeMs).toISOString();
+      const floor = new Date(now - w.floorMs).toISOString();
+      const { data: rows } = await supabase
+        .from("coaches")
+        .select("id, first_name, slug")
+        .eq("onboarding_completed", true)
+        .not("slug", "is", null)
+        .is(w.column, null)
+        .lte("created_at", cutoff)
+        .gte("created_at", floor)
+        .limit(100);
+      for (const c of rows ?? []) {
+        if (Date.now() - startedAt > TIME_BUDGET_MS) break;
+        const mark = () => supabase.from("coaches").update({ [w.column]: nowIso }).eq("id", c.id);
+        // Condition de l'étape : déjà une réservation (J+2) ou déjà un
+        // paiement (J+7) → l'email n'a plus de raison d'être, on le marque.
+        if (w.kind === "bio") {
+          const { count } = await supabase
+            .from("bookings")
+            .select("id", { count: "exact", head: true })
+            .eq("coach_id", c.id)
+            .eq("is_block", false);
+          if ((count ?? 0) > 0) { await mark(); continue; }
+        } else if (w.kind === "first") {
+          const { count } = await supabase
+            .from("payments")
+            .select("id", { count: "exact", head: true })
+            .eq("coach_id", c.id)
+            .not("paid_at", "is", null);
+          if ((count ?? 0) > 0) { await mark(); continue; }
+        }
+        const { data: u } = await supabase.auth.admin.getUserById(c.id as string);
+        const email = u?.user?.email;
+        if (!email) { await mark(); continue; }
+        const publicUrl = `${APP_URL}/${c.slug}`;
+        const args = { firstName: (c.first_name as string | null) || null, publicUrl, dashboardUrl: `${APP_URL}/dashboard` };
+        const tpl =
+          w.kind === "ready"
+            ? activationLinkReady(args)
+            : w.kind === "bio"
+            ? activationBioLink(args)
+            : activationFirstClient(args);
+        if (await sendEmail({ to: email, subject: tpl.subject, html: tpl.html })) {
+          activated++;
+          await mark();
+        }
+      }
+    }
+  } catch {
+    /* best-effort : ne casse jamais les rappels */
+  }
+
   // ── Alertes churn pour le coach (lot 3) ──────────────────────────────────
   // Un email par coach et par jour, listant : clients sans séance depuis 14
   // jours (dernière séance entre 14 et 90 jours, aucune à venir, pas encore
@@ -493,5 +560,5 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ sent, scanned, nudged, reviewNudged, packNudged, coachAlerted, weekly });
+  return NextResponse.json({ sent, scanned, nudged, activated, reviewNudged, packNudged, coachAlerted, weekly });
 }
