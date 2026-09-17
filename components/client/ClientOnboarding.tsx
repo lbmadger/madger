@@ -33,6 +33,9 @@ export default function ClientOnboarding() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
+  // Adresse de facturation : imprimée sur les factures du coach quand elle
+  // est renseignée (obligatoire si une entreprise paie la séance).
+  const [billingAddress, setBillingAddress] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [sex, setSex] = useState<"male" | "female" | "other" | "">("");
   const [heightCm, setHeightCm] = useState("");
@@ -126,6 +129,7 @@ export default function ClientOnboarding() {
         setFirstName(p.first_name ?? "");
         setLastName(p.last_name ?? "");
         setPhone(p.phone ?? "");
+        setBillingAddress(p.billing_address ?? "");
         setBirthDate(p.birth_date ?? "");
         setSex(p.sex ?? "");
         setHeightCm(p.height_cm ? String(p.height_cm) : "");
@@ -229,6 +233,7 @@ export default function ClientOnboarding() {
         first_name: firstName.trim() || null,
         last_name: lastName.trim() || null,
         phone: phone.trim() || null,
+        billing_address: billingAddress.trim() || null,
         birth_date: birthDate || null,
         sex: sex || null,
         height_cm: heightCm ? parseInt(heightCm, 10) : null,
@@ -248,6 +253,7 @@ export default function ClientOnboarding() {
           first_name: firstName.trim() || null,
           last_name: lastName.trim() || null,
           phone: phone.trim() || null,
+          billing_address: billingAddress.trim() || null,
           birth_date: birthDate || null,
           sex: sex || null,
           height_cm: heightCm ? parseInt(heightCm, 10) : null,
@@ -417,6 +423,11 @@ export default function ClientOnboarding() {
             <label className="flex flex-col gap-1.5">
               <span className={labelClass}>{t("clientOnboarding.phone")} <span className="font-normal text-text-dim">{t("common.optional")}</span></span>
               <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className={labelClass}>{t("clientOnboarding.billingAddress")} <span className="font-normal text-text-dim">{t("common.optional")}</span></span>
+              <input type="text" value={billingAddress} onChange={(e) => setBillingAddress(e.target.value)} placeholder={t("clientOnboarding.billingAddressPlaceholder")} className={inputClass} />
+              <span className="text-xs text-text-dim">{t("clientOnboarding.billingAddressHint")}</span>
             </label>
           </>
         )}

@@ -1317,6 +1317,8 @@ const fr = {
     billingDesc: "SIRET, TVA et mentions légales de tes factures",
     businessName: "Nom commercial ou raison sociale",
     siretLabel: "SIRET",
+    eiLabel: "Je suis entrepreneur individuel (micro-entreprise, EI)",
+    eiHint: "La mention « EI » est ajoutée devant ton nom sur tes factures, comme la loi l'exige. Décoche si tu factures via une société.",
     billingAddress: "Adresse de facturation",
     billingAddressPlaceholder: "12 rue de Rivoli, Paris",
     billingAddressHint:
@@ -1487,6 +1489,9 @@ const fr = {
     reportTooLate: "Les fonds sont déjà libérés : contacte le support.",
   },
   clientOnboarding: {
+    billingAddress: "Adresse de facturation",
+    billingAddressPlaceholder: "12 rue de Rivoli, 75001 Paris",
+    billingAddressHint: "Elle figure sur les factures de ton coach. Indispensable si c'est ton entreprise qui paie.",
     subtitle:
       "Ton coach saura à qui il a affaire avant même la première séance.",
     step: "Étape",
@@ -3225,6 +3230,8 @@ const en: Dictionary = {
     billingDesc: "SIRET, VAT and legal mentions on your invoices",
     businessName: "Trade name or company name",
     siretLabel: "SIRET",
+    eiLabel: "I am a sole trader (micro-entreprise, EI)",
+    eiHint: "The \"EI\" mention is added before your name on your invoices, as French law requires. Untick if you invoice through a company.",
     billingAddress: "Billing address",
     billingAddressPlaceholder: "12 rue de Rivoli, Paris",
     billingAddressHint:
@@ -3394,6 +3401,9 @@ const en: Dictionary = {
     reportTooLate: "Funds are already released: contact support.",
   },
   clientOnboarding: {
+    billingAddress: "Billing address",
+    billingAddressPlaceholder: "12 rue de Rivoli, 75001 Paris",
+    billingAddressHint: "Printed on your coach's invoices. Required if your company pays.",
     subtitle: "Your coach will know who you are before the first session.",
     step: "Step",
     step1Title: "Who are you?",

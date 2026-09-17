@@ -22,9 +22,14 @@ export type InvoicePdfInput = {
   linkedNumber?: string | null;
   reason?: string | null;
   paymentRef: string | null;
+  // Adresse de facturation du client, quand il l'a renseignée.
+  clientAddress?: string | null;
   coach: {
     name: string;
     businessName: string | null;
+    // Entrepreneur individuel : mention « EI » devant le nom (obligatoire
+    // depuis 2022).
+    entrepreneurIndividuel?: boolean;
     address: string | null;
     city: string | null;
     siret: string | null;
@@ -134,8 +139,9 @@ export async function renderInvoicePdf(input: InvoicePdfInput): Promise<Uint8Arr
   y -= 14;
   const issuerLines: string[] = [];
   const c = input.coach;
-  issuerLines.push(c.businessName?.trim() || c.name);
-  if (c.businessName && c.businessName.trim() !== c.name.trim()) issuerLines.push(c.name);
+  const legalName = c.entrepreneurIndividuel === false ? c.name : `EI ${c.name}`;
+  issuerLines.push(c.businessName?.trim() || legalName);
+  if (c.businessName && c.businessName.trim() !== c.name.trim()) issuerLines.push(legalName);
   if (c.address) issuerLines.push(c.address);
   // La ville du profil (celle de l'annuaire) ne complète l'adresse que si
   // aucune adresse de facturation n'est renseignée : une adresse BAN porte
@@ -143,7 +149,11 @@ export async function renderInvoicePdf(input: InvoicePdfInput): Promise<Uint8Arr
   if (c.city && !c.address) issuerLines.push(c.city);
   if (c.siret) issuerLines.push(`SIRET : ${c.siret}`);
   if (c.vatNumber) issuerLines.push(`TVA : ${c.vatNumber}`);
-  const clientLines = [input.clientName || "-", ...(input.clientEmail ? [input.clientEmail] : [])];
+  const clientLines = [
+    input.clientName || "-",
+    ...(input.clientAddress ? [input.clientAddress] : []),
+    ...(input.clientEmail ? [input.clientEmail] : []),
+  ];
   const n = Math.max(issuerLines.length, clientLines.length);
   for (let i = 0; i < n; i++) {
     if (issuerLines[i]) text(issuerLines[i], M, y, { size: 10, b: i === 0 });

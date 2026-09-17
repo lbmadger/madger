@@ -42,7 +42,7 @@ export async function loadInvoicePdfInput(
   const [{ data: coach }, { data: pay }, linked] = await Promise.all([
     admin
       .from("coaches")
-      .select("first_name, last_name, business_name, billing_address, city, siret, vat_number, vat_rate_bps")
+      .select("first_name, last_name, business_name, billing_address, city, siret, vat_number, vat_rate_bps, entrepreneur_individuel")
       .eq("id", r.coach_id)
       .maybeSingle(),
     r.payment_id
@@ -61,8 +61,15 @@ export async function loadInvoicePdfInput(
       : Promise.resolve({ data: null }),
   ]);
 
+  // Adresse de facturation saisie par le client dans son profil (fonction
+  // SECURITY DEFINER, service role uniquement) ; absente : rien n'est écrit.
+  const { data: clientAddress } = r.client_email
+    ? await admin.rpc("client_billing_address", { p_email: r.client_email })
+    : { data: null };
+
   const input: InvoicePdfInput = {
     kind: r.kind === "credit_note" ? "credit_note" : "invoice",
+    clientAddress: (clientAddress as string | null) ?? null,
     number: r.number as string,
     issuedAt: new Date(r.issued_at ?? Date.now()),
     amountCents: r.amount_cents,
@@ -79,6 +86,7 @@ export async function loadInvoicePdfInput(
         [coach?.first_name, coach?.last_name].filter(Boolean).join(" ") ||
         "Coach",
       businessName: (coach?.business_name as string | null) ?? null,
+      entrepreneurIndividuel: (coach?.entrepreneur_individuel as boolean | null) ?? true,
       address: (coach?.billing_address as string | null) ?? null,
       city: (coach?.city as string | null) ?? null,
       siret: (coach?.siret as string | null) ?? null,

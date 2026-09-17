@@ -170,6 +170,10 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
   // clairement, au lieu du « non vérifié » muet.
   const [siretNotice, setSiretNotice] = useState<string | null>(null);
   const [vatNumber, setVatNumber] = useState(coach.vat_number ?? "");
+  // Mention « EI » sur les factures : vrai par défaut, décoché pour une société.
+  const [entrepreneurIndividuel, setEntrepreneurIndividuel] = useState(
+    coach.entrepreneur_individuel !== false
+  );
   const [billingAddress, setBillingAddress] = useState(
     coach.billing_address ?? ""
   );
@@ -307,6 +311,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
         business_name: businessName.trim() || null,
         siret: siret.trim() || null,
         vat_number: vatNumber.trim() || null,
+        entrepreneur_individuel: entrepreneurIndividuel,
         vat_rate_bps: vatNumber.trim() ? vatRate : 0,
         billing_address: billingAddress.trim() || null,
       },
@@ -1074,6 +1079,18 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
               ) : null}
             </label>
           </div>
+          <label className="flex items-start gap-3 rounded-xl border border-border bg-bg-elevated px-4 py-3">
+            <input
+              type="checkbox"
+              checked={entrepreneurIndividuel}
+              onChange={(e) => setEntrepreneurIndividuel(e.target.checked)}
+              className="mt-0.5 h-4 w-4 accent-accent"
+            />
+            <span className="flex flex-col gap-0.5">
+              <span className="text-sm font-medium text-text-base">{t("settings.eiLabel")}</span>
+              <span className="text-xs text-text-dim">{t("settings.eiHint")}</span>
+            </span>
+          </label>
           <label className="flex flex-col gap-1.5">
             <span className={labelClass}>{t("settings.billingAddress")}</span>
             <AddressAutocomplete

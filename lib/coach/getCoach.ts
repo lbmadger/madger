@@ -77,6 +77,8 @@ export type Coach = {
   siret: string | null;
   vat_number: string | null;
   billing_address: string | null;
+  // Entrepreneur individuel (migration 0079) : mention « EI » sur les factures.
+  entrepreneur_individuel?: boolean | null;
   // TVA hors franchise (migration 0070) : 0, 550, 1000 ou 2000 bps.
   vat_rate_bps?: number | null;
   // SIRET vérifié via l'annuaire officiel des entreprises (migration 0070).

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getCoach } from "@/lib/coach/getCoach";
 import { getServerDictionary } from "@/lib/i18n/server";
 import {
@@ -30,6 +31,9 @@ export default async function InvoicePage({
   const loc = locale === "fr" ? "fr-FR" : "en-GB";
   const supabase = createClient();
   const { coach } = await getCoach();
+  // « EI » devant le nom d'un entrepreneur individuel (mention obligatoire).
+  const personName = [coach?.first_name, coach?.last_name].filter(Boolean).join(" ");
+  const legalName = coach?.entrepreneur_individuel === false ? personName : `EI ${personName}`;
 
   const { data: p } = await supabase
     .from("payments")
@@ -43,6 +47,14 @@ export default async function InvoicePage({
   if (!p || !coach) notFound();
 
   const client = Array.isArray(p.clients) ? p.clients[0] : p.clients;
+  // Adresse de facturation saisie par le client dans son profil (fonction
+  // réservée au service role : la page tourne côté serveur).
+  const admin = createAdminClient();
+  const { data: clientAddressRaw } =
+    admin && client?.email
+      ? await admin.rpc("client_billing_address", { p_email: client.email as string })
+      : { data: null };
+  const clientAddress = (clientAddressRaw as string | null) ?? null;
   const service = Array.isArray(p.services) ? p.services[0] : p.services;
   const booking = Array.isArray(p.bookings) ? p.bookings[0] : p.bookings;
   const invoiceRows = p.invoices as (InvoiceRow & { reason?: string | null })[] | null;
@@ -151,8 +163,7 @@ export default async function InvoicePage({
               {inv.issuer}
             </p>
             <p className="mt-1 font-semibold text-text-base">
-              {coach.business_name ||
-                [coach.first_name, coach.last_name].filter(Boolean).join(" ")}
+              {coach.business_name || legalName}
             </p>
             {/* Nom de la personne SOUS la raison sociale, seulement s'ils
                 diffèrent : sinon le même nom s'affichait deux fois. */}
@@ -162,9 +173,7 @@ export default async function InvoicePage({
                   .filter(Boolean)
                   .join(" ")
                   .trim() && (
-                <p className="text-text-muted">
-                  {[coach.first_name, coach.last_name].filter(Boolean).join(" ")}
-                </p>
+                <p className="text-text-muted">{legalName}</p>
               )}
             {coach.billing_address && (
               <p className="text-text-muted">{coach.billing_address}</p>
@@ -193,6 +202,7 @@ export default async function InvoicePage({
             <p className="mt-1 font-semibold text-text-base">
               {[client?.first_name, client?.last_name].filter(Boolean).join(" ") || "-"}
             </p>
+            {clientAddress && <p className="text-text-muted">{clientAddress}</p>}
             {client?.email && (
               <p className="break-all text-text-muted">{client.email}</p>
             )}
