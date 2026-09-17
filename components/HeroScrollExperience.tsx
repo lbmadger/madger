@@ -299,38 +299,30 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
         />
 
         <div className="relative max-w-4xl mx-auto w-full">
-          {/* Wordmark */}
-          <motion.div
-            className="flex justify-center mb-3 sm:mb-8"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
+          {/* Wordmark, H1 et sous-titre : animation CSS, pas framer-motion.
+              Le LCP est le logo : avec une opacité 0 posée par JS, il restait
+              invisible jusqu'à l'hydratation (4,4 s en 4G lente). Le CSS
+              démarre au premier rendu. */}
+          <div className="anim-fade-up flex justify-center mb-3 sm:mb-8">
             <img src="/logo.png" alt="Madger" width={900} height={360} fetchPriority="high" style={{ height: "clamp(120px, 32vw, 150px)", width: "auto", objectFit: "contain", display: "block" }} />
-          </motion.div>
+          </div>
 
           {/* H1 */}
-          <motion.h1
-            className="font-extrabold text-white mb-3 sm:mb-6"
-            style={{ fontSize: "clamp(36px, 7vw, 88px)", letterSpacing: "-0.04em", lineHeight: 0.97 }}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+          <h1
+            className="anim-fade-up font-extrabold text-white mb-3 sm:mb-6"
+            style={{ fontSize: "clamp(36px, 7vw, 88px)", letterSpacing: "-0.04em", lineHeight: 0.97, animationDelay: "0.1s" }}
           >
             Ne demande plus jamais<br />
             <span className="text-shimmer">à être payé.</span>
-          </motion.h1>
+          </h1>
 
           {/* Subtitle */}
-          <motion.p
-            className="text-text-muted leading-relaxed mb-5 sm:mb-10 max-w-2xl mx-auto"
-            style={{ fontSize: "clamp(15px, 2vw, 19px)", lineHeight: 1.6 }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.22 }}
+          <p
+            className="anim-fade-up text-text-muted leading-relaxed mb-5 sm:mb-10 max-w-2xl mx-auto"
+            style={{ fontSize: "clamp(15px, 2vw, 19px)", lineHeight: 1.6, animationDelay: "0.22s" }}
           >
             Un lien dans ta bio. Tes clients réservent leurs séances, paient d&apos;avance et reçoivent leur facture. Toi, tu coaches.
-          </motion.p>
+          </p>
 
           {/* CTAs */}
           <motion.div
