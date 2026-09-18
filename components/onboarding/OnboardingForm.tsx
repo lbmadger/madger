@@ -217,6 +217,22 @@ export default function OnboardingForm({
       } catch {
         /* best-effort : le parrainage ne doit jamais bloquer l'onboarding */
       }
+      // Offre de lancement : rattache le code du lien /lancement au compte,
+      // le coupon s'appliquera au premier abonnement Pro.
+      try {
+        const offer = localStorage.getItem("madger_offer");
+        if (offer) {
+          await fetch("/api/offer/claim", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ code: offer }),
+            signal: AbortSignal.timeout(8000),
+          });
+          localStorage.removeItem("madger_offer");
+        }
+      } catch {
+        /* best-effort : l'offre ne doit jamais bloquer l'onboarding */
+      }
       track("onboarding_step_done", { step: 1 });
       setStep(2);
     } catch {

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe/server";
-import { currentMonthlyCents, currentAnnualCents } from "@/lib/subscription/offer";
+import { currentMonthlyCents, currentAnnualCents, LAUNCH_LINK } from "@/lib/subscription/offer";
+import type Stripe from "stripe";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
 
   const { data: coach } = await supabase
     .from("coaches")
-    .select("id, stripe_customer_id, stripe_subscription_id, pro_trial_used_at, subscription_status")
+    .select("id, stripe_customer_id, stripe_subscription_id, pro_trial_used_at, subscription_status, launch_offer")
     .eq("id", user.id)
     .maybeSingle();
   if (!coach) {
@@ -63,6 +64,31 @@ export async function POST(req: NextRequest) {
     !coach.pro_trial_used_at &&
     coach.subscription_status !== "canceled";
 
+  // Offre de lancement (lien /lancement) : Pro mensuel à moitié prix pendant
+  // trois mois, au premier abonnement seulement. Le coupon Stripe est créé à
+  // la volée s'il manque. Un coupon posé d'office exclut la saisie d'un
+  // code promo Stripe (les deux ne se combinent pas).
+  const launchDiscount =
+    plan === "monthly" &&
+    coach.launch_offer === LAUNCH_LINK.code &&
+    !coach.stripe_subscription_id;
+  let discounts: Stripe.Checkout.SessionCreateParams.Discount[] | undefined;
+  if (launchDiscount) {
+    const id = LAUNCH_LINK.stripeCouponId;
+    try {
+      await stripe.coupons.retrieve(id);
+    } catch {
+      await stripe.coupons.create({
+        id,
+        name: "Offre de lancement",
+        percent_off: LAUNCH_LINK.percentOff,
+        duration: "repeating",
+        duration_in_months: LAUNCH_LINK.months,
+      });
+    }
+    discounts = [{ coupon: id }];
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     ...(coach.stripe_customer_id
@@ -80,9 +106,10 @@ export async function POST(req: NextRequest) {
       },
     ],
     subscription_data: {
-      metadata: { coach_id: coach.id, plan },
+      metadata: { coach_id: coach.id, plan, launch_offer: launchDiscount ? LAUNCH_LINK.code : "" },
       ...(trial ? { trial_period_days: 7 } : {}),
     },
+    ...(discounts ? { discounts } : {}),
     // Carte demandée même pendant l'essai : c'est ce qui permet le
     // renouvellement automatique sans action du coach.
     payment_method_collection: "always",
@@ -94,7 +121,7 @@ export async function POST(req: NextRequest) {
     // Paiement EMBARQUÉ : le formulaire s'affiche dans /paiement.
     ui_mode: "embedded_page",
     return_url: `${origin}/api/stripe/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
-    allow_promotion_codes: true,
+    ...(discounts ? {} : { allow_promotion_codes: true }),
   });
 
   return NextResponse.json({ client_secret: session.client_secret, trial });

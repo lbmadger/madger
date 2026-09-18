@@ -10,6 +10,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import { PASSWORD_RULES, isPasswordStrong } from "@/lib/utils/password";
 import Button from "@/components/ui/Button";
 import { inputClass } from "@/lib/ui/styles";
+import { LAUNCH_LINK, LAUNCH_OFFER, launchLinkActive, launchLinkMonthlyCents, launchLinkUntilLabel, euros } from "@/lib/subscription/offer";
 
 type Mode = "login" | "signup";
 
@@ -18,7 +19,7 @@ type Mode = "login" | "signup";
 // Google en option.
 
 export default function AuthForm({ mode }: { mode: Mode }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
   // Rôle du compte créé : 'client' si ?role=client (parcours client après
@@ -84,6 +85,24 @@ export default function AuthForm({ mode }: { mode: Mode }) {
       }
     }
   }, [searchParams, role]);
+
+  // Offre de lancement : /signup?offre=LANCEMENT (via madger.app/lancement)
+  // mémorise le code, rattaché au compte à la fin de l'onboarding coach.
+  const offerParam = (searchParams.get("offre") ?? "").trim().toUpperCase();
+  const [launchOffer, setLaunchOffer] = useState(false);
+  useEffect(() => {
+    if (role !== "coach" || !launchLinkActive()) return;
+    try {
+      if (offerParam === LAUNCH_LINK.code) {
+        localStorage.setItem("madger_offer", LAUNCH_LINK.code);
+        setLaunchOffer(true);
+      } else if (isSignup && localStorage.getItem("madger_offer") === LAUNCH_LINK.code) {
+        setLaunchOffer(true);
+      }
+    } catch {
+      /* stockage indisponible */
+    }
+  }, [offerParam, role, isSignup]);
 
   // Préremplissage depuis la simulation de la landing (?email=, ?prenom=,
   // ?nom=, ?tel=) : le coach ne ressaisit pas ce qu'il vient de donner. Les
@@ -242,6 +261,21 @@ export default function AuthForm({ mode }: { mode: Mode }) {
         {title}
       </h1>
       <p className="mt-1 text-sm text-text-muted">{subtitle}</p>
+
+      {/* Offre de lancement arrivée par le lien : ce que le compte débloque,
+          et jusqu'à quand le lien vaut. */}
+      {launchOffer && !clientFlow && (
+        <div className="mt-4 rounded-xl border border-accent/30 bg-accent/[0.06] px-4 py-3 text-sm leading-relaxed text-text-base">
+          <p className="font-semibold text-accent">{t("auth.signup.launchOfferTitle")}</p>
+          <p className="mt-0.5">
+            {t("auth.signup.launchOfferDesc")
+              .replace("{price}", euros(launchLinkMonthlyCents(), locale))
+              .replace("{months}", String(LAUNCH_LINK.months))
+              .replace("{full}", euros(LAUNCH_OFFER.launchMonthlyCents, locale))
+              .replace("{date}", launchLinkUntilLabel(locale))}
+          </p>
+        </div>
+      )}
 
       {/* Google */}
       <button

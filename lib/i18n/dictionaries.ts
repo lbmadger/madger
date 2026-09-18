@@ -183,6 +183,9 @@ const fr = {
       link: "Créer un compte",
     },
     signup: {
+      launchOfferTitle: "Offre de lancement",
+      launchOfferDesc:
+        "Avec ce lien, Madger Pro mensuel est à {price} par mois pendant {months} mois au lieu de {full}. Valable pour les comptes créés avant le {date}.",
       title: "Créer ton compte coach",
       subtitle: "Quelques secondes pour démarrer avec Madger.",
       clientTitle: "Crée ton compte",
@@ -633,6 +636,11 @@ const fr = {
     offerDaysLeft: "{name} : plus que {n} jours pour bloquer ce prix",
     offerLastDay: "{name} : dernier jour pour bloquer ce prix",
     offerLocked: "Prix de lancement, bloqué tant que tu restes abonné.",
+    launchLinkTitle: "Offre de lancement :",
+    launchLinkDesc: "{price} par mois pendant {months} mois, puis {full}. Appliquée automatiquement au paiement.",
+    launchLinkAnnualNote: "L'offre de lancement s'applique au mensuel.",
+    trialNoteLaunch:
+      "Rien n'est débité pendant 7 jours, puis {price} par mois pendant {months} mois et {full} ensuite. Tu arrêtes quand tu veux depuis cette page, en un clic.",
     modalTitle: "Pro, c'est ce qui fait rester tes clients",
     modalBody:
       "Laisse l'annulation automatique appliquer tes règles, relance les renouvellements, suis tes encaissements par client et repère ceux qui décrochent. Un no-show évité par mois et Pro est remboursé.",
@@ -2112,6 +2120,9 @@ const en: Dictionary = {
       link: "Create an account",
     },
     signup: {
+      launchOfferTitle: "Launch offer",
+      launchOfferDesc:
+        "With this link, monthly Madger Pro is {price} per month for {months} months instead of {full}. For accounts created before {date}.",
       title: "Create your coach account",
       subtitle: "A few seconds to get started with Madger.",
       clientTitle: "Create your account",
@@ -2561,6 +2572,11 @@ const en: Dictionary = {
     offerDaysLeft: "{name}: only {n} days left to lock this price",
     offerLastDay: "{name}: last day to lock this price",
     offerLocked: "Launch price, locked as long as you stay subscribed.",
+    launchLinkTitle: "Launch offer:",
+    launchLinkDesc: "{price} per month for {months} months, then {full}. Applied automatically at checkout.",
+    launchLinkAnnualNote: "The launch offer applies to the monthly plan.",
+    trialNoteLaunch:
+      "Nothing is charged for 7 days, then {price} per month for {months} months and {full} after. Cancel anytime from this page, in one click.",
     modalTitle: "Pro is what keeps your clients coming back",
     modalBody:
       "Let automatic cancellation apply your rules, send renewal reminders, track payments per client and spot the ones drifting away. One no-show avoided per month and Pro pays for itself.",

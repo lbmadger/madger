@@ -123,3 +123,36 @@ export function monthlyOffer(locale: string = "fr", now: Date = new Date()): Mon
   });
   return { name: locale === "fr" ? names.fr : names.en, daysLeft, endsLabel };
 }
+
+// ── Lien de lancement ───────────────────────────────────────────────────────
+// madger.app/lancement (stories, DM) : le coach qui crée son compte par ce
+// lien avant la date ci-dessous obtient Pro mensuel à moitié prix pendant
+// trois mois, au moment de son premier abonnement. Le code est mémorisé à
+// l'inscription (localStorage), rattaché au compte à la fin de la première
+// étape d'onboarding (/api/offer/claim) et appliqué par un coupon Stripe
+// dans /api/stripe/subscription. Le prix affiché vient d'ici, jamais en dur.
+export const LAUNCH_LINK = {
+  code: "LANCEMENT",
+  percentOff: 50,
+  months: 3,
+  // Dernier jour (inclus, heure de Paris) pour créer son compte par le lien.
+  claimUntil: "2026-10-31",
+  // Identifiant du coupon Stripe, créé à la volée s'il n'existe pas.
+  stripeCouponId: "LANCEMENT50",
+} as const;
+
+export function launchLinkActive(now: Date = new Date()): boolean {
+  return now.getTime() <= new Date(`${LAUNCH_LINK.claimUntil}T23:59:59+01:00`).getTime();
+}
+
+// Mensuel remisé pendant les premiers mois : 24,50 € sur 49 €.
+export function launchLinkMonthlyCents(now: Date = new Date()): number {
+  return Math.round((currentMonthlyCents(now) * (100 - LAUNCH_LINK.percentOff)) / 100);
+}
+
+export function launchLinkUntilLabel(locale: string): string {
+  return new Date(`${LAUNCH_LINK.claimUntil}T12:00:00+01:00`).toLocaleDateString(
+    locale === "fr" ? "fr-FR" : "en-GB",
+    { day: "numeric", month: "long" }
+  );
+}

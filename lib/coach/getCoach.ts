@@ -79,6 +79,9 @@ export type Coach = {
   billing_address: string | null;
   // Entrepreneur individuel (migration 0079) : mention « EI » sur les factures.
   entrepreneur_individuel?: boolean | null;
+  // Offre de lancement (lien /lancement) rattachée au compte, migration 0082.
+  launch_offer?: string | null;
+  launch_offer_claimed_at?: string | null;
   // TVA hors franchise (migration 0070) : 0, 550, 1000 ou 2000 bps.
   vat_rate_bps?: number | null;
   // SIRET vérifié via l'annuaire officiel des entreprises (migration 0070).

@@ -9,6 +9,8 @@ import {
   currentMonthlyCents,
   currentAnnualCents,
   euros,
+  LAUNCH_LINK,
+  launchLinkMonthlyCents,
 } from "@/lib/subscription/offer";
 import LaunchPrice from "@/components/subscription/LaunchPrice";
 
@@ -19,6 +21,7 @@ export default function PricingPlans({
   currentPlan,
   trialEligible = true,
   subscribed,
+  launchLink = false,
 }: {
   currentPlan: "free" | "pro";
   // Premier abonnement : 7 jours d'essai, rien débité, puis renouvellement
@@ -28,13 +31,18 @@ export default function PricingPlans({
   // échec de paiement). Un coach Pro par accès OFFERT (code, parrainage) n'a
   // pas d'abonnement : le bouton reste disponible pour bloquer son tarif.
   subscribed?: boolean;
+  // Offre de lancement rattachée au compte (lien /lancement) et pas encore
+  // consommée : mensuel à moitié prix pendant les premiers mois.
+  launchLink?: boolean;
 }) {
   const hasSubscription = subscribed ?? currentPlan === "pro";
   const { t, dict, locale } = useI18n();
   const p = dict.plans;
   // Annuel par défaut : c'est la meilleure offre (2 mois offerts), autant
   // qu'elle soit visible sans clic.
-  const [period, setPeriod] = useState<"monthly" | "annual">("annual");
+  // Avec l'offre de lancement, c'est le mensuel qui est remisé : il s'ouvre
+  // dessus.
+  const [period, setPeriod] = useState<"monthly" | "annual">(launchLink ? "monthly" : "annual");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -179,6 +187,18 @@ export default function PricingPlans({
             {p.offerLocked}
           </p>
         )}
+        {launchLink && period === "monthly" && (
+          <p className="mt-2 rounded-xl border border-accent/40 bg-accent/[0.1] px-3 py-2 text-xs leading-relaxed text-text-base">
+            <span className="font-bold text-accent">{p.launchLinkTitle}</span>{" "}
+            {p.launchLinkDesc
+              .replace("{price}", euros(launchLinkMonthlyCents(), locale))
+              .replace("{months}", String(LAUNCH_LINK.months))
+              .replace("{full}", euros(currentMonthlyCents(), locale))}
+          </p>
+        )}
+        {launchLink && period === "annual" && (
+          <p className="mt-2 text-xs text-text-dim">{p.launchLinkAnnualNote}</p>
+        )}
         <p className="mt-1 text-sm text-text-base">{p.feesPro}</p>
         <p className="mt-1 text-xs text-text-dim">{p.proNote}</p>
 
@@ -214,10 +234,15 @@ export default function PricingPlans({
             </p>
             {trialEligible && (
               <p className="mt-2 text-center text-[11px] leading-relaxed text-text-dim">
-                {(period === "annual" ? p.trialNoteAnnual : p.trialNoteMonthly).replace(
-                  "{price}",
-                  euros(period === "annual" ? currentAnnualCents() : currentMonthlyCents(), locale)
-                )}
+                {launchLink && period === "monthly"
+                  ? p.trialNoteLaunch
+                      .replace("{price}", euros(launchLinkMonthlyCents(), locale))
+                      .replace("{months}", String(LAUNCH_LINK.months))
+                      .replace("{full}", euros(currentMonthlyCents(), locale))
+                  : (period === "annual" ? p.trialNoteAnnual : p.trialNoteMonthly).replace(
+                      "{price}",
+                      euros(period === "annual" ? currentAnnualCents() : currentMonthlyCents(), locale)
+                    )}
               </p>
             )}
             {error && (
