@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { dashboardContainer } from "@/lib/ui/styles";
 import Topbar from "@/components/dashboard/Topbar";
 import ServicesView from "@/components/dashboard/services/ServicesView";
 import { createClient } from "@/lib/supabase/server";
@@ -26,7 +27,7 @@ export default async function ServicesPage() {
   return (
     <>
       <Topbar title={dict.services.title} />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+      <main className={`${dashboardContainer} flex-1 py-6 sm:py-8`}>
         {!stripeReady && (
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-accent/25 bg-accent/[0.05] px-4 py-3">
             <div className="min-w-0">

@@ -23,7 +23,7 @@ export default function ProStats({
   const { t } = useI18n();
 
   return (
-    <section className="mt-4 rounded-2xl border border-border bg-bg-card p-4 sm:mt-5 sm:p-5">
+    <section className="rounded-2xl border border-border bg-bg-card p-4 sm:p-5">
       <div className="flex items-center gap-2">
         <h3 className="text-xs font-medium uppercase tracking-wide text-text-dim">
           {t("overview.proStats.title")}
@@ -37,7 +37,7 @@ export default function ProStats({
       <div className="relative mt-4">
         <div
           aria-hidden={locked}
-          className={`grid grid-cols-2 gap-3 sm:grid-cols-4 ${
+          className={`grid grid-cols-2 gap-3 ${
             locked ? "pointer-events-none select-none blur-[7px]" : ""
           }`}
         >

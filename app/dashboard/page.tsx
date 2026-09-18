@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { dashboardContainer } from "@/lib/ui/styles";
 import Topbar from "@/components/dashboard/Topbar";
 import AnimatedStat, {
   type StatKind,
@@ -757,7 +758,7 @@ export default async function OverviewPage() {
     <>
       <Topbar title={o.title} />
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+      <main className={`${dashboardContainer} flex-1 py-6 sm:py-8`}>
         <div className="mb-6 sm:mb-8">
           {(() => {
             // Salutation selon l'heure locale du coach : Bonjour la journée,
@@ -1032,7 +1033,7 @@ export default async function OverviewPage() {
           />
         </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:mt-5 lg:grid-cols-3">
+        <div className="mt-4 grid grid-cols-1 items-start gap-4 sm:mt-5 lg:grid-cols-3">
           <div className="flex flex-col gap-4 lg:col-span-2">
             {/* La carte s'étire (flex-1) pour égaliser la hauteur des deux
                 colonnes — mais SEULEMENT quand elle a des séances à montrer.
@@ -1200,6 +1201,11 @@ export default async function OverviewPage() {
                 bookingDone={firstBookingDone}
               />
             )}
+
+            {/* Statistiques avancées : floutées + cadenas en Gratuit, réelles
+                en Pro. Dans la colonne large, sous Objectif et Revenus, pour
+                que les deux colonnes finissent à la même hauteur. */}
+            <ProStats items={proItems} locked={!pro} />
           </div>
 
           <div className="flex flex-col gap-4 lg:col-span-1">
@@ -1415,10 +1421,6 @@ export default async function OverviewPage() {
             </section>
           </div>
         </div>
-
-        {/* Statistiques avancées : floutées + cadenas en Gratuit, réelles en
-            Pro. */}
-        <ProStats items={proItems} locked={!pro} />
 
         {/* Séances par semaine (le revenu a désormais son héros en aire plus
             haut) : les barres conviennent bien à un décompte. */}

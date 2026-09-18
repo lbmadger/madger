@@ -1,4 +1,5 @@
 import Topbar from "@/components/dashboard/Topbar";
+import { dashboardContainer } from "@/lib/ui/styles";
 import ShareStoryButton from "@/components/dashboard/ShareStoryButton";
 import StatCard, { type Trend } from "@/components/dashboard/StatCard";
 import AreaChartCard from "@/components/dashboard/charts/AreaChartCard";
@@ -242,7 +243,7 @@ export default async function StatsPage() {
   return (
     <>
       <Topbar title={s.title} />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+      <main className={`${dashboardContainer} flex-1 py-6 sm:py-8`}>
         {/* Studio stories : le coach poste SES chiffres (jamais l'argent)
             ou le fait sport du jour, aux couleurs de sa page, avec son lien
             de résa. Une ligne d'explication, pas plus : les boutons parlent

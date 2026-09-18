@@ -4,6 +4,7 @@ import Link from "next/link";
 import MadgerLogo from "@/components/ui/MadgerLogo";
 import AccountMenu from "@/components/dashboard/AccountMenu";
 import { CopyLinkPill, ShareLinkMenu, NotificationBell } from "@/components/dashboard/TopbarActions";
+import { dashboardContainer } from "@/lib/ui/styles";
 
 // Barre supérieure du dashboard (comme le mockup de la landing) : titre,
 // logo centré (mobile), et à droite : lien de réservation prêt à copier
@@ -12,7 +13,10 @@ import { CopyLinkPill, ShareLinkMenu, NotificationBell } from "@/components/dash
 
 export default function Topbar({ title }: { title: string }) {
   return (
-    <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-border bg-bg/80 px-4 backdrop-blur sm:px-6">
+    <header className="sticky top-0 z-10 border-b border-border bg-bg/80 backdrop-blur">
+      {/* Même conteneur que le <main> des pages : titre et cloche sont sur
+          l'axe des cartes, quelle que soit la largeur d'écran. */}
+      <div className={`${dashboardContainer} relative flex h-16 items-center gap-4`}>
       <h1 className="text-lg font-extrabold tracking-tight text-text-base">{title}</h1>
 
       {/* Logo (icône iOS) centré — mobile uniquement */}
@@ -34,6 +38,7 @@ export default function Topbar({ title }: { title: string }) {
         <div className="md:hidden">
           <AccountMenu />
         </div>
+      </div>
       </div>
     </header>
   );

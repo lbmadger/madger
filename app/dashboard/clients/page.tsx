@@ -1,4 +1,5 @@
 import Topbar from "@/components/dashboard/Topbar";
+import { dashboardContainer } from "@/lib/ui/styles";
 import ClientsView from "@/components/dashboard/clients/ClientsView";
 import FollowUpList, {
   type FollowUp,
@@ -98,7 +99,7 @@ export default async function ClientsPage() {
   return (
     <>
       <Topbar title={dict.clients.title} />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+      <main className={`${dashboardContainer} flex-1 py-6 sm:py-8`}>
         {/* Alerte churn : fonctionnalité Pro. En Essentiel, la liste est
             verrouillée (même règle que l'email du matin, coupé côté cron). */}
         {pro ? (

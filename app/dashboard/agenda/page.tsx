@@ -1,4 +1,5 @@
 import Topbar from "@/components/dashboard/Topbar";
+import { dashboardContainer } from "@/lib/ui/styles";
 import AgendaView from "@/components/dashboard/agenda/AgendaView";
 import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
@@ -88,7 +89,7 @@ export default async function AgendaPage() {
   return (
     <>
       <Topbar title={dict.agenda.title} />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+      <main className={`${dashboardContainer} flex-1 py-6 sm:py-8`}>
         <AgendaView
           initialBookings={(bookings ?? []) as Booking[]}
           clients={(clients ?? []) as ClientOption[]}

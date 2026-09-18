@@ -170,17 +170,24 @@ a {
   text-decoration: none;
 }
 
+/* Barre de défilement discrète : la pouce lime de 4 px collait au bord
+   droit de la fenêtre sur toute la hauteur, comme une bande verte. Même gris
+   que border-strong, invisible tant qu'on ne défile pas. */
 ::-webkit-scrollbar {
-  width: 4px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0A0A0A;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #CBFF03;
-  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* ── Spotlight card glow (mouse tracking) ───────────────── */

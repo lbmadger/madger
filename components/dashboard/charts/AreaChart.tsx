@@ -158,8 +158,12 @@ export default function AreaChart({
       </svg>
 
       {/* Info-bulle (HTML : nette, non étirée par le viewBox) */}
+      {/* Aux deux extrémités, l'étiquette s'aligne sur le bord au lieu d'être
+          centrée sur le point : elle ne sort jamais du graphique. */}
       <div
-        className="pointer-events-none absolute top-0 -translate-x-1/2 -translate-y-1"
+        className={`pointer-events-none absolute top-0 -translate-y-1 ${
+          activeIdx === 0 ? "" : activeIdx === n - 1 ? "-translate-x-full" : "-translate-x-1/2"
+        }`}
         style={{ left: `${activeLeftPct}%` }}
       >
         <div className="whitespace-nowrap rounded-md border border-border bg-bg-elevated px-2 py-1 text-center shadow-lg">
