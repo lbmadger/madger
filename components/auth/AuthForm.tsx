@@ -45,6 +45,32 @@ export default function AuthForm({ mode }: { mode: Mode }) {
       (p) => redirectTo === p || redirectTo.startsWith(p + "/") || redirectTo.startsWith(p + "?")
     );
 
+  // Déjà connecté : un coach qui retombe sur l'inscription ou la connexion
+  // (lien « Crée ta page » de l'annuaire, favori) part droit sur son
+  // dashboard ; un client déjà connecté sur un parcours client rejoint sa
+  // destination. Sinon le formulaire s'affichait et ne menait nulle part.
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const supabase = createClient();
+      const { data } = await supabase.auth.getSession();
+      const user = data.session?.user;
+      if (!user || !alive) return;
+      const { data: coachRow } = await supabase
+        .from("coaches")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (!alive) return;
+      if (coachRow) router.replace("/dashboard");
+      else if (clientFlow) router.replace(redirectTo);
+    })();
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Parrainage : un lien /signup?ref=CODE mémorise le code localement. Il
   // survit au détour Google (même origine) et sera rattaché au compte à la
   // fin de l'onboarding coach.

@@ -1063,6 +1063,8 @@ const fr = {
     soonClientCta: "Accéder à mon espace client",
     soonCoachHint: "Tu es coach ?",
     soonCoachCta: "Crée ta page et prends ta place parmi les premiers",
+    soonCoachExisting: "Ta page coach existe déjà.",
+    soonCoachOpen: "Ouvrir mon espace coach",
   },
   coachProfile: {
     backToSearch: "Tous les coachs",
@@ -2987,6 +2989,8 @@ const en: Dictionary = {
     soonClientCta: "Go to my client space",
     soonCoachHint: "Are you a coach?",
     soonCoachCta: "Create your page and be among the first",
+    soonCoachExisting: "Your coach page already exists.",
+    soonCoachOpen: "Open my coach space",
   },
   coachProfile: {
     backToSearch: "All coaches",

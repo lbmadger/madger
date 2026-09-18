@@ -8,6 +8,7 @@ import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/supabase/config";
 import PublicHeader from "@/components/marketplace/PublicHeader";
 import MarketplaceView from "@/components/marketplace/MarketplaceView";
 import Leo from "@/components/ui/Leo";
+import DirectoryCoachCta from "@/components/marketplace/DirectoryCoachCta";
 import type { PublicCoach } from "@/lib/coaches/public-types";
 
 // Démarrage à froid : en dessous de ce nombre de coachs publiés, l'annuaire
@@ -60,6 +61,8 @@ function DirectorySoon({
     soonClientCta: string;
     soonCoachHint: string;
     soonCoachCta: string;
+    soonCoachExisting: string;
+    soonCoachOpen: string;
   };
 }) {
   return (
@@ -79,15 +82,12 @@ function DirectorySoon({
       >
         {m.soonClientCta}
       </Link>
-      <p className="mt-8 text-sm text-text-dim">
-        {m.soonCoachHint}{" "}
-        <Link
-          href="/signup"
-          className="font-semibold text-text-base underline underline-offset-4 transition-colors hover:text-accent"
-        >
-          {m.soonCoachCta}
-        </Link>
-      </p>
+      <DirectoryCoachCta
+        hint={m.soonCoachHint}
+        cta={m.soonCoachCta}
+        existing={m.soonCoachExisting}
+        open={m.soonCoachOpen}
+      />
     </main>
   );
 }
