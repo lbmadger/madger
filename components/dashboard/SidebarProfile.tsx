@@ -10,7 +10,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 // nom, plan. Au clic, menu vers le haut : Abonnement (badge), Ma page
 // publique, Réglages, Déconnexion.
 export default function SidebarProfile() {
-  const { email, name, avatarUrl, slug, pro } = useSession();
+  const { email, name, avatarUrl, slug, pro, clientSpace } = useSession();
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -66,13 +66,15 @@ export default function SidebarProfile() {
               {t("nav.publicPage")}
             </Link>
           )}
-          <Link href="/espace" onClick={() => setOpen(false)} className={itemCls}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-            {t("nav.clientView")}
-          </Link>
+          {clientSpace && (
+            <Link href="/espace" onClick={() => setOpen(false)} className={itemCls}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+              {t("nav.clientView")}
+            </Link>
+          )}
 
           <Link
             href="/dashboard/reglages"

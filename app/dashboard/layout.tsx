@@ -6,6 +6,7 @@ import { SessionProvider } from "@/lib/auth/SessionProvider";
 import ProUpsellModal from "@/components/subscription/ProUpsellModal";
 import { createClient } from "@/lib/supabase/server";
 import { getCoach } from "@/lib/coach/getCoach";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { isPro } from "@/lib/subscription/plan";
 import Sidebar from "@/components/dashboard/Sidebar";
 import MobileNav from "@/components/dashboard/MobileNav";
@@ -53,10 +54,16 @@ export default async function DashboardLayout({
     redirect("/onboarding");
   }
 
+  // Vie de client sur le même compte ? Profil sportif rempli, ou une fiche
+  // client à son email chez un coach (réservation faite avec ce compte).
+  // Sans ça, un coach qui ne réserve jamais ne voit pas de bascule client.
+  const clientSpace = await hasClientSpace(user.id, user.email ?? null);
+
   return (
     <I18nProvider locale={locale} dict={dict}>
       <SessionProvider
         user={{
+          clientSpace,
           email: user.email ?? "",
           slug: coach?.slug ?? null,
           pro: isPro(coach?.pro_until),
@@ -82,4 +89,20 @@ export default async function DashboardLayout({
       </SessionProvider>
     </I18nProvider>
   );
+}
+
+async function hasClientSpace(userId: string, email: string | null): Promise<boolean> {
+  const admin = createAdminClient();
+  if (!admin) return false;
+  try {
+    const [{ data: profile }, { data: clientRow }] = await Promise.all([
+      admin.from("client_profiles").select("id").eq("id", userId).maybeSingle(),
+      email
+        ? admin.from("clients").select("id").ilike("email", email.trim().toLowerCase()).limit(1).maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
+    return !!profile || !!clientRow;
+  } catch {
+    return false;
+  }
 }

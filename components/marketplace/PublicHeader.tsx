@@ -10,7 +10,7 @@ import ClientBell from "@/components/client/ClientBell";
 // En-tête léger des pages publiques de la marketplace. Le choix de la langue
 // vit dans les réglages, pas ici. Un client connecté y retrouve sa cloche et
 // sa photo (vers son profil) à côté de « Mes séances ».
-type Me = { firstName: string; lastName: string; avatarUrl: string | null; isCoach: boolean };
+type Me = { firstName: string; lastName: string; email: string; avatarUrl: string | null; isCoach: boolean };
 
 export default function PublicHeader() {
   const { t } = useI18n();
@@ -67,6 +67,7 @@ export default function PublicHeader() {
       setMe({
         firstName: first,
         lastName: last,
+        email: user.email ?? "",
         avatarUrl: (cp?.avatar_url as string | null) ?? null,
         isCoach: !!coachRow,
       });
@@ -152,16 +153,21 @@ export default function PublicHeader() {
                     role="menu"
                     className="anim-menu-in absolute right-0 top-11 z-30 w-56 overflow-hidden rounded-xl border border-border bg-bg-elevated shadow-xl"
                   >
-                    <p className="border-b border-border px-4 py-2.5 text-xs text-text-dim">
-                      {[me.firstName, me.lastName].filter(Boolean).join(" ")}
-                    </p>
+                    {/* Qui est connecté : nom et email, pour lever le doute
+                        quand on a plusieurs comptes. */}
+                    <div className="border-b border-border px-4 py-2.5">
+                      <p className="truncate text-sm font-medium text-text-base">
+                        {[me.firstName, me.lastName].filter(Boolean).join(" ") || t("clientSpace.myProfile")}
+                      </p>
+                      <p className="truncate text-xs text-text-dim">{me.email}</p>
+                    </div>
                     <Link
                       role="menuitem"
                       href="/onboarding-client"
                       onClick={() => setMenuOpen(false)}
                       className="block border-b border-border px-4 py-2.5 text-sm text-text-muted transition-colors hover:bg-bg-card hover:text-text-base"
                     >
-                      {t("clientSpace.myProfile")}
+                      {t("clientSpace.editProfile")}
                     </Link>
                     <form action="/auth/signout" method="post">
                       <button

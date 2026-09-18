@@ -18,6 +18,9 @@ export type SessionUser = {
   // Agenda Google connecté : condition pour proposer des séances en visio
   // (le lien Meet est créé tout seul).
   googleConnected: boolean;
+  // Le même compte a aussi une vie de client (profil sportif ou réservation
+  // chez un coach) : le lien « Mon espace client » n'apparaît qu'alors.
+  clientSpace: boolean;
 };
 
 const SessionContext = createContext<SessionUser | null>(null);
