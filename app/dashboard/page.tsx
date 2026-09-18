@@ -616,6 +616,9 @@ export default async function OverviewPage() {
       value: monthRevenue,
       kind: "currency",
       trend: revenueTrend,
+      // Seule tuile sans lien : elle n'avait ni le survol ni la destination
+      // des trois autres. Direction les statistiques, où le revenu se détaille.
+      href: "/dashboard/stats",
     },
     {
       label: o.sessionsWeek,
