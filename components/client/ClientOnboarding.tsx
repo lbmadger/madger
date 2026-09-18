@@ -59,26 +59,32 @@ export default function ClientOnboarding() {
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
-  // Brouillon local : la saisie survit à une session expirée, un
-  // rechargement ou une déconnexion accidentelle. Restauré au montage,
-  // purgé quand le profil est enregistré.
+  // Brouillon local : la saisie d'une PREMIÈRE création survit à une session
+  // expirée, un rechargement ou une déconnexion accidentelle. Purgé quand le
+  // profil est enregistré. Dès que le profil est complet en base, c'est la
+  // base qui fait foi : le brouillon n'est plus ni lu ni écrit, sinon un
+  // brouillon partiel (sans consentement, adresse ou photo) écrasait le
+  // profil à chaque retour sur la page.
   const DRAFT_KEY = "madger_client_onboarding_draft";
-  // true = un brouillon vient d'être restauré : le pré-remplissage async du
-  // profil existant ne doit alors PAS écraser la saisie en cours.
-  const draftRestoredRef = { current: false } as { current: boolean };
-  useEffect(() => {
+  // true une fois le profil lu en base (ou l'absence de profil constatée) :
+  // avant, rien n'est écrit dans le brouillon.
+  const [loaded, setLoaded] = useState(false);
+  const [profileCompleted, setProfileCompleted] = useState(false);
+
+  function applyDraft(): boolean {
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
-      if (!raw) return;
-      draftRestoredRef.current = true;
+      if (!raw) return false;
       const d = JSON.parse(raw) as Record<string, unknown>;
       if (typeof d.step === "number") setStep(d.step);
       if (typeof d.firstName === "string") setFirstName(d.firstName);
       if (typeof d.lastName === "string") setLastName(d.lastName);
       if (typeof d.phone === "string") setPhone(d.phone);
+      if (typeof d.billingAddress === "string") setBillingAddress(d.billingAddress);
       if (typeof d.birthDate === "string") setBirthDate(d.birthDate);
       if (d.sex === "male" || d.sex === "female" || d.sex === "other")
         setSex(d.sex);
+      if (typeof d.healthConsent === "boolean") setHealthConsent(d.healthConsent);
       if (typeof d.heightCm === "string") setHeightCm(d.heightCm);
       if (typeof d.weightKg === "string") setWeightKg(d.weightKg);
       if (Array.isArray(d.goals)) setGoals(d.goals as string[]);
@@ -89,12 +95,15 @@ export default function ClientOnboarding() {
       )
         setLevel(d.level);
       if (typeof d.note === "string") setNote(d.note);
+      return true;
     } catch {
       /* brouillon illisible : on repart de zéro */
+      return false;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }
+
   useEffect(() => {
+    if (!loaded || profileCompleted) return;
     try {
       localStorage.setItem(
         DRAFT_KEY,
@@ -103,8 +112,10 @@ export default function ClientOnboarding() {
           firstName,
           lastName,
           phone,
+          billingAddress,
           birthDate,
           sex,
+          healthConsent,
           heightCm,
           weightKg,
           goals,
@@ -115,9 +126,11 @@ export default function ClientOnboarding() {
     } catch {
       /* stockage indisponible */
     }
-  }, [step, firstName, lastName, phone, birthDate, sex, heightCm, weightKg, goals, level, note]);
+  }, [loaded, profileCompleted, step, firstName, lastName, phone, billingAddress, birthDate, sex, healthConsent, heightCm, weightKg, goals, level, note]);
 
-  // Pré-remplit si le profil existe déjà (édition).
+  // Lecture du profil : complet → pré-rempli depuis la base (édition), le
+  // brouillon éventuel est jeté. Incomplet ou absent → brouillon s'il y en a
+  // un, sinon la base ou les métadonnées du compte (Google).
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(async ({ data: { user } }) => {
@@ -128,32 +141,46 @@ export default function ClientOnboarding() {
         .select("*")
         .eq("id", user.id)
         .maybeSingle();
-      if (draftRestoredRef.current) return;
       if (p?.avatar_url) setAvatarUrl(p.avatar_url as string);
-      if (p) {
-        setFirstName(p.first_name ?? "");
-        setLastName(p.last_name ?? "");
-        setPhone(p.phone ?? "");
-        setBillingAddress(p.billing_address ?? "");
-        setBirthDate(p.birth_date ?? "");
-        setSex(p.sex ?? "");
-        setHeightCm(p.height_cm ? String(p.height_cm) : "");
-        setWeightKg(p.weight_kg ? String(p.weight_kg) : "");
-        setHealthConsent(!!p.health_consent_at);
-        setHealthConsentAt((p.health_consent_at as string | null) ?? null);
-        setGoals(p.goals ?? []);
-        setLevel(p.level ?? "");
-        setNote(p.note ?? "");
-      } else {
-        // Prénom + nom repris des métadonnées du compte (Google) si dispo,
-        // pour ne pas les faire retaper.
-        const { firstName: fn, lastName: ln } = nameFromMetadata(
-          user.user_metadata
-        );
-        if (fn) setFirstName(fn);
-        if (ln) setLastName(ln);
+      if (p?.completed) {
+        try {
+          localStorage.removeItem(DRAFT_KEY);
+        } catch {
+          /* ignore */
+        }
+        setProfileCompleted(true);
       }
+      const fromDraft = !p?.completed && applyDraft();
+      if (!fromDraft) {
+        if (p) {
+          setFirstName(p.first_name ?? "");
+          setLastName(p.last_name ?? "");
+          setPhone(p.phone ?? "");
+          setBillingAddress(p.billing_address ?? "");
+          setBirthDate(p.birth_date ?? "");
+          setSex(p.sex ?? "");
+          setHeightCm(p.height_cm ? String(p.height_cm) : "");
+          setWeightKg(p.weight_kg ? String(p.weight_kg) : "");
+          setHealthConsent(!!p.health_consent_at);
+          setHealthConsentAt((p.health_consent_at as string | null) ?? null);
+          setGoals(p.goals ?? []);
+          setLevel(p.level ?? "");
+          setNote(p.note ?? "");
+        } else {
+          // Prénom + nom repris des métadonnées du compte (Google) si dispo,
+          // pour ne pas les faire retaper.
+          const { firstName: fn, lastName: ln } = nameFromMetadata(
+            user.user_metadata
+          );
+          if (fn) setFirstName(fn);
+          if (ln) setLastName(ln);
+        }
+      } else if (p?.health_consent_at) {
+        setHealthConsentAt(p.health_consent_at as string);
+      }
+      setLoaded(true);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const liveBmi = bmi(parseFloat(weightKg), parseInt(heightCm, 10));
@@ -304,7 +331,7 @@ export default function ClientOnboarding() {
           </svg>
         </div>
         <h1 className="text-2xl font-extrabold tracking-tight text-text-base">
-          {t("clientOnboarding.doneTitle")}
+          {t(profileCompleted ? "clientOnboarding.doneTitleEdit" : "clientOnboarding.doneTitle")}
         </h1>
         <p className="mx-auto mt-2 max-w-sm text-sm text-text-muted">
           {t("clientOnboarding.doneDesc")}
@@ -605,7 +632,7 @@ export default function ClientOnboarding() {
             </Button>
           ) : (
             <Button type="button" onClick={save} disabled={loading} className="flex-1">
-              {loading ? t("clientOnboarding.saving") : t("clientOnboarding.finish")}
+              {loading ? t("clientOnboarding.saving") : t(profileCompleted ? "clientOnboarding.finishEdit" : "clientOnboarding.finish")}
             </Button>
           )}
         </div>

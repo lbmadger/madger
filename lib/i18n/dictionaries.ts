@@ -1541,8 +1541,10 @@ const fr = {
     back: "Retour",
     next: "Continuer",
     finish: "Terminer",
+    finishEdit: "Enregistrer",
     saving: "Enregistrement…",
     doneTitle: "Profil créé",
+    doneTitleEdit: "Profil mis à jour",
     doneDesc:
       "Ton coach verra ces infos dès votre premier échange. Tu peux les modifier à tout moment.",
     findCoach: "Trouver mon coach",
@@ -3456,8 +3458,10 @@ const en: Dictionary = {
     back: "Back",
     next: "Continue",
     finish: "Finish",
+    finishEdit: "Save",
     saving: "Saving…",
     doneTitle: "Profile created",
+    doneTitleEdit: "Profile updated",
     doneDesc:
       "Your coach will see this from your very first exchange. You can edit it anytime.",
     findCoach: "Find my coach",
