@@ -864,27 +864,20 @@ export default function AgendaView({
                        )}
                        {cancelId === b.id ? (
                          <div className="flex flex-col gap-2">
+                           {/* Le coach n'annule qu'en son nom (remboursement
+                               intégral). Le client annule lui-même depuis
+                               son espace, la politique s'applique alors. */}
                            <p className="text-xs text-text-muted">
-                             {t("agenda.cancelWho")}
+                             {t("agenda.cancelHint")}
                            </p>
-                           <div className="flex gap-2">
-                             <button
-                               type="button"
-                               disabled={cancelling}
-                               onClick={() => cancelBooking(b.id, "client")}
-                               className="flex-1 rounded-full border border-border-strong py-1.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
-                             >
-                               {t("agenda.cancelByClient")}
-                             </button>
-                             <button
-                               type="button"
-                               disabled={cancelling}
-                               onClick={() => cancelBooking(b.id, "coach")}
-                               className="flex-1 rounded-full border border-border-strong py-1.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
-                             >
-                               {t("agenda.cancelByCoach")}
-                             </button>
-                           </div>
+                           <button
+                             type="button"
+                             disabled={cancelling}
+                             onClick={() => cancelBooking(b.id, "coach")}
+                             className="rounded-full border border-danger/40 py-1.5 text-xs font-semibold text-danger transition-colors hover:bg-danger/10 disabled:opacity-50"
+                           >
+                             {t("agenda.cancelByCoach")}
+                           </button>
                            <button
                              type="button"
                              onClick={() => setCancelId(null)}
@@ -1120,26 +1113,16 @@ export default function AgendaView({
                     </p>
                   )}
                   <p className="text-xs text-text-muted">
-                    {t("agenda.cancelWho")}
+                    {t("agenda.cancelHint")}
                   </p>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      disabled={cancelling}
-                      onClick={() => cancelBooking(selected.id, "client")}
-                      className="flex-1 rounded-full border border-border-strong py-2.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
-                    >
-                      {t("agenda.cancelByClient")}
-                    </button>
-                    <button
-                      type="button"
-                      disabled={cancelling}
-                      onClick={() => cancelBooking(selected.id, "coach")}
-                      className="flex-1 rounded-full border border-border-strong py-2.5 text-xs font-medium text-text-muted transition-colors hover:text-text-base disabled:opacity-50"
-                    >
-                      {t("agenda.cancelByCoach")}
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    disabled={cancelling}
+                    onClick={() => cancelBooking(selected.id, "coach")}
+                    className="rounded-full border border-danger/40 py-2.5 text-xs font-semibold text-danger transition-colors hover:bg-danger/10 disabled:opacity-50"
+                  >
+                    {t("agenda.cancelByCoach")}
+                  </button>
                   <button
                     type="button"
                     onClick={() => setCancelId(null)}

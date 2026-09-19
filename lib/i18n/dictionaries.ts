@@ -342,7 +342,8 @@ const fr = {
     cancelConfirmClient:
       "Le client recevra un email pour confirmer qu'il annule. S'il confirme, ta politique d'annulation s'applique, calculée à l'heure de ta demande. Sans réponse sous 48 h, ou 1 h avant la séance, l'annulation est confirmée d'office.",
     cancelByClient: "Le client m'a prévenu (il confirme)",
-    cancelByCoach: "Moi (remboursement total)",
+    cancelByCoach: "Annuler la séance (remboursement total)",
+    cancelHint: "Tu annules : le client est intégralement remboursé. S'il veut annuler, il le fait lui-même depuis son espace et ta politique s'applique. S'il ne vient pas, la séance t'est payée.",
     cancelRequested: "Annulation à confirmer par le client",
     cancelKeep: "Ne rien faire",
     back: "Retour",
@@ -2301,7 +2302,8 @@ const en: Dictionary = {
     cancelConfirmClient:
       "The client will get an email to confirm the cancellation. If they confirm, your cancellation policy applies, computed at the time of your request. Without an answer within 48 hours, or 1 hour before the session, the cancellation is confirmed automatically.",
     cancelByClient: "The client told me (they confirm)",
-    cancelByCoach: "Me (full refund)",
+    cancelByCoach: "Cancel the session (full refund)",
+    cancelHint: "If you cancel, the client is fully refunded. If they want to cancel, they do it from their space and your policy applies. If they do not show up, the session is paid to you.",
     cancelRequested: "Cancellation awaiting the client's confirmation",
     cancelKeep: "Do nothing",
     back: "Back",

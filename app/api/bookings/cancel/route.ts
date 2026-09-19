@@ -99,6 +99,21 @@ export async function POST(req: NextRequest) {
   // email et confirme (formule appliquée à l'heure de cette demande) ou
   // refuse (séance maintenue). Sans enjeu financier, l'annulation directe
   // reste possible.
+  // Décision produit : le coach n'annule pas au nom du client. Le client
+  // annule lui-même depuis son espace (politique appliquée) ; sinon c'est un
+  // no-show payé. La branche « demande » ci-dessous reste pour mémoire mais
+  // n'est plus proposée par l'interface, et refusée ici dès qu'il y a de
+  // l'argent en jeu.
+  if (by === "client" && booking.status === "confirmed") {
+    const { data: stake } = await admin
+      .from("payments")
+      .select("escrow_status")
+      .eq("booking_id", bookingId)
+      .maybeSingle();
+    if (booking.pack_credit_id || stake?.escrow_status === "held") {
+      return NextResponse.json({ error: "client_cancels_himself" }, { status: 409 });
+    }
+  }
   if (by === "client" && booking.status === "confirmed") {
     const { data: heldPayment } = await admin
       .from("payments")
