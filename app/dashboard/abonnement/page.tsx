@@ -128,6 +128,17 @@ export default async function SubscriptionPage({
                   {p.proUntil} {untilStr} · {daysLeft} {p.daysLeft}
                 </p>
               )}
+              {/* Pro offert (code, parrainage) sans abonnement : c'est ICI,
+                  et seulement ici, qu'on invite à bloquer son tarif. */}
+              {pro &&
+                isPro(coach?.pro_bonus_until) &&
+                !["active", "trialing", "canceling", "past_due"].includes(
+                  coach?.subscription_status ?? ""
+                ) && (
+                  <p className="mt-2 text-xs leading-snug text-text-muted">
+                    {p.trialDesc}
+                  </p>
+                )}
             </div>
             {pro && (
               <span className="shrink-0 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-black">

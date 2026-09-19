@@ -910,38 +910,9 @@ export default async function OverviewPage() {
           </Link>
         )}
 
-        {/* Accès Pro OFFERT en cours (code, parrainage), sans abonnement
-            payant en cours : rappel doux du temps restant, vers la page
-            Abonnement. Un abonnement en échec de paiement ou résilié avec du
-            Pro payé restant n'est pas « offert ». */}
-        {pro &&
-          isPro(coach?.pro_bonus_until) &&
-          !["active", "trialing", "canceling", "past_due"].includes(
-            coach?.subscription_status ?? ""
-          ) && (
-            <Link
-              href="/dashboard/abonnement"
-              className="mb-6 flex items-center justify-between gap-3 rounded-2xl border border-accent/25 bg-accent/[0.05] px-4 py-3 transition-colors hover:border-accent/40"
-            >
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-text-base">
-                  {proDaysLeft(coach?.pro_until) <= 1
-                    ? dict.plans.trialTitleLast
-                    : dict.plans.trialTitle.replace(
-                        "{n}",
-                        String(proDaysLeft(coach?.pro_until))
-                      )}
-                </p>
-                <p className="text-xs leading-snug text-text-muted">
-                  {dict.plans.trialDesc}
-                </p>
-              </div>
-              <span className="shrink-0 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-black">
-                {dict.plans.trialCta}
-              </span>
-            </Link>
-          )}
-
+        {/* Le temps de Pro offert restant se lit sur la page Abonnement, pas
+            ici : un rappel sur l'accueil faisait penser à résilier avant même
+            d'avoir utilisé Pro. */}
         {/* KPI animés (compteurs) : 2 colonnes mobile, 4 desktop */}
         <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {stats.map((s, i) => {
