@@ -1020,18 +1020,23 @@ export function clientCancelDeniedCoach(p: {
 export function refundClient(p: {
   coachName: string;
   refundStr: string;
-  reason: "cancellation" | "dispute";
+  reason: "cancellation" | "dispute" | "gesture";
 }): Email {
   const intro =
     p.reason === "dispute"
       ? `Suite à l'examen de ton signalement, un remboursement de <b style="color:${C.text};">${p.refundStr}</b> a été émis.`
+      : p.reason === "gesture"
+      ? `<b style="color:${C.text};">${p.coachName}</b> t'a fait un geste : un remboursement de <b style="color:${C.text};">${p.refundStr}</b> vient d'être émis sur ta séance.`
       : `Suite à l'annulation de ta séance avec <b style="color:${C.text};">${p.coachName}</b>, un remboursement de <b style="color:${C.text};">${p.refundStr}</b> a été émis.`;
   return {
-    subject: `Ton remboursement de ${p.refundStr} est en route 💸`,
+    subject:
+      p.reason === "gesture"
+        ? `${p.coachName} t'a remboursé ${p.refundStr}`
+        : `Ton remboursement de ${p.refundStr} est en route 💸`,
     html: layout({
       preheader: `Remboursement de ${p.refundStr} émis, visible sous quelques jours ouvrés.`,
       eyebrow: "Remboursement",
-      title: "Remboursement émis",
+      title: p.reason === "gesture" ? "Un geste de ton coach" : "Remboursement émis",
       intro,
       blocks: [
         detailsTable([

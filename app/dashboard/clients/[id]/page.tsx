@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Topbar from "@/components/dashboard/Topbar";
 import ClientDetail from "@/components/dashboard/clients/ClientDetail";
 import ReportClientButton from "@/components/dashboard/clients/ReportClientButton";
+import GoodwillRefundButton from "@/components/dashboard/clients/GoodwillRefundButton";
 import { TicketIcon, RepeatIcon, HistoryIcon, ChevronDownIcon } from "@/components/ui/icons";
 import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
@@ -75,21 +76,52 @@ export default async function ClientDetailPage({
   });
 
   // Historique des séances passées de ce client (les 20 dernières).
+  // Séances passées, plus les annulées à venir (le coach peut vouloir y
+  // faire un geste).
   const { data: historyRows } = await supabase
     .from("bookings")
-    .select("id, starts_at, status, location, services(name)")
+    .select("id, starts_at, status, location, pack_credit_id, services(name)")
     .eq("client_id", params.id)
     .eq("is_block", false)
-    .lt("starts_at", new Date().toISOString())
+    .or(`starts_at.lt.${new Date().toISOString()},status.eq.cancelled`)
     .order("starts_at", { ascending: false })
     .limit(20);
+  // Paiement de chaque séance : ce qui a été conservé peut faire l'objet
+  // d'un geste commercial (remboursement au client).
+  const historyIds = (historyRows ?? []).map((b) => b.id as string);
+  const { data: payRows } = historyIds.length
+    ? await supabase
+        .from("payments")
+        .select("booking_id, amount_cents, refunded_cents, escrow_status, payout_cents, stripe_transfer_id, stripe_charge_id")
+        .in("booking_id", historyIds)
+    : { data: [] as Record<string, unknown>[] };
+  const payByBooking = new Map<string, Record<string, unknown>>();
+  for (const p of payRows ?? []) payByBooking.set(p.booking_id as string, p);
   const history = (historyRows ?? []).map((b) => {
     const svc = Array.isArray(b.services) ? b.services[0] : b.services;
+    const pay = payByBooking.get(b.id as string);
+    const amount = (pay?.amount_cents as number | undefined) ?? 0;
+    const refunded = (pay?.refunded_cents as number | undefined) ?? 0;
+    const kept = Math.max(0, amount - refunded);
+    const escrow = (pay?.escrow_status as string | undefined) ?? null;
     return {
       id: b.id as string,
       starts_at: b.starts_at as string,
       cancelled: (b.status as string) === "cancelled",
       name: ((svc as { name?: string } | null)?.name as string) ?? "-",
+      refunded,
+      // Geste possible : séance à l'unité, argent conservé, pas de litige.
+      gesture:
+        !b.pack_credit_id &&
+        !!pay?.stripe_charge_id &&
+        kept > 0 &&
+        ["held", "released", "canceled"].includes(escrow ?? "")
+          ? {
+              amount: kept,
+              payout: (pay?.payout_cents as number | undefined) ?? 0,
+              transferred: !!pay?.stripe_transfer_id && escrow !== "held",
+            }
+          : null,
     };
   });
 
@@ -330,6 +362,22 @@ export default async function ClientDetailPage({
                       <span className="shrink-0 rounded-full border border-border-strong px-2 py-0.5 text-[10px] font-medium text-text-muted">
                         {dict.clients.detail.historyCancelled}
                       </span>
+                    )}
+                    {h.refunded > 0 && (
+                      <span className="shrink-0 rounded-full border border-border-strong px-2 py-0.5 text-[10px] font-medium text-text-muted">
+                        {dict.clients.detail.gestureRefunded.replace(
+                          "{amount}",
+                          (h.refunded / 100).toLocaleString(loc, { style: "currency", currency: "EUR" })
+                        )}
+                      </span>
+                    )}
+                    {h.gesture && (
+                      <GoodwillRefundButton
+                        bookingId={h.id}
+                        amountCents={h.gesture.amount}
+                        payoutCents={h.gesture.payout}
+                        transferred={h.gesture.transferred}
+                      />
                     )}
                   </li>
                 ))}
