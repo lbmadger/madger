@@ -4,7 +4,7 @@ import { createClient as createAdmin } from "@supabase/supabase-js";
 import { NO_STORE } from "@/lib/supabase/noStore";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
-import { computePayout, coachBearsStripeFee } from "@/lib/stripe/escrow";
+import { goodwillOpen } from "@/lib/booking/goodwill";
 import { sendEmail } from "@/lib/email/resend";
 import { refundClient } from "@/lib/email/templates";
 import { emailInvoice } from "@/lib/invoices/send";
@@ -12,14 +12,15 @@ import { emailInvoice } from "@/lib/invoices/send";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
-// Geste commercial du COACH sur une séance à l'unité : il rembourse au client
-// tout ou partie de ce qui a été conservé (annulation tardive, no-show,
-// séance décevante). Deux cas selon où est l'argent :
+// Geste commercial du COACH sur une séance ANNULÉE à l'unité : il rend au
+// client ce qu'il a touché, c'est-à-dire le net après frais Madger (les frais
+// de transaction restent acquis à Madger), dans les 30 jours qui suivent la
+// séance. Deux cas selon où est l'argent :
 //  - fonds encore sous séquestre (held) : remboursement depuis la plateforme,
-//    le versement à venir est recalculé ;
-//  - fonds déjà versés au coach (transfert Stripe fait) : la part versée est
-//    reprise sur le solde Stripe du coach (reversal), Madger rend ses frais
-//    de transaction, et le client est remboursé depuis la plateforme.
+//    le paiement est soldé (plus rien à verser au coach, la part Madger reste
+//    sur la plateforme) ;
+//  - fonds déjà versés au coach (transfert Stripe fait) : le montant est
+//    repris sur le solde Stripe du coach (reversal) puis remboursé au client.
 // Avoir émis et envoyé, client prévenu par email.
 export async function POST(req: NextRequest) {
   const stripe = getStripe();
@@ -57,6 +58,9 @@ export async function POST(req: NextRequest) {
     // Les packs ont leur propre geste (séance offerte, reste remboursé).
     return NextResponse.json({ error: "not_refundable" }, { status: 409 });
   }
+  if (!goodwillOpen(booking.starts_at as string)) {
+    return NextResponse.json({ error: "too_late" }, { status: 409 });
+  }
 
   const { data: payment } = await admin
     .from("payments")
@@ -77,7 +81,9 @@ export async function POST(req: NextRequest) {
 
   const amount = payment.amount_cents as number;
   const alreadyRefunded = (payment.refunded_cents as number | null) ?? 0;
-  const remaining = Math.max(0, amount - alreadyRefunded);
+  // Le geste porte sur le net du coach : ce qu'il a touché ou allait toucher.
+  const payoutNow = Math.max(0, (payment.payout_cents as number | null) ?? 0);
+  const remaining = Math.min(payoutNow, Math.max(0, amount - alreadyRefunded));
   if (remaining <= 0) {
     return NextResponse.json({ error: "nothing_to_refund" }, { status: 409 });
   }
@@ -86,16 +92,14 @@ export async function POST(req: NextRequest) {
     Number.isFinite(wanted) && wanted > 0 ? Math.min(Math.round(wanted), remaining) : remaining;
   const totalRefunded = alreadyRefunded + refund;
 
-  // Déjà versé au coach ? La part versée (payout) est reprise sur son solde.
+  // Déjà versé au coach ? Le montant est repris sur son solde Stripe.
   const transferId = payment.stripe_transfer_id as string | null;
   const transferred = !!transferId && payment.escrow_status !== "held";
-  const payoutNow = (payment.payout_cents as number | null) ?? 0;
-  const reversal = transferred ? Math.min(refund, Math.max(0, payoutNow)) : 0;
 
   // Réclame le paiement avant Stripe (anti double clic / course avec le cron).
   const { data: claimed } = await admin
     .from("payments")
-    .update({ refunded_cents: totalRefunded })
+    .update({ refunded_cents: totalRefunded, payout_cents: payoutNow - refund })
     .eq("id", payment.id)
     .eq("refunded_cents", alreadyRefunded)
     .select("id");
@@ -104,10 +108,10 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    if (reversal > 0 && transferId) {
+    if (transferred && transferId) {
       await stripe.transfers.createReversal(
         transferId,
-        { amount: reversal },
+        { amount: refund },
         { idempotencyKey: `goodwill_rev_${payment.id}_${totalRefunded}` }
       );
     }
@@ -118,7 +122,7 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     await admin
       .from("payments")
-      .update({ refunded_cents: alreadyRefunded })
+      .update({ refunded_cents: alreadyRefunded, payout_cents: payoutNow })
       .eq("id", payment.id)
       .eq("refunded_cents", totalRefunded);
     return NextResponse.json(
@@ -127,40 +131,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // Comptes du paiement après le geste.
-  const full = totalRefunded >= amount;
-  if (transferred) {
-    // Le coach rend sa part, Madger rend ses frais sur la part remboursée.
-    const commissionNow = (payment.commission_cents as number | null) ?? 0;
+  // Fonds encore sous séquestre : le paiement est soldé ici, le cron de
+  // versement n'y touche plus (la part Madger reste sur la plateforme).
+  if (!transferred) {
     await admin
       .from("payments")
-      .update({
-        payout_cents: Math.max(0, payoutNow - reversal),
-        commission_cents: Math.max(0, commissionNow - (refund - reversal)),
-        ...(full
-          ? { escrow_status: "refunded", status: "refunded", resolved_at: new Date().toISOString() }
-          : {}),
-      })
-      .eq("id", payment.id);
-  } else {
-    // Encore sous séquestre : le versement à venir suit le montant conservé.
-    const breakdown = computePayout({
-      amountCents: amount,
-      feeRateBps: (payment.fee_rate_bps as number | null) ?? 700,
-      stripeFeeCents: (payment.stripe_fee_cents as number | null) ?? 0,
-      coachBearsStripeFee: coachBearsStripeFee(payment.payment_method as string | null),
-      refundCents: totalRefunded,
-    });
-    await admin
-      .from("payments")
-      .update({
-        commission_cents: breakdown.commissionCents,
-        payout_cents: breakdown.payoutCents,
-        ...(full
-          ? { escrow_status: "refunded", status: "refunded", resolved_at: new Date().toISOString() }
-          : {}),
-      })
-      .eq("id", payment.id);
+      .update({ escrow_status: "canceled", resolved_at: new Date().toISOString() })
+      .eq("id", payment.id)
+      .eq("escrow_status", "held");
   }
 
   // Avoir + email au client (best-effort : l'argent est déjà parti).
@@ -195,5 +173,5 @@ export async function POST(req: NextRequest) {
     /* best-effort */
   }
 
-  return NextResponse.json({ ok: true, refunded_cents: refund, reversed_cents: reversal });
+  return NextResponse.json({ ok: true, refunded_cents: refund, reversed_cents: transferred ? refund : 0 });
 }

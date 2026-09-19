@@ -3,6 +3,7 @@ import Topbar from "@/components/dashboard/Topbar";
 import ClientDetail from "@/components/dashboard/clients/ClientDetail";
 import ReportClientButton from "@/components/dashboard/clients/ReportClientButton";
 import GoodwillRefundButton from "@/components/dashboard/clients/GoodwillRefundButton";
+import { goodwillOpen, goodwillDeadline } from "@/lib/booking/goodwill";
 import { TicketIcon, RepeatIcon, HistoryIcon, ChevronDownIcon } from "@/components/ui/icons";
 import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
@@ -110,19 +111,21 @@ export default async function ClientDetailPage({
       cancelled: (b.status as string) === "cancelled",
       name: ((svc as { name?: string } | null)?.name as string) ?? "-",
       refunded,
-      // Geste possible : séance ANNULÉE à l'unité dont une part a été
-      // conservée, sans litige. Une séance qui a eu lieu se règle par un
-      // signalement du client, pas par un remboursement à la main.
+      // Geste possible : séance ANNULÉE à l'unité, dans les 30 jours après
+      // sa date, sur ce que le coach a touché (le net, frais Madger exclus).
+      // Une séance qui a eu lieu se règle par un signalement du client.
       gesture:
         (b.status as string) === "cancelled" &&
         !b.pack_credit_id &&
         !!pay?.stripe_charge_id &&
-        kept > 0 &&
-        ["held", "released", "canceled"].includes(escrow ?? "")
+        ((pay?.payout_cents as number | undefined) ?? 0) > 0 &&
+        ["held", "released", "canceled"].includes(escrow ?? "") &&
+        goodwillOpen(b.starts_at as string)
           ? {
-              amount: kept,
-              payout: (pay?.payout_cents as number | undefined) ?? 0,
+              amount: (pay?.payout_cents as number | undefined) ?? 0,
+              fee: Math.max(0, kept - ((pay?.payout_cents as number | undefined) ?? 0)),
               transferred: !!pay?.stripe_transfer_id && escrow !== "held",
+              deadline: goodwillDeadline(b.starts_at as string).toISOString(),
             }
           : null,
     };
@@ -383,8 +386,9 @@ export default async function ClientDetailPage({
                         <GoodwillRefundButton
                           bookingId={h.id}
                           amountCents={h.gesture.amount}
-                          payoutCents={h.gesture.payout}
+                          feeCents={h.gesture.fee}
                           transferred={h.gesture.transferred}
+                          deadline={h.gesture.deadline}
                         />
                       )}
                     </div>

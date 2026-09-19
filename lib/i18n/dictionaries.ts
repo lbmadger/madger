@@ -934,10 +934,10 @@ const fr = {
       gestureBtn: "Faire un geste : rembourser {amount}",
       gestureTitle: "Rembourser cette séance au client ?",
       gestureDesc:
-        "Le client récupère {amount} sur son moyen de paiement d'origine et reçoit un avoir par email.",
-      gestureSourceHeld: "Les fonds sont encore sous séquestre : rien ne sort de ton compte, ton versement à venir est simplement réduit.",
-      gestureSourcePaid:
-        "Cette séance t'a déjà été versée : {reversal} sont repris sur ton solde Stripe. Madger rend ses frais de transaction sur le montant remboursé.",
+        "Le client récupère {amount}, ce que tu as touché sur cette séance, sur son moyen de paiement d'origine, et reçoit un avoir par email. Les frais de transaction Madger ({fee}) ne sont pas remboursés.",
+      gestureSourceHeld: "Les fonds sont encore sous séquestre : rien ne sort de ton compte, tu ne toucheras simplement rien sur cette séance.",
+      gestureSourcePaid: "Cette séance t'a déjà été versée : le montant est repris sur ton solde Stripe.",
+      gestureDeadline: "Geste possible jusqu'au {date}.",
       gestureConfirm: "Rembourser",
       gestureDone: "Geste envoyé : {amount} remboursés au client.",
       gestureErr: "Le remboursement n'a pas pu partir. Réessaie ou contacte le support.",
@@ -2889,10 +2889,10 @@ const en: Dictionary = {
       gestureBtn: "Make a gesture: refund {amount}",
       gestureTitle: "Refund this session to the client?",
       gestureDesc:
-        "The client gets {amount} back on their original payment method and receives a credit note by email.",
-      gestureSourceHeld: "The funds are still in escrow: nothing leaves your account, your upcoming payout is simply reduced.",
-      gestureSourcePaid:
-        "This session was already paid out to you: {reversal} is taken back from your Stripe balance. Madger returns its transaction fee on the refunded amount.",
+        "The client gets {amount} back, what you earned on this session, on their original payment method, and receives a credit note by email. Madger's transaction fee ({fee}) is not refunded.",
+      gestureSourceHeld: "The funds are still in escrow: nothing leaves your account, you simply earn nothing on this session.",
+      gestureSourcePaid: "This session was already paid out to you: the amount is taken back from your Stripe balance.",
+      gestureDeadline: "Gesture possible until {date}.",
       gestureConfirm: "Refund",
       gestureDone: "Gesture sent: {amount} refunded to the client.",
       gestureErr: "The refund could not be sent. Try again or contact support.",

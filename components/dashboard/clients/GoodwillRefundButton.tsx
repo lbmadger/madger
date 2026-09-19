@@ -5,20 +5,22 @@ import { useRouter } from "next/navigation";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import { useConfirm } from "@/components/ui/useConfirm";
 
-// Geste commercial sur une séance à l'unité : le coach rembourse au client
-// ce qui a été conservé. Confirmation obligatoire, l'argent bouge pour de
-// bon. `transferred` : les fonds ont déjà été versés au coach, la part versée
-// est reprise sur son solde Stripe.
+// Geste commercial sur une séance annulée : le coach rend au client ce qu'il
+// a touché (net après frais Madger, qui restent acquis), jusqu'à `deadline`.
+// Confirmation obligatoire, l'argent bouge pour de bon. `transferred` : les
+// fonds ont déjà été versés au coach, le montant est repris sur son solde.
 export default function GoodwillRefundButton({
   bookingId,
   amountCents,
-  payoutCents,
+  feeCents,
   transferred,
+  deadline,
 }: {
   bookingId: string;
   amountCents: number;
-  payoutCents: number;
+  feeCents: number;
   transferred: boolean;
+  deadline: string;
 }) {
   const { t, locale } = useI18n();
   const loc = locale === "fr" ? "fr-FR" : "en-GB";
@@ -32,11 +34,14 @@ export default function GoodwillRefundButton({
   async function run() {
     const ok = await confirm({
       title: t("clients.detail.gestureTitle"),
-      message: `${t("clients.detail.gestureDesc").replace("{amount}", euros(amountCents))} ${
-        transferred
-          ? t("clients.detail.gestureSourcePaid").replace("{reversal}", euros(Math.min(amountCents, payoutCents)))
-          : t("clients.detail.gestureSourceHeld")
-      }`,
+      message: `${t("clients.detail.gestureDesc")
+        .replace("{amount}", euros(amountCents))
+        .replace("{fee}", euros(feeCents))} ${
+        transferred ? t("clients.detail.gestureSourcePaid") : t("clients.detail.gestureSourceHeld")
+      } ${t("clients.detail.gestureDeadline").replace(
+        "{date}",
+        new Date(deadline).toLocaleDateString(loc, { day: "numeric", month: "long" })
+      )}`,
       confirmLabel: t("clients.detail.gestureConfirm"),
       cancelLabel: t("common.cancel"),
     });
