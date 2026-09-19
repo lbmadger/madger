@@ -8,7 +8,14 @@ import { sessionReminderSoonClient } from "@/lib/email/templates";
 import { cronAuthorized } from "@/lib/cron/auth";
 import { getStripe } from "@/lib/stripe/server";
 import { performClientCancellation } from "@/lib/booking/clientCancel";
-import { cancelRequestDeadline } from "@/lib/booking/cancellation";
+import {
+  cancelRequestDeadline,
+  clampCancelHours,
+  creditRestoredIfCancelled,
+  refundCents,
+  resolveRefundPolicy,
+} from "@/lib/booking/cancellation";
+import { clientCancelReminderClient } from "@/lib/email/templates";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -31,6 +38,89 @@ export async function GET(req: NextRequest) {
   const supabase = createClient(SUPABASE_URL, serviceKey, NO_STORE);
   const now = Date.now();
   const nowIso = new Date(now).toISOString();
+
+  // ── Demandes d'annulation sans réponse : relance à 24 h ───────────────────
+  // Une seule relance, avec ce qui se passe s'il confirme et la date à
+  // laquelle l'annulation sera confirmée d'office. Best-effort.
+  let cancelReminders = 0;
+  try {
+    const { data: toRemind } = await supabase
+      .from("bookings")
+      .select(
+        "id, coach_id, client_id, starts_at, pack_credit_id, client_cancel_requested_at, pack_credits(cancel_hours), coaches(first_name, last_name, timezone, pro_until, pro_bonus_until, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, cancel_hours), clients(email)"
+      )
+      .eq("status", "confirmed")
+      .not("client_cancel_requested_at", "is", null)
+      .is("client_cancel_reminded_at", null)
+      .lte("client_cancel_requested_at", new Date(now - 24 * 3_600_000).toISOString())
+      .gt("starts_at", nowIso)
+      .limit(50);
+    for (const b of toRemind ?? []) {
+      const deadline = cancelRequestDeadline(
+        b.client_cancel_requested_at as string,
+        b.starts_at as string
+      );
+      // Échéance déjà passée : la résolution automatique s'en charge.
+      if (deadline.getTime() <= now) continue;
+      const coach = (Array.isArray(b.coaches) ? b.coaches[0] : b.coaches) as Record<string, unknown> | null;
+      const client = (Array.isArray(b.clients) ? b.clients[0] : b.clients) as { email?: string } | null;
+      const tz = (coach?.timezone as string | null) || "Europe/Paris";
+      const fmt = (d: Date | string) =>
+        new Date(d).toLocaleString("fr-FR", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZone: tz,
+        });
+      let outcome: string;
+      if (b.pack_credit_id) {
+        const pc = (Array.isArray(b.pack_credits) ? b.pack_credits[0] : b.pack_credits) as { cancel_hours?: number | null } | null;
+        const hours = clampCancelHours(pc?.cancel_hours);
+        outcome = creditRestoredIfCancelled(hours, new Date(b.starts_at as string), new Date(b.client_cancel_requested_at as string))
+          ? "ta séance est rendue à ton pack"
+          : `ta séance est décomptée de ton pack (moins de ${hours} h avant)`;
+      } else {
+        const { data: pay } = await supabase
+          .from("payments")
+          .select("amount_cents, released_cents, refunded_cents, currency")
+          .eq("booking_id", b.id)
+          .maybeSingle();
+        const amount = (pay?.amount_cents as number | null) ?? 0;
+        const ceiling = Math.max(0, amount - ((pay?.released_cents as number | null) ?? 0) - ((pay?.refunded_cents as number | null) ?? 0));
+        const refund = Math.min(
+          refundCents(resolveRefundPolicy(coach), new Date(b.starts_at as string), amount, new Date(b.client_cancel_requested_at as string)),
+          ceiling
+        );
+        const euros = (c: number) =>
+          (c / 100).toLocaleString("fr-FR", { style: "currency", currency: ((pay?.currency as string) || "eur").toUpperCase() });
+        outcome =
+          amount <= 0
+            ? "aucun paiement en jeu"
+            : refund > 0
+            ? `remboursement de ${euros(refund)} sur ${euros(amount)}`
+            : "pas de remboursement cette fois, l'annulation est trop proche de la séance (politique du coach)";
+      }
+      let delivered = true;
+      if (client?.email) {
+        const tpl = clientCancelReminderClient({
+          coachName: [coach?.first_name, coach?.last_name].filter(Boolean).join(" ") || "Ton coach",
+          dateStr: fmt(b.starts_at as string),
+          outcome,
+          deadlineStr: fmt(deadline),
+          url: `${APP_URL}/espace`,
+        });
+        delivered = await sendEmail({ to: client.email, subject: tpl.subject, html: tpl.html });
+        if (delivered) cancelReminders++;
+      }
+      if (delivered) {
+        await supabase.from("bookings").update({ client_cancel_reminded_at: nowIso }).eq("id", b.id);
+      }
+    }
+  } catch (e) {
+    console.error("cancel-reminder:", e instanceof Error ? e.message : e);
+  }
 
   // ── Demandes d'annulation sans réponse du client : confirmées d'office ────
   // (migration 0083). 48 h après la demande du coach, ou 1 h avant la séance
@@ -149,5 +239,5 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ sent, scanned, autoValidated, autoCancelled });
+  return NextResponse.json({ sent, scanned, autoValidated, autoCancelled, cancelReminders });
 }

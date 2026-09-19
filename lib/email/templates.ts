@@ -992,6 +992,36 @@ export function clientCancelRequestClient(p: {
   };
 }
 
+// ── Client : relance 24 h après la demande d'annulation sans réponse ────────
+export function clientCancelReminderClient(p: {
+  coachName: string;
+  dateStr: string;
+  outcome: string;
+  deadlineStr: string;
+  url: string;
+}): Email {
+  return {
+    subject: `Rappel : as-tu annulé ta séance avec ${p.coachName} ?`,
+    html: layout({
+      preheader: `Sans réponse, l'annulation sera confirmée le ${p.deadlineStr}.`,
+      eyebrow: "Réservation",
+      title: "On attend ta réponse",
+      intro: `Hier, <b style="color:${C.text};">${p.coachName}</b> a indiqué que tu avais annulé ta séance du <b style="color:${C.text};">${p.dateStr}</b>. Tu n'as pas encore répondu : confirme si c'est exact, ou dis-nous que tu maintiens la séance.`,
+      blocks: [
+        detailsTable([
+          { label: "Coach", value: p.coachName },
+          { label: "Séance", value: p.dateStr },
+          { label: "Si tu confirmes", value: p.outcome, accent: true },
+          { label: "Sans réponse", value: `Annulation confirmée le ${p.deadlineStr}` },
+        ]),
+      ],
+      cta: { label: "Confirmer ou maintenir", url: p.url },
+      outro:
+        "Sans réponse de ta part avant cette date, l'annulation sera confirmée et ce qui est indiqué ci-dessus s'appliquera. Une question ? Réponds simplement à cet email.",
+    }),
+  };
+}
+
 // ── Coach : le client refuse l'annulation déclarée ──────────────────────────
 export function clientCancelDeniedCoach(p: {
   locale?: EmailLocale;
