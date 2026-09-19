@@ -329,56 +329,62 @@ export default async function ClientDetailPage({
                 {history.map((h) => (
                   <li
                     key={h.id}
-                    className="flex items-center gap-3 rounded-lg border border-border bg-bg-elevated p-3"
+                    className="flex flex-col gap-2 rounded-lg border border-border bg-bg-elevated p-3 sm:flex-row sm:items-center sm:gap-3"
                   >
-                    <div className="flex w-16 shrink-0 flex-col">
-                      {/* Fuseau explicite : le serveur tourne en UTC. */}
-                      <span className="text-xs font-medium text-text-base">
-                        {new Date(h.starts_at).toLocaleDateString(loc, {
-                          day: "2-digit",
-                          month: "short",
-                          year: "2-digit",
-                          timeZone: "Europe/Paris",
-                        })}
-                      </span>
-                      <span className="text-[11px] text-text-dim">
-                        {new Date(h.starts_at).toLocaleTimeString(loc, {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          timeZone: "Europe/Paris",
-                        })}
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex w-16 shrink-0 flex-col">
+                        {/* Fuseau explicite : le serveur tourne en UTC. */}
+                        <span className="text-xs font-medium text-text-base">
+                          {new Date(h.starts_at).toLocaleDateString(loc, {
+                            day: "2-digit",
+                            month: "short",
+                            year: "2-digit",
+                            timeZone: "Europe/Paris",
+                          })}
+                        </span>
+                        <span className="text-[11px] text-text-dim">
+                          {new Date(h.starts_at).toLocaleTimeString(loc, {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            timeZone: "Europe/Paris",
+                          })}
+                        </span>
+                      </div>
+                      <span
+                        className={`min-w-0 flex-1 truncate text-sm ${
+                          h.cancelled
+                            ? "text-text-dim line-through"
+                            : "font-medium text-text-base"
+                        }`}
+                      >
+                        {h.name}
                       </span>
                     </div>
-                    <span
-                      className={`min-w-0 flex-1 truncate text-sm ${
-                        h.cancelled
-                          ? "text-text-dim line-through"
-                          : "font-medium text-text-base"
-                      }`}
-                    >
-                      {h.name}
-                    </span>
-                    {h.cancelled && (
-                      <span className="shrink-0 rounded-full border border-border-strong px-2 py-0.5 text-[10px] font-medium text-text-muted">
-                        {dict.clients.detail.historyCancelled}
-                      </span>
-                    )}
-                    {h.refunded > 0 && (
-                      <span className="shrink-0 rounded-full border border-border-strong px-2 py-0.5 text-[10px] font-medium text-text-muted">
-                        {dict.clients.detail.gestureRefunded.replace(
-                          "{amount}",
-                          (h.refunded / 100).toLocaleString(loc, { style: "currency", currency: "EUR" })
-                        )}
-                      </span>
-                    )}
-                    {h.gesture && (
-                      <GoodwillRefundButton
-                        bookingId={h.id}
-                        amountCents={h.gesture.amount}
-                        payoutCents={h.gesture.payout}
-                        transferred={h.gesture.transferred}
-                      />
-                    )}
+                    {/* Pastilles et geste : sur leur propre ligne sur
+                        téléphone, à droite sur ordinateur. */}
+                    <div className="flex flex-wrap items-center gap-1.5 sm:ml-auto sm:justify-end">
+                      {h.cancelled && (
+                        <span className="shrink-0 rounded-full border border-border-strong px-2 py-0.5 text-[10px] font-medium text-text-muted">
+                          {dict.clients.detail.historyCancelled}
+                        </span>
+                      )}
+                      {h.refunded > 0 && (
+                        <span className="shrink-0 rounded-full border border-border-strong px-2 py-0.5 text-[10px] font-medium text-text-muted">
+                          {dict.clients.detail.gestureRefunded.replace(
+                            "{amount}",
+                            (h.refunded / 100).toLocaleString(loc, { style: "currency", currency: "EUR" })
+                          )}
+                        </span>
+                      )}
+                      {h.gesture && (
+                        <GoodwillRefundButton
+                          bookingId={h.id}
+                          amountCents={h.gesture.amount}
+                          payoutCents={h.gesture.payout}
+                          transferred={h.gesture.transferred}
+                        />
+                      )}
+                    </div>
                   </li>
                 ))}
               </ul>
