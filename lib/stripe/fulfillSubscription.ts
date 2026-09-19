@@ -1,5 +1,6 @@
 import type Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { subPeriodEnd } from "@/lib/stripe/subscription";
@@ -32,7 +33,7 @@ export async function fulfillSubscriptionSession(
 
   if (m.kind !== "client_sub" || !m.coach_id || !sub) return { slug };
 
-  const supabase = createClient(SUPABASE_URL, serviceKey);
+  const supabase = createClient(SUPABASE_URL, serviceKey, NO_STORE);
 
   const { data: existing } = await supabase
     .from("client_subscriptions")

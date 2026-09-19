@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { subPeriodEnd } from "@/lib/stripe/subscription";
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "no_subscription" }, { status: 404 });
   }
 
-  const admin = createAdmin(SUPABASE_URL, serviceKey);
+  const admin = createAdmin(SUPABASE_URL, serviceKey, NO_STORE);
   try {
     const sub = await stripe.subscriptions.update(coach.stripe_subscription_id, {
       cancel_at_period_end: true,

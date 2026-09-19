@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { cleanSiret, isValidSiret, lookupSiret } from "@/lib/siret/siret";
 
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "invalid_siret" }, { status: 400 });
   }
 
-  const admin = createAdmin(SUPABASE_URL, serviceKey);
+  const admin = createAdmin(SUPABASE_URL, serviceKey, NO_STORE);
   const { data: coach } = await admin
     .from("coaches")
     .select("id, business_name")

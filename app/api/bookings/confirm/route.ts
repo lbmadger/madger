@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
@@ -63,7 +64,7 @@ export async function POST(req: NextRequest) {
   }
 
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const admin = serviceKey ? createAdmin(SUPABASE_URL, serviceKey) : null;
+  const admin = serviceKey ? createAdmin(SUPABASE_URL, serviceKey, NO_STORE) : null;
 
   // Paiement autorisé (empreinte) rattaché ? → débit à l'acceptation.
   if (admin) {

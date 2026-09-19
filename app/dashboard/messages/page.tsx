@@ -3,6 +3,7 @@ import ConversationList from "@/components/messaging/ConversationList";
 import ShareLinkCard from "@/components/dashboard/ShareLinkCard";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { getServerDictionary } from "@/lib/i18n/server";
 import type { Conversation } from "@/lib/messaging/types";
@@ -60,7 +61,7 @@ export default async function CoachMessagesPage() {
   const avatars: Record<string, string> = {};
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (serviceKey && (data ?? []).length > 0) {
-    const admin = createAdmin(SUPABASE_URL, serviceKey);
+    const admin = createAdmin(SUPABASE_URL, serviceKey, NO_STORE);
     await Promise.all(
       (data ?? []).slice(0, 40).map(async (c) => {
         try {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { getStripe } from "@/lib/stripe/server";
 import {
   subPeriodEnd,
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "invalid_signature" }, { status: 400 });
   }
 
-  const supabase = createClient(SUPABASE_URL, serviceKey);
+  const supabase = createClient(SUPABASE_URL, serviceKey, NO_STORE);
 
   // Prolonge/maj pro_until à partir d'un abonnement Stripe. Deux familles
   // d'abonnements passent par ce webhook : l'abonnement PRO des coachs et les

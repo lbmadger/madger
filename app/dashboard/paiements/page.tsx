@@ -8,6 +8,7 @@ import { getServerDictionary } from "@/lib/i18n/server";
 import { getCoach } from "@/lib/coach/getCoach";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { getStripe } from "@/lib/stripe/server";
 import { isPro } from "@/lib/subscription/plan";
@@ -40,7 +41,7 @@ export default async function PaymentsPage() {
         // Colonne Stripe protégée par la RLS (0035) : service role requis.
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
         if (serviceKey) {
-          const admin = createAdmin(SUPABASE_URL, serviceKey);
+          const admin = createAdmin(SUPABASE_URL, serviceKey, NO_STORE);
           await admin
             .from("coaches")
             .update({ stripe_charges_enabled: chargesEnabled })

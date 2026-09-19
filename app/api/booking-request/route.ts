@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
 import {
@@ -90,7 +91,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, NO_STORE);
 
     // Coach qui encaisse en ligne avec des prestations payantes : la demande
     // gratuite est fermée côté serveur (le modal ne la propose déjà plus).
@@ -169,7 +170,7 @@ export async function POST(req: NextRequest) {
         let coachPrefs: { locale: string | null; timezone: string | null } | null =
           null;
         if (svcKey) {
-          const adminPrefs = createClient(SUPABASE_URL, svcKey);
+          const adminPrefs = createClient(SUPABASE_URL, svcKey, NO_STORE);
           const { data: prefs } = await adminPrefs
             .from("coaches")
             .select("locale, timezone")
@@ -184,7 +185,7 @@ export async function POST(req: NextRequest) {
         // approbation, l'événement est créé quand le coach confirme.
         let meetUrl: string | undefined;
         if (instant && svcKey && bookingId) {
-          const adminC = createClient(SUPABASE_URL, svcKey);
+          const adminC = createClient(SUPABASE_URL, svcKey, NO_STORE);
           const s0 = new Date(String(starts_at));
           meetUrl =
             (await attachMeetToBooking(adminC, {
@@ -247,7 +248,7 @@ export async function POST(req: NextRequest) {
 
         // Email du coach : compte auth (service role requis).
         if (svcKey) {
-          const admin = createClient(SUPABASE_URL, svcKey);
+          const admin = createClient(SUPABASE_URL, svcKey, NO_STORE);
           const { data: u } = await admin.auth.admin.getUserById(
             coach.id as string
           );

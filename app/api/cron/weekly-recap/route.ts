@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { cronAuthorized } from "@/lib/cron/auth";
 import { runWeeklyRecap } from "@/lib/cron/weeklyRecap";
@@ -19,6 +20,6 @@ export async function GET(req: NextRequest) {
   if (!serviceKey) {
     return NextResponse.json({ error: "not_configured" }, { status: 500 });
   }
-  const supabase = createClient(SUPABASE_URL, serviceKey);
+  const supabase = createClient(SUPABASE_URL, serviceKey, NO_STORE);
   return NextResponse.json(await runWeeklyRecap(supabase));
 }

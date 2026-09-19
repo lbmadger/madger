@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { unstable_cache } from "next/cache";
 import { createClient as createAnon } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/supabase/config";
@@ -23,7 +24,7 @@ const DIRECTORY_MIN_COACHES = 10;
 // public_coaches est lisible par anon).
 const getInitialCoaches = unstable_cache(
   async () => {
-    const supabase = createAnon(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabase = createAnon(SUPABASE_URL, SUPABASE_ANON_KEY, NO_STORE);
     const { data } = await supabase
       .from("public_coaches")
       .select("*")

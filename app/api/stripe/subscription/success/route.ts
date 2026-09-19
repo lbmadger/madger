@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { getStripe } from "@/lib/stripe/server";
 import { subPeriodEnd, localSubStatus } from "@/lib/stripe/subscription";
 import { SUPABASE_URL } from "@/lib/supabase/config";
@@ -45,7 +46,7 @@ export async function GET(req: NextRequest) {
           : session.customer?.id ?? null;
       const periodEnd = subPeriodEnd(sub);
 
-      const supabase = createClient(SUPABASE_URL, serviceKey);
+      const supabase = createClient(SUPABASE_URL, serviceKey, NO_STORE);
       // Premier abonnement = essai consommé, avec ou sans période d'essai.
       await supabase
         .from("coaches")

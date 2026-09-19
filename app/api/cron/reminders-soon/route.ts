@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { coachPlaceStr } from "@/lib/coach/place";
 import { createClient } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
 import { sessionReminderSoonClient } from "@/lib/email/templates";
@@ -24,7 +25,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "not_configured" }, { status: 500 });
   }
 
-  const supabase = createClient(SUPABASE_URL, serviceKey);
+  const supabase = createClient(SUPABASE_URL, serviceKey, NO_STORE);
   const now = Date.now();
   const nowIso = new Date(now).toISOString();
 

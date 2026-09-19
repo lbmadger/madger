@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { computePayout, coachBearsStripeFee } from "@/lib/stripe/escrow";
@@ -41,7 +42,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "not_configured" }, { status: 500 });
   }
 
-  const supabase = createClient(SUPABASE_URL, serviceKey);
+  const supabase = createClient(SUPABASE_URL, serviceKey, NO_STORE);
   const nowIso = new Date().toISOString();
   // Budget temps GLOBAL du run (maxDuration 60 s) : compté dès le début,
   // balayages préliminaires compris, sinon les versements pourraient

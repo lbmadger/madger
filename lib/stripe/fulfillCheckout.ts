@@ -1,6 +1,7 @@
 import type Stripe from "stripe";
 import { coachPlaceStr } from "@/lib/coach/place";
 import { createClient } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
@@ -55,7 +56,7 @@ export async function fulfillCheckoutSession(
   result.slug = m.coach_slug || "";
   if (!m.coach_id) return result;
 
-  const supabase = createClient(SUPABASE_URL, serviceKey);
+  const supabase = createClient(SUPABASE_URL, serviceKey, NO_STORE);
 
   const pi =
     session.payment_intent && typeof session.payment_intent !== "string"

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { loadInvoicePdfInput } from "@/lib/invoices/send";
 import { renderInvoicePdf } from "@/lib/invoices/pdf";
@@ -33,7 +34,7 @@ export async function GET(
   if (!serviceKey) {
     return NextResponse.json({ error: "not_configured" }, { status: 500 });
   }
-  const admin = createAdmin(SUPABASE_URL, serviceKey);
+  const admin = createAdmin(SUPABASE_URL, serviceKey, NO_STORE);
   const loaded = await loadInvoicePdfInput(admin, params.id);
   if (!loaded) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });

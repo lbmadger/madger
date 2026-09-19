@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { computeFreeSlots } from "@/lib/booking/freeSlots";
 
@@ -31,7 +32,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "missing_coach" }, { status: 400 });
   }
 
-  const supabase = createClient(SUPABASE_URL, serviceKey);
+  const supabase = createClient(SUPABASE_URL, serviceKey, NO_STORE);
   const { data: coach } = await supabase
     .from("coaches")
     .select("id, timezone, min_notice_hours")

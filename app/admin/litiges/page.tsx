@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { isAdminEmail } from "@/lib/admin";
 import DisputeResolver, { type Dispute } from "@/components/admin/DisputeResolver";
@@ -21,7 +22,7 @@ export default async function AdminDisputesPage() {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const disputes: Dispute[] = [];
   if (serviceKey) {
-    const admin = createAdmin(SUPABASE_URL, serviceKey);
+    const admin = createAdmin(SUPABASE_URL, serviceKey, NO_STORE);
     const { data } = await admin
       .from("payments")
       .select(

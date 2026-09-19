@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 import { isAdminEmail } from "@/lib/admin";
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest) {
   if (!serviceKey) {
     return NextResponse.json({ error: "not_configured" }, { status: 500 });
   }
-  const admin = createServiceClient(SUPABASE_URL, serviceKey);
+  const admin = createServiceClient(SUPABASE_URL, serviceKey, NO_STORE);
   const { data: rows, error } = await admin
     .from("early_access")
     .select("id, email")

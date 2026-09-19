@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { unstable_cache } from "next/cache";
 import { createClient as createAnon } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { createClient } from "@/lib/supabase/server";
@@ -27,7 +28,7 @@ import type { PublicService } from "@/lib/services/types";
 // ne retape plus Supabase à chaque hit. Client anon SANS cookies
 // (obligatoire dans unstable_cache ; les vues publiques suffisent).
 const fetchCoachPageData = async (slug: string) => {
-    const supabase = createAnon(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabase = createAnon(SUPABASE_URL, SUPABASE_ANON_KEY, NO_STORE);
     const { data: coach, error } = await supabase
       .from("public_coaches")
       .select("*")

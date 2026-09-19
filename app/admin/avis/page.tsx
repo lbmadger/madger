@@ -1,4 +1,5 @@
 import { createClient as createAdmin } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { createClient } from "@/lib/supabase/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { isAdminEmail } from "@/lib/admin";
@@ -20,7 +21,7 @@ export default async function AdminReviewsPage() {
 
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!serviceKey) return null;
-  const admin = createAdmin(SUPABASE_URL, serviceKey);
+  const admin = createAdmin(SUPABASE_URL, serviceKey, NO_STORE);
 
   const { data: reviews } = await admin
     .from("reviews")

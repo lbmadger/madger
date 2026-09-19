@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { getStripe } from "@/lib/stripe/server";
 import { currentAnnualCents } from "@/lib/subscription/offer";
 import { SUPABASE_URL } from "@/lib/supabase/config";
@@ -77,7 +78,7 @@ export async function POST() {
     // Colonne service-role only (0035) : client admin obligatoire.
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (serviceKey) {
-      const admin = createAdmin(SUPABASE_URL, serviceKey);
+      const admin = createAdmin(SUPABASE_URL, serviceKey, NO_STORE);
       await admin
         .from("coaches")
         .update({ subscription_plan: "annual" })

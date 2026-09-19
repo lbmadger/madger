@@ -2,6 +2,7 @@ import CopyField from "@/components/ui/CopyField";
 import Link from "next/link";
 import { coachPlaceStr } from "@/lib/coach/place";
 import { createClient } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
@@ -37,7 +38,7 @@ type BookingInfo = {
 async function getBooking(id: string): Promise<BookingInfo | null> {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!key) return null;
-  const admin = createClient(SUPABASE_URL, key);
+  const admin = createClient(SUPABASE_URL, key, NO_STORE);
   const { data: booking } = await admin
     .from("bookings")
     .select(

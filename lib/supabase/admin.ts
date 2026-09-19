@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { NO_STORE } from "@/lib/supabase/noStore";
 import { SUPABASE_URL } from "./config";
 
 // Client Supabase service role (bypass RLS). Réservé aux routes/pages serveur
@@ -6,5 +7,5 @@ import { SUPABASE_URL } from "./config";
 export function createAdminClient(): SupabaseClient | null {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!key) return null;
-  return createClient(SUPABASE_URL, key);
+  return createClient(SUPABASE_URL, key, NO_STORE);
 }
