@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { nameFromMetadata } from "@/lib/auth/nameFromUser";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Button from "@/components/ui/Button";
 import Dialog from "@/components/ui/Dialog";
@@ -136,12 +137,30 @@ export default function BookingModal({
   // avec retour direct sur son créneau (brouillon conservé).
   const [needAuth, setNeedAuth] = useState(false);
   useEffect(() => {
-    createClient()
-      .auth.getUser()
-      .then(({ data }) => {
-        const mail = data.user?.email ?? null;
+    const supabase = createClient();
+    supabase.auth
+      .getUser()
+      .then(async ({ data }) => {
+        const user = data.user;
+        const mail = user?.email ?? null;
         setSessionEmail(mail);
         if (mail) setEmail(mail);
+        if (!user) return;
+        // Client connecté : prénom, nom et téléphone viennent de son profil
+        // (ou des métadonnées Google), il ne les retape pas. Un brouillon
+        // restauré ou une saisie en cours garde la priorité.
+        const { data: p } = await supabase
+          .from("client_profiles")
+          .select("first_name, last_name, phone")
+          .eq("id", user.id)
+          .maybeSingle();
+        const meta = nameFromMetadata(user.user_metadata);
+        const fn = (p?.first_name as string | null) || meta.firstName || "";
+        const ln = (p?.last_name as string | null) || meta.lastName || "";
+        const ph = (p?.phone as string | null) || "";
+        if (fn) setFirstName((v) => v || fn);
+        if (ln) setLastName((v) => v || ln);
+        if (ph) setPhone((v) => v || ph);
       })
       .catch(() => setSessionEmail(null));
   }, []);
