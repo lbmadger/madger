@@ -14,7 +14,7 @@ export const maxDuration = 30;
 
 // Geste commercial du COACH sur une séance ANNULÉE à l'unité : il rend au
 // client ce qu'il a touché, c'est-à-dire le net après frais Madger (les frais
-// de transaction restent acquis à Madger), dans les 30 jours qui suivent la
+// de transaction restent acquis à Madger), dans les 7 jours qui suivent la
 // séance. Deux cas selon où est l'argent :
 //  - fonds encore sous séquestre (held) : remboursement depuis la plateforme,
 //    le paiement est soldé (plus rien à verser au coach, la part Madger reste

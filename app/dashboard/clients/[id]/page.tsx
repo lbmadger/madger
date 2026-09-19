@@ -111,7 +111,7 @@ export default async function ClientDetailPage({
       cancelled: (b.status as string) === "cancelled",
       name: ((svc as { name?: string } | null)?.name as string) ?? "-",
       refunded,
-      // Geste possible : séance ANNULÉE à l'unité, dans les 30 jours après
+      // Geste possible : séance ANNULÉE à l'unité, dans les 7 jours après
       // sa date, sur ce que le coach a touché (le net, frais Madger exclus).
       // Une séance qui a eu lieu se règle par un signalement du client.
       gesture:
