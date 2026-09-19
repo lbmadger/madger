@@ -91,6 +91,9 @@ export type ClientBooking = {
   pack_total: number | null;
   pack_paid_total: number | null;
   pack_used: number | null;
+  // Le coach a déclaré une annulation à la demande du client : à confirmer
+  // (formule appliquée à l'heure de la demande) ou à refuser (migration 0083).
+  client_cancel_requested_at: string | null;
   // Report par le coach en attente de réponse du client (migration 0057).
   reschedule_pending_until: string | null;
   rescheduled_from: string | null;
@@ -463,7 +466,8 @@ export default function ClientSpace({
     const wanted = refundCents(
       resolveRefundPolicy(b),
       new Date(b.starts_at),
-      base
+      base,
+      b.client_cancel_requested_at ? new Date(b.client_cancel_requested_at) : new Date()
     );
     return Math.min(
       wanted,
@@ -502,6 +506,31 @@ export default function ClientSpace({
       setError(t("clientSpace.cancelError"));
     } finally {
       setCancelling(false);
+    }
+  }
+
+  // Le client refuse l'annulation déclarée par son coach : séance maintenue.
+  const [denying, setDenying] = useState<string | null>(null);
+  const [denied, setDenied] = useState(false);
+  async function denyCancel(id: string) {
+    setDenying(id);
+    setError(null);
+    try {
+      const res = await fetch("/api/bookings/client-cancel-deny", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ booking_id: id }),
+      });
+      if (!res.ok) {
+        setError(t("clientSpace.cancelError"));
+        return;
+      }
+      setDenied(true);
+      router.refresh();
+    } catch {
+      setError(t("clientSpace.cancelError"));
+    } finally {
+      setDenying(null);
     }
   }
 
@@ -989,6 +1018,14 @@ export default function ClientSpace({
           {t("clientSpace.cancelDone")}
         </p>
       )}
+      {denied && (
+        <p
+          role="status"
+          className="mt-6 rounded-2xl border border-accent/25 bg-accent/[0.06] px-4 py-3 text-center text-sm text-text-base"
+        >
+          {t("clientSpace.cancelRequestDenied")}
+        </p>
+      )}
       {flash && (
         <p
           role="status"
@@ -1113,6 +1150,51 @@ export default function ClientSpace({
                     </div>
                   </div>
                 )}
+
+              {/* Le coach a déclaré que le client annulait : rien ne bouge
+                  sans sa réponse. Confirmer applique la formule à l'heure de
+                  la demande ; refuser maintient la séance et prévient le coach. */}
+              {b.client_cancel_requested_at && b.status === "confirmed" && (
+                <div className="mt-3 rounded-xl border border-warning/40 bg-warning/[0.08] p-3">
+                  <p className="text-sm font-semibold text-text-base">
+                    {t("clientSpace.cancelRequestTitle").replace("{coach}", b.coach_name)}
+                  </p>
+                  <p className="mt-1 text-xs text-text-muted">
+                    {b.on_credit
+                      ? creditRestoredIfCancelled(
+                          b.credit_cancel_hours ?? 24,
+                          new Date(b.starts_at),
+                          new Date(b.client_cancel_requested_at)
+                        )
+                        ? t("clientSpace.cancelRequestCreditKept")
+                        : t("clientSpace.cancelRequestCreditLost")
+                      : b.escrow_status === "held" && b.amount_cents
+                      ? t("clientSpace.cancelRequestRefund").replace(
+                          "{amount}",
+                          (refundNow(b) / 100).toLocaleString(loc, { style: "currency", currency: "EUR" })
+                        )
+                      : t("clientSpace.cancelFree")}
+                  </p>
+                  <div className="mt-2 flex gap-2">
+                    <button
+                      type="button"
+                      disabled={cancelling || denying === b.id}
+                      onClick={() => denyCancel(b.id)}
+                      className="flex-1 rounded-full bg-accent px-3 py-2 text-xs font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-50"
+                    >
+                      {denying === b.id ? t("common.loading") : t("clientSpace.cancelRequestNo")}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={cancelling || denying === b.id}
+                      onClick={() => cancel(b.id)}
+                      className="flex-1 rounded-full border border-danger/40 px-3 py-2 text-xs font-semibold text-danger transition-colors hover:bg-danger/10 disabled:opacity-50"
+                    >
+                      {cancelling ? t("clientSpace.cancelling") : t("clientSpace.cancelRequestYes")}
+                    </button>
+                  </div>
+                </div>
+              )}
 
               <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border pt-2.5">
                 {/* Accès direct au suivi : lien visio, ajout calendrier,

@@ -17,6 +17,7 @@ import { notifyWaitlistForBooking } from "@/lib/waitlist/notify";
 import { notifyClient } from "@/lib/notifications/client";
 import {
   refundClient,
+  clientCancelRequestClient,
   bookingCancelledClient,
   cancellationNoRefundClient,
   creditCancellationClient,
@@ -89,6 +90,96 @@ export async function POST(req: NextRequest) {
     )
     .eq("id", user.id)
     .maybeSingle();
+
+  // ── « À la demande du client » : une DEMANDE, pas une annulation ─────────
+  // Dès qu'un paiement est retenu ou qu'un crédit de pack est en jeu, le
+  // coach ne peut pas déclarer seul que le client annule (la formule lui
+  // laisserait l'argent). La séance reste en place, le client reçoit un
+  // email et confirme (formule appliquée à l'heure de cette demande) ou
+  // refuse (séance maintenue). Sans enjeu financier, l'annulation directe
+  // reste possible.
+  if (by === "client" && booking.status === "confirmed") {
+    const { data: heldPayment } = await admin
+      .from("payments")
+      .select("id, amount_cents, currency, escrow_status, released_cents, refunded_cents")
+      .eq("booking_id", bookingId)
+      .maybeSingle();
+    const moneyAtStake =
+      !!booking.pack_credit_id || heldPayment?.escrow_status === "held";
+    if (moneyAtStake) {
+      const requestedAt = new Date();
+      const { data: marked } = await admin
+        .from("bookings")
+        .update({ client_cancel_requested_at: requestedAt.toISOString() })
+        .eq("id", bookingId)
+        .is("client_cancel_requested_at", null)
+        .select("id");
+      if (!marked?.length) {
+        // Déjà demandé : on ne renvoie pas un second email.
+        return NextResponse.json({ ok: true, requested: true, already: true });
+      }
+      try {
+        const { data: client } = await admin
+          .from("clients")
+          .select("email")
+          .eq("id", booking.client_id)
+          .maybeSingle();
+        if (client?.email) {
+          const euros = (c: number) =>
+            (c / 100).toLocaleString("fr-FR", {
+              style: "currency",
+              currency: ((heldPayment?.currency as string) || "eur").toUpperCase(),
+            });
+          let outcome: string;
+          if (booking.pack_credit_id) {
+            const { data: pack } = await admin
+              .from("pack_credits")
+              .select("cancel_hours")
+              .eq("id", booking.pack_credit_id)
+              .maybeSingle();
+            const hours = clampCancelHours(pack?.cancel_hours);
+            outcome = creditRestoredIfCancelled(hours, new Date(booking.starts_at), requestedAt)
+              ? "ta séance est rendue à ton pack"
+              : `ta séance est décomptée de ton pack (moins de ${hours} h avant)`;
+          } else {
+            const amount = (heldPayment?.amount_cents as number) ?? 0;
+            const ceiling = Math.max(
+              0,
+              amount -
+                ((heldPayment?.released_cents as number | null) ?? 0) -
+                ((heldPayment?.refunded_cents as number | null) ?? 0)
+            );
+            const refund = Math.min(
+              refundCents(resolveRefundPolicy(coach), new Date(booking.starts_at), amount, requestedAt),
+              ceiling
+            );
+            outcome =
+              refund > 0
+                ? `remboursement de ${euros(refund)} sur ${euros(amount)}`
+                : `aucun remboursement (politique d'annulation du coach)`;
+          }
+          const tpl = clientCancelRequestClient({
+            coachName:
+              [coach?.first_name, coach?.last_name].filter(Boolean).join(" ") || "Ton coach",
+            dateStr: new Date(booking.starts_at).toLocaleString("fr-FR", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              hour: "2-digit",
+              minute: "2-digit",
+              timeZone: coach?.timezone || "Europe/Paris",
+            }),
+            outcome,
+            url: `${APP_URL}/espace`,
+          });
+          await sendEmail({ to: client.email, subject: tpl.subject, html: tpl.html });
+        }
+      } catch {
+        /* best-effort : la demande est posée, l'email peut être renvoyé */
+      }
+      return NextResponse.json({ ok: true, requested: true });
+    }
+  }
 
   // ── Séance sur PACK d'une séance CONFIRMÉE ───────────────────────────────
   // Lot 2 : le coach n'annule qu'une séance, le pack continue et rien n'est

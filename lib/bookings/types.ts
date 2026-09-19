@@ -20,6 +20,9 @@ export type Booking = {
   is_block?: boolean | null;
   // Place dans un cours collectif (migration 0068).
   group_session_id?: string | null;
+  // Le coach a déclaré une annulation à la demande du client ; le client
+  // doit confirmer ou refuser (migration 0083).
+  client_cancel_requested_at?: string | null;
   location: LocationKind;
   location_text: string | null;
   meeting_url: string | null;

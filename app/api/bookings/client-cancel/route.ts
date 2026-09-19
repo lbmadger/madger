@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
 
   const { data: booking } = await admin
     .from("bookings")
-    .select("id, coach_id, client_id, starts_at, status, pack_credit_id")
+    .select("id, coach_id, client_id, starts_at, status, pack_credit_id, client_cancel_requested_at")
     .eq("id", bookingId)
     .maybeSingle();
   if (!booking || booking.status === "cancelled") {
@@ -70,6 +70,11 @@ export async function POST(req: NextRequest) {
   if (new Date(booking.starts_at).getTime() < Date.now()) {
     return NextResponse.json({ error: "too_late" }, { status: 409 });
   }
+  // Le coach a déclaré que le client annulait : la formule s'applique à
+  // l'heure de cette déclaration, pas à celle où le client clique.
+  const asOf = booking.client_cancel_requested_at
+    ? new Date(booking.client_cancel_requested_at as string)
+    : new Date();
 
   // Vérifie que la réservation appartient bien au compte connecté (email).
   const { data: clientRow } = await admin
@@ -160,7 +165,7 @@ export async function POST(req: NextRequest) {
       .eq("id", booking.pack_credit_id)
       .maybeSingle();
     const hours = clampCancelHours(pack?.cancel_hours);
-    const inTime = creditRestoredIfCancelled(hours, new Date(booking.starts_at));
+    const inTime = creditRestoredIfCancelled(hours, new Date(booking.starts_at), asOf);
     // Un pack clôturé ou expiré ne récupère rien : le crédit n'est « rendu »
     // (email, réponse) que si le pack est encore actif.
     const restored = inTime && pack?.status === "active";
@@ -318,7 +323,8 @@ export async function POST(req: NextRequest) {
     refundCents(
       resolveRefundPolicy(coach),
       new Date(booking.starts_at),
-      baseAmount
+      baseAmount,
+      asOf
     ),
     Math.max(0, amount - alreadyReleased - alreadyRefunded)
   );

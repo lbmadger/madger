@@ -959,6 +959,63 @@ export function bookingCancelledClient(p: {
   };
 }
 
+// ── Client : le coach déclare que le client a annulé, à confirmer ───────────
+export function clientCancelRequestClient(p: {
+  coachName: string;
+  dateStr: string;
+  // Ce qui se passe si le client confirme : montant remboursé, ou crédit
+  // rendu / perdu pour une séance sur pack.
+  outcome: string;
+  url: string;
+}): Email {
+  return {
+    subject: `${p.coachName} indique que tu as annulé ta séance`,
+    html: layout({
+      preheader: "Confirme l'annulation ou dis que la séance est maintenue.",
+      eyebrow: "Réservation",
+      title: "As-tu annulé cette séance ?",
+      intro: `<b style="color:${C.text};">${p.coachName}</b> indique que tu as annulé ta séance du <b style="color:${C.text};">${p.dateStr}</b>. Rien n'est fait sans ton accord : confirme si c'est exact, ou dis-nous que tu maintiens la séance.`,
+      blocks: [
+        detailsTable([
+          { label: "Coach", value: p.coachName },
+          { label: "Séance", value: p.dateStr },
+          { label: "Si tu confirmes", value: p.outcome, accent: true },
+        ]),
+      ],
+      cta: { label: "Confirmer ou maintenir", url: p.url },
+      outro:
+        "Tant que tu n'as pas répondu, la séance reste en place. Une question ? Réponds simplement à cet email.",
+    }),
+  };
+}
+
+// ── Coach : le client refuse l'annulation déclarée ──────────────────────────
+export function clientCancelDeniedCoach(p: {
+  locale?: EmailLocale;
+  clientName: string;
+  dateStr: string;
+  dashboardUrl: string;
+}): Email {
+  const en = p.locale === "en";
+  return {
+    subject: en
+      ? `${p.clientName} is keeping the session`
+      : `${p.clientName} maintient sa séance`,
+    html: layout({
+      locale: p.locale,
+      preheader: en
+        ? "The client did not confirm the cancellation."
+        : "Le client n'a pas confirmé l'annulation.",
+      eyebrow: en ? "Booking" : "Réservation",
+      title: en ? "Session kept" : "Séance maintenue",
+      intro: en
+        ? `<b style="color:${C.text};">${p.clientName}</b> says they did not cancel the session on <b style="color:${C.text};">${p.dateStr}</b>. It stays in your agenda as planned. If you cannot make it, you can still cancel it yourself (full refund).`
+        : `<b style="color:${C.text};">${p.clientName}</b> indique ne pas avoir annulé la séance du <b style="color:${C.text};">${p.dateStr}</b>. Elle reste dans ton agenda comme prévu. Si tu ne peux pas l'assurer, tu peux toujours l'annuler toi-même (remboursement intégral).`,
+      cta: { label: en ? "Open my agenda" : "Ouvrir mon agenda", url: p.dashboardUrl },
+    }),
+  };
+}
+
 // ── Client : remboursement suite à annulation ou litige ─────────────────────
 export function refundClient(p: {
   coachName: string;

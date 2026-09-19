@@ -379,6 +379,19 @@ export default function AgendaView({
         setActionError("agenda.actionError");
         return;
       }
+      const data = (await res.json().catch(() => ({}))) as { requested?: boolean };
+      if (data.requested) {
+        // Demande envoyée au client : la séance reste en place jusqu'à sa
+        // réponse, on le montre sur la carte.
+        const at = new Date().toISOString();
+        setBookings((bs) =>
+          bs.map((b) => (b.id === id ? { ...b, client_cancel_requested_at: at } : b))
+        );
+        setCancelId(null);
+        setSelected(null);
+        router.refresh();
+        return;
+      }
       setBookings((bs) =>
         bs.map((b) => (b.id === id ? { ...b, status: "cancelled" as const } : b))
       );
@@ -844,6 +857,11 @@ export default function AgendaView({
                    {/* Modifier / annuler une séance confirmée */}
                    {b.status === "confirmed" && !b.is_block && (
                      <div className="mt-2 border-t border-border pt-2">
+                       {b.client_cancel_requested_at && (
+                         <p className="mb-2 inline-flex rounded-full bg-warning/10 px-2.5 py-1 text-[11px] font-semibold text-warning">
+                           {t("agenda.cancelRequested")}
+                         </p>
+                       )}
                        {cancelId === b.id ? (
                          <div className="flex flex-col gap-2">
                            <p className="text-xs text-text-muted">
@@ -1096,6 +1114,11 @@ export default function AgendaView({
               // formulaire d'annulation obligatoire).
               cancelId === selected.id ? (
                 <div className="mt-4 flex flex-col gap-2">
+                  {selected.client_cancel_requested_at && (
+                    <p className="inline-flex self-start rounded-full bg-warning/10 px-2.5 py-1 text-[11px] font-semibold text-warning">
+                      {t("agenda.cancelRequested")}
+                    </p>
+                  )}
                   <p className="text-xs text-text-muted">
                     {t("agenda.cancelWho")}
                   </p>
