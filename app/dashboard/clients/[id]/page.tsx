@@ -110,8 +110,11 @@ export default async function ClientDetailPage({
       cancelled: (b.status as string) === "cancelled",
       name: ((svc as { name?: string } | null)?.name as string) ?? "-",
       refunded,
-      // Geste possible : séance à l'unité, argent conservé, pas de litige.
+      // Geste possible : séance ANNULÉE à l'unité dont une part a été
+      // conservée, sans litige. Une séance qui a eu lieu se règle par un
+      // signalement du client, pas par un remboursement à la main.
       gesture:
+        (b.status as string) === "cancelled" &&
         !b.pack_credit_id &&
         !!pay?.stripe_charge_id &&
         kept > 0 &&

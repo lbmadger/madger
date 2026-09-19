@@ -48,6 +48,11 @@ export async function POST(req: NextRequest) {
   if (!booking || booking.coach_id !== user.id) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
+  // Seule une séance annulée se rembourse par geste : une séance qui a eu
+  // lieu passe par le signalement du client (litige tranché par Madger).
+  if (booking.status !== "cancelled") {
+    return NextResponse.json({ error: "not_refundable" }, { status: 409 });
+  }
   if (booking.pack_credit_id) {
     // Les packs ont leur propre geste (séance offerte, reste remboursé).
     return NextResponse.json({ error: "not_refundable" }, { status: 409 });
