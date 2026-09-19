@@ -156,7 +156,7 @@ export async function POST(req: NextRequest) {
             outcome =
               refund > 0
                 ? `remboursement de ${euros(refund)} sur ${euros(amount)}`
-                : `aucun remboursement (politique d'annulation du coach)`;
+                : `pas de remboursement cette fois, l'annulation est trop proche de la séance (politique du coach)`;
           }
           const tpl = clientCancelRequestClient({
             coachName:

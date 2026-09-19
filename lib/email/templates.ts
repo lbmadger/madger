@@ -1259,6 +1259,8 @@ export function bookingCancelledCoach(p: {
           refunded: "Refunded to the client",
           kept: "Kept for you (cancellation policy)",
           cta: "View my calendar",
+          keptOutro:
+            "Your policy applied. If it was a real emergency, you can still refund the client from their profile: a goodwill gesture often brings a client back.",
         }
       : {
           subject: `${p.clientName} a annulé sa séance du ${p.dateStr}`,
@@ -1271,6 +1273,8 @@ export function bookingCancelledCoach(p: {
           refunded: "Remboursé au client",
           kept: "Conservé pour toi (formule d'annulation)",
           cta: "Voir mon agenda",
+          keptOutro:
+            "Ta politique s'est appliquée. Si c'était un vrai imprévu, tu peux toujours rembourser le client depuis sa fiche : un geste fait souvent revenir un client.",
         };
   return {
     subject: L.subject,
@@ -1293,6 +1297,7 @@ export function bookingCancelledCoach(p: {
         ]),
       ],
       cta: { label: L.cta, url: p.dashboardUrl },
+      ...(p.keptStr && !p.refundStr ? { outro: L.keptOutro } : {}),
     }),
   };
 }
@@ -1822,22 +1827,26 @@ export function cancellationNoRefundClient(p: {
     subject: "Ton annulation est confirmée",
     html: layout({
       preheader:
-        "Séance annulée. Aucun remboursement selon la formule d'annulation du coach.",
+        "Séance annulée. L'annulation était trop proche de la séance pour être remboursée.",
       eyebrow: "Annulation",
       title: "Séance annulée",
-      intro: `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> du <b style="color:${C.text};">${p.dateStr}</b> est bien annulée. Le créneau est libéré.`,
+      intro: `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> du <b style="color:${C.text};">${p.dateStr}</b> est bien annulée.`,
       blocks: [
         detailsTable([
           { label: "Coach", value: p.coachName },
           { label: "Séance", value: p.dateStr },
-          { label: "Montant remboursé", value: "0 €" },
+          { label: "Remboursement", value: "Pas cette fois, annulation tardive" },
         ]),
         infoBox(
-          "Pourquoi aucun remboursement ?",
-          `D'après la formule d'annulation de ${p.coachName}, cette annulation intervient trop tard pour donner droit à un remboursement : le montant de la séance est conservé par le coach. Les conditions exactes sont affichées sur ta réservation.`
+          "Pourquoi le montant reste au coach",
+          `Le créneau était réservé pour toi et ${p.coachName} ne pouvait plus le proposer à quelqu'un d'autre. Sa politique d'annulation, affichée sur ta réservation, s'applique quand on annule trop près de la séance.`
+        ),
+        infoBox(
+          "Un imprévu sérieux ?",
+          `Écris-le à ${p.coachName} : un coach peut faire un geste et te rembourser depuis ton profil, le remboursement repart alors sur ta carte. Pour la prochaine fois, tu peux annuler sans frais jusqu'à la limite indiquée sur ta réservation.`
         ),
       ],
-      cta: { label: "Choisir un autre créneau", url: `${APP_URL}/coachs` },
+      cta: { label: "Voir mes séances", url: `${APP_URL}/espace` },
       outro:
         "Une question ? Réponds simplement à cet email, on est là pour aider.",
     }),

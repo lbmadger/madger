@@ -1692,11 +1692,13 @@ const fr = {
     cancelRequestTitle: "{coach} indique que tu as annulé cette séance. C'est exact ?",
     cancelRequestRefund: "Si tu confirmes, tu seras remboursé de {amount}, selon la politique du coach à l'heure de sa demande.",
     cancelRequestCreditKept: "Si tu confirmes, la séance est rendue à ton pack.",
-    cancelRequestCreditLost: "Si tu confirmes, la séance est décomptée de ton pack (délai dépassé à l'heure de la demande).",
+    cancelRequestCreditLost: "Si tu confirmes, la séance est décomptée de ton pack : le délai était dépassé à l'heure de la demande. Un imprévu ? Dis-le à ton coach, il peut te la rendre.",
+    cancelRequestNoRefund: "Si tu confirmes, il n'y a pas de remboursement cette fois : l'annulation est trop proche de la séance. Un imprévu sérieux ? Dis-le à ton coach, il peut faire un geste.",
     cancelRequestNo: "Non, je maintiens ma séance",
     cancelRequestYes: "Oui, j'annule",
     cancelRequestDenied: "Séance maintenue. Ton coach est prévenu.",
     cancelRefund: "Si tu annules maintenant, tu seras remboursé à",
+    cancelRefundNone: "Trop tard pour un remboursement : le créneau était réservé pour toi. Si c'est un imprévu sérieux, préviens ton coach, il peut faire un geste depuis ton profil.",
     cancelFree: "Cette séance sera annulée (aucun paiement en jeu).",
     keep: "Garder ma séance",
     confirmCancel: "Confirmer l'annulation",
@@ -1724,7 +1726,7 @@ const fr = {
     creditCancelFree:
       "Si tu annules avant le {date}, ta séance est rendue sur ton pack. Après, elle est décomptée.",
     creditCancelLost:
-      "Délai d'annulation dépassé : si tu annules maintenant, la séance est décomptée de ton pack.",
+      "Délai d'annulation dépassé : si tu annules maintenant, la séance est décomptée de ton pack. Un imprévu ? Préviens ton coach, il peut te la rendre.",
   },
   creditBooking: {
     title: "Placer une séance",
@@ -3626,11 +3628,13 @@ const en: Dictionary = {
     cancelRequestTitle: "{coach} says you cancelled this session. Is that right?",
     cancelRequestRefund: "If you confirm, you will be refunded {amount}, per the coach's policy at the time of their request.",
     cancelRequestCreditKept: "If you confirm, the session goes back to your pack.",
-    cancelRequestCreditLost: "If you confirm, the session is deducted from your pack (deadline passed at the time of the request).",
+    cancelRequestCreditLost: "If you confirm, the session is deducted from your pack: the deadline had passed at the time of the request. An emergency? Tell your coach, they can give it back.",
+    cancelRequestNoRefund: "If you confirm, there is no refund this time: the cancellation is too close to the session. A real emergency? Tell your coach, they can make a gesture.",
     cancelRequestNo: "No, I am keeping my session",
     cancelRequestYes: "Yes, I cancel",
     cancelRequestDenied: "Session kept. Your coach has been notified.",
     cancelRefund: "If you cancel now, you'll be refunded",
+    cancelRefundNone: "Too late for a refund: the slot was held for you. If it is a real emergency, tell your coach, they can make a gesture from your profile.",
     cancelFree: "This session will be cancelled (no payment involved).",
     keep: "Keep my session",
     confirmCancel: "Confirm cancellation",
@@ -3658,7 +3662,7 @@ const en: Dictionary = {
     creditCancelFree:
       "Cancel before {date} and the session goes back on your pack. After that, it is deducted.",
     creditCancelLost:
-      "Cancellation notice passed: if you cancel now, the session is deducted from your pack.",
+      "Cancellation notice passed: if you cancel now, the session is deducted from your pack. An emergency? Tell your coach, they can give it back.",
   },
   creditBooking: {
     title: "Book a session",

@@ -1169,10 +1169,12 @@ export default function ClientSpace({
                         ? t("clientSpace.cancelRequestCreditKept")
                         : t("clientSpace.cancelRequestCreditLost")
                       : b.escrow_status === "held" && b.amount_cents
-                      ? t("clientSpace.cancelRequestRefund").replace(
-                          "{amount}",
-                          (refundNow(b) / 100).toLocaleString(loc, { style: "currency", currency: "EUR" })
-                        )
+                      ? refundNow(b) > 0
+                        ? t("clientSpace.cancelRequestRefund").replace(
+                            "{amount}",
+                            (refundNow(b) / 100).toLocaleString(loc, { style: "currency", currency: "EUR" })
+                          )
+                        : t("clientSpace.cancelRequestNoRefund")
                       : t("clientSpace.cancelFree")}
                   </p>
                   <div className="mt-2 flex gap-2">
@@ -1241,7 +1243,9 @@ export default function ClientSpace({
                             )
                           : t("clientSpace.creditCancelLost")
                         : b.escrow_status === "held" && b.amount_cents
-                        ? `${t("clientSpace.cancelRefund")} ${(refundNow(b) / 100).toLocaleString(loc, { style: "currency", currency: "EUR" })} (${Math.round((refundNow(b) / Math.max(1, b.amount_cents ?? 0)) * 100)}%).`
+                        ? refundNow(b) > 0
+                          ? `${t("clientSpace.cancelRefund")} ${(refundNow(b) / 100).toLocaleString(loc, { style: "currency", currency: "EUR" })} (${Math.round((refundNow(b) / Math.max(1, b.amount_cents ?? 0)) * 100)}%).`
+                          : t("clientSpace.cancelRefundNone")
                         : t("clientSpace.cancelFree")}
                     </p>
                     <div className="flex gap-2">
