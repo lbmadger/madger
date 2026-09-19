@@ -966,6 +966,8 @@ export function clientCancelRequestClient(p: {
   // Ce qui se passe si le client confirme : montant remboursé, ou crédit
   // rendu / perdu pour une séance sur pack.
   outcome: string;
+  // Sans réponse avant cette date, l'annulation est confirmée d'office.
+  deadlineStr: string;
   url: string;
 }): Email {
   return {
@@ -980,11 +982,12 @@ export function clientCancelRequestClient(p: {
           { label: "Coach", value: p.coachName },
           { label: "Séance", value: p.dateStr },
           { label: "Si tu confirmes", value: p.outcome, accent: true },
+          { label: "Sans réponse", value: `Annulation confirmée le ${p.deadlineStr}` },
         ]),
       ],
       cta: { label: "Confirmer ou maintenir", url: p.url },
       outro:
-        "Tant que tu n'as pas répondu, la séance reste en place. Une question ? Réponds simplement à cet email.",
+        "Sans réponse de ta part avant cette date, l'annulation sera confirmée et ce qui est indiqué ci-dessus s'appliquera. Une question ? Réponds simplement à cet email.",
     }),
   };
 }

@@ -10,6 +10,7 @@ import {
   resolveRefundPolicy,
   clampCancelHours,
   creditRestoredIfCancelled,
+  cancelRequestDeadline,
 } from "@/lib/booking/cancellation";
 import { planOf, feeRateBps } from "@/lib/subscription/plan";
 import { sendEmail } from "@/lib/email/resend";
@@ -170,6 +171,14 @@ export async function POST(req: NextRequest) {
               timeZone: coach?.timezone || "Europe/Paris",
             }),
             outcome,
+            deadlineStr: cancelRequestDeadline(requestedAt, booking.starts_at as string).toLocaleString("fr-FR", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              hour: "2-digit",
+              minute: "2-digit",
+              timeZone: coach?.timezone || "Europe/Paris",
+            }),
             url: `${APP_URL}/espace`,
           });
           await sendEmail({ to: client.email, subject: tpl.subject, html: tpl.html });

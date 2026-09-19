@@ -156,3 +156,15 @@ export function policyTiers(
     { minHoursBefore: 0, refund: policy.underPct / 100 },
   ];
 }
+
+// Demande d'annulation déclarée par le coach « à la demande du client » :
+// sans réponse du client, elle est confirmée d'office 48 h après la demande,
+// ou 1 h avant la séance si c'est plus tôt (cron reminders-soon).
+export const CANCEL_REQUEST_HOURS = 48;
+export const CANCEL_REQUEST_BEFORE_START_HOURS = 1;
+
+export function cancelRequestDeadline(requestedAt: string | Date, startsAt: string | Date): Date {
+  const byRequest = new Date(requestedAt).getTime() + CANCEL_REQUEST_HOURS * 3_600_000;
+  const byStart = new Date(startsAt).getTime() - CANCEL_REQUEST_BEFORE_START_HOURS * 3_600_000;
+  return new Date(Math.min(byRequest, byStart));
+}

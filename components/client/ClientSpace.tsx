@@ -15,6 +15,7 @@ import {
   refundCents,
   resolveRefundPolicy,
   creditRestoredIfCancelled,
+  cancelRequestDeadline,
 } from "@/lib/booking/cancellation";
 
 export type ClientPack = {
@@ -1176,6 +1177,18 @@ export default function ClientSpace({
                           )
                         : t("clientSpace.cancelRequestNoRefund")
                       : t("clientSpace.cancelFree")}
+                  </p>
+                  <p className="mt-1 text-xs text-text-dim">
+                    {t("clientSpace.cancelRequestAuto").replace(
+                      "{date}",
+                      cancelRequestDeadline(b.client_cancel_requested_at, b.starts_at).toLocaleString(loc, {
+                        weekday: "long",
+                        day: "numeric",
+                        month: "long",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    )}
                   </p>
                   <div className="mt-2 flex gap-2">
                     <button

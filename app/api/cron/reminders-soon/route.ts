@@ -6,6 +6,9 @@ import { SUPABASE_URL } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
 import { sessionReminderSoonClient } from "@/lib/email/templates";
 import { cronAuthorized } from "@/lib/cron/auth";
+import { getStripe } from "@/lib/stripe/server";
+import { performClientCancellation } from "@/lib/booking/clientCancel";
+import { cancelRequestDeadline } from "@/lib/booking/cancellation";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -28,6 +31,38 @@ export async function GET(req: NextRequest) {
   const supabase = createClient(SUPABASE_URL, serviceKey, NO_STORE);
   const now = Date.now();
   const nowIso = new Date(now).toISOString();
+
+  // ── Demandes d'annulation sans réponse du client : confirmées d'office ────
+  // (migration 0083). 48 h après la demande du coach, ou 1 h avant la séance
+  // si c'est plus tôt : l'annulation client est exécutée (formule à l'heure
+  // de la demande), le client reçoit l'email d'annulation, le créneau se
+  // libère. Best-effort, une séance à la fois.
+  let autoCancelled = 0;
+  try {
+    const stripe = getStripe();
+    const { data: pending } = await supabase
+      .from("bookings")
+      .select("id, starts_at, client_cancel_requested_at")
+      .eq("status", "confirmed")
+      .not("client_cancel_requested_at", "is", null)
+      .gt("starts_at", nowIso)
+      .limit(50);
+    for (const b of pending ?? []) {
+      const deadline = cancelRequestDeadline(
+        b.client_cancel_requested_at as string,
+        b.starts_at as string
+      );
+      if (deadline.getTime() > now || !stripe) continue;
+      const result = await performClientCancellation(supabase, stripe, {
+        bookingId: b.id as string,
+        clientEmail: null,
+      });
+      if (result.status === 200) autoCancelled++;
+      else console.error("auto-cancel failed:", b.id, result.body);
+    }
+  } catch (e) {
+    console.error("auto-cancel:", e instanceof Error ? e.message : e);
+  }
 
   // ── Reports sans réponse du client : validation automatique ───────────────
   // (migration 0057). Ce cron tourne toutes les 15 min : la fenêtre de 48 h
@@ -114,5 +149,5 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ sent, scanned, autoValidated });
+  return NextResponse.json({ sent, scanned, autoValidated, autoCancelled });
 }

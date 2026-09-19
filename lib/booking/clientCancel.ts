@@ -1,0 +1,478 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type Stripe from "stripe";
+import { computePayout, coachBearsStripeFee } from "@/lib/stripe/escrow";
+import {
+  refundCents,
+  resolveRefundPolicy,
+  clampCancelHours,
+  creditRestoredIfCancelled,
+} from "@/lib/booking/cancellation";
+import { planOf, feeRateBps } from "@/lib/subscription/plan";
+import { sendEmail } from "@/lib/email/resend";
+import { notifyWaitlistForBooking } from "@/lib/waitlist/notify";
+import {
+  refundClient,
+  bookingCancelledCoach,
+  cancellationNoRefundClient,
+  creditCancellationClient,
+} from "@/lib/email/templates";
+import { detachMeetFromBooking } from "@/lib/google/calendar";
+import { emailInvoice } from "@/lib/invoices/send";
+import { ensureStripeFee } from "@/lib/stripe/fees";
+import { packProrata, packRefundableUnits, packPaidTotal } from "@/lib/packs/prorata";
+
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
+
+export type ClientCancelResult = { status: number; body: Record<string, unknown> };
+
+// Annulation d'une séance PAR LE CLIENT : formule du coach appliquée
+// (remboursement partiel, reste versé au coach), pack rendu ou décompté,
+// avoir, emails, liste d'attente. Partagée entre la route de l'espace client
+// (clientEmail = compte connecté, qui doit être celui de la réservation) et
+// la résolution automatique du cron (clientEmail = null : le client n'a pas
+// répondu à la demande d'annulation déclarée par le coach). La formule
+// s'applique à l'heure de la demande du coach quand il y en a une.
+export async function performClientCancellation(
+  admin: SupabaseClient,
+  stripe: Stripe,
+  opts: { bookingId: string; clientEmail: string | null }
+): Promise<ClientCancelResult> {
+  const { bookingId, clientEmail } = opts;
+
+  const { data: booking } = await admin
+    .from("bookings")
+    .select("id, coach_id, client_id, starts_at, status, pack_credit_id, client_cancel_requested_at")
+    .eq("id", bookingId)
+    .maybeSingle();
+  if (!booking || booking.status === "cancelled") {
+    return { status: 404, body: { error: "not_found" } };
+  }
+  // La séance passée ne s'annule plus (elle se signale ou se note).
+  if (new Date(booking.starts_at).getTime() < Date.now()) {
+    return { status: 409, body: { error: "too_late" } };
+  }
+  // Le coach a déclaré que le client annulait : la formule s'applique à
+  // l'heure de cette déclaration, pas à celle où le client clique.
+  const asOf = booking.client_cancel_requested_at
+    ? new Date(booking.client_cancel_requested_at as string)
+    : new Date();
+
+  // Vérifie que la réservation appartient bien au compte connecté (email).
+  const { data: clientRow } = await admin
+    .from("clients")
+    .select("id, email, first_name, last_name")
+    .eq("id", booking.client_id)
+    .maybeSingle();
+  // Vérification du compte : sautée en résolution automatique (cron), qui
+  // agit au nom du client après le délai de réponse.
+  if (
+    !clientRow?.email ||
+    (clientEmail !== null &&
+      clientRow.email.trim().toLowerCase() !== clientEmail.trim().toLowerCase())
+  ) {
+    // Diagnostic (emails masqués) : qui tente d'annuler la séance de qui.
+    const mask = (e: string | null | undefined) =>
+      e ? `${e.slice(0, 3)}…@${e.split("@")[1] ?? ""}` : "(vide)";
+    console.error(
+      "client-cancel forbidden:",
+      bookingId,
+      "compte",
+      mask(clientEmail),
+      "client de la séance",
+      mask(clientRow?.email as string | null)
+    );
+    return { status: 403, body: { error: "forbidden" } };
+  }
+
+
+  // Prévient le coach que son créneau se libère (best-effort, jamais
+  // bloquant). Appelé sur chaque chemin d'annulation réussi.
+  async function notifyCoachCancelled(refunded: number, kept: number) {
+    if (!booking) return;
+    try {
+      const { data: coachAuth } = await admin.auth.admin.getUserById(
+        booking.coach_id as string
+      );
+      const coachEmail = coachAuth?.user?.email;
+      if (!coachEmail) return;
+      // Email destiné au coach : dates et montants dans SA langue et son
+      // fuseau (en-GB s'il est en anglais).
+      const coachLocale = coach?.locale === "en" ? ("en" as const) : ("fr" as const);
+      const intl = coachLocale === "en" ? "en-GB" : "fr-FR";
+      const euros = (c: number) =>
+        (c / 100).toLocaleString(intl, {
+          style: "currency",
+          currency: ((payment?.currency as string) || "eur").toUpperCase(),
+        });
+      const tpl = bookingCancelledCoach({
+        locale: coachLocale,
+        clientName:
+          [clientRow?.first_name, clientRow?.last_name]
+            .filter(Boolean)
+            .join(" ") ||
+          (coachLocale === "en" ? "Your client" : "Ton client"),
+        dateStr: new Date(booking.starts_at).toLocaleString(intl, {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZone: coach?.timezone || "Europe/Paris",
+        }),
+        refundStr: refunded > 0 ? euros(refunded) : null,
+        keptStr: kept > 0 ? euros(kept) : null,
+        dashboardUrl: `${APP_URL}/dashboard/agenda`,
+      });
+      await sendEmail({ to: coachEmail, subject: tpl.subject, html: tpl.html });
+    } catch {
+      /* best-effort */
+    }
+  }
+
+  const { data: coach } = await admin
+    .from("coaches")
+    .select(
+      "stripe_account_id, pro_until, pro_bonus_until, cancellation_policy, refund_over_24h_pct, refund_under_24h_pct, cancel_hours, first_name, last_name, locale, timezone"
+    )
+    .eq("id", booking.coach_id)
+    .maybeSingle();
+
+  // ── Séance sur PACK (crédit, ou séance d'achat du pack) ──────────────────
+  // Lot 2 : aucun remboursement quand le CLIENT annule, le pack continue.
+  // Avant le délai du pack, le crédit est rendu ; après, il est perdu
+  // (journalisé). Le paiement du pack reste sous séquestre et se libère
+  // séance par séance comme d'habitude.
+  if (booking.pack_credit_id) {
+    const { data: pack } = await admin
+      .from("pack_credits")
+      .select("id, cancel_hours, status")
+      .eq("id", booking.pack_credit_id)
+      .maybeSingle();
+    const hours = clampCancelHours(pack?.cancel_hours);
+    const inTime = creditRestoredIfCancelled(hours, new Date(booking.starts_at), asOf);
+    // Un pack clôturé ou expiré ne récupère rien : le crédit n'est « rendu »
+    // (email, réponse) que si le pack est encore actif.
+    const restored = inTime && pack?.status === "active";
+    if (!inTime) {
+      // Annulation tardive : crédit perdu, posé AVANT l'annulation pour que
+      // le trigger SQL ne le restitue pas. Un pack inactif n'est pas marqué
+      // « perdu » : la cause est le pack, pas le délai.
+      await admin.rpc("pack_credit_restore", {
+        p_booking: bookingId,
+        p_actor: "client",
+        p_lost: true,
+        p_note: `Annulation à moins de ${hours} h`,
+      });
+    }
+    await detachMeetFromBooking(admin, bookingId);
+    const { data: cancelled } = await admin
+      .from("bookings")
+      .update({ status: "cancelled" })
+      .eq("id", bookingId)
+      .neq("status", "cancelled")
+      .select("id");
+    await notifyWaitlistForBooking(admin, bookingId);
+    if (!cancelled?.length) {
+      return { status: 409, body: { error: "already_processed" } };
+    }
+    // Email au client : crédit rendu ou séance décomptée (best-effort).
+    try {
+      const coachName =
+        [coach?.first_name, coach?.last_name].filter(Boolean).join(" ") ||
+        "Ton coach";
+      const tpl = creditCancellationClient({
+        coachName,
+        dateStr: new Date(booking.starts_at).toLocaleString("fr-FR", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZone: coach?.timezone || "Europe/Paris",
+        }),
+        restored,
+        hours,
+        spaceUrl: `${APP_URL}/espace`,
+      });
+      await sendEmail({ to: clientRow.email as string, subject: tpl.subject, html: tpl.html });
+    } catch {
+      /* best-effort */
+    }
+    await notifyCoachCancelled(0, 0);
+    return { status: 200, body: { ok: true, refunded_cents: 0, credit_restored: restored } };
+  }
+
+  const { data: payment } = await admin
+    .from("payments")
+    .select(
+      "id, amount_cents, currency, stripe_charge_id, stripe_fee_cents, escrow_status, stripe_payment_intent_id, released_cents, refunded_cents, commission_cents, payout_cents, fee_rate_bps, payment_method, provider_fee_cents"
+    )
+    .eq("booking_id", bookingId)
+    .maybeSingle();
+
+  // Paiement gelé par un litige : rien ne bouge tant que l'admin n'a pas
+  // tranché.
+  if (payment?.escrow_status === "disputed") {
+    return { status: 409, body: { error: "disputed" } };
+  }
+
+  // Empreinte bancaire non débitée (demande pas encore acceptée par le
+  // coach) : on libère l'autorisation, rien n'a été prélevé.
+  if (payment?.escrow_status === "authorized") {
+    const { data: claimed } = await admin
+      .from("payments")
+      .update({
+        escrow_status: "canceled",
+        status: "canceled",
+        resolved_at: new Date().toISOString(),
+      })
+      .eq("id", payment.id)
+      .eq("escrow_status", "authorized")
+      .select("id");
+    if (!claimed?.length) {
+      return { status: 409, body: { error: "already_processed" } };
+    }
+    try {
+      if (payment.stripe_payment_intent_id) {
+        await stripe.paymentIntents.cancel(
+          payment.stripe_payment_intent_id as string,
+          {},
+          { idempotencyKey: `cancelauth_${payment.id}` }
+        );
+      }
+    } catch {
+      /* déjà annulée / expirée : sans effet */
+    }
+    {
+      const { data: authPack } = await admin
+        .from("pack_credits")
+        .select("id")
+        .eq("payment_id", payment.id)
+        .maybeSingle();
+      if (authPack) {
+        await admin.rpc("close_pack_credit", {
+          p_pack: authPack.id,
+          p_status: "closed",
+          p_actor: "system",
+          p_note: "Empreinte bancaire annulée, pack jamais activé",
+        });
+      }
+    }
+    await detachMeetFromBooking(admin, bookingId);
+    await admin
+      .from("bookings")
+      .update({ status: "cancelled" })
+      .eq("id", bookingId);
+    await notifyWaitlistForBooking(admin, bookingId);
+    await notifyCoachCancelled(0, 0);
+    return { status: 200, body: { ok: true, refunded_cents: 0 } };
+  }
+
+  // Pas de paiement retenu : simple annulation.
+  if (!payment || payment.escrow_status !== "held") {
+    await detachMeetFromBooking(admin, bookingId);
+    await admin
+      .from("bookings")
+      .update({ status: "cancelled" })
+      .eq("id", bookingId);
+    await notifyWaitlistForBooking(admin, bookingId);
+    await notifyCoachCancelled(0, 0);
+    return { status: 200, body: { ok: true, refunded_cents: 0 } };
+  }
+
+  const amount = payment.amount_cents;
+
+  // Achat de PACK : remboursement au prorata des séances non consommées
+  // (celle qu'on annule comprise), puis pack clôturé.
+  const { data: pack } = await admin
+    .from("pack_credits")
+    .select("id, total, paid_total, used, status")
+    .eq("payment_id", payment.id)
+    .maybeSingle();
+  // Prorata sur les séances PAYÉES (les séances offertes ne valent rien).
+  const baseAmount = pack
+    ? packProrata(
+        amount,
+        packRefundableUnits(pack.total, pack.used, pack.paid_total as number | null, true),
+        packPaidTotal(pack.total, pack.paid_total as number | null)
+      )
+    : amount;
+
+  // Part déjà transférée au coach (packs libérés séance par séance) et part
+  // déjà remboursée (refund partiel externe synchronisé par le webhook) :
+  // plus remboursables, sinon la somme sortante dépasserait l'encaissé.
+  const alreadyReleased = (payment.released_cents as number | null) ?? 0;
+  const alreadyRefunded = (payment.refunded_cents as number | null) ?? 0;
+  const refund = Math.min(
+    refundCents(
+      resolveRefundPolicy(coach),
+      new Date(booking.starts_at),
+      baseAmount,
+      asOf
+    ),
+    Math.max(0, amount - alreadyReleased - alreadyRefunded)
+  );
+  const totalRefunded = alreadyRefunded + refund;
+  const feeCents = await ensureStripeFee(admin, stripe, {
+    id: payment.id as string,
+    stripe_charge_id: payment.stripe_charge_id as string | null,
+    stripe_fee_cents: payment.stripe_fee_cents as number | null,
+  });
+  // Taux figé au paiement (migration 0064), jamais le plan courant.
+  const breakdown = computePayout({
+    amountCents: amount,
+    feeRateBps:
+      (payment.fee_rate_bps as number | null) ?? feeRateBps(planOf(coach)),
+    stripeFeeCents: feeCents,
+    coachBearsStripeFee: coachBearsStripeFee(payment.payment_method as string | null),
+    refundCents: totalRefunded,
+  });
+
+  // Réclame le paiement AVANT les appels Stripe (anti-course avec le cron,
+  // une annulation coach simultanée ou un double clic).
+  const { data: claimed } = await admin
+    .from("payments")
+    .update({
+      escrow_status: totalRefunded >= amount ? "refunded" : "canceled",
+      status: totalRefunded >= amount ? "refunded" : "paid",
+      refunded_cents: totalRefunded,
+      commission_cents: breakdown.commissionCents,
+      provider_fee_cents: breakdown.providerFeeCents,
+      payout_cents: breakdown.payoutCents,
+      resolved_at: new Date().toISOString(),
+    })
+    .eq("id", payment.id)
+    .eq("escrow_status", "held")
+    // Un remboursement externe (webhook) arrivé entre la lecture et la
+    // réclamation invalide les montants calculés.
+    .eq("refunded_cents", alreadyRefunded)
+    .select("id");
+  if (!claimed?.length) {
+    return { status: 409, body: { error: "already_processed" } };
+  }
+
+  try {
+    if (refund > 0 && payment.stripe_charge_id) {
+      await stripe.refunds.create(
+        { charge: payment.stripe_charge_id, amount: refund },
+        { idempotencyKey: `ccancel_refund_${payment.id}_${refund}` }
+      );
+    }
+    let transferId: string | null = null;
+    const cancelTransfer = Math.max(0, breakdown.payoutCents - alreadyReleased);
+    if (
+      cancelTransfer > 0 &&
+      coach?.stripe_account_id &&
+      payment.stripe_charge_id
+    ) {
+      const transfer = await stripe.transfers.create(
+        {
+          amount: cancelTransfer,
+          currency: payment.currency || "eur",
+          destination: coach.stripe_account_id,
+          source_transaction: payment.stripe_charge_id,
+          transfer_group: `coach_${booking.coach_id}`,
+        },
+        { idempotencyKey: `ccancel_transfer_${payment.id}_${cancelTransfer}` }
+      );
+      transferId = transfer.id;
+    }
+
+    await admin
+      .from("payments")
+      .update({ stripe_transfer_id: transferId })
+      .eq("id", payment.id);
+
+    await detachMeetFromBooking(admin, bookingId);
+    await admin
+      .from("bookings")
+      .update({ status: "cancelled" })
+      .eq("id", bookingId);
+    await notifyWaitlistForBooking(admin, bookingId);
+
+    // Pack clôturé (journalisé) et avoir émis pour la part remboursée.
+    // Best-effort : la pièce comptable ne doit jamais annuler un
+    // remboursement déjà parti.
+    try {
+      if (pack && pack.status === "active") {
+        await admin.rpc("close_pack_credit", {
+          p_pack: pack.id,
+          p_status: "refunded",
+          p_actor: "client",
+          p_note: "Pack annulé par le client",
+        });
+      }
+      if (refund > 0) {
+        const { data: noteId } = await admin.rpc("create_credit_note", {
+          p_payment: payment.id,
+          p_total_refunded_cents: totalRefunded,
+          p_reason: "Annulation par le client",
+        });
+        await emailInvoice(admin, noteId as string | null);
+      }
+    } catch {
+      /* best-effort */
+    }
+
+    // Email de confirmation au client (best-effort) : remboursement s'il y a
+    // lieu, sinon annulation actée SANS remboursement (formule du coach),
+    // pour qu'il ne reste jamais sans réponse.
+    try {
+      const coachName =
+        [coach?.first_name, coach?.last_name].filter(Boolean).join(" ") ||
+        "Ton coach";
+      const tpl =
+        refund > 0
+          ? refundClient({
+              coachName,
+              refundStr: (refund / 100).toLocaleString("fr-FR", {
+                style: "currency",
+                currency: (payment.currency || "eur").toUpperCase(),
+              }),
+              reason: "cancellation",
+            })
+          : cancellationNoRefundClient({
+              coachName,
+              dateStr: new Date(booking.starts_at).toLocaleString("fr-FR", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                hour: "2-digit",
+                minute: "2-digit",
+                timeZone: coach?.timezone || "Europe/Paris",
+              }),
+            });
+      await sendEmail({ to: clientRow.email as string, subject: tpl.subject, html: tpl.html });
+    } catch {
+      /* best-effort */
+    }
+
+    await notifyCoachCancelled(refund, breakdown.payoutCents);
+
+    return { status: 200, body: {
+      ok: true,
+      refunded_cents: refund,
+      payout_cents: breakdown.payoutCents,
+    } };
+  } catch (e) {
+    // Échec Stripe après la réclamation : on rend la ligne (retraitable),
+    // montants compris, sinon la base affirmerait qu'un remboursement raté
+    // a eu lieu.
+    await admin
+      .from("payments")
+      .update({
+        escrow_status: "held",
+        status: "paid",
+        resolved_at: null,
+        refunded_cents: alreadyRefunded,
+        commission_cents: (payment.commission_cents as number | null) ?? 0,
+        provider_fee_cents: (payment.provider_fee_cents as number | null) ?? 0,
+        payout_cents: (payment.payout_cents as number | null) ?? null,
+      })
+      .eq("id", payment.id)
+      // Conditionnel : n'écrase jamais une écriture concurrente (webhook
+      // charge.refunded externe) arrivée entre le claim et ce revert.
+      .eq("escrow_status", totalRefunded >= amount ? "refunded" : "canceled");
+    return { status: 500, body: { error: e instanceof Error ? e.message : "stripe_error" } };
+  }
+}

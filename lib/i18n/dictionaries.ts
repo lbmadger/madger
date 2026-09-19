@@ -340,7 +340,7 @@ const fr = {
     cancelConfirmCoach:
       "Tu annules cette séance : le client sera intégralement remboursé, immédiatement et définitivement.",
     cancelConfirmClient:
-      "Le client recevra un email pour confirmer qu'il annule. S'il confirme, ta politique d'annulation s'applique, calculée à l'heure de ta demande. Tant qu'il n'a pas répondu, la séance reste en place.",
+      "Le client recevra un email pour confirmer qu'il annule. S'il confirme, ta politique d'annulation s'applique, calculée à l'heure de ta demande. Sans réponse sous 48 h, ou 1 h avant la séance, l'annulation est confirmée d'office.",
     cancelByClient: "Le client m'a prévenu (il confirme)",
     cancelByCoach: "Moi (remboursement total)",
     cancelRequested: "Annulation à confirmer par le client",
@@ -1708,6 +1708,7 @@ const fr = {
     cancelRequestNo: "Non, je maintiens ma séance",
     cancelRequestYes: "Oui, j'annule",
     cancelRequestDenied: "Séance maintenue. Ton coach est prévenu.",
+    cancelRequestAuto: "Sans réponse avant le {date}, l'annulation sera confirmée.",
     cancelRefund: "Si tu annules maintenant, tu seras remboursé à",
     cancelRefundNone: "Trop tard pour un remboursement : le créneau était réservé pour toi. Si c'est un imprévu sérieux, préviens ton coach, il peut faire un geste depuis ton profil.",
     cancelFree: "Cette séance sera annulée (aucun paiement en jeu).",
@@ -2298,7 +2299,7 @@ const en: Dictionary = {
     cancelConfirmCoach:
       "You are cancelling this session: the client will be fully refunded, immediately and permanently.",
     cancelConfirmClient:
-      "The client will get an email to confirm the cancellation. If they confirm, your cancellation policy applies, computed at the time of your request. Until they answer, the session stays.",
+      "The client will get an email to confirm the cancellation. If they confirm, your cancellation policy applies, computed at the time of your request. Without an answer within 48 hours, or 1 hour before the session, the cancellation is confirmed automatically.",
     cancelByClient: "The client told me (they confirm)",
     cancelByCoach: "Me (full refund)",
     cancelRequested: "Cancellation awaiting the client's confirmation",
@@ -3655,6 +3656,7 @@ const en: Dictionary = {
     cancelRequestNo: "No, I am keeping my session",
     cancelRequestYes: "Yes, I cancel",
     cancelRequestDenied: "Session kept. Your coach has been notified.",
+    cancelRequestAuto: "Without an answer before {date}, the cancellation will be confirmed.",
     cancelRefund: "If you cancel now, you'll be refunded",
     cancelRefundNone: "Too late for a refund: the slot was held for you. If it is a real emergency, tell your coach, they can make a gesture from your profile.",
     cancelFree: "This session will be cancelled (no payment involved).",
