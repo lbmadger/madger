@@ -26,9 +26,16 @@ function smoothPath(pts: { x: number; y: number }[]): string {
     const p2 = pts[i + 1];
     const p3 = pts[i + 2] ?? p2;
     const c1x = p1.x + (p2.x - p0.x) / 6;
-    const c1y = p1.y + (p2.y - p0.y) / 6;
     const c2x = p2.x - (p3.x - p1.x) / 6;
-    const c2y = p2.y - (p3.y - p1.y) / 6;
+    // Points de contrôle bornés à la hauteur des deux extrémités du segment :
+    // une courbe de Bézier reste dans l'enveloppe de ses points de contrôle,
+    // elle ne peut donc plus plonger sous le zéro (ni dépasser un sommet)
+    // quand une suite de mois à 0 précède une remontée.
+    const lo = Math.min(p1.y, p2.y);
+    const hi = Math.max(p1.y, p2.y);
+    const clamp = (y: number) => Math.min(hi, Math.max(lo, y));
+    const c1y = clamp(p1.y + (p2.y - p0.y) / 6);
+    const c2y = clamp(p2.y - (p3.y - p1.y) / 6);
     d += ` C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p2.x} ${p2.y}`;
   }
   return d;
