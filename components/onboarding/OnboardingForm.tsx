@@ -221,14 +221,16 @@ export default function OnboardingForm({
       // le coupon s'appliquera au premier abonnement Pro.
       try {
         const offer = localStorage.getItem("madger_offer");
-        if (offer) {
+        const source = localStorage.getItem("madger_src");
+        if (offer || source) {
           await fetch("/api/offer/claim", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ code: offer }),
+            body: JSON.stringify({ code: offer ?? "", source: source ?? "" }),
             signal: AbortSignal.timeout(8000),
           });
           localStorage.removeItem("madger_offer");
+          localStorage.removeItem("madger_src");
         }
       } catch {
         /* best-effort : l'offre ne doit jamais bloquer l'onboarding */

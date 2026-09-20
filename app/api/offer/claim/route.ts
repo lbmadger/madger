@@ -17,14 +17,28 @@ export async function POST(req: NextRequest) {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ ok: false }, { status: 401 });
 
-  const { code } = (await req.json().catch(() => ({}))) as { code?: string };
+  const { code, source } = (await req.json().catch(() => ({}))) as {
+    code?: string;
+    source?: string;
+  };
   const clean = (code ?? "").trim().toUpperCase();
-  if (clean !== LAUNCH_LINK.code || !launchLinkActive()) {
-    return NextResponse.json({ ok: false });
-  }
+  const src = (source ?? "").trim().toLowerCase().slice(0, 40);
 
   const admin = createAdminClient();
   if (!admin) return NextResponse.json({ ok: false }, { status: 500 });
+
+  // Source d'acquisition : posée une fois, jamais écrasée.
+  if (src) {
+    await admin
+      .from("coaches")
+      .update({ acquisition_source: src })
+      .eq("id", user.id)
+      .is("acquisition_source", null);
+  }
+
+  if (clean !== LAUNCH_LINK.code || !launchLinkActive()) {
+    return NextResponse.json({ ok: false });
+  }
 
   const { data: me } = await admin
     .from("coaches")

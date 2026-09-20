@@ -89,6 +89,17 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   // Offre de lancement : /signup?offre=LANCEMENT (via madger.app/lancement)
   // mémorise le code, rattaché au compte à la fin de l'onboarding coach.
   const offerParam = (searchParams.get("offre") ?? "").trim().toUpperCase();
+  // Source d'acquisition (?src=grindars, lancement, fb-groupe…) : mémorisée,
+  // posée sur le compte à la fin de l'onboarding pour mesurer les canaux.
+  const srcParam = (searchParams.get("src") ?? "").trim().toLowerCase().slice(0, 40);
+  useEffect(() => {
+    if (!srcParam || role !== "coach") return;
+    try {
+      localStorage.setItem("madger_src", srcParam);
+    } catch {
+      /* stockage indisponible */
+    }
+  }, [srcParam, role]);
   const [launchOffer, setLaunchOffer] = useState(false);
   useEffect(() => {
     if (role !== "coach" || !launchLinkActive()) return;
