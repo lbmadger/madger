@@ -2,6 +2,7 @@ import dynamic from "next/dynamic";
 import MotionSettings from "@/components/ui/MotionSettings";
 import CtaClickTracker from "@/components/landing/CtaClickTracker";
 import Navbar from "@/components/Navbar";
+import LaunchCountdown from "@/components/LaunchCountdown";
 import HeroScrollExperience from "@/components/HeroScrollExperience";
 import TrustBar from "@/components/TrustBar";
 import ScrollBackground from "@/components/ScrollBackground";
@@ -55,6 +56,8 @@ export default function Home() {
         <StickyMobileCTA launched={launched} />
         <main id="main" tabIndex={-1} className="bg-bg relative" style={{ zIndex: 1 }}>
           <Navbar launched={launched} />
+          {/* Rendez-vous d'ouverture : pastille sous la barre jusqu'à l'heure dite. */}
+          <LaunchCountdown launched={launched} floating />
           <HeroScrollExperience launched={launched} />
           <div id="after-hero" />
           <TrustBar />

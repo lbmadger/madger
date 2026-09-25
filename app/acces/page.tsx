@@ -3,6 +3,7 @@
 import { Suspense, useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
 import MadgerLogo from "@/components/ui/MadgerLogo";
+import LaunchCountdown from "@/components/LaunchCountdown";
 
 // Page de saisie du code d'accès pré-lancement. Une fois le bon code entré,
 // le cookie est posé et l'utilisateur est redirigé vers sa destination.
@@ -75,6 +76,7 @@ function AccessForm() {
           Madger n&apos;est pas encore ouvert à tout le monde. Si tu as le
           code, tu fais partie des premiers.
         </p>
+        <LaunchCountdown />
 
         {/* key={shake} : remonte le formulaire à chaque erreur pour rejouer
             la secousse CSS. */}
