@@ -136,7 +136,7 @@ export const LAUNCH_LINK = {
   percentOff: 50,
   months: 3,
   // Dernier jour (inclus, heure de Paris) pour créer son compte par le lien.
-  claimUntil: "2026-09-30",
+  claimUntil: "2026-10-31",
   // Identifiant du coupon Stripe, créé à la volée s'il n'existe pas.
   stripeCouponId: "LANCEMENT50",
 } as const;
