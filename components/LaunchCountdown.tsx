@@ -27,7 +27,9 @@ export default function LaunchCountdown({
       const d = Math.floor(totalMin / 1440);
       const h = Math.floor((totalMin % 1440) / 60);
       const m = totalMin % 60;
-      setLeft(d > 0 ? `J-${d} ${h}h${String(m).padStart(2, "0")}` : h > 0 ? `${h}h${String(m).padStart(2, "0")}` : `${m} min`);
+      // Au-delà de 24 h : seulement le nombre de jours. Sous 24 h : les heures
+      // et minutes. Sous 1 h : les minutes.
+      setLeft(d > 0 ? `J-${d}` : h > 0 ? `${h}h${String(m).padStart(2, "0")}` : `${m} min`);
     }
     tick();
     const id = setInterval(tick, 15000);
