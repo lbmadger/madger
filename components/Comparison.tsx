@@ -171,16 +171,16 @@ export default function Comparison({ launched = false }: { launched?: boolean })
                   background: i % 2 === 0 ? "rgba(255,255,255,0.012)" : "transparent",
                   borderBottom: "1px solid rgba(255,255,255,0.04)",
                   padding: "0 20px",
-                  alignItems: "center",
+                  alignItems: "stretch",
                 }}
               >
-                <div className="py-3.5" style={{ fontSize: 13, color: "var(--text-soft)", lineHeight: 1.4, paddingRight: 12 }}>
+                <div className="py-3.5 flex items-center" style={{ fontSize: 13, color: "var(--text-soft)", lineHeight: 1.4, paddingRight: 12 }}>
                   {f.label}
                 </div>
                 {cols.map(({ key, highlight }) => (
                   <div
                     key={key}
-                    className="py-3.5"
+                    className="py-3.5 flex items-center"
                     style={{
                       background: highlight ? "rgba(203,255,3,0.04)" : "transparent",
                       borderLeft: highlight ? "1px solid rgba(203,255,3,0.12)" : "1px solid rgba(255,255,255,0.04)",
@@ -200,23 +200,21 @@ export default function Comparison({ launched = false }: { launched?: boolean })
                 gridTemplateColumns: "1.5fr repeat(4, 1fr)",
                 background: "#141414",
                 borderTop: "1px solid rgba(255,255,255,0.06)",
-                padding: "16px 20px",
-                alignItems: "center",
+                padding: "0 20px",
+                alignItems: "stretch",
               }}
             >
-              <div style={{ fontSize: 11, color: "var(--text-dim)" }}>
+              <div className="flex items-center py-4" style={{ fontSize: 11, color: "var(--text-dim)", paddingRight: 12 }}>
                 ✓ 0 € tant que tu ne vends pas, puis 7 % par séance encaissée, frais de transaction inclus
               </div>
               {cols.map(({ key, label, highlight }) => (
                 <div
                   key={key}
-                  className="px-3 py-4 text-center"
+                  className="px-3 py-5 text-center flex items-center"
                   style={{
                     background: highlight ? "rgba(203,255,3,0.04)" : "transparent",
                     borderLeft: highlight ? "1px solid rgba(203,255,3,0.12)" : "1px solid rgba(255,255,255,0.04)",
                     borderRight: highlight ? "1px solid rgba(203,255,3,0.12)" : "none",
-                    borderBottom: highlight ? "1px solid rgba(203,255,3,0.12)" : "none",
-                    borderRadius: highlight ? "0 0 8px 8px" : undefined,
                   }}
                 >
                   {highlight ? (
@@ -228,7 +226,7 @@ export default function Comparison({ launched = false }: { launched?: boolean })
                       Commencer
                     </a>
                   ) : (
-                    <span style={{ fontSize: 10, color: "#3A3A3A" }}>{label}</span>
+                    <span className="w-full" style={{ fontSize: 10, color: "#3A3A3A" }}>{label}</span>
                   )}
                 </div>
               ))}

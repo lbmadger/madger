@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import SectionLabel from "@/components/ui/SectionLabel";
 import MadgerLogo from "@/components/ui/MadgerLogo";
@@ -50,6 +51,10 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
   const ctaHref = launched ? "/signup" : "#early-access";
   const monthly = currentMonthlyCents() / 100;
   const annual = currentAnnualCents() / 100;
+  // Sélecteur mensuel / annuel de la landing : même choix que sur la page
+  // Abonnement du tableau de bord.
+  const [period, setPeriod] = useState<"monthly" | "annual">("monthly");
+  const annualMonthlyEq = Math.round(annual / 12);
   // Chiffre d'affaires mensuel au-delà duquel Pro coûte moins cher
   // qu'Essentiel : abonnement / écart de taux (jamais un montant en dur).
   const breakeven = Math.round(
@@ -78,15 +83,13 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
             style={{ fontSize: "clamp(32px, 4.5vw, 58px)", letterSpacing: "-0.035em", lineHeight: 1.04 }}
           >
             Tu ne vends pas ? Tu ne paies pas.<br />
-            <span style={{
-              background: "linear-gradient(90deg, #CBFF03, #a8e600)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}>Essentiel : {FEE_RATE_BPS.essential / 100} % par séance. Pro : {monthly} € par mois et {FEE_RATE_BPS.pro / 100} %. Frais de transaction inclus.</span>
+            <span className="text-shimmer">Essentiel : {FEE_RATE_BPS.essential / 100} % par séance. Pro : {monthly} € par mois et {FEE_RATE_BPS.pro / 100} %.</span>
           </h2>
-          <p className="text-text-muted text-lg max-w-lg mx-auto mb-6" style={{ lineHeight: 1.6 }}>
-            Essentiel pour démarrer sans risque. Pro pour garder plus sur chaque séance et automatiser le reste. 7 jours d&apos;essai, sans engagement.
+          <p className="text-text-dim text-sm mb-4" style={{ letterSpacing: "0.01em" }}>
+            Frais de transaction inclus.
+          </p>
+          <p className="text-text-muted text-lg max-w-md mx-auto mb-6" style={{ lineHeight: 1.6 }}>
+            Essentiel pour démarrer. Pro pour garder plus et automatiser le reste, 7 jours d&apos;essai.
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8" style={{ background: "rgba(203,255,3,0.07)", border: "1px solid rgba(203,255,3,0.18)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-accent block" style={{ background: "#CBFF03" }} />
@@ -102,6 +105,22 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
             </span>
           </div>
         </motion.div>
+
+        <div className="flex justify-center mb-2">
+          <div className="inline-flex rounded-full p-1" style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.08)" }}>
+            {(["monthly", "annual"] as const).map((opt) => (
+              <button
+                key={opt}
+                type="button"
+                onClick={() => setPeriod(opt)}
+                className="rounded-full px-4 py-1.5 text-xs font-semibold transition-colors"
+                style={period === opt ? { background: "#CBFF03", color: "#000" } : { color: "#9a9a9a" }}
+              >
+                {opt === "monthly" ? "Mensuel" : "Annuel · 2 mois offerts"}
+              </button>
+            ))}
+          </div>
+        </div>
 
         <div className="grid grid-cols-2 gap-4 sm:gap-8 max-w-3xl mx-auto pt-6" style={{ overflow: "visible" }}>
 
@@ -194,8 +213,8 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
 
               <div className="flex flex-col gap-2 pt-2">
                 <div className="font-extrabold text-white flex flex-wrap items-end gap-x-2" style={{ fontSize: "clamp(22px, 5.5vw, 44px)", letterSpacing: "-0.04em", lineHeight: 1.05 }}>
-                  <span>{monthly} €</span>
-                  {launchOfferActive() && (
+                  <span>{period === "annual" ? annual : monthly} €</span>
+                  {period === "monthly" && launchOfferActive() && (
                     <span
                       aria-label={`${LAUNCH_OFFER.regularMonthlyCents / 100} € à partir du ${launchOfferRegularFromLabel("fr")}`}
                       style={{ fontSize: "0.5em", fontWeight: 700, color: "#EF4444", textDecoration: "line-through", textDecorationThickness: "2px", marginBottom: "0.1em" }}
@@ -203,36 +222,23 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
                       {LAUNCH_OFFER.regularMonthlyCents / 100} €
                     </span>
                   )}
-                  <span style={{ fontSize: "0.45em", fontWeight: 700, color: "#9a9a9a" }}>/ mois</span>
+                  <span style={{ fontSize: "0.45em", fontWeight: 700, color: "#9a9a9a" }}>{period === "annual" ? "/ an" : "/ mois"}</span>
                 </div>
                 {/* Le taux juste sous le prix, comme sur la carte Essentiel :
                     les deux lignes se lisent d'un coup. */}
                 <div className="text-white text-sm">
-                  + {FEE_RATE_BPS.pro / 100} % par séance encaissée, frais de transaction inclus.
+                  {FEE_RATE_BPS.pro / 100} % par séance encaissée, frais de transaction inclus.
                 </div>
-                {launchOfferActive() && (
-                  <div className="text-[11px]" style={{ color: "#8C8C8C" }}>
-                    <span style={{ color: "#F87171" }}>{LAUNCH_OFFER.regularMonthlyCents / 100} €</span> tarif à partir du {launchOfferRegularFromLabel("fr")}
-                  </div>
-                )}
                 <div className="text-text-muted text-xs">
-                  ou {annual} € par an (2 mois offerts) · 7 jours d'essai gratuits
+                  {period === "annual"
+                    ? `soit ${annualMonthlyEq} € par mois, 2 mois offerts · 7 jours d'essai gratuits`
+                    : `ou ${annual} € par an (2 mois offerts) · 7 jours d'essai gratuits`}
                 </div>
               </div>
-              {launchOfferActive() && (
-                <div className="mt-4 mb-6 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold leading-snug sm:mb-8" style={{ background: "rgba(203,255,3,0.08)", border: "1px solid rgba(203,255,3,0.25)", color: "#CBFF03" }}>
-                  {(() => {
-                    const o = monthlyOffer("fr");
-                    return o
-                      ? `${o.name} · ${o.daysLeft <= 1 ? "dernier jour" : `plus que ${o.daysLeft} jours`} · ${monthly} € par mois bloqués tant que tu restes abonné`
-                      : "Prix de lancement, bloqué tant que tu restes abonné";
-                  })()}
-                </div>
-              )}
 
               <motion.a
                 href={ctaHref}
-                className="block w-full text-center text-black text-xs sm:text-sm font-semibold py-2.5 sm:py-3 rounded-full whitespace-nowrap"
+                className="mt-6 block w-full text-center text-black text-xs sm:text-sm font-semibold py-2.5 sm:py-3 rounded-full whitespace-nowrap"
                 style={{ background: "#CBFF03" }}
                 whileHover={{ boxShadow: "0 0 30px rgba(203,255,3,0.5), 0 0 60px rgba(203,255,3,0.2)" }}
                 transition={{ duration: 0.2 }}
