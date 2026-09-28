@@ -8,7 +8,7 @@ import { sendEmail } from "@/lib/email/resend";
 // LANCEMENT (sortie de l'accès anticipé). Chaque membre reçoit SON code par
 // email. Protégé par un secret ; réservé à un usage serveur (service role).
 //
-// Appel : POST /api/admin/send-promo-codes?secret=XXX
+// Appel : POST /api/admin/send-promo-codes avec Authorization: Bearer XXX
 // (XXX = variable d'env PROMO_SEND_SECRET). Réexécutable : n'envoie qu'aux
 // codes pas encore envoyés (sent_at is null).
 
@@ -57,7 +57,8 @@ export async function POST(req: NextRequest) {
   // admin connectée (bouton de /admin/emails au jour du lancement).
   const auth = req.headers.get("authorization");
   const bearer = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
-  const secret = bearer ?? new URL(req.url).searchParams.get("secret");
+  // Jamais en paramètre d'URL : il finirait dans les journaux et l'historique.
+  const secret = bearer;
   const secretOk = Boolean(
     process.env.PROMO_SEND_SECRET && secret === process.env.PROMO_SEND_SECRET
   );

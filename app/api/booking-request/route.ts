@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimitAllowed } from "@/lib/rateLimit";
 import { createClient } from "@supabase/supabase-js";
 import { NO_STORE } from "@/lib/supabase/noStore";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/supabase/config";
@@ -56,6 +57,11 @@ export async function POST(req: NextRequest) {
       req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
       "unknown";
     if (isRateLimited(ip)) {
+      return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+    }
+    // Même limite, partagée entre les instances (la Map ci-dessus est par
+    // instance et repart de zéro à chaque démarrage à froid).
+    if (!(await rateLimitAllowed("booking_request", ip, RATE_MAX, Math.round(RATE_WINDOW_MS / 1000)))) {
       return NextResponse.json({ error: "rate_limited" }, { status: 429 });
     }
 

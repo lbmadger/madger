@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimitAllowed } from "@/lib/rateLimit";
 import { siteLaunched } from "@/lib/launch";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/resend";
 
 // Route dynamique : pas de mise en cache, le count doit être lu à chaque appel.
@@ -12,10 +14,9 @@ export const dynamic = "force-dynamic";
 let _supabase: SupabaseClient | null = null;
 function getSupabase() {
   if (!_supabase) {
-    _supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const admin = createAdminClient();
+    if (!admin) throw new Error("SUPABASE_SERVICE_ROLE_KEY manquante");
+    _supabase = admin;
   }
   return _supabase;
 }
@@ -104,6 +105,11 @@ export async function POST(req: NextRequest) {
       req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
       "unknown";
     if (isRateLimited(ip)) {
+      return NextResponse.json({ error: "Trop de tentatives. Réessayez plus tard." }, { status: 429 });
+    }
+    // Même limite, partagée entre les instances (la Map ci-dessus est par
+    // instance et repart de zéro à chaque démarrage à froid).
+    if (!(await rateLimitAllowed("early_access", ip, RATE_MAX, Math.round(RATE_WINDOW_MS / 1000)))) {
       return NextResponse.json({ error: "Trop de tentatives. Réessayez plus tard." }, { status: 429 });
     }
 

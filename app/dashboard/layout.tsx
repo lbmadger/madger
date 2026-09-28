@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { likeEscape } from "@/lib/utils/like";
 import { redirect } from "next/navigation";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { getServerDictionary } from "@/lib/i18n/server";
@@ -98,7 +99,7 @@ async function hasClientSpace(userId: string, email: string | null): Promise<boo
     const [{ data: profile }, { data: clientRow }] = await Promise.all([
       admin.from("client_profiles").select("id").eq("id", userId).maybeSingle(),
       email
-        ? admin.from("clients").select("id").ilike("email", email.trim().toLowerCase()).limit(1).maybeSingle()
+        ? admin.from("clients").select("id").ilike("email", likeEscape(email.trim().toLowerCase())).limit(1).maybeSingle()
         : Promise.resolve({ data: null }),
     ]);
     return !!profile || !!clientRow;

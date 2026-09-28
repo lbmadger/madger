@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimitAllowed } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +71,11 @@ export async function GET(req: NextRequest) {
   if (isRateLimited(ip)) {
     return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
+    // Même limite, partagée entre les instances (la Map ci-dessus est par
+    // instance et repart de zéro à chaque démarrage à froid).
+    if (!(await rateLimitAllowed("gyms", ip, RATE_MAX, Math.round(RATE_WINDOW_MS / 1000)))) {
+      return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+    }
 
   const q = (req.nextUrl.searchParams.get("q") ?? "").trim().slice(0, 120);
   if (q.length < 3) return NextResponse.json({ gyms: [] });

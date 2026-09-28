@@ -1,4 +1,5 @@
 import type Stripe from "stripe";
+import { likeEscape } from "@/lib/utils/like";
 import { createClient } from "@supabase/supabase-js";
 import { NO_STORE } from "@/lib/supabase/noStore";
 import { getStripe } from "@/lib/stripe/server";
@@ -49,7 +50,7 @@ export async function fulfillSubscriptionSession(
       .from("clients")
       .select("id")
       .eq("coach_id", m.coach_id)
-      .ilike("email", m.email)
+      .ilike("email", likeEscape(m.email))
       .maybeSingle();
     clientId = c?.id ?? null;
   }

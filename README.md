@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Madger
 
-## Getting Started
+SaaS et marketplace pour coachs sportifs : page publique, réservation et paiement des séances, packs, abonnements, cours collectifs, agenda, messagerie, versements Stripe Connect.
 
-First, run the development server:
+Stack : Next.js 14 (App Router), Supabase (Postgres, Auth, Storage), Stripe (Checkout, Connect), Resend (emails), Vercel (hébergement, région cdg1).
+
+## Démarrer en local
 
 ```bash
+npm ci
+cp .env.example .env.local   # puis renseigner les clés
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Vérifications avant de pousser :
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+./node_modules/.bin/tsc --noEmit -p .
+./node_modules/.bin/next lint --max-warnings=0
+npm test
+npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Variables d'environnement
 
-## Learn More
+Toutes sont décrites dans `.env.example` (obligatoires, optionnelles, valeurs de repli). En production elles vivent dans Vercel, Settings puis Environment Variables. La clé service role et la clé secrète Stripe ne sont jamais dans le code ni dans un fichier commité.
 
-To learn more about Next.js, take a look at the following resources:
+## Lancement du site
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Avant l'ouverture, le site est verrouillé par un code d'accès (cookie `madger_access`, valeur `APP_ACCESS_CODE`). Deux façons d'ouvrir :
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Poser `SITE_LAUNCHED=1` dans Vercel et redéployer.
+2. Ne rien faire : `lib/launch.ts` ouvre le site de lui-même à la date `LAUNCH_AT` (dimanche 4 octobre 2026, 18h à Paris).
 
-## Deploy on Vercel
+Le middleware, la landing, le sitemap, l'image de partage et les pages de démonstration lisent tous `siteLaunched()`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Crons
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Vercel Hobby n'accepte que deux crons planifiés (`vercel.json`). Les deux autres tournent sur cron-job.org. Tous exigent l'en-tête `Authorization: Bearer <CRON_SECRET>` et répondent 401 sinon.
+
+| Route | Planificateur | Cadence | Rôle |
+| --- | --- | --- | --- |
+| `/api/cron/release` | Vercel | tous les jours à 2h UTC | libère les paiements 24 h après la séance, versements, demandes d'avis |
+| `/api/cron/reminders` | Vercel | tous les jours à 7h UTC | rappels 24 h, relances, récap hebdo le lundi |
+| `/api/cron/reminders-soon` | cron-job.org | toutes les 15 min | rappel 1 h avant la séance |
+| `/api/cron/weekly-recap` | cron-job.org | lundi matin | récap hebdo (idempotent, même marqueur que le cron quotidien) |
+
+## Base de données
+
+Le schéma vit dans `supabase/migrations/` (numérotées). Chaque migration est appliquée sur le projet Supabase puis vérifiée en base. Règles : RLS sur toutes les tables, grants par colonne pour toute colonne écrite depuis le navigateur, colonnes sensibles écrites par le serveur uniquement (service role).
+
+## Webhooks Stripe
+
+`/api/stripe/webhook` vérifie la signature avec `STRIPE_WEBHOOK_SECRET`, et accepte un second secret `STRIPE_CONNECT_WEBHOOK_SECRET` pour un éventuel endpoint « comptes connectés » (`account.updated`). Sans ce second endpoint, l'état Stripe du coach est rafraîchi à l'affichage du dashboard.
+
+## Emails
+
+Gabarits dans `lib/email/templates.ts` (français, tutoiement, anglais pour les coachs en locale `en`). Les champs saisis par les utilisateurs sont échappés avant insertion dans le HTML. Envoi via Resend (`lib/email/resend.ts`).

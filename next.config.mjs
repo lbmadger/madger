@@ -14,7 +14,17 @@ const nextConfig = {
     const cache = [
       { key: "Cache-Control", value: "public, max-age=2592000, stale-while-revalidate=86400" },
     ];
+    // En-têtes de sécurité sur toutes les pages : pas d'encadrement par un
+    // site tiers (clickjacking sur le paiement ou le dashboard), pas de
+    // devinette de type MIME, referer réduit hors du site. Les iframes
+    // Stripe vivent DANS nos pages : elles ne sont pas concernées.
+    const security = [
+      { key: "X-Frame-Options", value: "SAMEORIGIN" },
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+    ];
     return [
+      { source: "/(.*)", headers: security },
       { source: "/logo.png", headers: cache },
       { source: "/character/:path*", headers: cache },
       { source: "/landing/:path*", headers: cache },

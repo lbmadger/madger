@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { likeEscape } from "@/lib/utils/like";
 import { coachPlaceStr } from "@/lib/coach/place";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdmin } from "@supabase/supabase-js";
@@ -78,7 +79,7 @@ export async function POST(req: NextRequest) {
     .from("clients")
     .select("id, first_name, last_name, email")
     .eq("coach_id", coachId)
-    .ilike("email", user.email.trim().toLowerCase())
+    .ilike("email", likeEscape(user.email.trim().toLowerCase()))
     .limit(1)
     .maybeSingle();
   if (!clientRow) {

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { rateLimitAllowed } from "@/lib/rateLimit";
 import type Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import { createClient as createSessionClient } from "@/lib/supabase/server";
@@ -63,6 +64,11 @@ export async function POST(req: NextRequest) {
   if (isRateLimited(user.id) || isRateLimited(`ip:${ip}`)) {
     return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
+    // Même limite, partagée entre les instances (la Map ci-dessus est par
+    // instance et repart de zéro à chaque démarrage à froid).
+    if (!(await rateLimitAllowed("checkout", `${user.id}|${ip}`, RATE_MAX, Math.round(RATE_WINDOW_MS / 1000)))) {
+      return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+    }
 
   const origin = new URL(req.url).origin;
   const body = await req.json();

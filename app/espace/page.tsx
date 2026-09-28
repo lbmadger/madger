@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { likeEscape } from "@/lib/utils/like";
 import { coachPlaceStr } from "@/lib/coach/place";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { getServerDictionary } from "@/lib/i18n/server";
@@ -44,7 +45,7 @@ export default async function ClientSpacePage() {
     const { data: clientRows } = await admin
       .from("clients")
       .select("id")
-      .ilike("email", email);
+      .ilike("email", likeEscape(email));
     const clientIds = (clientRows ?? []).map((c) => c.id as string);
 
     if (clientIds.length > 0) {

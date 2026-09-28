@@ -1,4 +1,5 @@
 import type Stripe from "stripe";
+import { likeEscape } from "@/lib/utils/like";
 import { coachPlaceStr } from "@/lib/coach/place";
 import { createClient } from "@supabase/supabase-js";
 import { NO_STORE } from "@/lib/supabase/noStore";
@@ -223,7 +224,7 @@ export async function fulfillCheckoutSession(
       .from("clients")
       .select("id")
       .eq("coach_id", m.coach_id)
-      .ilike("email", m.email)
+      .ilike("email", likeEscape(m.email))
       .order("created_at", { ascending: true })
       .limit(1);
     clientId = (c?.[0]?.id as string | undefined) ?? null;

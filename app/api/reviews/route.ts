@@ -4,6 +4,7 @@ import { NO_STORE } from "@/lib/supabase/noStore";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
 import { newReviewCoach } from "@/lib/email/templates";
+import { clientIp, rateLimitAllowed } from "@/lib/rateLimit";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
@@ -11,7 +12,12 @@ export const dynamic = "force-dynamic";
 
 // Dépôt d'un avis après une séance. Vérifications :
 //  - la séance existe, n'est pas annulée, et est TERMINÉE ;
-//  - l'email fourni correspond au client de la réservation.
+//  - l'email fourni correspond au client de la réservation ;
+//  - la séance a été réellement ACHETÉE sur Madger (paiement encaissé pour
+//    cette réservation ou pour ce client chez ce coach, ou crédit d'un pack
+//    payé). Une séance créée à la main par le coach depuis son agenda, avec
+//    une fiche client libre, n'ouvre pas le droit de noter : sinon un coach
+//    pourrait se fabriquer des avis.
 // Puis upsert sur (coach_id, client_id) : 1 client = 1 avis par coach — un
 // nouvel avis remplace l'ancien (note et commentaire mis à jour).
 export async function POST(req: NextRequest) {
@@ -30,11 +36,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
   }
 
+  const ip = clientIp(req);
+  if (
+    !(await rateLimitAllowed("reviews_ip", ip, 20, 3600)) ||
+    !(await rateLimitAllowed("reviews_booking", bookingId, 5, 3600))
+  ) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+  }
+
   const supabase = createClient(SUPABASE_URL, serviceKey, NO_STORE);
 
   const { data: booking } = await supabase
     .from("bookings")
-    .select("id, coach_id, client_id, ends_at, status")
+    .select("id, coach_id, client_id, pack_credit_id, ends_at, status")
     .eq("id", bookingId)
     .maybeSingle();
   if (!booking || !booking.client_id) {
@@ -54,6 +68,26 @@ export async function POST(req: NextRequest) {
     .maybeSingle();
   if (!client?.email || client.email.trim().toLowerCase() !== email) {
     return NextResponse.json({ error: "email_mismatch" }, { status: 403 });
+  }
+
+  const [{ count: paidCount }, packRes] = await Promise.all([
+    supabase
+      .from("payments")
+      .select("id", { count: "exact", head: true })
+      .eq("coach_id", booking.coach_id)
+      .or(`booking_id.eq.${booking.id},client_id.eq.${booking.client_id}`)
+      .in("escrow_status", ["held", "released", "disputed"]),
+    booking.pack_credit_id
+      ? supabase
+          .from("pack_credits")
+          .select("payment_id")
+          .eq("id", booking.pack_credit_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null as { payment_id?: string | null } | null }),
+  ]);
+  const paidPack = Boolean(packRes.data?.payment_id);
+  if (!(paidCount ?? 0) && !paidPack) {
+    return NextResponse.json({ error: "not_eligible" }, { status: 409 });
   }
 
   // Nouvel avis ou mise à jour ? (le coach n'est prévenu que d'un NOUVEL
