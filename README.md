@@ -47,7 +47,7 @@ Vercel Hobby n'accepte que deux crons planifiés (`vercel.json`). Les deux autre
 
 ## Base de données
 
-Le schéma vit dans `supabase/migrations/` (numérotées). Chaque migration est appliquée sur le projet Supabase puis vérifiée en base. Règles : RLS sur toutes les tables, grants par colonne pour toute colonne écrite depuis le navigateur, colonnes sensibles écrites par le serveur uniquement (service role).
+Le schéma vit dans `supabase/migrations/` (numérotées). Chaque migration est appliquée sur le projet Supabase via l'outil `apply_migration` du connecteur Supabase (jamais `supabase db push` : l'historique des migrations 0001 à 0071 a été joué depuis l'éditeur SQL et n'est pas tracé dans `schema_migrations`, un push rejouerait tout), puis vérifiée en base. Règles : RLS sur toutes les tables, grants par colonne pour toute colonne écrite depuis le navigateur, colonnes sensibles écrites par le serveur uniquement (service role).
 
 ## Webhooks Stripe
 

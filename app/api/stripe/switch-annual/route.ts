@@ -69,8 +69,9 @@ export async function POST() {
         proration_behavior: "create_prorations",
         // L'offre du lien de lancement (50 % pendant trois mois) ne vaut que
         // pour le mensuel : sans ceci, le coupon s'appliquait à l'année
-        // entière (245 € au lieu de 490 €).
-        discounts: [],
+        // entière (245 € au lieu de 490 €). Chaîne vide et non tableau vide :
+        // stripe-node n'envoie pas un tableau vide, seule "" efface.
+        discounts: "",
         // Une éventuelle résiliation programmée est annulée : il reste.
         cancel_at_period_end: false,
         metadata: { ...sub.metadata, plan: "annual", launch_offer: "" },

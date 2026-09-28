@@ -32,21 +32,23 @@ export default function ResetPasswordPage() {
         return;
       }
       setOkMsg(true);
-      // Redirection selon le RÔLE : un client n'a rien à faire sur l'espace
-      // coach. Repli sur /espace si le profil est illisible (moins pire
-      // qu'envoyer un client sur /dashboard).
+      // Redirection selon ce que le compte EST : une fiche coach existe →
+      // dashboard, sinon espace client. profiles.role est figé à
+      // l'inscription et se trompe pour un client devenu coach. Repli sur
+      // /espace si la lecture échoue (moins pire qu'envoyer un client sur
+      // /dashboard).
       let dest = "/espace";
       try {
         const {
           data: { user },
         } = await supabase.auth.getUser();
         if (user) {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("role")
+          const { data: coachRow } = await supabase
+            .from("coaches")
+            .select("id")
             .eq("id", user.id)
             .maybeSingle();
-          if (profile?.role === "coach") dest = "/dashboard";
+          if (coachRow) dest = "/dashboard";
         }
       } catch {
         /* repli /espace */

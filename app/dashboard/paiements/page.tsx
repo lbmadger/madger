@@ -51,10 +51,13 @@ export default async function PaymentsPage() {
       .select("amount_cents, release_after, refunded_cents, fee_rate_bps, stripe_fee_cents, payment_method")
       .eq("escrow_status", "held")
       .not("paid_at", "is", null),
+    // Versé : libéré après la séance, OU annulation tardive du client dont
+    // le montant est parti au coach (escrow canceled avec payout_cents).
     supabase
       .from("payments")
       .select("payout_cents, commission_cents")
-      .eq("escrow_status", "released")
+      .in("escrow_status", ["released", "canceled"])
+      .gt("payout_cents", 0)
       .gte("paid_at", monthStart.toISOString()),
   ]);
 

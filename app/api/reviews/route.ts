@@ -5,6 +5,7 @@ import { SUPABASE_URL } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
 import { newReviewCoach } from "@/lib/email/templates";
 import { clientIp, rateLimitAllowed } from "@/lib/rateLimit";
+import { reviewEligible } from "@/lib/reviews/eligibility";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 
@@ -70,23 +71,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "email_mismatch" }, { status: 403 });
   }
 
-  const [{ count: paidCount }, packRes] = await Promise.all([
-    supabase
-      .from("payments")
-      .select("id", { count: "exact", head: true })
-      .eq("coach_id", booking.coach_id)
-      .or(`booking_id.eq.${booking.id},client_id.eq.${booking.client_id}`)
-      .in("escrow_status", ["held", "released", "disputed"]),
-    booking.pack_credit_id
-      ? supabase
-          .from("pack_credits")
-          .select("payment_id")
-          .eq("id", booking.pack_credit_id)
-          .maybeSingle()
-      : Promise.resolve({ data: null as { payment_id?: string | null } | null }),
-  ]);
-  const paidPack = Boolean(packRes.data?.payment_id);
-  if (!(paidCount ?? 0) && !paidPack) {
+  if (!(await reviewEligible(supabase, booking))) {
     return NextResponse.json({ error: "not_eligible" }, { status: 409 });
   }
 

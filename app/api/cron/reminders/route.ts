@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { reviewEligible } from "@/lib/reviews/eligibility";
 import { coachPlaceStr } from "@/lib/coach/place";
 import { createClient } from "@supabase/supabase-js";
 import { NO_STORE } from "@/lib/supabase/noStore";
@@ -199,7 +200,7 @@ export async function GET(req: NextRequest) {
     const { data: candidates } = await supabase
       .from("bookings")
       .select(
-        "id, coach_id, client_id, clients(email), coaches(first_name, last_name)"
+        "id, coach_id, client_id, pack_credit_id, clients(email), coaches(first_name, last_name)"
       )
       // "completed" n'est posé que par le versement (cron release) : une
       // séance ajoutée à la main par le coach, payée en espèces ou hors
@@ -230,7 +231,11 @@ export async function GET(req: NextRequest) {
         hasReview = Boolean(rev);
       }
 
-      if (hasReview || !email) {
+      // Séance non achetée sur Madger (posée à la main, sans paiement) : le
+      // dépôt d'avis la refuserait, on n'invite pas.
+      const eligible =
+        !hasReview && Boolean(email) && (await reviewEligible(supabase, b));
+      if (hasReview || !email || !eligible) {
         await supabase
           .from("bookings")
           .update({ review_reminder_sent_at: nowIso })
