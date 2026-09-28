@@ -40,7 +40,9 @@ export async function GET(req: NextRequest) {
 
   const supabase = createClient(SUPABASE_URL, serviceKey, NO_STORE);
   const now = Date.now();
-  const soon = new Date(now + 24 * 60 * 60 * 1000).toISOString();
+  // 27 h et non 24 : le cron tourne à 7 h UTC. Avec 24 h, une séance du
+  // lendemain 8 h UTC n'était rappelée que le jour même, une heure avant.
+  const soon = new Date(now + 27 * 60 * 60 * 1000).toISOString();
   const nowIso = new Date(now).toISOString();
 
   // Traité PAR LOTS jusqu'à épuisement (ou fin du budget temps) : tous les
@@ -61,6 +63,9 @@ export async function GET(req: NextRequest) {
       .eq("status", "confirmed")
       .eq("is_block", false)
       .is("reminder_sent_at", null)
+      // Demande d'annulation en attente : pas de rappel tant que le coach
+      // n'a pas tranché (le rappel partira s'il refuse).
+      .is("client_cancel_requested_at", null)
       .gt("starts_at", nowIso)
       .lte("starts_at", soon)
       .limit(100);

@@ -24,6 +24,18 @@ const C = {
 const FONT =
   "font-family:Inter,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;";
 
+// Échappe les champs saisis par un client ou un coach (prénom, nom de
+// prestation, nom de pack…) avant insertion dans le HTML : un « < » dans un
+// prénom ne casse pas la mise en page et rien ne s'exécute chez le
+// destinataire. Les sujets restent en clair (texte brut, aucune entité).
+function escHtml(s: string): string {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 // Ligne de détail (libellé à gauche, valeur à droite).
 export type DetailRow = { label: string; value: string; accent?: boolean };
 
@@ -35,8 +47,8 @@ function detailsTable(rows: DetailRow[]): string {
           ? `border-bottom:1px solid ${C.border};`
           : "";
       return `<tr>
-        <td style="${FONT}padding:13px 18px;${border}font-size:13px;color:${C.muted};white-space:nowrap;">${r.label}</td>
-        <td align="right" style="${FONT}padding:13px 18px;${border}font-size:14px;font-weight:${r.accent ? "800" : "600"};color:${r.accent ? C.accent : C.text};">${r.value}</td>
+        <td style="${FONT}padding:13px 18px;${border}font-size:13px;color:${C.muted};white-space:nowrap;">${escHtml(r.label)}</td>
+        <td align="right" style="${FONT}padding:13px 18px;${border}font-size:14px;font-weight:${r.accent ? "800" : "600"};color:${r.accent ? C.accent : C.text};">${escHtml(r.value)}</td>
       </tr>`;
     })
     .join("");
@@ -209,10 +221,10 @@ export function bookingConfirmationClient(p: {
       eyebrow: "Réservation confirmée",
       title: "C'est réservé. À toi de jouer 💪",
       intro: p.pack
-        ? `Ton pack de <b style="color:${C.text};">${p.pack.size} séances</b> avec <b style="color:${C.text};">${p.coachName}</b> est confirmé et ton paiement est bien enregistré. Ta première séance est déjà réservée, tu places les suivantes depuis ton espace. Voici le récap :`
+        ? `Ton pack de <b style="color:${C.text};">${p.pack.size} séances</b> avec <b style="color:${C.text};">${escHtml(p.coachName)}</b> est confirmé et ton paiement est bien enregistré. Ta première séance est déjà réservée, tu places les suivantes depuis ton espace. Voici le récap :`
         : p.groupName
-        ? `Ta place au cours <b style="color:${C.text};">${p.groupName}</b> avec <b style="color:${C.text};">${p.coachName}</b> est confirmée et ton paiement est bien enregistré. Voici le récap :`
-        : `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> est confirmée et ton paiement est bien enregistré. Voici le récap :`,
+        ? `Ta place au cours <b style="color:${C.text};">${escHtml(p.groupName)}</b> avec <b style="color:${C.text};">${escHtml(p.coachName)}</b> est confirmée et ton paiement est bien enregistré. Voici le récap :`
+        : `Ta séance avec <b style="color:${C.text};">${escHtml(p.coachName)}</b> est confirmée et ton paiement est bien enregistré. Voici le récap :`,
       blocks: [
         detailsTable([
           { label: "Coach", value: p.coachName },
@@ -260,12 +272,12 @@ export function bookingNotificationCoach(p: {
           subject: p.pack
             ? `New pack sold: ${p.clientName} · ${p.pack.size} sessions`
             : `New booking: ${p.clientName} · ${p.dateStr}`,
-          preheader: `${p.clientName} booked and paid for "${p.serviceName}" · ${p.priceStr}.`,
+          preheader: `${escHtml(p.clientName)} booked and paid for "${escHtml(p.serviceName)}" · ${p.priceStr}.`,
           eyebrow: "New booking",
           title: "A client just booked 🎉",
           intro: p.pack
-            ? `Good news: <b style="color:${C.text};">${p.clientName}</b> bought <b style="color:${C.text};">and paid for</b> a ${p.pack.size}-session pack. The first session is already in your calendar; the client books the others from their space.`
-            : `Good news: <b style="color:${C.text};">${p.clientName}</b> booked <b style="color:${C.text};">and paid for</b> a session. It's already in your calendar.`,
+            ? `Good news: <b style="color:${C.text};">${escHtml(p.clientName)}</b> bought <b style="color:${C.text};">and paid for</b> a ${p.pack.size}-session pack. The first session is already in your calendar; the client books the others from their space.`
+            : `Good news: <b style="color:${C.text};">${escHtml(p.clientName)}</b> booked <b style="color:${C.text};">and paid for</b> a session. It's already in your calendar.`,
           client: "Client",
           service: "Service",
           dateTime: "Date & time",
@@ -283,12 +295,12 @@ export function bookingNotificationCoach(p: {
           subject: p.pack
             ? `Nouveau pack vendu : ${p.clientName} · ${p.pack.size} séances`
             : `Nouvelle réservation : ${p.clientName} · ${p.dateStr}`,
-          preheader: `${p.clientName} a réservé et payé « ${p.serviceName} » · ${p.priceStr}.`,
+          preheader: `${escHtml(p.clientName)} a réservé et payé « ${escHtml(p.serviceName)} » · ${p.priceStr}.`,
           eyebrow: "Nouvelle réservation",
           title: "Un client vient de réserver 🎉",
           intro: p.pack
-            ? `Bonne nouvelle : <b style="color:${C.text};">${p.clientName}</b> a acheté <b style="color:${C.text};">et payé</b> un pack de ${p.pack.size} séances. La première est déjà dans ton agenda, le client place les suivantes depuis son espace.`
-            : `Bonne nouvelle : <b style="color:${C.text};">${p.clientName}</b> a réservé <b style="color:${C.text};">et payé</b> une séance. Elle est déjà dans ton agenda.`,
+            ? `Bonne nouvelle : <b style="color:${C.text};">${escHtml(p.clientName)}</b> a acheté <b style="color:${C.text};">et payé</b> un pack de ${p.pack.size} séances. La première est déjà dans ton agenda, le client place les suivantes depuis son espace.`
+            : `Bonne nouvelle : <b style="color:${C.text};">${escHtml(p.clientName)}</b> a réservé <b style="color:${C.text};">et payé</b> une séance. Elle est déjà dans ton agenda.`,
           client: "Client",
           service: "Prestation",
           dateTime: "Date & heure",
@@ -345,7 +357,7 @@ export function requestReceivedClient(p: {
         preheader: `Ton créneau du ${p.dateStr} est confirmé.`,
         eyebrow: "Réservation confirmée",
         title: "C'est réservé 💪",
-        intro: `Ton créneau du <b style="color:${C.text};">${p.dateStr}</b> avec <b style="color:${C.text};">${p.coachName}</b> est confirmé.`,
+        intro: `Ton créneau du <b style="color:${C.text};">${p.dateStr}</b> avec <b style="color:${C.text};">${escHtml(p.coachName)}</b> est confirmé.`,
         blocks: meetCalLinks(p.meetUrl, p.calendarUrl, p.icsUrl),
         cta: { label: "Voir ma réservation", url: p.reservationUrl },
       }),
@@ -354,15 +366,15 @@ export function requestReceivedClient(p: {
   return {
     subject: `Demande envoyée à ${p.coachName} ⏳`,
     html: layout({
-      preheader: `${p.coachName} doit confirmer le créneau du ${p.dateStr}.`,
+      preheader: `${escHtml(p.coachName)} doit confirmer le créneau du ${p.dateStr}.`,
       eyebrow: "Demande envoyée",
       title: "Ta demande est partie",
-      intro: `<b style="color:${C.text};">${p.coachName}</b> doit confirmer le créneau du <b style="color:${C.text};">${p.dateStr}</b>. Tu recevras un email dès sa réponse.`,
+      intro: `<b style="color:${C.text};">${escHtml(p.coachName)}</b> doit confirmer le créneau du <b style="color:${C.text};">${p.dateStr}</b>. Tu recevras un email dès sa réponse.`,
       blocks: p.authorizedPriceStr
         ? [
             infoBox(
               "Aucun débit pour l'instant",
-              `Ta carte a été autorisée pour <b style="color:${C.text};">${p.authorizedPriceStr}</b>. Tu ne seras débité que si ${p.coachName} accepte la demande. Refus ou absence de réponse : rien n'est prélevé, l'empreinte disparaît d'elle-même.`
+              `Ta carte a été autorisée pour <b style="color:${C.text};">${p.authorizedPriceStr}</b>. Tu ne seras débité que si ${escHtml(p.coachName)} accepte la demande. Refus ou absence de réponse : rien n'est prélevé, l'empreinte disparaît d'elle-même.`
             ),
           ]
         : [],
@@ -427,7 +439,7 @@ export function newRequestCoach(p: {
     subject: p.instant ? L.subjectInstant : L.subjectRequest,
     html: layout({
       locale,
-      preheader: `${p.clientName} · ${p.dateStr}${p.instant ? "" : L.preheaderSuffix}`,
+      preheader: `${escHtml(p.clientName)} · ${p.dateStr}${p.instant ? "" : L.preheaderSuffix}`,
       eyebrow: p.instant ? L.eyebrowInstant : L.eyebrowRequest,
       title: p.instant ? L.titleInstant : L.titleRequest,
       intro: p.instant ? L.introInstant : L.introRequest,
@@ -465,7 +477,7 @@ export function sessionReminderClient(p: {
       preheader: `Rappel : ta séance a lieu ${p.dateStr}.`,
       eyebrow: "Rappel de séance",
       title: "Ta séance approche",
-      intro: `Petit rappel : ta séance avec <b style="color:${C.text};">${p.coachName}</b> a lieu <b style="color:${C.text};">${p.dateStr}</b>.`,
+      intro: `Petit rappel : ta séance avec <b style="color:${C.text};">${escHtml(p.coachName)}</b> a lieu <b style="color:${C.text};">${p.dateStr}</b>.`,
       blocks: [
         detailsTable([
           { label: "Coach", value: p.coachName },
@@ -498,7 +510,7 @@ export function waitlistSlotFreedClient(p: {
       preheader: `Tu l'avais demandé : il est à nouveau réservable.`,
       eyebrow: "Liste d'attente",
       title: "Ton créneau s'est libéré",
-      intro: `${p.firstName ? `${p.firstName}, ` : ""}tu avais demandé à être prévenu si le créneau <b style="color:${C.text};">${p.dateStr}</b> avec <b style="color:${C.text};">${p.coachName}</b> se libérait. C'est le cas.`,
+      intro: `${p.firstName ? `${escHtml(p.firstName)}, ` : ""}tu avais demandé à être prévenu si le créneau <b style="color:${C.text};">${p.dateStr}</b> avec <b style="color:${C.text};">${escHtml(p.coachName)}</b> se libérait. C'est le cas.`,
       blocks: [
         detailsTable([
           { label: "Coach", value: p.coachName },
@@ -526,7 +538,7 @@ export function sessionReminderSoonClient(p: {
       preheader: `Ta séance commence bientôt (${p.timeStr}).`,
       eyebrow: "Rappel de séance",
       title: "C'est bientôt l'heure",
-      intro: `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> commence dans environ <b style="color:${C.text};">1 heure</b> (à ${p.timeStr}).`,
+      intro: `Ta séance avec <b style="color:${C.text};">${escHtml(p.coachName)}</b> commence dans environ <b style="color:${C.text};">1 heure</b> (à ${p.timeStr}).`,
       blocks: [
         ...(p.online
           ? meetCalLinks(p.meetUrl)
@@ -568,7 +580,7 @@ export function newMessageNotif(p: {
           subject: `New message from ${p.senderName}`,
           eyebrow: "Messages",
           title: "New message",
-          intro: `<b style="color:${C.text};">${p.senderName}</b> wrote to you:`,
+          intro: `<b style="color:${C.text};">${escHtml(p.senderName)}</b> wrote to you:`,
           boxTitle: "Message",
           cta: "Reply",
           sessions: toCoach ? "Open my calendar" : "View my sessions",
@@ -580,7 +592,7 @@ export function newMessageNotif(p: {
           subject: `Nouveau message de ${p.senderName}`,
           eyebrow: "Messagerie",
           title: "Nouveau message",
-          intro: `<b style="color:${C.text};">${p.senderName}</b> t'a écrit :`,
+          intro: `<b style="color:${C.text};">${escHtml(p.senderName)}</b> t'a écrit :`,
           boxTitle: "Message",
           cta: "Répondre",
           sessions: toCoach ? "Ouvrir mon agenda" : "Voir mes séances",
@@ -617,10 +629,10 @@ export function subscriptionStartedClient(p: {
   return {
     subject: `Ton abonnement chez ${p.coachName} est actif 🎉`,
     html: layout({
-      preheader: `Abonnement ${p.serviceName} actif, ${p.priceStr} par mois.`,
+      preheader: `Abonnement ${escHtml(p.serviceName)} actif, ${p.priceStr} par mois.`,
       eyebrow: "Abonnement",
       title: "Abonnement actif",
-      intro: `Ton abonnement <b style="color:${C.text};">${p.serviceName}</b> chez <b style="color:${C.text};">${p.coachName}</b> est en place. Ton coach va te contacter pour planifier vos séances.`,
+      intro: `Ton abonnement <b style="color:${C.text};">${escHtml(p.serviceName)}</b> chez <b style="color:${C.text};">${escHtml(p.coachName)}</b> est en place. Ton coach va te contacter pour planifier vos séances.`,
       blocks: [
         detailsTable([
           { label: "Coach", value: p.coachName },
@@ -647,10 +659,10 @@ export function subscriptionStartedCoach(p: {
     locale === "en"
       ? {
           subject: `New subscriber: ${p.clientName} 🎉`,
-          preheader: `${p.clientName} just subscribed to ${p.serviceName}.`,
+          preheader: `${escHtml(p.clientName)} just subscribed to ${escHtml(p.serviceName)}.`,
           eyebrow: "Subscription",
           title: "New subscriber!",
-          intro: `<b style="color:${C.text};">${p.clientName}</b> just subscribed to your <b style="color:${C.text};">${p.serviceName}</b> plan. The amount is paid out to you automatically every month. Reach out to your new client to schedule your sessions.`,
+          intro: `<b style="color:${C.text};">${escHtml(p.clientName)}</b> just subscribed to your <b style="color:${C.text};">${escHtml(p.serviceName)}</b> plan. The amount is paid out to you automatically every month. Reach out to your new client to schedule your sessions.`,
           client: "Client",
           plan: "Plan",
           amount: "Amount",
@@ -660,10 +672,10 @@ export function subscriptionStartedCoach(p: {
         }
       : {
           subject: `Nouvel abonné : ${p.clientName} 🎉`,
-          preheader: `${p.clientName} vient de souscrire ${p.serviceName}.`,
+          preheader: `${escHtml(p.clientName)} vient de souscrire ${escHtml(p.serviceName)}.`,
           eyebrow: "Abonnement",
           title: "Nouvel abonné !",
-          intro: `<b style="color:${C.text};">${p.clientName}</b> vient de souscrire ta formule <b style="color:${C.text};">${p.serviceName}</b>. Le montant t'est versé automatiquement chaque mois. Contacte ton nouveau client pour planifier vos séances.`,
+          intro: `<b style="color:${C.text};">${escHtml(p.clientName)}</b> vient de souscrire ta formule <b style="color:${C.text};">${escHtml(p.serviceName)}</b>. Le montant t'est versé automatiquement chaque mois. Contacte ton nouveau client pour planifier vos séances.`,
           client: "Client",
           plan: "Formule",
           amount: "Montant",
@@ -710,7 +722,7 @@ export function bookingRescheduledClient(p: {
       preheader: `Nouvel horaire : ${p.dateStr}`,
       eyebrow: "Séance déplacée",
       title: "Ta séance a été déplacée",
-      intro: `<b style="color:${C.text};">${p.coachName}</b> a déplacé ta séance.${p.spaceUrl ? " Ce nouvel horaire te convient ? Confirme-le en un clic, ou choisis-en un autre parmi ses créneaux." : ""}`,
+      intro: `<b style="color:${C.text};">${escHtml(p.coachName)}</b> a déplacé ta séance.${p.spaceUrl ? " Ce nouvel horaire te convient ? Confirme-le en un clic, ou choisis-en un autre parmi ses créneaux." : ""}`,
       blocks: [
         infoBox(
           "Nouvel horaire",
@@ -749,8 +761,8 @@ export function clientRescheduleAnswerCoach(p: {
       eyebrow: en ? "Session moved" : "Séance déplacée",
       title: en ? "Your client picked another slot" : "Ton client a choisi un autre créneau",
       intro: en
-        ? `<b style="color:${C.text};">${p.clientName}</b> could not make the time you proposed and picked one of your available slots instead.`
-        : `<b style="color:${C.text};">${p.clientName}</b> ne pouvait pas à l'horaire proposé et a choisi un de tes créneaux disponibles à la place.`,
+        ? `<b style="color:${C.text};">${escHtml(p.clientName)}</b> could not make the time you proposed and picked one of your available slots instead.`
+        : `<b style="color:${C.text};">${escHtml(p.clientName)}</b> ne pouvait pas à l'horaire proposé et a choisi un de tes créneaux disponibles à la place.`,
       blocks: [
         infoBox(
           en ? "New time" : "Nouvel horaire",
@@ -786,14 +798,14 @@ export function packSessionBookedClient(p: {
     html: layout({
       preheader: p.confirmed
         ? `Séance${many ? "s" : ""} placée${many ? "s" : ""} sur ton pack.`
-        : `${p.coachName} confirme rapidement.`,
+        : `${escHtml(p.coachName)} confirme rapidement.`,
       eyebrow: p.confirmed ? "Séance réservée" : "Demande envoyée",
       title: p.confirmed
         ? "C'est dans l'agenda 💪"
         : "Ta demande est partie",
       intro: p.confirmed
-        ? `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> est confirmée, décomptée de ton pack. Aucun paiement à faire.`
-        : `<b style="color:${C.text};">${p.coachName}</b> a reçu ta demande et la confirme rapidement. Le crédit est réservé, il te sera rendu si le coach ne peut pas.`,
+        ? `Ta séance avec <b style="color:${C.text};">${escHtml(p.coachName)}</b> est confirmée, décomptée de ton pack. Aucun paiement à faire.`
+        : `<b style="color:${C.text};">${escHtml(p.coachName)}</b> a reçu ta demande et la confirme rapidement. Le crédit est réservé, il te sera rendu si le coach ne peut pas.`,
       blocks: [
         detailsTable([
           ...p.dates.map((d, i) => ({
@@ -843,8 +855,8 @@ export function packSessionBookedCoach(p: {
         ? "A request awaits your answer"
         : "Une demande attend ta réponse",
       intro: en
-        ? `<b style="color:${C.text};">${p.clientName}</b> used ${many ? "credits" : "a credit"} from their pack. ${p.remaining} left after this.`
-        : `<b style="color:${C.text};">${p.clientName}</b> a utilisé ${many ? "des crédits" : "un crédit"} de son pack. Il lui en reste ${p.remaining} après ça.`,
+        ? `<b style="color:${C.text};">${escHtml(p.clientName)}</b> used ${many ? "credits" : "a credit"} from their pack. ${p.remaining} left after this.`
+        : `<b style="color:${C.text};">${escHtml(p.clientName)}</b> a utilisé ${many ? "des crédits" : "un crédit"} de son pack. Il lui en reste ${p.remaining} après ça.`,
       blocks: [
         detailsTable(
           p.dates.map((d, i) => ({
@@ -877,7 +889,7 @@ export function invoiceClient(p: {
       preheader: `Facture ${p.number} de ${p.amountStr}, en pièce jointe.`,
       eyebrow: "Facture",
       title: "Ta facture est en pièce jointe",
-      intro: `Voici la facture de <b style="color:${C.text};">${p.coachName}</b> pour ton paiement. Elle est jointe à cet email au format PDF.`,
+      intro: `Voici la facture de <b style="color:${C.text};">${escHtml(p.coachName)}</b> pour ton paiement. Elle est jointe à cet email au format PDF.`,
       blocks: [
         detailsTable([
           { label: "Numéro", value: p.number },
@@ -907,7 +919,7 @@ export function creditNoteClient(p: {
       preheader: `Avoir ${p.number} de ${p.amountStr}, en pièce jointe.`,
       eyebrow: "Remboursement",
       title: "Ton avoir est en pièce jointe",
-      intro: `Un remboursement de <b style="color:${C.text};">${p.amountStr}</b> a été émis par <b style="color:${C.text};">${p.coachName}</b>. L'avoir correspondant est joint à cet email au format PDF.`,
+      intro: `Un remboursement de <b style="color:${C.text};">${p.amountStr}</b> a été émis par <b style="color:${C.text};">${escHtml(p.coachName)}</b>. L'avoir correspondant est joint à cet email au format PDF.`,
       blocks: [
         detailsTable([
           { label: "Numéro", value: p.number },
@@ -933,8 +945,8 @@ export function bookingCancelledClient(p: {
   declined: boolean;
 }): Email {
   const intro = p.declined
-    ? `<b style="color:${C.text};">${p.coachName}</b> ne peut pas assurer la séance demandée. Rien n'a été débité, tu peux choisir un autre créneau en quelques secondes.`
-    : `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> a été annulée. Aucun paiement n'était en jeu.`;
+    ? `<b style="color:${C.text};">${escHtml(p.coachName)}</b> ne peut pas assurer la séance demandée. Rien n'a été débité, tu peux choisir un autre créneau en quelques secondes.`
+    : `Ta séance avec <b style="color:${C.text};">${escHtml(p.coachName)}</b> a été annulée. Aucun paiement n'était en jeu.`;
   return {
     subject: p.declined
       ? "Ta demande de séance n'a pas pu être acceptée"
@@ -976,7 +988,7 @@ export function clientCancelRequestClient(p: {
       preheader: "Confirme l'annulation ou dis que la séance est maintenue.",
       eyebrow: "Réservation",
       title: "As-tu annulé cette séance ?",
-      intro: `<b style="color:${C.text};">${p.coachName}</b> indique que tu as annulé ta séance du <b style="color:${C.text};">${p.dateStr}</b>. Rien n'est fait sans ton accord : confirme si c'est exact, ou dis-nous que tu maintiens la séance.`,
+      intro: `<b style="color:${C.text};">${escHtml(p.coachName)}</b> indique que tu as annulé ta séance du <b style="color:${C.text};">${p.dateStr}</b>. Rien n'est fait sans ton accord : confirme si c'est exact, ou dis-nous que tu maintiens la séance.`,
       blocks: [
         detailsTable([
           { label: "Coach", value: p.coachName },
@@ -1006,7 +1018,7 @@ export function clientCancelReminderClient(p: {
       preheader: `Sans réponse, l'annulation sera confirmée le ${p.deadlineStr}.`,
       eyebrow: "Réservation",
       title: "On attend ta réponse",
-      intro: `Hier, <b style="color:${C.text};">${p.coachName}</b> a indiqué que tu avais annulé ta séance du <b style="color:${C.text};">${p.dateStr}</b>. Tu n'as pas encore répondu : confirme si c'est exact, ou dis-nous que tu maintiens la séance.`,
+      intro: `Hier, <b style="color:${C.text};">${escHtml(p.coachName)}</b> a indiqué que tu avais annulé ta séance du <b style="color:${C.text};">${p.dateStr}</b>. Tu n'as pas encore répondu : confirme si c'est exact, ou dis-nous que tu maintiens la séance.`,
       blocks: [
         detailsTable([
           { label: "Coach", value: p.coachName },
@@ -1042,8 +1054,8 @@ export function clientCancelDeniedCoach(p: {
       eyebrow: en ? "Booking" : "Réservation",
       title: en ? "Session kept" : "Séance maintenue",
       intro: en
-        ? `<b style="color:${C.text};">${p.clientName}</b> says they did not cancel the session on <b style="color:${C.text};">${p.dateStr}</b>. It stays in your agenda as planned. If you cannot make it, you can still cancel it yourself (full refund).`
-        : `<b style="color:${C.text};">${p.clientName}</b> indique ne pas avoir annulé la séance du <b style="color:${C.text};">${p.dateStr}</b>. Elle reste dans ton agenda comme prévu. Si tu ne peux pas l'assurer, tu peux toujours l'annuler toi-même (remboursement intégral).`,
+        ? `<b style="color:${C.text};">${escHtml(p.clientName)}</b> says they did not cancel the session on <b style="color:${C.text};">${p.dateStr}</b>. It stays in your agenda as planned. If you cannot make it, you can still cancel it yourself (full refund).`
+        : `<b style="color:${C.text};">${escHtml(p.clientName)}</b> indique ne pas avoir annulé la séance du <b style="color:${C.text};">${p.dateStr}</b>. Elle reste dans ton agenda comme prévu. Si tu ne peux pas l'assurer, tu peux toujours l'annuler toi-même (remboursement intégral).`,
       cta: { label: en ? "Open my agenda" : "Ouvrir mon agenda", url: p.dashboardUrl },
     }),
   };
@@ -1059,8 +1071,8 @@ export function refundClient(p: {
     p.reason === "dispute"
       ? `Suite à l'examen de ton signalement, un remboursement de <b style="color:${C.text};">${p.refundStr}</b> a été émis.`
       : p.reason === "gesture"
-      ? `<b style="color:${C.text};">${p.coachName}</b> t'a fait un geste : un remboursement de <b style="color:${C.text};">${p.refundStr}</b> vient d'être émis sur ta séance.`
-      : `Suite à l'annulation de ta séance avec <b style="color:${C.text};">${p.coachName}</b>, un remboursement de <b style="color:${C.text};">${p.refundStr}</b> a été émis.`;
+      ? `<b style="color:${C.text};">${escHtml(p.coachName)}</b> t'a fait un geste : un remboursement de <b style="color:${C.text};">${p.refundStr}</b> vient d'être émis sur ta séance.`
+      : `Suite à l'annulation de ta séance avec <b style="color:${C.text};">${escHtml(p.coachName)}</b>, un remboursement de <b style="color:${C.text};">${p.refundStr}</b> a été émis.`;
   return {
     subject:
       p.reason === "gesture"
@@ -1101,10 +1113,10 @@ export function payoutReleasedCoach(p: {
     locale === "en"
       ? {
           subject: `${p.payoutStr} sent to your account 💸`,
-          preheader: `Session with ${p.clientName} completed: ${p.payoutStr} transferred to your Stripe account.`,
+          preheader: `Session with ${escHtml(p.clientName)} completed: ${p.payoutStr} transferred to your Stripe account.`,
           eyebrow: "Payout sent",
           title: "You just got paid",
-          intro: `Your session with <b style="color:${C.text};">${p.clientName}</b> went smoothly: your share has been transferred to your Stripe account.`,
+          intro: `Your session with <b style="color:${C.text};">${escHtml(p.clientName)}</b> went smoothly: your share has been transferred to your Stripe account.`,
           client: "Client",
           amount: "Amount paid out",
           commission: "Madger transaction fees",
@@ -1115,10 +1127,10 @@ export function payoutReleasedCoach(p: {
         }
       : {
           subject: `${p.payoutStr} versés sur ton compte 💸`,
-          preheader: `Séance avec ${p.clientName} réglée : ${p.payoutStr} transférés vers ton compte Stripe.`,
+          preheader: `Séance avec ${escHtml(p.clientName)} réglée : ${p.payoutStr} transférés vers ton compte Stripe.`,
           eyebrow: "Versement effectué",
           title: "Tu viens d'être payé",
-          intro: `La séance avec <b style="color:${C.text};">${p.clientName}</b> est passée sans encombre : ta part a été transférée vers ton compte Stripe.`,
+          intro: `La séance avec <b style="color:${C.text};">${escHtml(p.clientName)}</b> est passée sans encombre : ta part a été transférée vers ton compte Stripe.`,
           client: "Client",
           amount: "Montant versé",
           commission: "Frais de transaction Madger",
@@ -1161,10 +1173,10 @@ export function reviewRequestClient(p: {
   return {
     subject: `Comment s'est passée ta séance avec ${p.coachName} ? ⭐`,
     html: layout({
-      preheader: `Note ta séance avec ${p.coachName} : 30 secondes, ça aide toute la communauté.`,
+      preheader: `Note ta séance avec ${escHtml(p.coachName)} : 30 secondes, ça aide toute la communauté.`,
       eyebrow: "Ton avis compte",
       title: "Comment s'est passée ta séance ?",
-      intro: `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> est terminée. Prends 30 secondes pour la noter : ton avis aide les autres à choisir leur coach, et ton coach à progresser.`,
+      intro: `Ta séance avec <b style="color:${C.text};">${escHtml(p.coachName)}</b> est terminée. Prends 30 secondes pour la noter : ton avis aide les autres à choisir leur coach, et ton coach à progresser.`,
       blocks: [
         infoBox(
           "Un avis par client",
@@ -1185,7 +1197,7 @@ export function weeklyRecapCoach(p: {
   newReviews: number;
   statsUrl: string;
 }): Email {
-  const hello = p.firstName ? `${p.firstName}, voilà` : "Voilà";
+  const hello = p.firstName ? `${escHtml(p.firstName)}, voilà` : "Voilà";
   const rows: DetailRow[] = [
     {
       label: "Séances effectuées",
@@ -1234,7 +1246,7 @@ export function reviewReminderClient(p: {
       preheader: `30 secondes pour noter ta séance, promis c'est la dernière relance.`,
       eyebrow: "Ton avis compte",
       title: "Ta séance mérite bien 30 secondes",
-      intro: `Tu n'as pas encore noté ta séance avec <b style="color:${C.text};">${p.coachName}</b>. Une note et un mot suffisent : c'est ce qui aide les autres à se lancer, et ton coach à progresser. Promis, on ne te relancera plus pour celle-ci.`,
+      intro: `Tu n'as pas encore noté ta séance avec <b style="color:${C.text};">${escHtml(p.coachName)}</b>. Une note et un mot suffisent : c'est ce qui aide les autres à se lancer, et ton coach à progresser. Promis, on ne te relancera plus pour celle-ci.`,
       cta: { label: "⭐ Noter ma séance", url: p.reservationUrl },
     }),
   };
@@ -1292,7 +1304,7 @@ export function bookingCancelledCoach(p: {
           preheader: `The ${p.dateStr} slot is now free in your calendar.`,
           eyebrow: "Client cancellation",
           title: "A session was just cancelled",
-          intro: `<b style="color:${C.text};">${p.clientName}</b> cancelled the session on <b style="color:${C.text};">${p.dateStr}</b>. The slot is available again in your calendar.`,
+          intro: `<b style="color:${C.text};">${escHtml(p.clientName)}</b> cancelled the session on <b style="color:${C.text};">${p.dateStr}</b>. The slot is available again in your calendar.`,
           client: "Client",
           session: "Session",
           refunded: "Refunded to the client",
@@ -1306,7 +1318,7 @@ export function bookingCancelledCoach(p: {
           preheader: `Le créneau du ${p.dateStr} se libère dans ton agenda.`,
           eyebrow: "Annulation client",
           title: "Une séance vient d'être annulée",
-          intro: `<b style="color:${C.text};">${p.clientName}</b> a annulé sa séance du <b style="color:${C.text};">${p.dateStr}</b>. Le créneau est de nouveau libre dans ton agenda.`,
+          intro: `<b style="color:${C.text};">${escHtml(p.clientName)}</b> a annulé sa séance du <b style="color:${C.text};">${p.dateStr}</b>. Le créneau est de nouveau libre dans ton agenda.`,
           client: "Client",
           session: "Séance",
           refunded: "Remboursé au client",
@@ -1357,7 +1369,7 @@ export function disputeResolvedCoach(p: {
           preheader: "Madger reviewed the report and allocated the funds.",
           eyebrow: "Dispute resolved",
           title: "The dispute has been resolved",
-          intro: `The report about your session with <b style="color:${C.text};">${p.clientName}</b> has been reviewed. Here is the outcome, in line with the payment charter.`,
+          intro: `The report about your session with <b style="color:${C.text};">${escHtml(p.clientName)}</b> has been reviewed. Here is the outcome, in line with the payment charter.`,
           paidToYou: "Paid to your account",
           refunded: "Refunded to the client",
           boxTitle: "Questions about the decision?",
@@ -1370,7 +1382,7 @@ export function disputeResolvedCoach(p: {
           preheader: "Madger a examiné le signalement et réparti les fonds.",
           eyebrow: "Litige résolu",
           title: "Le litige est tranché",
-          intro: `Le signalement concernant ta séance avec <b style="color:${C.text};">${p.clientName}</b> a été examiné. Voici la répartition décidée, conformément à la charte de paiement.`,
+          intro: `Le signalement concernant ta séance avec <b style="color:${C.text};">${escHtml(p.clientName)}</b> a été examiné. Voici la répartition décidée, conformément à la charte de paiement.`,
           paidToYou: "Versé sur ton compte",
           refunded: "Remboursé au client",
           boxTitle: "Une question sur la décision ?",
@@ -1414,7 +1426,7 @@ export function subscriptionCancelledClient(p: {
         "Ton abonnement reste actif jusqu'à la fin de la période déjà payée.",
       eyebrow: "Abonnement",
       title: "C'est noté, ton abonnement s'arrête",
-      intro: `Ton abonnement chez <b style="color:${C.text};">${p.coachName}</b> ne sera pas renouvelé.${p.endDateStr ? ` Il reste actif jusqu'au <b style="color:${C.text};">${p.endDateStr}</b> : profite des séances restantes.` : ""} Aucun prélèvement supplémentaire n'aura lieu.`,
+      intro: `Ton abonnement chez <b style="color:${C.text};">${escHtml(p.coachName)}</b> ne sera pas renouvelé.${p.endDateStr ? ` Il reste actif jusqu'au <b style="color:${C.text};">${p.endDateStr}</b> : profite des séances restantes.` : ""} Aucun prélèvement supplémentaire n'aura lieu.`,
       blocks: [],
       cta: { label: "Mes séances", url: `${APP_URL}/espace` },
       outro:
@@ -1439,7 +1451,7 @@ export function subscriptionCancelledCoach(p: {
             "The subscription stays active until the end of the paid period.",
           eyebrow: "Subscription",
           title: "A subscriber is leaving",
-          intro: `<b style="color:${C.text};">${p.clientName}</b> ended their subscription.${p.endDateStr ? ` It stays active until <b style="color:${C.text};">${p.endDateStr}</b>.` : ""} A quick message from you can make a difference: ask what led to their decision.`,
+          intro: `<b style="color:${C.text};">${escHtml(p.clientName)}</b> ended their subscription.${p.endDateStr ? ` It stays active until <b style="color:${C.text};">${p.endDateStr}</b>.` : ""} A quick message from you can make a difference: ask what led to their decision.`,
           cta: "Open messages",
         }
       : {
@@ -1448,7 +1460,7 @@ export function subscriptionCancelledCoach(p: {
             "L'abonnement reste actif jusqu'à la fin de la période payée.",
           eyebrow: "Abonnement",
           title: "Un abonné s'arrête",
-          intro: `<b style="color:${C.text};">${p.clientName}</b> a mis fin à son abonnement.${p.endDateStr ? ` Il reste actif jusqu'au <b style="color:${C.text};">${p.endDateStr}</b>.` : ""} Un petit message de ta part peut faire la différence : demande-lui ce qui a motivé son choix.`,
+          intro: `<b style="color:${C.text};">${escHtml(p.clientName)}</b> a mis fin à son abonnement.${p.endDateStr ? ` Il reste actif jusqu'au <b style="color:${C.text};">${p.endDateStr}</b>.` : ""} Un petit message de ta part peut faire la différence : demande-lui ce qui a motivé son choix.`,
           cta: "Ouvrir la messagerie",
         };
   return {
@@ -1476,10 +1488,10 @@ export function proWelcomeCoach(p: {
       ? {
           subject: "Welcome to Pro 🎉",
           preheader:
-            "Your Pro plan is active: packs, automatic cancellation, reminders, payments screen, churn alerts.",
+            "Your Pro plan is active: automatic cancellation, renewal reminders, payments screen, inactive-client alerts, advanced statistics.",
           eyebrow: "Pro plan",
           title: "Your Pro plan is active",
-          intro: `From now on you can <b style="color:${C.text};">sell session packs</b>, let automatic cancellation apply your rules, send renewal reminders, track payments per client and spot clients drifting away. Everything is ready on your dashboard.`,
+          intro: `From now on, <b style="color:${C.text};">automatic cancellation</b> applies your rules, you send renewal reminders, track payments per client, spot clients drifting away and get advanced statistics. Everything is ready on your dashboard.`,
           boxTitle: "Your invoice",
           boxBody:
             "Stripe sends you the receipt for your subscription. You can manage your subscription at any time from the Subscription page.",
@@ -1488,10 +1500,10 @@ export function proWelcomeCoach(p: {
       : {
           subject: "Bienvenue en Pro 🎉",
           preheader:
-            "Ton plan Pro est actif : packs, annulation automatique, relances, encaissements, alertes churn.",
+            "Ton plan Pro est actif : annulation automatique, relances, écran encaissements, alertes clients qui décrochent, statistiques avancées.",
           eyebrow: "Plan Pro",
           title: "Ton plan Pro est actif",
-          intro: `À partir de maintenant, tu peux <b style="color:${C.text};">vendre des packs de séances</b>, laisser l'annulation automatique appliquer tes règles, relancer les renouvellements, suivre tes encaissements par client et repérer les clients qui décrochent. Tout est prêt sur ton dashboard.`,
+          intro: `À partir de maintenant, <b style="color:${C.text};">l'annulation automatique</b> applique tes règles, tu relances les renouvellements, tu suis tes encaissements par client, tu repères les clients qui décrochent et tu as les statistiques avancées. Tout est prêt sur ton dashboard.`,
           boxTitle: "Ta facture",
           boxBody:
             "Le reçu de ton abonnement t'est envoyé par Stripe. Tu peux gérer ton abonnement à tout moment depuis la page Abonnement.",
@@ -1606,7 +1618,7 @@ export function disputeOpenedCoach(p: {
           preheader: `The ${p.amountStr} payout is paused while Madger reviews the report.`,
           eyebrow: "Report under review",
           title: "A client reported an issue",
-          intro: `<b style="color:${C.text};">${p.clientName}</b> reported an issue about a session. This happens and does not imply anything about you: the Madger team simply reviews the situation with both sides, as set out in the payment charter.`,
+          intro: `<b style="color:${C.text};">${escHtml(p.clientName)}</b> reported an issue about a session. This happens and does not imply anything about you: the Madger team simply reviews the situation with both sides, as set out in the payment charter.`,
           client: "Client",
           amount: "Amount on hold",
           boxTitle: "Payout paused",
@@ -1620,7 +1632,7 @@ export function disputeOpenedCoach(p: {
           preheader: `Le versement de ${p.amountStr} est en pause le temps de l'examen.`,
           eyebrow: "Signalement en cours",
           title: "Un client a signalé un problème",
-          intro: `<b style="color:${C.text};">${p.clientName}</b> a signalé un problème sur une séance. Ça arrive et ça ne présume rien te concernant : l'équipe Madger examine simplement la situation avec les deux parties, comme le prévoit la charte de paiement.`,
+          intro: `<b style="color:${C.text};">${escHtml(p.clientName)}</b> a signalé un problème sur une séance. Ça arrive et ça ne présume rien te concernant : l'équipe Madger examine simplement la situation avec les deux parties, comme le prévoit la charte de paiement.`,
           client: "Client",
           amount: "Montant en attente",
           boxTitle: "Versement en pause",
@@ -1662,7 +1674,7 @@ export function disputeReceivedClient(p: {
       preheader: `Les fonds (${p.amountStr}) sont gelés le temps de l'examen.`,
       eyebrow: "Signalement reçu",
       title: "On s'en occupe",
-      intro: `Ton signalement concernant ta séance avec <b style="color:${C.text};">${p.coachName}</b> est bien enregistré. L'équipe Madger examine la situation et revient vers toi rapidement.`,
+      intro: `Ton signalement concernant ta séance avec <b style="color:${C.text};">${escHtml(p.coachName)}</b> est bien enregistré. L'équipe Madger examine la situation et revient vers toi rapidement.`,
       blocks: [
         detailsTable([
           { label: "Coach", value: p.coachName },
@@ -1739,10 +1751,10 @@ export function subscriptionPaymentCoach(p: {
     locale === "en"
       ? {
           subject: `Subscription payment received: ${p.amountStr} 💸`,
-          preheader: `${p.clientName}'s monthly payment went through: ${p.amountStr}.`,
+          preheader: `${escHtml(p.clientName)}'s monthly payment went through: ${p.amountStr}.`,
           eyebrow: "Subscription payment",
           title: "A monthly payment just came in",
-          intro: `<b style="color:${C.text};">${p.clientName}</b>'s monthly subscription payment went through. The amount is paid straight to your Stripe account.`,
+          intro: `<b style="color:${C.text};">${escHtml(p.clientName)}</b>'s monthly subscription payment went through. The amount is paid straight to your Stripe account.`,
           client: "Client",
           amount: "Amount collected",
           commission: "Madger transaction fees",
@@ -1750,10 +1762,10 @@ export function subscriptionPaymentCoach(p: {
         }
       : {
           subject: `Échéance d'abonnement encaissée : ${p.amountStr} 💸`,
-          preheader: `Le prélèvement mensuel de ${p.clientName} est passé : ${p.amountStr}.`,
+          preheader: `Le prélèvement mensuel de ${escHtml(p.clientName)} est passé : ${p.amountStr}.`,
           eyebrow: "Échéance d'abonnement",
           title: "Une échéance vient d'être encaissée",
-          intro: `Le prélèvement mensuel de l'abonnement de <b style="color:${C.text};">${p.clientName}</b> est bien passé. Le montant est versé directement sur ton compte Stripe.`,
+          intro: `Le prélèvement mensuel de l'abonnement de <b style="color:${C.text};">${escHtml(p.clientName)}</b> est bien passé. Le montant est versé directement sur ton compte Stripe.`,
           client: "Client",
           amount: "Montant encaissé",
           commission: "Frais de transaction Madger",
@@ -1792,7 +1804,7 @@ export function subscriptionPaymentFailedClient(p: {
         "Mets à jour ta carte pour garder ton abonnement actif.",
       eyebrow: "Abonnement",
       title: "Ton prélèvement n'est pas passé",
-      intro: `Le prélèvement mensuel de ton abonnement chez <b style="color:${C.text};">${p.coachName}</b> a échoué (carte expirée, plafond, solde insuffisant...). Pas de panique : mets à jour ta carte pour que tout rentre dans l'ordre.`,
+      intro: `Le prélèvement mensuel de ton abonnement chez <b style="color:${C.text};">${escHtml(p.coachName)}</b> a échoué (carte expirée, plafond, solde insuffisant...). Pas de panique : mets à jour ta carte pour que tout rentre dans l'ordre.`,
       blocks: [
         infoBox(
           "Que se passe-t-il maintenant ?",
@@ -1820,10 +1832,10 @@ export function proCancelledCoach(p: {
             "Your account is back on the Essential plan. You can reactivate Pro anytime.",
           eyebrow: "Pro plan",
           title: "Back to the Essential plan",
-          intro: `Your Pro subscription has ended and your account is back on the <b style="color:${C.text};">Essential plan</b>. Your calendar, clients and payments keep working exactly the same. Pro features (packs, automatic cancellation, renewal reminders, payments screen, churn alerts) are paused. Packs already sold remain usable by your clients.`,
+          intro: `Your Pro subscription has ended and your account is back on the <b style="color:${C.text};">Essential plan</b>. Your calendar, clients and payments keep working exactly the same. Pro features (automatic cancellation, renewal reminders, payments screen, inactive-client alerts, advanced statistics) are paused. Packs already sold and your sessions keep working as usual.`,
           boxTitle: "Come back whenever you want",
           boxBody:
-            "Reactivate Pro in two clicks to get your packs, automatic cancellation and reminders back. Your data is right where you left it.",
+            "Reactivate Pro in two clicks to get automatic cancellation, reminders and alerts back. Your data is right where you left it.",
           cta: "Reactivate Pro",
           outro:
             "Thanks for having tried Pro. If something did not fit, just reply to this email: your feedback really helps us improve.",
@@ -1834,10 +1846,10 @@ export function proCancelledCoach(p: {
             "Ton compte repasse au plan Essentiel. Tu peux réactiver Pro à tout moment.",
           eyebrow: "Plan Pro",
           title: "Retour au plan Essentiel",
-          intro: `Ton abonnement Pro est arrivé à son terme : ton compte repasse en <b style="color:${C.text};">plan Essentiel</b>. Ton agenda, tes clients et tes paiements continuent de fonctionner exactement pareil. Les fonctionnalités Pro (packs, annulation automatique, relances, écran encaissements, alertes churn) sont mises en pause. Les packs déjà vendus restent utilisables par tes clients.`,
+          intro: `Ton abonnement Pro est arrivé à son terme : ton compte repasse en <b style="color:${C.text};">plan Essentiel</b>. Ton agenda, tes clients et tes paiements continuent de fonctionner exactement pareil. Les fonctionnalités Pro (annulation automatique, relances, écran encaissements, alertes clients qui décrochent, statistiques avancées) sont mises en pause. Tes packs déjà vendus et tes séances continuent normalement.`,
           boxTitle: "Tu peux revenir quand tu veux",
           boxBody:
-            "Réactive Pro en deux clics pour retrouver tes packs, ton annulation automatique et tes relances. Tes données sont restées exactement là où tu les as laissées.",
+            "Réactive Pro en deux clics pour retrouver ton annulation automatique, tes relances et tes alertes. Tes données sont restées exactement là où tu les as laissées.",
           cta: "Réactiver Pro",
           outro:
             "Merci d'avoir essayé Pro. Si quelque chose ne t'a pas convenu, réponds simplement à cet email : ton retour nous aide vraiment à progresser.",
@@ -1869,7 +1881,7 @@ export function cancellationNoRefundClient(p: {
         "Séance annulée. L'annulation était trop proche de la séance pour être remboursée.",
       eyebrow: "Annulation",
       title: "Séance annulée",
-      intro: `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> du <b style="color:${C.text};">${p.dateStr}</b> est bien annulée.`,
+      intro: `Ta séance avec <b style="color:${C.text};">${escHtml(p.coachName)}</b> du <b style="color:${C.text};">${p.dateStr}</b> est bien annulée.`,
       blocks: [
         detailsTable([
           { label: "Coach", value: p.coachName },
@@ -1878,11 +1890,11 @@ export function cancellationNoRefundClient(p: {
         ]),
         infoBox(
           "Pourquoi le montant reste au coach",
-          `Le créneau était réservé pour toi et ${p.coachName} ne pouvait plus le proposer à quelqu'un d'autre. Sa politique d'annulation, affichée sur ta réservation, s'applique quand on annule trop près de la séance.`
+          `Le créneau était réservé pour toi et ${escHtml(p.coachName)} ne pouvait plus le proposer à quelqu'un d'autre. Sa politique d'annulation, affichée sur ta réservation, s'applique quand on annule trop près de la séance.`
         ),
         infoBox(
           "Un imprévu sérieux ?",
-          `Écris-le à ${p.coachName} : un coach peut faire un geste et te rembourser depuis ton profil, le remboursement repart alors sur ta carte. Pour la prochaine fois, tu peux annuler sans frais jusqu'à la limite indiquée sur ta réservation.`
+          `Écris-le à ${escHtml(p.coachName)} : un coach peut faire un geste et te rembourser depuis ton profil, le remboursement repart alors sur ta carte. Pour la prochaine fois, tu peux annuler sans frais jusqu'à la limite indiquée sur ta réservation.`
         ),
       ],
       cta: { label: "Voir mes séances", url: `${APP_URL}/espace` },
@@ -1910,13 +1922,13 @@ export function creditCancellationClient(p: {
         : `Annulation à moins de ${p.hours} h : la séance est décomptée.`,
       eyebrow: "Annulation",
       title: p.restored ? "Crédit rendu sur ton pack" : "Séance décomptée",
-      intro: `Ta séance avec <b style="color:${C.text};">${p.coachName}</b> du <b style="color:${C.text};">${p.dateStr}</b> est bien annulée.`,
+      intro: `Ta séance avec <b style="color:${C.text};">${escHtml(p.coachName)}</b> du <b style="color:${C.text};">${p.dateStr}</b> est bien annulée.`,
       blocks: [
         infoBox(
           p.restored ? "Ton pack" : "Pourquoi la séance est décomptée ?",
           p.restored
             ? "Tu as annulé dans le délai du pack : la séance est de retour sur ton solde, tu peux la replacer quand tu veux depuis ton espace."
-            : `Le pack de ${p.coachName} prévoit une annulation gratuite jusqu'à ${p.hours} h avant la séance. Passé ce délai, la séance est décomptée comme si elle avait eu lieu.`
+            : `Le pack de ${escHtml(p.coachName)} prévoit une annulation gratuite jusqu'à ${p.hours} h avant la séance. Passé ce délai, la séance est décomptée comme si elle avait eu lieu.`
         ),
       ],
       cta: { label: "Voir mes séances", url: p.spaceUrl },
@@ -1940,10 +1952,10 @@ export function packRefundClient(p: {
   const mode = p.mode ?? "coach";
   const intro =
     mode === "no_answer"
-      ? `<b style="color:${C.text};">${p.coachName}</b> n'a pas répondu à ta demande sous 7 jours : comme prévu, Madger a remboursé les <b style="color:${C.text};">${p.remaining} séance${s}</b> restante${s} de ton pack. Le pack est clôturé, l'avoir arrive dans un email séparé.`
+      ? `<b style="color:${C.text};">${escHtml(p.coachName)}</b> n'a pas répondu à ta demande sous 7 jours : comme prévu, Madger a remboursé les <b style="color:${C.text};">${p.remaining} séance${s}</b> restante${s} de ton pack. Le pack est clôturé, l'avoir arrive dans un email séparé.`
       : mode === "coach_offline"
-      ? `<b style="color:${C.text};">${p.coachName}</b> n'est plus disponible sur Madger : les <b style="color:${C.text};">${p.remaining} séance${s}</b> restante${s} de ton pack te sont remboursées automatiquement. Le pack est clôturé, l'avoir arrive dans un email séparé.`
-      : `<b style="color:${C.text};">${p.coachName}</b> a remboursé les <b style="color:${C.text};">${p.remaining} séance${s}</b> restante${s} de ton pack. Le pack est clôturé, l'avoir arrive dans un email séparé.`;
+      ? `<b style="color:${C.text};">${escHtml(p.coachName)}</b> n'est plus disponible sur Madger : les <b style="color:${C.text};">${p.remaining} séance${s}</b> restante${s} de ton pack te sont remboursées automatiquement. Le pack est clôturé, l'avoir arrive dans un email séparé.`
+      : `<b style="color:${C.text};">${escHtml(p.coachName)}</b> a remboursé les <b style="color:${C.text};">${p.remaining} séance${s}</b> restante${s} de ton pack. Le pack est clôturé, l'avoir arrive dans un email séparé.`;
   return {
     subject: `Ton pack est remboursé : ${p.refundStr} en route 💸`,
     html: layout({
@@ -1976,10 +1988,10 @@ export function packPurchasedClient(p: {
   return {
     subject: `Ton pack « ${p.packName} » est prêt : ${p.size} places à poser ✅`,
     html: layout({
-      preheader: `${p.size} places sur les cours de ${p.coachName}, à poser depuis ton espace.`,
+      preheader: `${p.size} places sur les cours de ${escHtml(p.coachName)}, à poser depuis ton espace.`,
       eyebrow: "Pack collectif",
       title: `${p.size} places à poser sur les cours`,
-      intro: `Ton pack <b style="color:${C.text};">${p.packName}</b> chez <b style="color:${C.text};">${p.coachName}</b> est payé. Tu choisis tes cours au fil des semaines depuis ton espace${p.groupServiceName ? ` (cours « ${p.groupServiceName} »)` : ""} : chaque place posée se décompte du pack.`,
+      intro: `Ton pack <b style="color:${C.text};">${escHtml(p.packName)}</b> chez <b style="color:${C.text};">${escHtml(p.coachName)}</b> est payé. Tu choisis tes cours au fil des semaines depuis ton espace${p.groupServiceName ? ` (cours « ${escHtml(p.groupServiceName)} »)` : ""} : chaque place posée se décompte du pack.`,
       blocks: [
         detailsTable([
           { label: "Coach", value: p.coachName },
@@ -2010,10 +2022,10 @@ export function packPurchasedCoach(p: {
     locale === "en"
       ? {
           subject: `New pack sold: ${p.clientName} · ${p.size} seats`,
-          preheader: `${p.clientName} bought and paid for "${p.packName}" · ${p.priceStr}.`,
+          preheader: `${escHtml(p.clientName)} bought and paid for "${escHtml(p.packName)}" · ${p.priceStr}.`,
           eyebrow: "New pack",
           title: "A client just bought a class pack 🎉",
-          intro: `Good news: <b style="color:${C.text};">${p.clientName}</b> bought <b style="color:${C.text};">and paid for</b> the pack <b style="color:${C.text};">${p.packName}</b> (${p.size} seats). They book their seats on your classes from their space.`,
+          intro: `Good news: <b style="color:${C.text};">${escHtml(p.clientName)}</b> bought <b style="color:${C.text};">and paid for</b> the pack <b style="color:${C.text};">${escHtml(p.packName)}</b> (${p.size} seats). They book their seats on your classes from their space.`,
           amount: "Pack amount",
           payoutTitle: "Payout",
           payoutBody: `Your money is released <b style="color:${C.text};">seat by seat, 24 hours after each class</b>, minus the Madger transaction fees.`,
@@ -2021,10 +2033,10 @@ export function packPurchasedCoach(p: {
         }
       : {
           subject: `Nouveau pack vendu : ${p.clientName} · ${p.size} places`,
-          preheader: `${p.clientName} a acheté et payé « ${p.packName} » · ${p.priceStr}.`,
+          preheader: `${escHtml(p.clientName)} a acheté et payé « ${escHtml(p.packName)} » · ${p.priceStr}.`,
           eyebrow: "Nouveau pack",
           title: "Un client vient d'acheter un pack de cours 🎉",
-          intro: `Bonne nouvelle : <b style="color:${C.text};">${p.clientName}</b> a acheté <b style="color:${C.text};">et payé</b> le pack <b style="color:${C.text};">${p.packName}</b> (${p.size} places). Il pose ses places sur tes cours depuis son espace.`,
+          intro: `Bonne nouvelle : <b style="color:${C.text};">${escHtml(p.clientName)}</b> a acheté <b style="color:${C.text};">et payé</b> le pack <b style="color:${C.text};">${escHtml(p.packName)}</b> (${p.size} places). Il pose ses places sur tes cours depuis son espace.`,
           amount: "Montant du pack",
           payoutTitle: "Versement",
           payoutBody: `Ton argent est débloqué <b style="color:${C.text};">place par place, 24 h après chaque cours</b>, déduction faite des frais de transaction Madger.`,
@@ -2064,10 +2076,10 @@ export function packRefundRequestedCoach(p: {
     locale === "en"
       ? {
           subject: `${p.clientName} asks for a refund of their pack`,
-          preheader: `${p.remaining} unused session(s) on "${p.packName}". You have 7 days to answer.`,
+          preheader: `${p.remaining} unused session(s) on "${escHtml(p.packName)}". You have 7 days to answer.`,
           eyebrow: "Pack refund request",
-          title: `${p.clientName} asks for the rest of their pack back`,
-          intro: `<b style="color:${C.text};">${p.clientName}</b> asks to be refunded the <b style="color:${C.text};">${p.remaining} unused session${p.remaining > 1 ? "s" : ""}</b> of the pack <b style="color:${C.text};">${p.packName}</b>.${note ? `<br/><br/><span style="color:${C.muted};font-style:italic;">« ${note} »</span>` : ""}`,
+          title: `${escHtml(p.clientName)} asks for the rest of their pack back`,
+          intro: `<b style="color:${C.text};">${escHtml(p.clientName)}</b> asks to be refunded the <b style="color:${C.text};">${p.remaining} unused session${p.remaining > 1 ? "s" : ""}</b> of the pack <b style="color:${C.text};">${escHtml(p.packName)}</b>.${note ? `<br/><br/><span style="color:${C.muted};font-style:italic;">« ${note} »</span>` : ""}`,
           boxTitle: "You have 7 days",
           boxBody:
             "From the client sheet, accept (the pro-rata refund leaves immediately) or refuse with a reason the client will read. Without an answer within 7 days, Madger refunds automatically. A refused request can be escalated to Madger by the client.",
@@ -2075,10 +2087,10 @@ export function packRefundRequestedCoach(p: {
         }
       : {
           subject: `${p.clientName} demande le remboursement de son pack`,
-          preheader: `${p.remaining} séance(s) non utilisée(s) sur « ${p.packName} ». Tu as 7 jours pour répondre.`,
+          preheader: `${p.remaining} séance(s) non utilisée(s) sur « ${escHtml(p.packName)} ». Tu as 7 jours pour répondre.`,
           eyebrow: "Demande de remboursement",
-          title: `${p.clientName} demande le remboursement du reste de son pack`,
-          intro: `<b style="color:${C.text};">${p.clientName}</b> demande à être remboursé des <b style="color:${C.text};">${p.remaining} séance${p.remaining > 1 ? "s" : ""}</b> non utilisée${p.remaining > 1 ? "s" : ""} du pack <b style="color:${C.text};">${p.packName}</b>.${note ? `<br/><br/><span style="color:${C.muted};font-style:italic;">« ${note} »</span>` : ""}`,
+          title: `${escHtml(p.clientName)} demande le remboursement du reste de son pack`,
+          intro: `<b style="color:${C.text};">${escHtml(p.clientName)}</b> demande à être remboursé des <b style="color:${C.text};">${p.remaining} séance${p.remaining > 1 ? "s" : ""}</b> non utilisée${p.remaining > 1 ? "s" : ""} du pack <b style="color:${C.text};">${escHtml(p.packName)}</b>.${note ? `<br/><br/><span style="color:${C.muted};font-style:italic;">« ${note} »</span>` : ""}`,
           boxTitle: "Tu as 7 jours",
           boxBody:
             "Depuis la fiche client, accepte (le remboursement au prorata part tout de suite) ou refuse avec un motif que le client lira. Sans réponse sous 7 jours, Madger rembourse automatiquement. Un refus peut être contesté par le client auprès de Madger.",
@@ -2111,10 +2123,10 @@ export function packRefundRefusedClient(p: {
   return {
     subject: `Ta demande de remboursement : réponse de ${p.coachName}`,
     html: layout({
-      preheader: `${p.coachName} a refusé le remboursement du reste de ton pack. Voici son motif.`,
+      preheader: `${escHtml(p.coachName)} a refusé le remboursement du reste de ton pack. Voici son motif.`,
       eyebrow: "Demande de remboursement",
-      title: `${p.coachName} a refusé ta demande`,
-      intro: `Tu avais demandé le remboursement des <b style="color:${C.text};">${p.remaining} séance${p.remaining > 1 ? "s" : ""}</b> restante${p.remaining > 1 ? "s" : ""} du pack <b style="color:${C.text};">${p.packName}</b>. Ton coach a refusé, avec ce motif :<br/><br/><span style="color:${C.muted};font-style:italic;">« ${esc(p.reason)} »</span>`,
+      title: `${escHtml(p.coachName)} a refusé ta demande`,
+      intro: `Tu avais demandé le remboursement des <b style="color:${C.text};">${p.remaining} séance${p.remaining > 1 ? "s" : ""}</b> restante${p.remaining > 1 ? "s" : ""} du pack <b style="color:${C.text};">${escHtml(p.packName)}</b>. Ton coach a refusé, avec ce motif :<br/><br/><span style="color:${C.muted};font-style:italic;">« ${esc(p.reason)} »</span>`,
       blocks: [
         infoBox(
           "Pas d'accord ?",
@@ -2140,7 +2152,7 @@ export function packExtendedClient(p: {
       preheader: `${p.remaining} séance(s) à placer, validité repoussée de 30 jours.`,
       eyebrow: "Pack prolongé",
       title: `30 jours de plus pour tes ${p.remaining} séance${p.remaining > 1 ? "s" : ""}`,
-      intro: `Ton pack <b style="color:${C.text};">${p.packName}</b> chez <b style="color:${C.text};">${p.coachName}</b> arrivait à sa date de fin sans que tu aies pu placer tes séances (pas de créneau disponible, ou séances annulées par ton coach). Madger l'a prolongé automatiquement jusqu'au <b style="color:${C.text};">${p.newExpiresStr}</b>.`,
+      intro: `Ton pack <b style="color:${C.text};">${escHtml(p.packName)}</b> chez <b style="color:${C.text};">${escHtml(p.coachName)}</b> arrivait à sa date de fin sans que tu aies pu placer tes séances (pas de créneau disponible, ou séances annulées par ton coach). Madger l'a prolongé automatiquement jusqu'au <b style="color:${C.text};">${p.newExpiresStr}</b>.`,
       cta: { label: "Placer mes séances", url: p.spaceUrl },
       outro:
         "Toujours impossible de réserver ? Tu peux demander le remboursement des séances restantes depuis ton espace.",
@@ -2163,16 +2175,16 @@ export function packExtendedCoach(p: {
           subject: `${p.clientName}'s pack has been extended`,
           preheader: `${p.remaining} session(s) left with no bookable slot: validity extended to ${p.newExpiresStr}.`,
           eyebrow: "Pack extended",
-          title: `${p.clientName}'s pack was extended by 30 days`,
-          intro: `<b style="color:${C.text};">${p.clientName}</b> still has <b style="color:${C.text};">${p.remaining} session${p.remaining > 1 ? "s" : ""}</b> on the pack <b style="color:${C.text};">${p.packName}</b> and could not book them (no free slot in the coming days, or sessions you cancelled). Madger extended the pack to <b style="color:${C.text};">${p.newExpiresStr}</b> so those sessions are not lost because of scheduling.`,
+          title: `${escHtml(p.clientName)}'s pack was extended by 30 days`,
+          intro: `<b style="color:${C.text};">${escHtml(p.clientName)}</b> still has <b style="color:${C.text};">${p.remaining} session${p.remaining > 1 ? "s" : ""}</b> on the pack <b style="color:${C.text};">${escHtml(p.packName)}</b> and could not book them (no free slot in the coming days, or sessions you cancelled). Madger extended the pack to <b style="color:${C.text};">${p.newExpiresStr}</b> so those sessions are not lost because of scheduling.`,
           cta: "Check my availability",
         }
       : {
           subject: `Le pack de ${p.clientName} a été prolongé`,
           preheader: `${p.remaining} séance(s) restante(s) sans créneau disponible : validité repoussée au ${p.newExpiresStr}.`,
           eyebrow: "Pack prolongé",
-          title: `Le pack de ${p.clientName} est prolongé de 30 jours`,
-          intro: `<b style="color:${C.text};">${p.clientName}</b> a encore <b style="color:${C.text};">${p.remaining} séance${p.remaining > 1 ? "s" : ""}</b> sur le pack <b style="color:${C.text};">${p.packName}</b> et n'a pas pu les placer (aucun créneau libre dans les prochains jours, ou séances annulées de ton côté). Madger a prolongé le pack jusqu'au <b style="color:${C.text};">${p.newExpiresStr}</b> pour que ces séances ne soient pas perdues à cause du planning.`,
+          title: `Le pack de ${escHtml(p.clientName)} est prolongé de 30 jours`,
+          intro: `<b style="color:${C.text};">${escHtml(p.clientName)}</b> a encore <b style="color:${C.text};">${p.remaining} séance${p.remaining > 1 ? "s" : ""}</b> sur le pack <b style="color:${C.text};">${escHtml(p.packName)}</b> et n'a pas pu les placer (aucun créneau libre dans les prochains jours, ou séances annulées de ton côté). Madger a prolongé le pack jusqu'au <b style="color:${C.text};">${p.newExpiresStr}</b> pour que ces séances ne soient pas perdues à cause du planning.`,
           cta: "Vérifier mes disponibilités",
         };
   return {
@@ -2198,10 +2210,10 @@ export function packLowClient(p: {
   return {
     subject: `Plus que ${p.remaining} séance${p.remaining > 1 ? "s" : ""} sur ton pack`,
     html: layout({
-      preheader: `Ton pack chez ${p.coachName} arrive au bout : place tes dernières séances.`,
+      preheader: `Ton pack chez ${escHtml(p.coachName)} arrive au bout : place tes dernières séances.`,
       eyebrow: "Ton pack",
       title: `Plus que ${p.remaining} séance${p.remaining > 1 ? "s" : ""}`,
-      intro: `Ton pack chez <b style="color:${C.text};">${p.coachName}</b> arrive au bout. Place tes dernières séances dès maintenant pour garder le rythme${p.expiresStr ? `, le pack est valable jusqu'au <b style="color:${C.text};">${p.expiresStr}</b>` : ""}.`,
+      intro: `Ton pack chez <b style="color:${C.text};">${escHtml(p.coachName)}</b> arrive au bout. Place tes dernières séances dès maintenant pour garder le rythme${p.expiresStr ? `, le pack est valable jusqu'au <b style="color:${C.text};">${p.expiresStr}</b>` : ""}.`,
       cta: { label: "Placer une séance", url: p.spaceUrl },
       outro:
         "Envie de continuer après ? Tu pourras reprendre un pack directement depuis la page de ton coach.",
@@ -2220,7 +2232,7 @@ export function packEmptyClient(p: {
       preheader: "Toutes les séances sont placées. On continue ?",
       eyebrow: "Ton pack",
       title: "Pack terminé, bravo pour la régularité 💪",
-      intro: `Toutes les séances de ton pack chez <b style="color:${C.text};">${p.coachName}</b> sont placées. Pour continuer sans coupure, reprends un pack ou réserve une séance à l'unité en deux clics.`,
+      intro: `Toutes les séances de ton pack chez <b style="color:${C.text};">${escHtml(p.coachName)}</b> sont placées. Pour continuer sans coupure, reprends un pack ou réserve une séance à l'unité en deux clics.`,
       cta: { label: "Reprendre un pack", url: p.coachUrl },
       outro:
         "Un doute sur la suite ? Écris à ton coach depuis ton espace, il te conseillera la formule adaptée.",
@@ -2241,7 +2253,7 @@ export function packExpiringClient(p: {
       preheader: `Il te reste ${p.remaining} séance(s) à utiliser avant le ${p.expiresStr}.`,
       eyebrow: "Ton pack expire bientôt",
       title: `${p.remaining} séance${p.remaining > 1 ? "s" : ""} à placer avant le ${p.expiresStr}`,
-      intro: `Ton pack chez <b style="color:${C.text};">${p.coachName}</b> arrive à sa date de fin. Les séances non utilisées après le <b style="color:${C.text};">${p.expiresStr}</b> seront perdues : place-les maintenant.`,
+      intro: `Ton pack chez <b style="color:${C.text};">${escHtml(p.coachName)}</b> arrive à sa date de fin. Les séances non utilisées après le <b style="color:${C.text};">${p.expiresStr}</b> seront perdues : place-les maintenant.`,
       cta: { label: "Placer mes séances", url: p.spaceUrl },
       outro:
         "Un empêchement ? Écris à ton coach depuis ton espace : il peut te faire un geste sur la validité.",
@@ -2263,7 +2275,7 @@ export function clientsFollowUpCoach(p: {
 }): Email {
   const en = p.locale === "en";
   const hello = p.firstName
-    ? en ? `${p.firstName}, ` : `${p.firstName}, `
+    ? en ? `${escHtml(p.firstName)}, ` : `${escHtml(p.firstName)}, `
     : "";
   const rows: DetailRow[] = p.items.slice(0, 12).map((it) => ({
     label: it.clientName,
@@ -2367,7 +2379,7 @@ export function onboardingNudgeCoachLater(p: {
       preheader:
         "Ta page coach n'est toujours pas en ligne. Dis-moi ce qui bloque.",
       eyebrow: "Ton compte Madger",
-      title: p.firstName ? `${p.firstName}, on garde ta place ?` : "On garde ta place ?",
+      title: p.firstName ? `${escHtml(p.firstName)}, on garde ta place ?` : "On garde ta place ?",
       intro:
         "Ça fait une semaine que tu as créé ton compte, et ta page n'est toujours pas en ligne. Pendant ce temps, tes clients continuent de te réserver par messages et de te payer en retard. Si quelque chose t'a arrêté (une étape pas claire, Stripe, un doute sur le produit), réponds à cet email en une phrase : je te débloque personnellement.",
       cta: { label: "Reprendre ma configuration", url: p.dashboardUrl },
@@ -2389,7 +2401,7 @@ export function activationLinkReady(p: {
     html: layout({
       preheader: "Mets-le dans ta bio, envoie-le à trois clients, et regarde.",
       eyebrow: "Ton lien Madger",
-      title: p.firstName ? `${p.firstName}, ton lien est prêt` : "Ton lien est prêt",
+      title: p.firstName ? `${escHtml(p.firstName)}, ton lien est prêt` : "Ton lien est prêt",
       intro: `Ta page est en ligne à l'adresse <b style="color:${C.text};">${short}</b>. À partir de maintenant, tout client qui l'ouvre peut réserver et payer sa séance sans que tu aies rien à faire. Il ne reste qu'une chose : le mettre sous les yeux de tes clients.`,
       blocks: [
         infoBox(
@@ -2415,7 +2427,7 @@ export function activationBioLink(p: {
     html: layout({
       preheader: "Aucune réservation pour l'instant : le lien n'est probablement pas visible.",
       eyebrow: "Ton lien Madger",
-      title: p.firstName ? `${p.firstName}, ton lien est-il dans ta bio ?` : "Ton lien est-il dans ta bio ?",
+      title: p.firstName ? `${escHtml(p.firstName)}, ton lien est-il dans ta bio ?` : "Ton lien est-il dans ta bio ?",
       intro: `Ta page est prête depuis deux jours et personne n'a encore réservé. Dans presque tous les cas, c'est que le lien n'est pas encore là où tes clients regardent. Un lien que personne ne voit ne vend rien, aussi bon soit-il.`,
       blocks: [
         infoBox(
@@ -2497,6 +2509,52 @@ export function waitlistStory(): { subject: string; html: string } {
         `<p style="${FONT}margin:14px 0 0;font-size:14px;line-height:1.7;color:${C.muted};">On ouvre très bientôt, et les premiers membres auront une vraie voix : vos retours décideront de ce qu'on code chaque semaine. Tiens-toi prêt.</p>`,
       ],
       outro: "Léonard, fondateur de Madger.",
+    }),
+  };
+}
+
+// ── Coach : échec du prélèvement de l'abonnement Pro ────────────────────────
+export function proPaymentFailedCoach(p: {
+  subscriptionUrl: string;
+  locale?: EmailLocale;
+}): Email {
+  const locale = p.locale ?? "fr";
+  const L =
+    locale === "en"
+      ? {
+          subject: "Your Pro payment did not go through ⚠️",
+          preheader:
+            "Update your card in two minutes: Stripe retries automatically and your Pro plan keeps running meanwhile.",
+          eyebrow: "Pro plan",
+          title: "Your Pro payment did not go through",
+          intro: `The payment for your <b style="color:${C.text};">Madger Pro</b> subscription was declined by your bank. Nothing changes for now: your plan keeps running and Stripe retries over the next days. To avoid any interruption, update your card from the Subscription page.`,
+          boxTitle: "If nothing is done",
+          boxBody:
+            "After several failed attempts, the subscription stops and your account goes back to the Essential plan. Your calendar, clients and payments keep working.",
+          cta: "Update my card",
+        }
+      : {
+          subject: "Le prélèvement de ton abonnement Pro a échoué ⚠️",
+          preheader:
+            "Mets ta carte à jour en deux minutes : Stripe retente automatiquement et ton plan Pro continue en attendant.",
+          eyebrow: "Plan Pro",
+          title: "Le prélèvement de ton abonnement Pro a échoué",
+          intro: `Le paiement de ton abonnement <b style="color:${C.text};">Madger Pro</b> a été refusé par ta banque. Rien ne change pour l'instant : ton plan continue et Stripe retente dans les prochains jours. Pour éviter toute coupure, mets ta carte à jour depuis la page Abonnement.`,
+          boxTitle: "Si rien n'est fait",
+          boxBody:
+            "Après plusieurs tentatives en échec, l'abonnement s'arrête et ton compte repasse au plan Essentiel. Ton agenda, tes clients et tes paiements continuent de fonctionner.",
+          cta: "Mettre ma carte à jour",
+        };
+  return {
+    subject: L.subject,
+    html: layout({
+      locale,
+      preheader: L.preheader,
+      eyebrow: L.eyebrow,
+      title: L.title,
+      intro: L.intro,
+      blocks: [infoBox(L.boxTitle, L.boxBody)],
+      cta: { label: L.cta, url: p.subscriptionUrl },
     }),
   };
 }

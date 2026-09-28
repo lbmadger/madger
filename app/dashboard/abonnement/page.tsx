@@ -106,6 +106,15 @@ export default async function SubscriptionPage({
             {p.welcomePro}
           </p>
         )}
+        {/* Prélèvement en échec : la carte est à mettre à jour ici. */}
+        {coach?.subscription_status === "past_due" && (
+          <p
+            role="alert"
+            className="mb-4 rounded-2xl border border-danger/40 bg-danger/10 px-4 py-3 text-sm text-text-base"
+          >
+            <span className="font-semibold">{p.pastDueTitle}</span> {p.pastDueDesc}
+          </p>
+        )}
         {/* Statut : plan bien lisible en haut, action rangée en dessous
             (le bouton coincé à droite écrasait la carte sur mobile). */}
         <div
@@ -161,7 +170,7 @@ export default async function SubscriptionPage({
                 }
                 offerAvailable={
                   !coach?.retention_offer_used_at &&
-                  ["active", "trialing", "canceling"].includes(
+                  ["active", "canceling"].includes(
                     coach?.subscription_status ?? ""
                   )
                 }

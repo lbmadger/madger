@@ -258,7 +258,7 @@ export default function Navbar({ launched = false }: { launched?: boolean }) {
               className={open ? "anim-fade-in text-center text-xs" : "text-center text-xs"}
               style={{ color: "var(--text-dim)", animationDelay: open ? "0.26s" : undefined }}
             >
-              Inscriptions ouvertes · Sans engagement
+              {launched ? "Inscriptions ouvertes · Sans engagement" : "Accès anticipé · Sans engagement"}
             </p>
 
             {/* Client d'un coach : accès discret à ses séances */}

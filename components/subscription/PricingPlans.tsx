@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import PromoCode from "@/components/subscription/PromoCode";
 import {
@@ -245,6 +246,14 @@ export default function PricingPlans({
                     )}
               </p>
             )}
+            {/* CGV présentées avant la souscription (elles décrivent l'essai,
+                le prix de lancement et la résiliation). */}
+            <p className="mt-2 text-center text-[11px] text-text-dim">
+              {p.cgvNote}{" "}
+              <Link href="/cgv" className="underline hover:text-text-base">
+                {p.cgvLink}
+              </Link>
+            </p>
             {error && (
               <p role="alert" className="mt-2 text-center text-sm text-danger">{error}</p>
             )}

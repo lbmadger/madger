@@ -56,13 +56,41 @@ export function localSubStatus(sub: Stripe.Subscription): LocalSubStatus {
 // offert » (parrainage, rétention) : ce que le coach paie réellement (prix de
 // lancement ou tarif normal, mensuel ou annuel ramené au mois), jamais un
 // montant en dur. Repli : le tarif mensuel en vigueur.
-export function monthlyCreditCents(sub: Stripe.Subscription | null | undefined): number {
+export function monthlyCreditCents(
+  sub: Stripe.Subscription | null | undefined,
+  // Remise en cours sur l'abonnement (coupon de lancement : 50 % pendant
+  // trois mois) : le mois offert vaut ce que le coach paie vraiment.
+  percentOff: number = 0
+): number {
+  const pct = Math.min(100, Math.max(0, percentOff));
+  const net = (cents: number) => Math.round((cents * (100 - pct)) / 100);
   const price = sub?.items?.data?.[0]?.price;
   const unit = price?.unit_amount;
-  if (!price || typeof unit !== "number" || unit <= 0) return currentMonthlyCents();
+  if (!price || typeof unit !== "number" || unit <= 0) return net(currentMonthlyCents());
   const interval = price.recurring?.interval;
   const count = price.recurring?.interval_count ?? 1;
-  if (interval === "year") return Math.round(unit / (12 * count));
-  if (interval === "month") return Math.round(unit / count);
-  return currentMonthlyCents();
+  if (interval === "year") return net(Math.round(unit / (12 * count)));
+  if (interval === "month") return net(Math.round(unit / count));
+  return net(currentMonthlyCents());
+}
+
+// Pourcentage de remise actif sur l'abonnement (0 sans coupon). L'abonnement
+// est à lire avec expand: ["discounts"] ; un coupon non développé est
+// relu par son identifiant.
+export async function subscriptionPercentOff(
+  stripe: Stripe,
+  sub: Stripe.Subscription
+): Promise<number> {
+  for (const d of sub.discounts ?? []) {
+    if (!d || typeof d === "string") continue;
+    const c = d.source?.coupon;
+    if (!c) continue;
+    try {
+      const coupon = typeof c === "string" ? await stripe.coupons.retrieve(c) : c;
+      if (typeof coupon.percent_off === "number") return coupon.percent_off;
+    } catch {
+      /* coupon introuvable : pas de remise connue */
+    }
+  }
+  return 0;
 }

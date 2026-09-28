@@ -67,9 +67,13 @@ export async function POST() {
         ],
         // Le mois en cours déjà payé est crédité sur la facture annuelle.
         proration_behavior: "create_prorations",
+        // L'offre du lien de lancement (50 % pendant trois mois) ne vaut que
+        // pour le mensuel : sans ceci, le coupon s'appliquait à l'année
+        // entière (245 € au lieu de 490 €).
+        discounts: [],
         // Une éventuelle résiliation programmée est annulée : il reste.
         cancel_at_period_end: false,
-        metadata: { ...sub.metadata, plan: "annual" },
+        metadata: { ...sub.metadata, plan: "annual", launch_offer: "" },
       },
       { idempotencyKey: `switch_annual_${sub.id}` }
     );

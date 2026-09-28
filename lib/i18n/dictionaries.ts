@@ -11,7 +11,7 @@ import type { Locale } from "./config";
 const fr = {
   demoCoach: {
     bannerTitle: "Ceci est une page d'exemple",
-    bannerDesc: "Voilà à quoi ressemblera ta page de coach sur Madger.",
+    bannerDesc: "Voilà à quoi ressemblera ta page de coach sur Madger. Coach, avis, photos et chiffres sont fictifs, à titre d'illustration.",
     dashboardLink: "Voir son dashboard côté coach →",
     bannerCta: "Créer ma page",
     promptTitle: "Envie d'une page comme celle-ci ?",
@@ -508,6 +508,11 @@ const fr = {
     free: "Essentiel",
     pro: "Madger Pro",
     proActive: "Pro actif",
+    pastDueTitle: "Prélèvement en échec.",
+    pastDueDesc:
+      "Ta banque a refusé le paiement de ton abonnement Pro. Mets ta carte à jour depuis « Gérer mon abonnement » ci-dessous : Stripe retente automatiquement, et sans règlement le compte repasse en Essentiel.",
+    cgvNote: "En t'abonnant, tu acceptes les",
+    cgvLink: "conditions générales de vente",
     welcomePro:
       "Bienvenue en Pro. Annulation automatique, relances, écran encaissements, alertes clients qui décrochent et statistiques avancées débloqués.",
     proUntil: "Pro jusqu'au",
@@ -515,8 +520,6 @@ const fr = {
     freeDesc: "Pour démarrer.",
     proDesc: "Pour aller plus loin.",
     priceFree: "0 €",
-    pricePro: "49 € / mois",
-    priceProAnnual: "490 € / an",
     proNote: "Sans engagement, résiliable à tout moment. L'annuel s'arrête à la fin de l'année payée.",
     billingMonthly: "Mensuel",
     billingAnnual: "Annuel",
@@ -551,7 +554,7 @@ const fr = {
     trialNoteMonthly:
       "Rien n'est débité pendant 7 jours, puis {price} par mois. Tu arrêtes quand tu veux depuis cette page, en un clic.",
     trialNoteAnnual:
-      "Rien n'est débité pendant 7 jours, puis {price} pour l'année. Tu arrêtes quand tu veux pendant l'essai, en un clic.",
+      "Rien n'est débité pendant 7 jours, puis {price} pour l'année. Tu arrêtes quand tu veux depuis cette page, en un clic ; après l'essai, l'année payée va jusqu'à son terme.",
     upgradeSoon: "Paiement bientôt disponible",
     upgradeError: "Paiement indisponible pour le moment. Réessaie plus tard.",
     manage: "Gérer mon abonnement",
@@ -637,8 +640,6 @@ const fr = {
     offerBadge: "Offre de lancement",
     offerLine: "Prix de lancement jusqu'au {date}, puis {regular} par mois.",
     offerLineAnnual: "Prix de lancement jusqu'au {date}, puis {regular} par an.",
-    offerKeep: "Abonne-toi avant : tu gardes 49 € tant que tu restes abonné.",
-    offerKeepAnnual: "Abonne-toi avant : tu gardes 490 € tant que tu restes abonné.",
     offerFrom: "tarif à partir du {date}",
     offerDaysLeft: "{name} : plus que {n} jours pour bloquer ce prix",
     offerLastDay: "{name} : dernier jour pour bloquer ce prix",
@@ -1978,7 +1979,7 @@ export type Dictionary = typeof fr;
 const en: Dictionary = {
   demoCoach: {
     bannerTitle: "This is an example page",
-    bannerDesc: "Here is what your coach page on Madger will look like.",
+    bannerDesc: "Here is what your coach page on Madger will look like. Coach, reviews, photos and figures are fictional, for illustration only.",
     dashboardLink: "See her coach dashboard →",
     bannerCta: "Create my page",
     promptTitle: "Want a page like this one?",
@@ -2472,6 +2473,11 @@ const en: Dictionary = {
     free: "Essential",
     pro: "Madger Pro",
     proActive: "Pro active",
+    pastDueTitle: "Payment failed.",
+    pastDueDesc:
+      "Your bank declined your Pro subscription payment. Update your card from \"Manage subscription\" below: Stripe retries automatically, and without payment the account goes back to Essential.",
+    cgvNote: "By subscribing, you accept the",
+    cgvLink: "terms of sale",
     welcomePro:
       "Welcome to Pro. Automatic cancellation, renewal reminders, payments screen, inactive-client alerts and advanced statistics unlocked.",
     proUntil: "Pro until",
@@ -2479,8 +2485,6 @@ const en: Dictionary = {
     freeDesc: "To get started.",
     proDesc: "To go further.",
     priceFree: "€0",
-    pricePro: "€49 / month",
-    priceProAnnual: "€490 / year",
     proNote: "No commitment, cancel anytime. Annual stops at the end of the paid year.",
     billingMonthly: "Monthly",
     billingAnnual: "Annual",
@@ -2515,7 +2519,7 @@ const en: Dictionary = {
     trialNoteMonthly:
       "Nothing is charged for 7 days, then {price} per month. Stop whenever you want from this page, in one click.",
     trialNoteAnnual:
-      "Nothing is charged for 7 days, then {price} for the year. Stop whenever you want during the trial, in one click.",
+      "Nothing is charged for 7 days, then {price} for the year. Stop whenever you want from this page, in one click; after the trial, the paid year runs to its end.",
     upgradeSoon: "Payment coming soon",
     upgradeError: "Payment unavailable right now. Please try again later.",
     manage: "Manage subscription",
@@ -2601,8 +2605,6 @@ const en: Dictionary = {
     offerBadge: "Launch offer",
     offerLine: "Launch price until {date}, then {regular} per month.",
     offerLineAnnual: "Launch price until {date}, then {regular} per year.",
-    offerKeep: "Subscribe before: you keep 49 € as long as you stay subscribed.",
-    offerKeepAnnual: "Subscribe before: you keep 490 € as long as you stay subscribed.",
     offerFrom: "price from {date}",
     offerDaysLeft: "{name}: only {n} days left to lock this price",
     offerLastDay: "{name}: last day to lock this price",
@@ -3419,7 +3421,7 @@ const en: Dictionary = {
     lessThan: "less than",
     direction:
       "The later the cancellation, the smaller the refund (so the more the client pays).",
-    noShow: "No-show: 0% refunded",
+    noShow: "No-show: no refund, the session is kept by the coach",
     tiersTitle: "Refund to the client",
     tierEarly: "Client cancels more than 24h before the session starts",
     tierLate: "Client cancels less than 24h before the session starts",

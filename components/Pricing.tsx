@@ -9,6 +9,7 @@ import PricingCalculator from "@/components/PricingCalculator";
 import { FEE_RATE_BPS } from "@/lib/subscription/plan";
 import {
   LAUNCH_OFFER,
+  euros,
   launchOfferActive,
   monthlyOffer,
   launchOfferRegularFromLabel,
@@ -54,7 +55,8 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
   // Sélecteur mensuel / annuel de la landing : même choix que sur la page
   // Abonnement du tableau de bord.
   const [period, setPeriod] = useState<"monthly" | "annual">("monthly");
-  const annualMonthlyEq = Math.round(annual / 12);
+  // « 40,83 € » : le même chiffre que la page Abonnement, jamais arrondi à 41.
+  const annualMonthlyEq = euros(Math.round(currentAnnualCents() / 12), "fr");
   // Chiffre d'affaires mensuel au-delà duquel Pro coûte moins cher
   // qu'Essentiel : abonnement / écart de taux (jamais un montant en dur).
   const breakeven = Math.round(
@@ -231,7 +233,7 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
                 </div>
                 <div className="text-text-muted text-xs">
                   {period === "annual"
-                    ? `soit ${annualMonthlyEq} € par mois, 2 mois offerts · 7 jours d'essai gratuits`
+                    ? `soit ${annualMonthlyEq} par mois, 2 mois offerts · 7 jours d'essai gratuits`
                     : `ou ${annual} € par an (2 mois offerts) · 7 jours d'essai gratuits`}
                 </div>
               </div>

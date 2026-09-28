@@ -4,7 +4,7 @@ import { createClient as createAdmin } from "@supabase/supabase-js";
 import { NO_STORE } from "@/lib/supabase/noStore";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
-import { localSubStatus, monthlyCreditCents } from "@/lib/stripe/subscription";
+import { localSubStatus, monthlyCreditCents, subscriptionPercentOff } from "@/lib/stripe/subscription";
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +41,9 @@ export async function POST(req: NextRequest) {
   if (coach.retention_offer_used_at) {
     return NextResponse.json({ error: "already_used" }, { status: 409 });
   }
-  if (!["active", "trialing", "canceling"].includes(coach.subscription_status ?? "")) {
+  // Un coach en essai n'a encore rien payé : rien à offrir (le geste
+  // serait un crédit sur une facture qui n'existe pas encore).
+  if (!["active", "canceling"].includes(coach.subscription_status ?? "")) {
     return NextResponse.json({ error: "not_active" }, { status: 409 });
   }
 
@@ -59,9 +61,11 @@ export async function POST(req: NextRequest) {
   try {
     // Un mois = ce que le coach paie réellement (mensuel, ou annuel ramené au
     // mois, prix de lancement inclus), lu sur son abonnement Stripe.
-    const current = await stripe.subscriptions.retrieve(coach.stripe_subscription_id);
+    const current = await stripe.subscriptions.retrieve(coach.stripe_subscription_id, {
+      expand: ["discounts"],
+    });
     await stripe.customers.createBalanceTransaction(coach.stripe_customer_id, {
-      amount: -monthlyCreditCents(current),
+      amount: -monthlyCreditCents(current, await subscriptionPercentOff(stripe, current)),
       currency: "eur",
       description: "Madger : 1 mois de Pro offert",
     });

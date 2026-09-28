@@ -10,6 +10,7 @@ import {
   invoicePaymentIntentId,
   localSubStatus,
   monthlyCreditCents,
+  subscriptionPercentOff,
 } from "@/lib/stripe/subscription";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { planOf, feeRatePercent, feeRateBps, planForRateBps } from "@/lib/subscription/plan";
@@ -121,9 +122,11 @@ export async function POST(req: NextRequest) {
       c?.subscription_status === "canceling";
     if (c?.stripe_customer_id && c.stripe_subscription_id && active && stripe) {
       try {
-        const sub = await stripe.subscriptions.retrieve(c.stripe_subscription_id);
+        const sub = await stripe.subscriptions.retrieve(c.stripe_subscription_id, {
+          expand: ["discounts"],
+        });
         await stripe.customers.createBalanceTransaction(c.stripe_customer_id, {
-          amount: -monthlyCreditCents(sub),
+          amount: -monthlyCreditCents(sub, await subscriptionPercentOff(stripe, sub)),
           currency: "eur",
           description: "Parrainage Madger : 1 mois de Pro offert",
         });
@@ -667,6 +670,26 @@ export async function POST(req: NextRequest) {
           const subId = invoiceSubscriptionId(invoice);
           if (!subId) break;
           const sub = await stripe.subscriptions.retrieve(subId);
+          // Abonnement Pro d'un coach : prévenu tout de suite, avec le lien
+          // pour mettre sa carte à jour (Stripe retente ensuite de lui-même ;
+          // le statut past_due arrive par customer.subscription.updated).
+          if (sub.metadata?.coach_id) {
+            const coachId = sub.metadata.coach_id;
+            const [{ data: coachAuth }, { data: coachRow }] = await Promise.all([
+              supabase.auth.admin.getUserById(coachId),
+              supabase.from("coaches").select("locale").eq("id", coachId).maybeSingle(),
+            ]);
+            if (coachAuth?.user?.email) {
+              const { proPaymentFailedCoach } = await import("@/lib/email/templates");
+              const { sendEmail } = await import("@/lib/email/resend");
+              const tpl = proPaymentFailedCoach({
+                locale: coachRow?.locale === "en" ? "en" : "fr",
+                subscriptionUrl: `${process.env.NEXT_PUBLIC_APP_URL || "https://madger.app"}/dashboard/abonnement`,
+              });
+              await sendEmail({ to: coachAuth.user.email, subject: tpl.subject, html: tpl.html });
+            }
+            break;
+          }
           if (sub.metadata?.kind !== "client_sub") break;
           const { data: reg } = await supabase
             .from("client_subscriptions")

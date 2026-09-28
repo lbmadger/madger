@@ -188,6 +188,7 @@ export async function GET(req: NextRequest) {
       .eq("status", "confirmed")
       .eq("is_block", false)
       .is("reminder_soon_sent_at", null)
+      .is("client_cancel_requested_at", null)
       .gt("starts_at", nowIso)
       .lte("starts_at", soon)
       .limit(100);

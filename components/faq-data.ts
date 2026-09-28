@@ -1,8 +1,12 @@
+import { FEE_RATE_BPS } from "@/lib/subscription/plan";
+import { currentMonthlyCents } from "@/lib/subscription/offer";
+
 // Données FAQ partagées entre le composant FAQ (affichage) et le JSON-LD
 // FAQPage généré côté serveur dans app/page.tsx (rich snippets Google).
 // La première question dépend du mode du site : avant le lancement elle parle
 // de l'accès anticipé, après (SITE_LAUNCHED=1) elle explique comment démarrer.
 export function getFaqs(launched: boolean) {
+  const faqs = baseFaqs();
   if (!launched) return faqs;
   return [
     {
@@ -13,7 +17,11 @@ export function getFaqs(launched: boolean) {
   ];
 }
 
-export const faqs = [
+export // Fonction et non constante : le prix du Pro vient de currentMonthlyCents()
+// (offre de lancement jusqu'au 31 décembre, tarif normal ensuite), jamais
+// d'un montant en dur figé au build.
+function baseFaqs() {
+  return [
   {
     q: "Quand Madger sera-t-il disponible ?",
     a: "Madger est en phase d'accès anticipé. Les coachs qui s'inscrivent maintenant sont sélectionnés manuellement et accèdent en priorité au lancement, avec le plan Pro offert pendant 1 mois. On te contacte directement dès que ton accès est prêt.",
@@ -36,7 +44,7 @@ export const faqs = [
   },
   {
     q: "Combien ça coûte si je ne vends rien ?",
-    a: "Rien. Le plan Essentiel n'a ni abonnement ni minimum : 0 € tant que tu n'encaisses pas, puis 7 % de frais de transaction sur chaque séance vendue, tout compris (paiement par carte, Apple Pay, remboursements et litiges). Pro, à 49 € par mois et 3 %, ajoute l'annulation automatique selon tes règles, les relances, l'écran encaissements, les alertes clients qui décrochent et les statistiques avancées : tu l'essaies 7 jours sans être débité.",
+    a: `Rien. Le plan Essentiel n'a ni abonnement ni minimum : 0 € tant que tu n'encaisses pas, puis ${FEE_RATE_BPS.essential / 100} % de frais de transaction sur chaque séance vendue, tout compris (paiement par carte, Apple Pay, remboursements et litiges). Pro, à ${currentMonthlyCents() / 100} € par mois et ${FEE_RATE_BPS.pro / 100} %, ajoute l'annulation automatique selon tes règles, les relances, l'écran encaissements, les alertes clients qui décrochent et les statistiques avancées : tu l'essaies 7 jours sans être débité.`,
   },
   {
     q: "Mes données et celles de mes clients sont-elles sécurisées ?",
@@ -58,4 +66,5 @@ export const faqs = [
     q: "Puis-je gérer plusieurs types de séances ?",
     a: "Oui. Tu crées autant de prestations que tu veux : séance découverte, coaching individuel, suivi mensuel, pack séances… Chaque prestation a son tarif, sa durée et ses disponibilités. Tes clients voient tout et choisissent ce qui leur convient.",
   },
-];
+  ];
+}

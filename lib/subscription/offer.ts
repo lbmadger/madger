@@ -80,11 +80,11 @@ export function launchOfferDaysLeft(now: Date = new Date()): number {
 }
 
 // Offre du mois : tant que l'offre de lancement court, elle porte un nom qui
-// change chaque mois (rentrée, automne, Black Friday, Noël) et un compte à
-// rebours jusqu'à la fin du mois en cours. Le prix, lui, est celui de
-// LAUNCH_OFFER (49 € jusqu'au 31 décembre, 69 € ensuite) : les textes qui
-// l'entourent doivent toujours dire le tarif 2027 et sa date, jamais qu'il
-// change le 1er du mois suivant.
+// change chaque mois (rentrée, automne, Black Friday, Noël). Le compte à
+// rebours, lui, vise la SEULE date à laquelle le prix change vraiment : la
+// fin de l'offre de lancement (49 € jusqu'au 31 décembre, 69 € ensuite).
+// Compter jusqu'à la fin du mois serait une fausse urgence (le prix ne
+// bouge pas le 1er du mois suivant) : interdit.
 const MONTHLY_OFFER_NAMES: Record<number, { fr: string; en: string }> = {
   1: { fr: "Offre de nouvelle année", en: "New year offer" },
   2: { fr: "Offre d'hiver", en: "Winter offer" },
@@ -102,9 +102,9 @@ const MONTHLY_OFFER_NAMES: Record<number, { fr: string; en: string }> = {
 
 export type MonthlyOffer = {
   name: string;
-  // Jours restants jusqu'à la fin du mois (1 = dernier jour).
+  // Jours restants jusqu'à la fin de l'offre de lancement (1 = dernier jour).
   daysLeft: number;
-  // Dernier jour du mois, formaté (« 30 septembre »).
+  // Dernier jour de l'offre, formaté (« 31 décembre »).
   endsLabel: string;
 };
 
@@ -112,12 +112,8 @@ export function monthlyOffer(locale: string = "fr", now: Date = new Date()): Mon
   if (!launchOfferActive(now)) return null;
   const month = now.getMonth() + 1;
   const names = MONTHLY_OFFER_NAMES[month];
-  // Fin du mois : dernier instant du dernier jour, heure locale du serveur ou
-  // du navigateur (précision au jour, l'offre de lancement borne le reste).
-  const end = new Date(now.getFullYear(), month, 0, 23, 59, 59, 999);
-  const capped = Math.min(end.getTime(), offerEnd().getTime());
-  const daysLeft = Math.max(1, Math.ceil((capped - now.getTime()) / 86400000));
-  const endsLabel = new Date(capped).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB", {
+  const daysLeft = Math.max(1, launchOfferDaysLeft(now));
+  const endsLabel = offerEnd().toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB", {
     day: "numeric",
     month: "long",
   });

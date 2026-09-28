@@ -256,7 +256,7 @@ export async function GET(req: NextRequest) {
     const dueQuery = supabase
       .from("payments")
       .select(
-        "id, coach_id, booking_id, amount_cents, currency, paid_at, release_after, stripe_charge_id, stripe_fee_cents, refunded_cents, released_cents, commission_cents, payout_cents, fee_rate_bps, payment_method, provider_fee_cents, bookings(status, credit_lost, clients(first_name, last_name, email), coaches(first_name, last_name))"
+        "id, coach_id, booking_id, amount_cents, currency, paid_at, release_after, stripe_charge_id, stripe_fee_cents, refunded_cents, released_cents, commission_cents, payout_cents, fee_rate_bps, payment_method, provider_fee_cents, bookings(status, credit_lost, client_id, clients(first_name, last_name, email), coaches(first_name, last_name))"
       )
       .eq("escrow_status", "held")
       .lte("release_after", nowIso)
@@ -782,8 +782,18 @@ export async function GET(req: NextRequest) {
           : bookingRow?.coaches;
         const bkId = p.booking_id as string;
         // Pas de demande d'avis pour une séance annulée dont le crédit a été
-        // perdu : le client n'a pas eu la séance.
-        if (cl?.email && bookingRow?.status !== "cancelled") {
+        // perdu : le client n'a pas eu la séance. Ni à un client qui a déjà
+        // noté ce coach (1 client = 1 avis) : la page dirait « déjà donné ».
+        let alreadyReviewed = false;
+        if (cl?.email && bookingRow?.client_id) {
+          const { count: reviewCount } = await supabase
+            .from("reviews")
+            .select("id", { count: "exact", head: true })
+            .eq("coach_id", p.coach_id as string)
+            .eq("client_id", bookingRow.client_id as string);
+          alreadyReviewed = (reviewCount ?? 0) > 0;
+        }
+        if (cl?.email && bookingRow?.status !== "cancelled" && !alreadyReviewed) {
           const clEmail = cl.email as string;
           const tpl = reviewRequestClient({
             coachName:

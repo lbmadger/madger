@@ -65,6 +65,14 @@ export default function CGV() {
               tant que son abonnement reste actif sans interruption.
             </p>
             <p className="mt-3">
+              <strong className="text-white">Lien de lancement</strong> : le coach qui crée son
+              compte via madger.app/lancement jusqu&apos;au 31 octobre 2026 inclus bénéficie, sur
+              son premier abonnement Madger Pro mensuel, d&apos;une remise de 50 % pendant 3 mois
+              (24,50 € par mois au lieu de 49 €), puis du prix de lancement ci-dessus. Cette
+              remise ne se cumule pas avec un code promotionnel et ne s&apos;applique pas à
+              l&apos;abonnement annuel.
+            </p>
+            <p className="mt-3">
               Le premier abonnement Madger Pro d&apos;un coach débute par 7 jours d&apos;essai
               gratuit, avec enregistrement d&apos;un moyen de paiement ; sauf résiliation avant la
               fin de l&apos;essai, il se poursuit automatiquement au tarif choisi. Un seul essai
@@ -206,7 +214,7 @@ export default function CGV() {
           </section>
 
           <p style={{ fontSize: 13, color: "#3A3A3A", marginTop: 8 }}>
-            Dernière mise à jour : septembre 2026, version 2026-09c
+            Dernière mise à jour : septembre 2026, version 2026-09d
           </p>
         </div>
       </div>

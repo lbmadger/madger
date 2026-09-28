@@ -31,7 +31,7 @@ export default function Footer({ launched = false }: { launched?: boolean }) {
             {/* Porte d'entrée discrète pour le client d'un coach qui arrive
                 ici : la landing vend aux coachs, lui cherche ses séances. */}
             <Link href="/espace" className="text-text-muted hover:text-white transition-colors duration-200">Espace client</Link>
-            <a href="mailto:contact@madger.app" className="text-text-muted hover:text-white transition-colors duration-200">Contact</a>
+            <Link href="/contact" className="text-text-muted hover:text-white transition-colors duration-200">Contact</Link>
           </div>
 
           <div className="text-text-dim text-sm">© 2026 Madger</div>

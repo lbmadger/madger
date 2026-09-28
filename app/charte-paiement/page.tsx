@@ -124,7 +124,7 @@ export default function ChartePaiement() {
               </li>
               <li>
                 <strong className="text-white">Absence à la séance (no-show)</strong> :
-                0 % remboursé.
+                aucun remboursement, la séance est acquise au coach.
               </li>
             </ul>
             <p className="mt-3">
@@ -296,7 +296,7 @@ export default function ChartePaiement() {
               .
             </p>
             <p style={{ fontSize: 13, color: "#3A3A3A", marginTop: 8 }}>
-              Dernière mise à jour : septembre 2026, version 2026-09c
+              Dernière mise à jour : septembre 2026, version 2026-09d
             </p>
           </section>
         </div>

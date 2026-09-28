@@ -11,9 +11,10 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://madger.app";
 //
 // Appelé par le cron quotidien /api/cron/reminders quand on est lundi
 // (Europe/Paris), et exposé aussi sur /api/cron/weekly-recap pour un
-// déclenchement manuel ou externe. Idempotence : un coach reçoit un récap par
-// appel ; le cron quotidien ne tourne qu'une fois par jour, donc une fois par
-// lundi.
+// déclenchement manuel ou externe. Idempotence : un coach reçoit UN récap par
+// semaine, quel que soit le nombre de déclencheurs (cron quotidien, appel
+// externe, relance à la main) : le marqueur coaches.weekly_recap_sent_at est
+// réclamé avant l'envoi.
 export async function runWeeklyRecap(
   supabase: SupabaseClient,
   opts: { budgetMs?: number } = {}
@@ -38,6 +39,8 @@ export async function runWeeklyRecap(
     .from("coaches")
     .select("id, first_name, locale")
     .eq("onboarding_completed", true)
+    // Pas encore servi pour cette semaine (marqueur antérieur au lundi 00:00).
+    .or(`weekly_recap_sent_at.is.null,weekly_recap_sent_at.lt.${toIso}`)
     .limit(500);
 
   const euros = (cents: number) =>
@@ -105,6 +108,16 @@ export async function runWeeklyRecap(
     const { data: u } = await supabase.auth.admin.getUserById(cid);
     const email = u?.user?.email;
     if (!email) continue;
+
+    // Réclamé AVANT l'envoi : deux déclencheurs le même lundi ne doublent
+    // jamais l'email (au pire, un envoi en échec n'est pas retenté).
+    const { data: claimed } = await supabase
+      .from("coaches")
+      .update({ weekly_recap_sent_at: nowD.toISOString() })
+      .eq("id", cid)
+      .or(`weekly_recap_sent_at.is.null,weekly_recap_sent_at.lt.${toIso}`)
+      .select("id");
+    if (!claimed?.length) continue;
 
     const tpl = weeklyRecapCoach({
       firstName: (c.first_name as string | null) || null,
