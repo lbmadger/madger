@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { sendEmail } from "@/lib/email/resend";
+import { founderAlert } from "@/lib/email/templates";
 import { rateLimitAllowed } from "@/lib/rateLimit";
 import type Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
@@ -544,6 +546,19 @@ export async function POST(req: NextRequest) {
     // Stripe indisponible : le verrou est rendu tout de suite, pas dans 15 min.
     if (holdId) {
       await supabase.from("slot_holds").delete().eq("id", holdId);
+    }
+    // Un paiement qui ne s'ouvre pas est la panne la plus coûteuse : le
+    // fondateur est prévenu tout de suite (best-effort), puis 500.
+    if (process.env.FOUNDER_EMAIL) {
+      try {
+        const tpl = founderAlert({
+          context: "Ouverture du paiement Stripe en échec (/api/stripe/checkout)",
+          details: [err instanceof Error ? err.message : String(err)],
+        });
+        await sendEmail({ to: process.env.FOUNDER_EMAIL, subject: tpl.subject, html: tpl.html });
+      } catch {
+        /* l'alerte reste best-effort */
+      }
     }
     throw err;
   }

@@ -630,7 +630,9 @@ export async function fulfillCheckoutSession(
           validityStr: packInfo?.validityStr ?? null,
           spaceUrl: `${APP_URL}/espace`,
         });
-        await sendEmail({ to: m.email, subject: t.subject, html: t.html });
+        // Le client qui répond (« je serai en retard ») écrit à son coach,
+        // pas à la boîte Madger.
+        await sendEmail({ to: m.email, subject: t.subject, html: t.html, replyTo: coachEmail ?? undefined });
       }
       if (coachEmail) {
         const t = packPurchasedCoach({
@@ -653,7 +655,9 @@ export async function fulfillCheckoutSession(
           reservationUrl,
           authorizedPriceStr: priceStr,
         });
-        await sendEmail({ to: m.email, subject: t.subject, html: t.html });
+        // Le client qui répond (« je serai en retard ») écrit à son coach,
+        // pas à la boîte Madger.
+        await sendEmail({ to: m.email, subject: t.subject, html: t.html, replyTo: coachEmail ?? undefined });
       }
       if (coachEmail) {
         const t = newRequestCoach({
@@ -681,7 +685,9 @@ export async function fulfillCheckoutSession(
           pack: packInfo,
           groupName,
         });
-        await sendEmail({ to: m.email, subject: t.subject, html: t.html });
+        // Le client qui répond (« je serai en retard ») écrit à son coach,
+        // pas à la boîte Madger.
+        await sendEmail({ to: m.email, subject: t.subject, html: t.html, replyTo: coachEmail ?? undefined });
       }
       if (coachEmail) {
         const t = bookingNotificationCoach({

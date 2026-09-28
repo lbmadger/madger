@@ -133,6 +133,15 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   const [resendState, setResendState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  // Navigateur intégré d'Instagram, Facebook, Messenger ou TikTok : Google
+  // y refuse la connexion OAuth (« disallowed_useragent »). C'est le canal
+  // d'acquisition du lancement : on remplace le bouton par la marche à
+  // suivre (ouvrir dans Safari ou Chrome) au lieu d'envoyer vers une erreur.
+  const [inAppBrowser, setInAppBrowser] = useState(false);
+  useEffect(() => {
+    const ua = navigator.userAgent || "";
+    setInAppBrowser(/Instagram|FBAN|FBAV|FB_IAB|Messenger|TikTok|BytedanceWebview|Snapchat/i.test(ua));
+  }, []);
   const [error, setError] = useState<string | null>(null);
 
   const configOk = !!SUPABASE_URL && !!SUPABASE_ANON_KEY;
@@ -353,7 +362,12 @@ export default function AuthForm({ mode }: { mode: Mode }) {
         </div>
       )}
 
-      {/* Google */}
+      {/* Google (ou, dans un navigateur intégré, la marche à suivre) */}
+      {inAppBrowser ? (
+        <p className="mt-6 rounded-2xl border border-border bg-bg-elevated px-4 py-3 text-sm leading-relaxed text-text-muted">
+          {t("auth.inAppBrowser")}
+        </p>
+      ) : (
       <button
         type="button"
         onClick={handleGoogle}
@@ -368,6 +382,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
         </svg>
         {googleLoading ? t("common.loading") : t("auth.googleContinue")}
       </button>
+      )}
 
       <div className="my-5 flex items-center gap-3">
         <div className="h-px flex-1 bg-border" />

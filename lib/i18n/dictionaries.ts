@@ -157,6 +157,8 @@ const fr = {
     },
     or: "ou",
     googleContinue: "Continuer avec Google",
+    inAppBrowser:
+      "Tu es dans le navigateur d'Instagram ou de Facebook : Google n'y autorise pas la connexion. Ouvre cette page dans Safari ou Chrome (menu ⋯ en haut à droite, puis « Ouvrir dans le navigateur »), ou inscris-toi avec ton email ci-dessous.",
     signingIn: "Connexion…",
     signingUp: "Création du compte…",
     method: { email: "Email", phone: "SMS" },
@@ -2123,6 +2125,8 @@ const en: Dictionary = {
     },
     or: "or",
     googleContinue: "Continue with Google",
+    inAppBrowser:
+      "You are in the Instagram or Facebook in-app browser: Google does not allow sign-in there. Open this page in Safari or Chrome (⋯ menu at the top right, then \"Open in browser\"), or sign up with your email below.",
     signingIn: "Signing in…",
     signingUp: "Creating your account…",
     method: { email: "Email", phone: "SMS" },
