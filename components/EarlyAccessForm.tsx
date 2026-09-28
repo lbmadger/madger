@@ -94,6 +94,9 @@ function Slider({
 }
 
 export default function EarlyAccessForm({ launched = false }: { launched?: boolean }) {
+  // Après l'ouverture, la section est une simulation : l'ancre #simulation
+  // remplace #early-access dans l'URL (hero, CTA mobile collant).
+  const sectionId = launched ? "simulation" : "early-access";
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -105,9 +108,9 @@ export default function EarlyAccessForm({ launched = false }: { launched?: boole
   useEffect(() => {
     if (submitted) {
       resultRef.current?.focus();
-      window.scrollTo({ top: document.getElementById("early-access")?.offsetTop ?? 0, behavior: "smooth" });
+      window.scrollTo({ top: document.getElementById(sectionId)?.offsetTop ?? 0, behavior: "smooth" });
     }
-  }, [submitted]);
+  }, [submitted, sectionId]);
 
   // État "complet" partagé avec le hero (aucun nombre exposé). Après le
   // lancement, plus de places fondateurs : la simulation reste, le résultat
@@ -171,7 +174,7 @@ export default function EarlyAccessForm({ launched = false }: { launched?: boole
   }
 
   function scrollToForm() {
-    window.scrollTo({ top: document.getElementById("early-access")?.offsetTop ?? 0, behavior: "smooth" });
+    window.scrollTo({ top: document.getElementById(sectionId)?.offsetTop ?? 0, behavior: "smooth" });
   }
 
   function handleCalcContinue() {
@@ -260,7 +263,7 @@ export default function EarlyAccessForm({ launched = false }: { launched?: boole
   }).toString()}`;
 
   return (
-    <section id="early-access" className="py-20 sm:py-28 relative overflow-hidden">
+    <section id={sectionId} className="py-20 sm:py-28 relative overflow-hidden">
       <div
         className="absolute inset-0 pointer-events-none"
         style={{ background: "radial-gradient(ellipse 60% 50% at 50% 50%, rgba(203,255,3,0.08), transparent 70%)" }}

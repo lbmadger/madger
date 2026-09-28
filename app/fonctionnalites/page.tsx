@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { siteLaunched } from "@/lib/launch";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -145,7 +146,7 @@ function Cell({ value, pro }: { value: boolean | string; pro?: boolean }) {
 }
 
 export default function FeaturesPage() {
-  const launched = process.env.SITE_LAUNCHED === "1";
+  const launched = siteLaunched();
   const ctaHref = launched ? "/signup" : "/#early-access";
   const rows = buildRows();
 

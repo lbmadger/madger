@@ -1,4 +1,5 @@
 import dynamic from "next/dynamic";
+import { siteLaunched } from "@/lib/launch";
 import MotionSettings from "@/components/ui/MotionSettings";
 import CtaClickTracker from "@/components/landing/CtaClickTracker";
 import Navbar from "@/components/Navbar";
@@ -32,7 +33,7 @@ export default function Home() {
   // SITE_LAUNCHED=1 posé dans Vercel, toute la landing bascule en mode
   // "Créer mon compte" (CTA vers /signup, formulaire d'accès anticipé
   // remplacé par un CTA final). Aucun commit nécessaire le jour J.
-  const launched = process.env.SITE_LAUNCHED === "1";
+  const launched = siteLaunched();
 
   const faqJsonLd = {
     "@context": "https://schema.org",

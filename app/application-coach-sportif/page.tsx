@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { siteLaunched } from "@/lib/launch";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -69,7 +70,7 @@ function Check() {
 }
 
 export default function ApplicationCoachSportifPage() {
-  const launched = process.env.SITE_LAUNCHED === "1";
+  const launched = siteLaunched();
   const ctaHref = launched ? "/signup" : "/#early-access";
   const ctaLabel = launched ? "Créer mon lien en 5 minutes" : "Rejoindre l'accès anticipé";
 

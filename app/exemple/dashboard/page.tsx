@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { siteLaunched } from "@/lib/launch";
 import Link from "next/link";
 import Image from "next/image";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
@@ -48,7 +49,7 @@ const UPCOMING = [
 
 export default function ExampleDashboardPage() {
   const { locale, dict } = getServerDictionary();
-  const launched = process.env.SITE_LAUNCHED === "1";
+  const launched = siteLaunched();
   const ctaHref = launched ? "/signup" : "/#early-access";
   const goalPct = 95; // 2 380 € sur un objectif de 2 500 €
 

@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { siteLaunched } from "@/lib/launch";
 
 export const runtime = "edge";
 export const alt = "Madger - De la demande client à la facture encaissée";
@@ -6,6 +7,8 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function Image() {
+  // Badge : avant l'ouverture « accès anticipé », après « inscriptions ouvertes ».
+  const badge = siteLaunched() ? "INSCRIPTIONS OUVERTES" : "ACCÈS ANTICIPÉ OUVERT";
   // Logo SVG encodé en base64 pour Satori (img tag)
   const logoSvg = `<svg width="56" height="56" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="7" fill="#111111"/><path d="M 4 26 L 9.5 10 L 15 18.5 L 20.5 9 L 23.5 19 C 25 18.5 26.5 12 27.5 5.5" fill="none" stroke="#CBFF03" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="27.5" cy="5.5" r="1.3" fill="#CBFF03"/></svg>`;
   const logoSrc = `data:image/svg+xml;base64,${btoa(logoSvg)}`;
@@ -203,7 +206,7 @@ export default async function Image() {
               fontWeight: 700,
               letterSpacing: "0.08em",
             }}>
-              ACCÈS ANTICIPÉ OUVERT
+              {badge}
             </span>
           </div>
         </div>

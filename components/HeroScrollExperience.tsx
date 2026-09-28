@@ -352,7 +352,7 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
             </div>
             <MagneticButton className="w-full sm:w-auto sm:self-start" strength={0.12}>
               <motion.a
-                href={launched ? "#early-access" : "#fonctionnement"}
+                href={launched ? "#simulation" : "#fonctionnement"}
                 className="block w-full sm:w-auto sm:inline-block text-white font-semibold text-sm px-8 py-4 rounded-full text-center"
                 style={{ border: "1px solid rgba(255,255,255,0.12)" }}
                 whileHover={{ backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.22)" }}

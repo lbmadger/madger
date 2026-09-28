@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { siteLaunched } from "@/lib/launch";
 import { I18nProvider } from "@/lib/i18n/I18nProvider";
 import { getServerDictionary } from "@/lib/i18n/server";
 import PublicHeader from "@/components/marketplace/PublicHeader";
@@ -208,7 +209,7 @@ export default function ExampleCoachPage() {
           reviews={DEMO_REVIEWS}
           photos={DEMO_PHOTOS}
           demo
-          launched={process.env.SITE_LAUNCHED === "1"}
+          launched={siteLaunched()}
         />
       </div>
     </I18nProvider>

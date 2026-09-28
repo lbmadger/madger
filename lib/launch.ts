@@ -6,3 +6,12 @@ export const LAUNCH_LABEL = "dimanche 4 octobre à 18h";
 export function launchOpened(now: Date = new Date()): boolean {
   return now.getTime() >= new Date(LAUNCH_AT).getTime();
 }
+
+// Le site est ouvert si SITE_LAUNCHED=1 (bascule manuelle + redéploiement)
+// OU si l'heure d'ouverture est passée : filet automatique, le compte à
+// rebours promet 18h précises, le verrou tombe seul même sans redéploiement.
+// Côté serveur uniquement (middleware, pages, routes) : dans un composant
+// client, process.env.SITE_LAUNCHED n'existe pas et seule l'heure compte.
+export function siteLaunched(now: Date = new Date()): boolean {
+  return process.env.SITE_LAUNCHED === "1" || launchOpened(now);
+}

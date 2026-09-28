@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 import { ACCESS_COOKIE, getAccessCode } from "@/lib/access";
+import { siteLaunched } from "@/lib/launch";
 
 // Pages publiques (accessibles SANS code d'accès) : la landing, les pages
 // légales et la page de saisie du code. Tout le reste de l'app est verrouillé
@@ -26,6 +27,8 @@ const PUBLIC_EXACT = new Set([
   "/auth/confirm",
   "/auth/callback",
   "/opengraph-image",
+  // Page contact : l'adresse qu'un visiteur tape spontanément.
+  "/contact",
   "/robots.txt",
   "/sitemap.xml",
   // Manifeste PWA : doit répondre sans cookie d'accès, sinon l'installation
@@ -69,11 +72,22 @@ function matchesPrefix(pathname: string, prefixes: string[]): boolean {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Interrupteur de lancement : SITE_LAUNCHED=1 dans Vercel désactive le
-  // verrou pré-lancement. Marketplace, profils coachs et inscription
-  // deviennent publics et crawlables (le sitemap et les metadata sont déjà
-  // prêts) ; les espaces authentifiés restent protégés par la session.
-  const launched = process.env.SITE_LAUNCHED === "1";
+  // Interrupteur de lancement : SITE_LAUNCHED=1 dans Vercel, ou l'heure
+  // d'ouverture passée (lib/launch.ts), désactive le verrou pré-lancement.
+  // Marketplace, profils coachs et inscription deviennent publics et
+  // crawlables ; les espaces authentifiés restent protégés par la session.
+  const launched = siteLaunched();
+
+  // Site ouvert : la page du code n'a plus de raison d'être. Un lien
+  // /acces?next=… partagé avant l'ouverture atterrit directement sur sa
+  // destination (chemin interne uniquement, anti open-redirect).
+  if (launched && pathname === "/acces") {
+    const rawNext = request.nextUrl.searchParams.get("next") ?? "/";
+    const url = request.nextUrl.clone();
+    url.pathname = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
+    url.search = "";
+    return NextResponse.redirect(url);
+  }
 
   // Le verrou ne s'applique jamais aux routes API (webhooks Stripe, crons… n'ont
   // pas le cookie et gèrent leur propre sécurité) ni aux pages publiques.

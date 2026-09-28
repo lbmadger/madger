@@ -14,7 +14,7 @@ export default function StickyMobileCTA({ launched = false }: { launched?: boole
       // viewport) et tant qu'on n'a pas atteint le formulaire d'inscription.
       const sentinel = document.getElementById("after-hero");
       const pastHero = sentinel ? sentinel.getBoundingClientRect().top <= 0 : false;
-      const formEl = document.getElementById("early-access");
+      const formEl = document.getElementById(launched ? "simulation" : "early-access");
       const nearForm = formEl ? formEl.getBoundingClientRect().top < window.innerHeight : false;
 
       if (!pastHero || nearForm) {
@@ -33,7 +33,7 @@ export default function StickyMobileCTA({ launched = false }: { launched?: boole
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [launched]);
 
   // Toujours monté : l'apparition/disparition est une transition CSS pure
   // (translation + opacité), avec entrée ET sortie animées sans framer-motion.

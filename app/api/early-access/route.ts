@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { siteLaunched } from "@/lib/launch";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { sendEmail } from "@/lib/email/resend";
 
@@ -137,7 +138,7 @@ export async function POST(req: NextRequest) {
 
     // Site lancé : plus de places fondateurs, la simulation sert d'aimant et
     // l'email renvoie vers la création de compte préremplie.
-    const launched = process.env.SITE_LAUNCHED === "1";
+    const launched = siteLaunched();
     // Au-delà du cap fondateur, l'inscription bascule en liste d'attente.
     // (basé sur l'ordre d'arrivée : pas besoin de colonne dédiée)
     const waitlist = !launched && (await getSignupCount()) >= FOUNDER_CAP;
