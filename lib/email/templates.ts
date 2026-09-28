@@ -1198,8 +1198,9 @@ export function weeklyRecapCoach(p: {
     ...(p.newClients > 0
       ? [{ label: "Nouveaux clients", value: String(p.newClients) }]
       : []),
+    // Nombre d'avis, sans étoile : « 1 ⭐ » se lisait comme une note de 1/5.
     ...(p.newReviews > 0
-      ? [{ label: "Avis reçus", value: `${p.newReviews} ⭐` }]
+      ? [{ label: p.newReviews > 1 ? "Nouveaux avis" : "Nouvel avis", value: String(p.newReviews) }]
       : []),
   ];
   return {
