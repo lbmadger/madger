@@ -97,9 +97,17 @@ export async function POST(req: NextRequest) {
   const transferred = !!transferId && payment.escrow_status !== "held";
 
   // Réclame le paiement avant Stripe (anti double clic / course avec le cron).
+  // Fonds encore sous séquestre : le paiement est soldé dans la même
+  // écriture (le cron de versement n'y touche plus, même si la fonction
+  // est coupée entre le remboursement Stripe et la suite).
+  const heldNow = payment.escrow_status === "held";
   const { data: claimed } = await admin
     .from("payments")
-    .update({ refunded_cents: totalRefunded, payout_cents: payoutNow - refund })
+    .update({
+      refunded_cents: totalRefunded,
+      payout_cents: payoutNow - refund,
+      ...(heldNow ? { escrow_status: "canceled", resolved_at: new Date().toISOString() } : {}),
+    })
     .eq("id", payment.id)
     .eq("refunded_cents", alreadyRefunded)
     .select("id");
@@ -122,23 +130,17 @@ export async function POST(req: NextRequest) {
   } catch (e) {
     await admin
       .from("payments")
-      .update({ refunded_cents: alreadyRefunded, payout_cents: payoutNow })
+      .update({
+        refunded_cents: alreadyRefunded,
+        payout_cents: payoutNow,
+        ...(heldNow ? { escrow_status: "held", resolved_at: null } : {}),
+      })
       .eq("id", payment.id)
       .eq("refunded_cents", totalRefunded);
     return NextResponse.json(
       { error: "stripe_error", detail: e instanceof Error ? e.message : undefined },
       { status: 500 }
     );
-  }
-
-  // Fonds encore sous séquestre : le paiement est soldé ici, le cron de
-  // versement n'y touche plus (la part Madger reste sur la plateforme).
-  if (!transferred) {
-    await admin
-      .from("payments")
-      .update({ escrow_status: "canceled", resolved_at: new Date().toISOString() })
-      .eq("id", payment.id)
-      .eq("escrow_status", "held");
   }
 
   // Avoir + email au client (best-effort : l'argent est déjà parti).

@@ -104,13 +104,16 @@ export async function POST(req: NextRequest) {
   // no-show payé. La branche « demande » ci-dessous reste pour mémoire mais
   // n'est plus proposée par l'interface, et refusée ici dès qu'il y a de
   // l'argent en jeu.
-  if (by === "client" && booking.status === "confirmed") {
+  // Quel que soit le statut de la séance (confirmée ou encore en attente
+  // d'approbation) : dès qu'un paiement est retenu ou qu'un crédit est en
+  // jeu, le coach ne peut pas annuler « au nom du client ».
+  if (by === "client") {
     const { data: stake } = await admin
       .from("payments")
       .select("escrow_status")
       .eq("booking_id", bookingId)
       .maybeSingle();
-    if (booking.pack_credit_id || stake?.escrow_status === "held") {
+    if (booking.pack_credit_id || stake?.escrow_status === "held" || stake?.escrow_status === "authorized") {
       return NextResponse.json({ error: "client_cancels_himself" }, { status: 409 });
     }
   }
@@ -229,7 +232,7 @@ export async function POST(req: NextRequest) {
       });
     }
     await detachMeetFromBooking(admin, bookingId);
-    const { data: cancelled } = await supabase
+    const { data: cancelled } = await admin
       .from("bookings")
       .update({ status: "cancelled" })
       .eq("id", bookingId)
@@ -343,7 +346,7 @@ export async function POST(req: NextRequest) {
       }
     }
     await detachMeetFromBooking(admin, bookingId);
-    await supabase
+    await admin
       .from("bookings")
       .update({ status: "cancelled" })
       .eq("id", bookingId);
@@ -386,10 +389,16 @@ export async function POST(req: NextRequest) {
 
   // Pas de paiement retenu : simple annulation de la séance, mais on prévient
   // le client par email (sinon il attend une réponse qui ne vient jamais).
+  // Fonds déjà versés au coach (séance passée, libérée par le cron) : la
+  // séance a eu lieu et a été payée, on ne l'annule pas. Le geste commercial
+  // depuis la fiche client reste la seule voie pour rendre de l'argent.
+  if (payment && (payment.escrow_status === "released" || payment.escrow_status === "disputed")) {
+    return NextResponse.json({ error: "already_released" }, { status: 409 });
+  }
   if (!payment || payment.escrow_status !== "held") {
     const wasPending = booking.status === "pending";
     await detachMeetFromBooking(admin, bookingId);
-    await supabase
+    await admin
       .from("bookings")
       .update({ status: "cancelled" })
       .eq("id", bookingId);
@@ -545,7 +554,7 @@ export async function POST(req: NextRequest) {
       .eq("id", payment.id);
 
     await detachMeetFromBooking(admin, bookingId);
-    await supabase
+    await admin
       .from("bookings")
       .update({ status: "cancelled" })
       .eq("id", bookingId);

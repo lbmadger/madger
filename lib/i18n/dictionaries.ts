@@ -1378,7 +1378,7 @@ const fr = {
     installmentsDesc:
       "Tes clients peuvent régler un pack de 120 € ou plus en 3 fois via Klarna ou Alma. Tu touches tout de suite l'intégralité, l'organisme porte le risque. Les séances à l'unité restent en carte, Apple Pay et Google Pay.",
     installmentsFees:
-      "Les frais du paiement en 3 fois sont à ta charge, environ {pct} % par transaction ({grid}), déduits de ton versement. Ils s'ajoutent à tes frais de transaction Madger.",
+      "Les frais du paiement en 3 fois sont déduits de ton versement, environ {pct} % par transaction ({grid}). Ils s'ajoutent à tes frais de transaction Madger.",
     installmentsExample:
       "Exemple : un pack de 5 séances à 50 € ({total}) réglé en 3 fois te coûte {fee} de frais de paiement en 3 fois, en plus de tes frais Madger.",
     timezone: "Fuseau horaire",
@@ -1462,7 +1462,7 @@ const fr = {
     lessThan: "moins de",
     direction:
       "Plus l'annulation est tardive, moins le client est remboursé (donc plus il paie).",
-    noShow: "Absence (no-show) : 0 % remboursé",
+    noShow: "Absence (no-show) : aucun remboursement, la séance est acquise au coach",
     tiersTitle: "Remboursement au client",
     tierEarly: "Le client annule plus de 24 h avant le début de la séance",
     tierLate: "Le client annule moins de 24 h avant le début de la séance",

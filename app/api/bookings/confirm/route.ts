@@ -153,7 +153,8 @@ export async function POST(req: NextRequest) {
   }
 
   // Confirme la séance (conditionnel : toujours pending).
-  const { data: confirmedRow, error } = await supabase
+  // Colonne status réservée au serveur (0086) : service role.
+  const { data: confirmedRow, error } = await (admin ?? supabase)
     .from("bookings")
     .update({ status: "confirmed" })
     .eq("id", bookingId)

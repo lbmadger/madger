@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
+import { createClient as createSessionClient } from "@/lib/supabase/server";
 import { NO_STORE } from "@/lib/supabase/noStore";
 import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
@@ -19,6 +20,23 @@ export const dynamic = "force-dynamic";
 //   plan : 7 % Essentiel, 3 % Pro). Sur une destination charge, Stripe
 //   prélève ses frais sur la plateforme : « tout compris » de fait. Pas de
 //   séquestre sur du récurrent.
+// Limite de débit en mémoire (best-effort, par utilisateur et par IP) : sans
+// elle, une boucle d'appels verrouillait tous les créneaux d'un coach
+// (slot_holds de 15 min) en ouvrant une session Stripe à chaque fois.
+const RATE_WINDOW_MS = 60 * 60 * 1000;
+const RATE_MAX = 20;
+const rateMap = new Map<string, { count: number; start: number }>();
+function isRateLimited(key: string): boolean {
+  const now = Date.now();
+  const entry = rateMap.get(key);
+  if (!entry || now - entry.start > RATE_WINDOW_MS) {
+    rateMap.set(key, { count: 1, start: now });
+    return false;
+  }
+  entry.count += 1;
+  return entry.count > RATE_MAX;
+}
+
 export async function POST(req: NextRequest) {
   const stripe = getStripe();
   if (!stripe) {
@@ -29,6 +47,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "server_error" }, { status: 500 });
   }
 
+  // Compte obligatoire (la modale l'exige déjà au dernier clic ; ici c'est
+  // vérifié) : l'email du corps de requête n'est plus pris tel quel, une
+  // réservation ne peut pas être rattachée à l'adresse d'un tiers.
+  const {
+    data: { user },
+  } = await createSessionClient().auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+  const ip =
+    req.headers.get("x-real-ip") ??
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    "unknown";
+  if (isRateLimited(user.id) || isRateLimited(`ip:${ip}`)) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+  }
+
   const origin = new URL(req.url).origin;
   const body = await req.json();
   const {
@@ -36,7 +71,6 @@ export async function POST(req: NextRequest) {
     service_id,
     first_name,
     last_name,
-    email,
     phone,
     starts_at,
     duration_min,
@@ -45,7 +79,12 @@ export async function POST(req: NextRequest) {
     group_session_id,
   } = body;
 
-  if (!coach_slug || !first_name || !email || (!service_id && !group_session_id)) {
+  if (!coach_slug || !first_name || (!service_id && !group_session_id)) {
+    return NextResponse.json({ error: "missing_fields" }, { status: 400 });
+  }
+  // Adresse du compte connecté, jamais celle du formulaire.
+  const email = user.email || String(body.email ?? "");
+  if (!email) {
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
   }
 
@@ -303,6 +342,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
   }
 
+  // Horaire illisible : refusé (NaN passait le test de préavis puis
+  // plantait plus loin en 500).
+  if (Number.isNaN(new Date(String(starts_at)).getTime())) {
+    return NextResponse.json({ error: "invalid_input" }, { status: 400 });
+  }
   // Préavis minimum du coach : en deçà, plus réservable.
   const noticeMs = ((coach.min_notice_hours as number) || 2) * 3600000;
   if (new Date(String(starts_at)).getTime() < Date.now() + noticeMs) {
@@ -323,15 +367,27 @@ export async function POST(req: NextRequest) {
         60000
   );
   {
-    const { data: overlapping } = await supabase
-      .from("bookings")
-      .select("id")
-      .eq("coach_id", coach.id)
-      .in("status", ["pending", "confirmed"])
-      .lt("starts_at", ends.toISOString())
-      .gt("ends_at", starts.toISOString())
-      .limit(1);
-    if ((overlapping ?? []).length > 0) {
+    // Séances individuelles ET cours collectifs planifiés : un coach ne peut
+    // pas avoir les deux au même horaire.
+    const [{ data: overlapping }, { data: groupOverlap }] = await Promise.all([
+      supabase
+        .from("bookings")
+        .select("id")
+        .eq("coach_id", coach.id)
+        .in("status", ["pending", "confirmed"])
+        .lt("starts_at", ends.toISOString())
+        .gt("ends_at", starts.toISOString())
+        .limit(1),
+      supabase
+        .from("group_sessions")
+        .select("id")
+        .eq("coach_id", coach.id)
+        .eq("status", "scheduled")
+        .lt("starts_at", ends.toISOString())
+        .gt("ends_at", starts.toISOString())
+        .limit(1),
+    ]);
+    if ((overlapping ?? []).length > 0 || (groupOverlap ?? []).length > 0) {
       return NextResponse.json({ error: "slot_taken" }, { status: 409 });
     }
   }

@@ -168,7 +168,7 @@ export async function POST(req: NextRequest) {
       weekCounts.set(k, (weekCounts.get(k) ?? 0) + 1);
     }
     // Créneau libre (séances en attente / confirmées, verrous de paiement).
-    const [{ data: overlapping }, { data: holds }] = await Promise.all([
+    const [{ data: overlapping }, { data: holds }, { data: groupOverlap }] = await Promise.all([
       admin
         .from("bookings")
         .select("id")
@@ -185,8 +185,16 @@ export async function POST(req: NextRequest) {
         .lt("starts_at", ends.toISOString())
         .gt("ends_at", starts.toISOString())
         .limit(1),
+      admin
+        .from("group_sessions")
+        .select("id")
+        .eq("coach_id", coachId)
+        .eq("status", "scheduled")
+        .lt("starts_at", ends.toISOString())
+        .gt("ends_at", starts.toISOString())
+        .limit(1),
     ]);
-    if ((overlapping ?? []).length > 0 || (holds ?? []).length > 0) {
+    if ((overlapping ?? []).length > 0 || (holds ?? []).length > 0 || (groupOverlap ?? []).length > 0) {
       failure = "slot_taken";
       break;
     }

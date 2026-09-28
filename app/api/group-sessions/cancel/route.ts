@@ -6,7 +6,7 @@ import { getStripe } from "@/lib/stripe/server";
 import { SUPABASE_URL } from "@/lib/supabase/config";
 import { sendEmail } from "@/lib/email/resend";
 import { notifyClient } from "@/lib/notifications/client";
-import { refundClient, bookingCancelledClient } from "@/lib/email/templates";
+import { refundClient, bookingCancelledClient, founderAlert } from "@/lib/email/templates";
 import { emailInvoice } from "@/lib/invoices/send";
 import { detachMeetFromBooking } from "@/lib/google/calendar";
 
@@ -92,16 +92,9 @@ export async function POST(req: NextRequest) {
           p_note: "Cours annulé par le coach",
         });
       }
-      const { data: done } = await admin
-        .from("bookings")
-        .update({ status: "cancelled" })
-        .eq("id", b.id)
-        .in("status", ["pending", "confirmed"])
-        .select("id");
-      if (!done?.length) continue;
-      cancelled++;
-      await detachMeetFromBooking(admin, b.id as string);
-
+      // Le PAIEMENT est traité AVANT le passage de la place en « annulée » :
+      // une place annulée avec un paiement encore retenu partirait en
+      // versement au coach au prochain cron alors que le cours n'a pas eu lieu.
       const { data: payment } = await admin
         .from("payments")
         .select("id, amount_cents, currency, stripe_charge_id, stripe_payment_intent_id, escrow_status, refunded_cents")
@@ -109,6 +102,7 @@ export async function POST(req: NextRequest) {
         .maybeSingle();
 
       let refundCents = 0;
+      let refundFailed = false;
       if (payment && payment.escrow_status === "authorized") {
         // Empreinte jamais débitée : on la libère.
         await admin
@@ -177,10 +171,24 @@ export async function POST(req: NextRequest) {
                 .eq("escrow_status", "refunded");
               errors.push(`${payment.id}: ${e instanceof Error ? e.message : "refund_failed"}`);
               refundCents = 0;
+              refundFailed = true;
             }
           }
         }
       }
+      // Remboursement raté : la place reste en l'état (pas annulée), le
+      // fondateur est alerté et retente à la main.
+      if (refundFailed) continue;
+
+      const { data: done } = await admin
+        .from("bookings")
+        .update({ status: "cancelled" })
+        .eq("id", b.id)
+        .in("status", ["pending", "confirmed"])
+        .select("id");
+      if (!done?.length) continue;
+      cancelled++;
+      await detachMeetFromBooking(admin, b.id as string);
 
       // Le participant est prévenu (best-effort).
       const { data: client } = await admin
@@ -211,6 +219,20 @@ export async function POST(req: NextRequest) {
       }
     } catch (e) {
       errors.push(`${b.id}: ${e instanceof Error ? e.message : "error"}`);
+    }
+  }
+
+  // Remboursement(s) en échec : le fondateur retente à la main, la place
+  // concernée n'a pas été annulée.
+  if (errors.length > 0 && process.env.FOUNDER_EMAIL) {
+    try {
+      const tpl = founderAlert({
+        context: `${errors.length} remboursement(s) en échec à l'annulation d'un cours collectif`,
+        details: errors.slice(0, 20),
+      });
+      await sendEmail({ to: process.env.FOUNDER_EMAIL, subject: tpl.subject, html: tpl.html });
+    } catch {
+      /* best-effort */
     }
   }
 

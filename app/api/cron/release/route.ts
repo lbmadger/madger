@@ -659,6 +659,13 @@ export async function GET(req: NextRequest) {
       }
 
       // ── Libération finale (séance simple, ou pack consommé/expiré) ────────
+      // Défense en profondeur : une séance annulée dont le paiement est
+      // encore retenu ne se verse jamais au coach (annulation hors circuit,
+      // incident entre deux écritures). On alerte, on ne touche à rien.
+      if (p.booking_id && bookingRow?.status === "cancelled" && !bookingRow?.credit_lost) {
+        errors.push(`${p.id}: séance annulée avec paiement retenu, versement bloqué, à traiter à la main`);
+        return;
+      }
       // Réclame la ligne AVANT l'appel Stripe : un seul processus gagne.
       const finalTransfer = Math.max(
         0,

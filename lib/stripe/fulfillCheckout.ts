@@ -148,17 +148,28 @@ export async function fulfillCheckoutSession(
 
   // Créneau pris entre-temps (autre client payé/en attente qui chevauche) →
   // remboursement intégral immédiat, aucune séance créée.
-  const { data: overlapping } = groupSessionId || groupPack
-    ? { data: [] as { id: string }[] }
-    : await supabase
-        .from("bookings")
-        .select("id")
-        .eq("coach_id", m.coach_id)
-        .in("status", ["pending", "confirmed"])
-        .lt("starts_at", ends.toISOString())
-        .gt("ends_at", starts.toISOString())
-        .limit(1);
-  if ((overlapping ?? []).length > 0) {
+  const [{ data: overlapping }, { data: groupOverlap }] = groupSessionId || groupPack
+    ? [{ data: [] as { id: string }[] }, { data: [] as { id: string }[] }]
+    : await Promise.all([
+        supabase
+          .from("bookings")
+          .select("id")
+          .eq("coach_id", m.coach_id)
+          .in("status", ["pending", "confirmed"])
+          .lt("starts_at", ends.toISOString())
+          .gt("ends_at", starts.toISOString())
+          .limit(1),
+        // Un cours collectif planifié au même horaire compte comme un conflit.
+        supabase
+          .from("group_sessions")
+          .select("id")
+          .eq("coach_id", m.coach_id)
+          .eq("status", "scheduled")
+          .lt("starts_at", ends.toISOString())
+          .gt("ends_at", starts.toISOString())
+          .limit(1),
+      ]);
+  if ((overlapping ?? []).length > 0 || (groupOverlap ?? []).length > 0) {
     // Le conflit est acté AVANT l'appel Stripe : même si l'annulation/le
     // remboursement échoue ponctuellement, le client ne voit jamais un faux
     // « payé » (et Stripe libère une empreinte expirée tout seul).

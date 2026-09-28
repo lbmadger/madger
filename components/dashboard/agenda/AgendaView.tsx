@@ -897,13 +897,15 @@ export default function AgendaView({
                                <PencilIcon size={11} className="mr-1 inline-block align-[-1px]" />{t("agenda.edit")}
                              </button>
                            )}
-                           <button
-                             type="button"
-                             onClick={() => setCancelId(b.id)}
-                             className="text-xs font-medium text-text-dim transition-colors hover:text-danger"
-                           >
-                             {t("agenda.cancelBooking")}
-                           </button>
+                           {!isPast(b) && (
+                             <button
+                               type="button"
+                               onClick={() => setCancelId(b.id)}
+                               className="text-xs font-medium text-text-dim transition-colors hover:text-danger"
+                             >
+                               {t("agenda.cancelBooking")}
+                             </button>
+                           )}
                          </div>
                        )}
                      </div>
@@ -1147,13 +1149,17 @@ export default function AgendaView({
                         {t("agenda.edit")}
                       </Button>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => setCancelId(selected.id)}
-                      className="flex-1 rounded-full border border-danger/40 py-2.5 text-sm font-medium text-danger transition-colors hover:border-danger"
-                    >
-                      {t("agenda.cancelBooking")}
-                    </button>
+                    {/* Séance passée : elle a eu lieu et a été payée, pas
+                        d'annulation. Le geste commercial vit sur la fiche client. */}
+                    {!isPast(selected) && (
+                      <button
+                        type="button"
+                        onClick={() => setCancelId(selected.id)}
+                        className="flex-1 rounded-full border border-danger/40 py-2.5 text-sm font-medium text-danger transition-colors hover:border-danger"
+                      >
+                        {t("agenda.cancelBooking")}
+                      </button>
+                    )}
                   </div>
                 </div>
               )

@@ -118,7 +118,14 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const { data: bookingId, error } = await supabase.rpc("request_booking", {
+    // request_booking n'est plus exécutable avec la clé publique (0086) : la
+    // route l'appelle avec le service role, une fois ses contrôles passés.
+    const rpcKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!rpcKey) {
+      return NextResponse.json({ error: "not_configured" }, { status: 500 });
+    }
+    const rpc = createClient(SUPABASE_URL, rpcKey, NO_STORE);
+    const { data: bookingId, error } = await rpc.rpc("request_booking", {
       coach_slug: String(coach_slug),
       client_first_name: String(first_name),
       client_last_name: last_name ? String(last_name) : null,
