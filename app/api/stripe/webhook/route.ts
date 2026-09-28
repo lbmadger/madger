@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { applyStripeAccount } from "@/lib/stripe/syncAccount";
 import type Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import { NO_STORE } from "@/lib/supabase/noStore";
@@ -34,7 +35,15 @@ export async function POST(req: NextRequest) {
   try {
     event = stripe.webhooks.constructEvent(raw, sig ?? "", secret);
   } catch {
-    return NextResponse.json({ error: "invalid_signature" }, { status: 400 });
+    // Second endpoint Stripe « comptes connectés » (account.updated des
+    // coachs) : sa propre clé de signature, STRIPE_CONNECT_WEBHOOK_SECRET.
+    const connectSecret = process.env.STRIPE_CONNECT_WEBHOOK_SECRET;
+    try {
+      if (!connectSecret) throw new Error("no_connect_secret");
+      event = stripe.webhooks.constructEvent(raw, sig ?? "", connectSecret);
+    } catch {
+      return NextResponse.json({ error: "invalid_signature" }, { status: 400 });
+    }
   }
 
   const supabase = createClient(SUPABASE_URL, serviceKey, NO_STORE);
@@ -701,6 +710,12 @@ export async function POST(req: NextRequest) {
       }
       case "customer.subscription.updated": {
         await applyFromSubscription(event.data.object as Stripe.Subscription);
+        break;
+      }
+      // Compte Connect d'un coach : Stripe active (ou coupe) les encaissements
+      // après vérification d'identité, parfois des heures après l'onboarding.
+      case "account.updated": {
+        await applyStripeAccount(event.data.object as Stripe.Account);
         break;
       }
       case "customer.subscription.deleted": {

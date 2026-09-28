@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { startRouteProgress } from "@/components/ui/RouteProgress";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { slugify, isValidSlug } from "@/lib/utils/slug";
+import { slugify, isValidSlug, isReservedSlug } from "@/lib/utils/slug";
 import Button from "@/components/ui/Button";
 import Leo from "@/components/ui/Leo";
 import AccountSwitchBar from "@/components/auth/AccountSwitchBar";
@@ -34,15 +34,19 @@ export default function OnboardingForm({
   userId,
   initialFirstName,
   initialLastName,
+  initialStep = 1,
 }: {
   userId: string;
   initialFirstName: string;
   initialLastName: string;
+  // Reprise après un rechargement : la page sait quelles étapes sont déjà
+  // en base (nom et lien posés, prestation créée) et ne les refait pas.
+  initialStep?: 1 | 2 | 3;
 }) {
   const { t } = useI18n();
   const router = useRouter();
 
-  const [step, setStep] = useState(1); // 1..3, 4 = écran final
+  const [step, setStep] = useState<number>(initialStep); // 1..3, 4 = écran final
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -175,6 +179,7 @@ export default function OnboardingForm({
     if (!firstName.trim()) return setError(t("onboarding.errors.nameRequired"));
     // Le nom figure sur les factures émises au nom du coach : obligatoire.
     if (!lastName.trim()) return setError(t("onboarding.errors.lastNameRequired"));
+    if (isReservedSlug(slug)) return setError(t("onboarding.errors.slugTaken"));
     if (!isValidSlug(slug)) return setError(t("onboarding.errors.slugInvalid"));
 
     setLoading(true);
@@ -218,17 +223,21 @@ export default function OnboardingForm({
         /* best-effort : le parrainage ne doit jamais bloquer l'onboarding */
       }
       // Offre de lancement : rattache le code du lien /lancement au compte,
-      // le coupon s'appliquera au premier abonnement Pro.
+      // le coupon s'appliquera au premier abonnement Pro. Toujours appelé :
+      // si le navigateur a changé entre l'inscription et la confirmation
+      // (email ouvert ailleurs), le serveur retrouve le code dans les
+      // métadonnées du compte. Le stockage local n'est vidé qu'après une
+      // réponse du serveur, pas sur une erreur passagère.
       try {
         const offer = localStorage.getItem("madger_offer");
         const source = localStorage.getItem("madger_src");
-        if (offer || source) {
-          await fetch("/api/offer/claim", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ code: offer ?? "", source: source ?? "" }),
-            signal: AbortSignal.timeout(8000),
-          });
+        const res = await fetch("/api/offer/claim", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: offer ?? "", source: source ?? "" }),
+          signal: AbortSignal.timeout(8000),
+        });
+        if (res.ok) {
           localStorage.removeItem("madger_offer");
           localStorage.removeItem("madger_src");
         }
@@ -268,19 +277,32 @@ export default function OnboardingForm({
         setError(t("onboarding.errors.generic"));
         return;
       }
+      // Idempotent : après un rechargement, la prestation créée au premier
+      // passage est mise à jour, jamais dupliquée sur la page publique.
+      const { data: existing } = await withTimeout(
+        supabase
+          .from("services")
+          .select("id")
+          .eq("coach_id", userId)
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .maybeSingle()
+      );
+      const serviceRow = {
+        name: serviceName.trim(),
+        type: "single" as const,
+        // Le lieu se précise dans Réglages : par défaut, une séance en
+        // présentiel, le cas de très loin le plus fréquent.
+        location: "in_person" as const,
+        duration_min: serviceDuration,
+        price_cents: priceCents,
+        currency: "eur",
+        active: true,
+      };
       const { error: svcErr } = await withTimeout(
-        supabase.from("services").insert({
-          coach_id: userId,
-          name: serviceName.trim(),
-          type: "single",
-          // Le lieu se précise dans Réglages : par défaut, une séance en
-          // présentiel, le cas de très loin le plus fréquent.
-          location: "in_person",
-          duration_min: serviceDuration,
-          price_cents: priceCents,
-          currency: "eur",
-          active: true,
-        })
+        existing?.id
+          ? supabase.from("services").update(serviceRow).eq("id", existing.id)
+          : supabase.from("services").insert({ coach_id: userId, ...serviceRow })
       );
       if (svcErr) {
         setError(t("onboarding.errors.generic"));
@@ -304,6 +326,15 @@ export default function OnboardingForm({
     setLoading(true);
     try {
       const supabase = createClient();
+      // Idempotent : un rechargement à cette étape ne doublait pas les
+      // créneaux, il remplace ceux du premier passage.
+      const { error: clearErr } = await withTimeout(
+        supabase.from("availabilities").delete().eq("coach_id", userId)
+      );
+      if (clearErr) {
+        setError(t("onboarding.errors.generic"));
+        return;
+      }
       const { error } = await withTimeout(
         supabase.from("availabilities").insert(
           days.map((weekday) => ({

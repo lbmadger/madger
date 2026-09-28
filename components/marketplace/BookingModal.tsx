@@ -629,7 +629,7 @@ export default function BookingModal({
                 <Button className="w-full">{t("booking.createAccount")}</Button>
               </Link>
               <Link
-                href={`/login?redirect=${encodeURIComponent(groupSession ? `/${coach.slug}?gs=${groupSession.id}` : `/${coach.slug}?book=${serviceId || "1"}${selectedIso ? `&slot=${encodeURIComponent(selectedIso)}` : ""}`)}`}
+                href={`/login?role=client&redirect=${encodeURIComponent(groupSession ? `/${coach.slug}?gs=${groupSession.id}` : `/${coach.slug}?book=${serviceId || "1"}${selectedIso ? `&slot=${encodeURIComponent(selectedIso)}` : ""}`)}`}
                 className="w-full"
               >
                 <Button variant="secondary" className="w-full">

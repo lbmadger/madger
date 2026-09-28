@@ -128,6 +128,9 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   const [email, setEmail] = useState(prefill.email);
   const [password, setPassword] = useState("");
   const [emailSent, setEmailSent] = useState(false);
+  // Connexion refusée pour email non confirmé : on garde l'adresse pour le renvoi.
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null);
+  const [resendState, setResendState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -154,6 +157,12 @@ export default function AuthForm({ mode }: { mode: Mode }) {
               ...(prefill.firstName ? { first_name: prefill.firstName } : {}),
               ...(prefill.lastName ? { last_name: prefill.lastName } : {}),
               ...(prefill.phone ? { phone: prefill.phone } : {}),
+              // Portés par le compte : le lien de confirmation est souvent
+              // ouvert dans un autre navigateur que celui de l'inscription
+              // (Instagram puis Gmail), où le stockage local n'existe pas.
+              ...(launchOffer ? { madger_offer: LAUNCH_LINK.code } : {}),
+              ...(srcParam ? { madger_src: srcParam } : {}),
+              next: redirectTo,
             },
             emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`,
           },
@@ -189,7 +198,19 @@ export default function AuthForm({ mode }: { mode: Mode }) {
         email,
         password,
       });
-      if (error) return setError(t("auth.errors.invalidCredentials"));
+      if (error) {
+        // Email jamais confirmé (lien perdu dans les spams) : le dire et
+        // proposer un renvoi, au lieu d'un « mot de passe incorrect » qui
+        // fait abandonner.
+        const notConfirmed =
+          error.code === "email_not_confirmed" ||
+          /not confirmed/i.test(error.message ?? "");
+        if (notConfirmed) {
+          setUnconfirmedEmail(email);
+          return setError(t("auth.errors.emailNotConfirmed"));
+        }
+        return setError(t("auth.errors.invalidCredentials"));
+      }
       // Le dashboard est rendu côté serveur : sans ce signal, le bouton reste
       // muet pendant toute la requête (pas de <a> cliqué à intercepter).
       startRouteProgress();
@@ -208,10 +229,17 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     setGoogleLoading(true);
     try {
       const supabase = createClient();
+      // Intention transmise au retour OAuth : un client (tunnel de
+      // réservation, « Mes séances ») ne doit jamais recevoir une fiche coach.
+      const as = clientFlow ? "client" : "coach";
+      const extra =
+        as === "coach"
+          ? `${launchOffer ? `&offre=${LAUNCH_LINK.code}` : ""}${srcParam ? `&src=${encodeURIComponent(srcParam)}` : ""}`
+          : "";
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectTo)}&as=${role}`,
+          redirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectTo)}&as=${as}${extra}`,
         },
       });
       if (error) {
@@ -237,6 +265,41 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSignup, searchParams]);
 
+  // Renvoi du lien de confirmation (écran « vérifie ta boîte mail » et
+  // connexion refusée pour email non confirmé).
+  async function resendConfirmation(target: string) {
+    if (!target || resendState === "sending" || resendState === "sent") return;
+    setResendState("sending");
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: target,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${encodeURIComponent(redirectTo)}`,
+        },
+      });
+      setResendState(error ? "error" : "sent");
+    } catch {
+      setResendState("error");
+    }
+  }
+
+  const resendButton = (target: string) => (
+    <button
+      type="button"
+      onClick={() => resendConfirmation(target)}
+      disabled={resendState === "sending" || resendState === "sent"}
+      className="mt-4 text-sm font-semibold text-accent underline-offset-4 hover:underline disabled:opacity-60"
+    >
+      {resendState === "sent"
+        ? t("auth.resendDone")
+        : resendState === "error"
+          ? t("auth.errors.generic")
+          : t("auth.resendEmail")}
+    </button>
+  );
+
   // État "vérifie ta boîte mail" (lien de confirmation envoyé).
   if (emailSent) {
     return (
@@ -253,6 +316,8 @@ export default function AuthForm({ mode }: { mode: Mode }) {
         <p className="mt-2 text-sm text-text-muted">
           {t("auth.signup.checkEmailDesc")}
         </p>
+        <p className="mt-2 text-xs text-text-dim">{t("auth.signup.checkSpam")}</p>
+        {resendButton(email)}
       </div>
     );
   }
@@ -370,6 +435,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
         )}
 
         {error && <p role="alert" className="text-sm text-danger">{error}</p>}
+        {unconfirmedEmail && resendButton(unconfirmedEmail)}
 
         <Button type="submit" disabled={loading} className="mt-2 w-full">
           {loading

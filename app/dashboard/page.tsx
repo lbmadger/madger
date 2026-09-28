@@ -20,6 +20,7 @@ import { displayInvoiceNumber, type InvoiceRow } from "@/lib/invoices/utils";
 import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getCoach } from "@/lib/coach/getCoach";
+import { syncStripeChargesEnabled } from "@/lib/stripe/syncAccount";
 import { isPro, proDaysLeft } from "@/lib/subscription/plan";
 import type { Booking } from "@/lib/bookings/types";
 import type { ClientProfile } from "@/lib/health/bmi";
@@ -319,7 +320,13 @@ export default async function OverviewPage() {
   // Checklist de démarrage : reflète l'état réel (photo + bio, dispos,
   // prestations, paiements Stripe).
   const profileDone = Boolean(coach?.avatar_url && (coach?.bio ?? "").trim());
-  const stripeDone = Boolean(coach?.stripe_charges_enabled);
+  // Compte Stripe créé mais paiements pas encore actifs : Stripe a peut-être
+  // validé l'identité depuis (repli quand le webhook Connect n'est pas
+  // configuré) ; un seul appel, uniquement dans cet état.
+  const stripeDone =
+    coach?.stripe_account_id && !coach.stripe_charges_enabled
+      ? await syncStripeChargesEnabled(coach.id, coach.stripe_account_id, false)
+      : Boolean(coach?.stripe_charges_enabled);
   const siretDone = Boolean(coach?.siret?.trim());
   const firstClientDone = clientsCount > 0;
   const firstBookingDone = (weeksRes.data ?? []).length > 0;

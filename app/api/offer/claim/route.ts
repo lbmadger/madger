@@ -21,8 +21,11 @@ export async function POST(req: NextRequest) {
     code?: string;
     source?: string;
   };
-  const clean = (code ?? "").trim().toUpperCase();
-  const src = (source ?? "").trim().toLowerCase().slice(0, 40);
+  // Repli : code et source mémorisés sur le compte à l'inscription (le
+  // navigateur de l'onboarding n'est pas toujours celui de l'inscription).
+  const meta = (user.user_metadata ?? {}) as { madger_offer?: string; madger_src?: string };
+  const clean = ((code || meta.madger_offer) ?? "").trim().toUpperCase();
+  const src = ((source || meta.madger_src) ?? "").trim().toLowerCase().slice(0, 40);
 
   const admin = createAdminClient();
   if (!admin) return NextResponse.json({ ok: false }, { status: 500 });

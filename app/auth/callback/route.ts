@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { LAUNCH_LINK } from "@/lib/subscription/offer";
 
 // Point de retour OAuth (Google) et confirmation d'email. Supabase renvoie un
 // `code` qu'on échange ici contre une session (cookies posés), puis on
@@ -30,6 +31,16 @@ export async function GET(request: NextRequest) {
         if (user) {
           // Idempotent : ignore le conflit si la ligne existe déjà.
           await supabase.from("coaches").insert({ id: user.id });
+          // Offre de lancement et source d'acquisition, portées par le
+          // compte : l'onboarding les retrouve même dans un autre navigateur.
+          const offre = (searchParams.get("offre") ?? "").trim().toUpperCase();
+          const src = (searchParams.get("src") ?? "").trim().toLowerCase().slice(0, 40);
+          const data: Record<string, string> = {};
+          if (offre === LAUNCH_LINK.code) data.madger_offer = offre;
+          if (src) data.madger_src = src;
+          if (Object.keys(data).length > 0) {
+            await supabase.auth.updateUser({ data }).catch(() => null);
+          }
         }
       }
       return NextResponse.redirect(`${origin}${redirect}`);

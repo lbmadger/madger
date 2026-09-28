@@ -201,7 +201,10 @@ const fr = {
       checkEmailTitle: "Vérifie ta boîte mail",
       checkEmailDesc:
         "On t'a envoyé un lien de confirmation. Clique dessus pour activer ton compte.",
+      checkSpam: "Rien reçu ? Regarde dans les spams, ou demande un nouveau lien.",
     },
+    resendEmail: "Renvoyer le lien de confirmation",
+    resendDone: "Nouveau lien envoyé, regarde ta boîte mail.",
     password: {
       len: "Au moins 8 caractères",
       upper: "Une majuscule",
@@ -211,6 +214,8 @@ const fr = {
     errors: {
       generic: "Une erreur est survenue. Réessaie.",
       invalidCredentials: "Email ou mot de passe incorrect.",
+      emailNotConfirmed:
+        "Ton email n'est pas encore confirmé. Ouvre le lien reçu par email (regarde aussi les spams), ou demande un nouveau lien.",
       emailTaken:
         "Un compte existe déjà avec cet email. Connecte‑toi, ou utilise « Mot de passe oublié ».",
       passwordWeak: "Le mot de passe ne respecte pas tous les critères.",
@@ -2161,7 +2166,10 @@ const en: Dictionary = {
       checkEmailTitle: "Check your inbox",
       checkEmailDesc:
         "We sent you a confirmation link. Click it to activate your account.",
+      checkSpam: "Nothing yet? Check your spam folder, or request a new link.",
     },
+    resendEmail: "Resend the confirmation link",
+    resendDone: "New link sent, check your inbox.",
     password: {
       len: "At least 8 characters",
       upper: "One uppercase letter",
@@ -2171,6 +2179,8 @@ const en: Dictionary = {
     errors: {
       generic: "Something went wrong. Please try again.",
       invalidCredentials: "Incorrect email or password.",
+      emailNotConfirmed:
+        "Your email is not confirmed yet. Open the link we sent you (check spam too), or request a new one.",
       emailTaken:
         "An account already exists with this email. Log in (or use “Forgot password”).",
       passwordWeak: "Password doesn't meet all the requirements.",

@@ -1056,7 +1056,7 @@ export default function ClientSpace({
                 type="button"
                 onClick={async () => {
                   await createClient().auth.signOut();
-                  router.push("/login?redirect=/espace");
+                  router.push("/login?role=client&redirect=/espace");
                 }}
                 className="font-medium text-accent hover:underline"
               >

@@ -259,7 +259,7 @@ export default function ClientOnboarding() {
         userId = refreshed.data.session?.user.id ?? null;
       }
       if (!userId) {
-        router.push("/login?redirect=/onboarding-client");
+        router.push("/login?role=client&redirect=/onboarding-client");
         return;
       }
       let { error: err } = await supabase.from("client_profiles").upsert({

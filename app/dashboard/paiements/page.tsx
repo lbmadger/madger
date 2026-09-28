@@ -7,10 +7,8 @@ import SiretForm from "@/components/dashboard/payments/SiretForm";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getCoach } from "@/lib/coach/getCoach";
 import { createClient } from "@/lib/supabase/server";
-import { createClient as createAdmin } from "@supabase/supabase-js";
-import { NO_STORE } from "@/lib/supabase/noStore";
-import { SUPABASE_URL } from "@/lib/supabase/config";
 import { getStripe } from "@/lib/stripe/server";
+import { syncStripeChargesEnabled } from "@/lib/stripe/syncAccount";
 import { isPro } from "@/lib/subscription/plan";
 import ProUpsellCard from "@/components/subscription/ProUpsellCard";
 import ProLock from "@/components/subscription/ProLock";
@@ -34,23 +32,7 @@ export default async function PaymentsPage() {
   let chargesEnabled = coach?.stripe_charges_enabled ?? false;
   const accountId = coach?.stripe_account_id ?? null;
   if (stripe && accountId && coach && !chargesEnabled) {
-    try {
-      const acct = await stripe.accounts.retrieve(accountId);
-      chargesEnabled = acct.charges_enabled;
-      if (chargesEnabled !== coach.stripe_charges_enabled) {
-        // Colonne Stripe protégée par la RLS (0035) : service role requis.
-        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-        if (serviceKey) {
-          const admin = createAdmin(SUPABASE_URL, serviceKey, NO_STORE);
-          await admin
-            .from("coaches")
-            .update({ stripe_charges_enabled: chargesEnabled })
-            .eq("id", coach.id);
-        }
-      }
-    } catch {
-      /* ignore */
-    }
+    chargesEnabled = await syncStripeChargesEnabled(coach.id, accountId, chargesEnabled);
   }
 
   // Historique : encaissements, séquestres en cours, versements, litiges.

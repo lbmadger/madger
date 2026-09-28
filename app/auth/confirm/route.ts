@@ -37,16 +37,24 @@ export async function GET(request: NextRequest) {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      const role = (user?.user_metadata as { role?: string } | null)?.role;
+      const meta = (user?.user_metadata ?? {}) as { role?: string; next?: string };
+      const role = meta.role;
+      // Destination choisie à l'inscription (page du coach avec le créneau),
+      // mémorisée sur le compte : le lien de confirmation ne la transporte pas.
+      const rawNext = typeof meta.next === "string" ? meta.next : "";
+      const next =
+        rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "";
       if (role === "coach" && user) {
         // Idempotent : ignore le conflit si la ligne existe déjà (même
         // logique que /auth/callback pour Google).
         await supabase.from("coaches").insert({ id: user.id });
         return NextResponse.redirect(`${origin}${redirect || "/onboarding"}`);
       }
-      return NextResponse.redirect(
-        `${origin}${redirect || "/onboarding-client"}`
-      );
+      const clientDest =
+        next && next !== "/onboarding-client"
+          ? `/onboarding-client?redirect=${encodeURIComponent(next)}`
+          : "/onboarding-client";
+      return NextResponse.redirect(`${origin}${redirect || clientDest}`);
     }
   }
 

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useI18n } from "@/lib/i18n/I18nProvider";
-import { slugify, isValidSlug } from "@/lib/utils/slug";
+import { slugify, isValidSlug, isReservedSlug } from "@/lib/utils/slug";
 import Button from "@/components/ui/Button";
 import { useConfirm } from "@/components/ui/useConfirm";
 import CityAutocomplete from "@/components/ui/CityAutocomplete";
@@ -269,6 +269,7 @@ export default function SettingsForm({ coach }: { coach: Coach }) {
     // qui ne contiennent pas ces champs.
     if (section === "profile") {
       if (!firstName.trim()) return setError(t("settings.errors.nameRequired"));
+      if (isReservedSlug(slug)) return setError(t("settings.errors.slugTaken"));
       if (!isValidSlug(slug)) return setError(t("settings.errors.slugInvalid"));
     }
 

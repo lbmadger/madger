@@ -46,7 +46,8 @@ export async function POST(req: NextRequest) {
       type: "express",
       email: user.email ?? undefined,
       country: "FR",
-      business_type: "individual",
+      // Le type d'entité (particulier, entreprise) est demandé par Stripe
+      // dans son parcours : ne pas l'imposer, les coachs en société existent.
       capabilities: {
         transfers: { requested: true },
         card_payments: { requested: true },
