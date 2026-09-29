@@ -17,6 +17,9 @@ export function initAnalytics(): void {
   if (ready || typeof window === "undefined") return;
   const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
   if (!key) return;
+  // Appareil de l'équipe (a ouvert /admin un jour) : aucune mesure, les
+  // visites du fondateur ne doivent pas compter dans le trafic réel.
+  if (/(?:^|;\s*)madger_internal=1(?:;|$)/.test(document.cookie)) return;
   posthog.init(key, {
     api_host:
       process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://eu.i.posthog.com",
