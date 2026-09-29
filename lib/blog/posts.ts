@@ -5,6 +5,8 @@
 // Objectif SEO : se positionner sur les recherches longue traîne des coachs
 // (offre) et des clients (demande), pour amener du trafic organique gratuit.
 
+import { MORE_POSTS } from "./posts-more";
+
 export type Block =
   | { t: "h2"; text: string }
   | { t: "p"; text: string }
@@ -215,10 +217,11 @@ const POSTS: Post[] = [
 ];
 
 // Tri du plus récent au plus ancien (ordre d'affichage sur l'index).
-export const ALL_POSTS: Post[] = [...POSTS].sort((a, b) =>
+// Deuxième série (février à septembre 2026) dans posts-more.ts.
+export const ALL_POSTS: Post[] = [...POSTS, ...MORE_POSTS].sort((a, b) =>
   a.date < b.date ? 1 : -1
 );
 
 export function getPost(slug: string): Post | undefined {
-  return POSTS.find((p) => p.slug === slug);
+  return ALL_POSTS.find((p) => p.slug === slug);
 }
