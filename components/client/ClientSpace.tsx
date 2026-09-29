@@ -626,7 +626,7 @@ export default function ClientSpace({
       {profileIncomplete && (
         <div className="mt-4 flex flex-col gap-2 rounded-2xl border border-accent/30 bg-accent/[0.06] p-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-text-base">{t("clientSpace.profileBanner")}</p>
-          <Link href="/onboarding-client" className="shrink-0 rounded-full bg-accent px-4 py-2 text-center text-xs font-semibold text-black transition-opacity hover:opacity-90">
+          <Link href="/onboarding-client?edit=1" className="shrink-0 rounded-full bg-accent px-4 py-2 text-center text-xs font-semibold text-black transition-opacity hover:opacity-90">
             {t("clientSpace.profileBannerCta")}
           </Link>
         </div>

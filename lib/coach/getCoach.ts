@@ -30,6 +30,8 @@ export type Coach = {
   pro_until: string | null;
   // Accès Pro offert (parrainage / gestes co.), indépendant de Stripe (0043).
   pro_bonus_until: string | null;
+  // Mois fondateur posé (0087) : null tant que l'attribution n'a pas eu lieu.
+  founder_bonus_granted_at?: string | null;
   referral_code: string | null;
   referred_by: string | null;
   // Abonnement Pro Stripe (migration 0015) — le coach paie Madger

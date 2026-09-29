@@ -43,7 +43,9 @@ export default function PricingPlans({
   // qu'elle soit visible sans clic.
   // Avec l'offre de lancement, c'est le mensuel qui est remisé : il s'ouvre
   // dessus.
-  const [period, setPeriod] = useState<"monthly" | "annual">(launchLink ? "monthly" : "annual");
+  // Mensuel par défaut : 49 € par mois est LE prix que tout le monde a en
+  // tête ; l'annuel (490 €, soit 40,83 € par mois) reste à un appui.
+  const [period, setPeriod] = useState<"monthly" | "annual">("monthly");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

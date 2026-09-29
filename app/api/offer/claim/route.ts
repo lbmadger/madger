@@ -2,59 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { LAUNCH_LINK, launchLinkActive } from "@/lib/subscription/offer";
-import { LAUNCH_AT } from "@/lib/launch";
-
-// Même plafond que le formulaire d'accès anticipé : au-delà, l'inscrit
-// était sur liste d'attente (son email le lui disait) et n'a rien été promis.
-const FOUNDER_CAP = Number(process.env.FOUNDER_CAP ?? 50);
-const FOUNDER_BONUS_MONTHS = 1;
-
-// Promesse faite aux membres fondateurs (landing, CGV, email d'accès
-// anticipé) : « Plan Pro offert 1 mois dès le lancement ». Posée une seule
-// fois par coach, sur pro_bonus_until (accès offert, aucun débit), cumulée
-// à un éventuel mois déjà offert. Réservée aux inscrits d'avant l'ouverture.
-async function grantFounderBonus(
-  admin: NonNullable<ReturnType<typeof createAdminClient>>,
-  coachId: string,
-  email: string | null | undefined
-) {
-  const clean = (email ?? "").trim().toLowerCase();
-  if (!clean) return;
-  const { data: row } = await admin
-    .from("early_access")
-    .select("created_at")
-    .eq("email", clean)
-    .lt("created_at", LAUNCH_AT)
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-  if (!row?.created_at) return;
-  const { count: before } = await admin
-    .from("early_access")
-    .select("id", { count: "exact", head: true })
-    .lt("created_at", row.created_at as string);
-  if ((before ?? 0) >= FOUNDER_CAP) return;
-  const { data: me } = await admin
-    .from("coaches")
-    .select("pro_bonus_until, founder_bonus_granted_at")
-    .eq("id", coachId)
-    .maybeSingle();
-  if (!me || me.founder_bonus_granted_at) return;
-  const base = Math.max(
-    Date.now(),
-    me.pro_bonus_until ? new Date(me.pro_bonus_until as string).getTime() : 0
-  );
-  const until = new Date(base);
-  until.setUTCMonth(until.getUTCMonth() + FOUNDER_BONUS_MONTHS);
-  await admin
-    .from("coaches")
-    .update({
-      pro_bonus_until: until.toISOString(),
-      founder_bonus_granted_at: new Date().toISOString(),
-    })
-    .eq("id", coachId)
-    .is("founder_bonus_granted_at", null);
-}
+import { grantFounderBonus } from "@/lib/subscription/founderBonus";
 
 export const dynamic = "force-dynamic";
 

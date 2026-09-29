@@ -913,7 +913,7 @@ export default function CoachProfile({
                 <p className="min-w-0 truncate text-sm text-text-base">
                   {nextSlot.kind === "free" ? (
                     <>
-                      <span className="text-xs text-text-muted">{t("coachProfile.nextSlot")}</span>{" "}
+                      <span className="hidden text-xs text-text-muted min-[400px]:inline">{t("coachProfile.nextSlot")}</span>{" "}
                       <span className="font-extrabold capitalize">{nextSlotLabel}</span>
                     </>
                   ) : (

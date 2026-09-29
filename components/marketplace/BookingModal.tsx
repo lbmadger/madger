@@ -196,8 +196,9 @@ export default function BookingModal({
     }
     // Pas de brouillon local (autre appareil) : le créneau de l'URL prend
     // le relais.
-    if (!draftSlotRef.current && initialSlot)
-      draftSlotRef.current = initialSlot;
+    // Le créneau porté par l'URL (lien de confirmation, lien partagé) prime
+    // sur un brouillon plus ancien laissé sur le même appareil.
+    if (initialSlot) draftSlotRef.current = initialSlot;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -1077,7 +1078,7 @@ export default function BookingModal({
               <div className="grid grid-cols-2 gap-3">
                 <label className="flex flex-col gap-1.5">
                   <span className={labelClass}>{t("booking.firstName")} <span className="text-accent">*</span></span>
-                  <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} required className={inputClass} />
+                  <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} required={Boolean(sessionEmail)} className={inputClass} />
                 </label>
                 <label className="flex flex-col gap-1.5">
                   <span className={labelClass}>{t("booking.lastName")}</span>

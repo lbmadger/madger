@@ -485,6 +485,9 @@ export async function POST(req: NextRequest) {
       transfer_group: `coach_${coach.id}`,
       ...(approval ? { capture_method: "manual" as const } : {}),
     },
+    // Empreinte seulement (approbation du coach) : le bouton dit
+    // « Réserver », pas « Payer », comme le texte au-dessus.
+    ...(approval ? { submit_type: "book" as const } : {}),
     // Paiement EMBARQUÉ (cf. abonnement ci-dessus).
     ui_mode: "embedded_page",
     return_url: `${origin}/api/stripe/checkout/success?session_id={CHECKOUT_SESSION_ID}`,

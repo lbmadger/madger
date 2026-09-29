@@ -30,7 +30,10 @@ export default function AuthForm({ mode }: { mode: Mode }) {
   // Seuls les chemins INTERNES sont acceptés ("/..." mais pas "//evil.com") :
   // sinon un lien madger.app/login?redirect=https://piege.fr servirait de
   // tremplin de phishing après connexion.
-  const fallback = role === "client" ? "/onboarding-client" : "/dashboard";
+  // Client : l'inscription mène au profil sportif (3 étapes), la connexion
+  // à ses séances (un client déjà onboardé n'a rien à refaire).
+  const fallback =
+    role === "client" ? (mode === "signup" ? "/onboarding-client" : "/espace") : "/dashboard";
   const rawRedirect = searchParams.get("redirect") || fallback;
   const redirectTo =
     rawRedirect.startsWith("/") && !rawRedirect.startsWith("//")
@@ -391,6 +394,12 @@ export default function AuthForm({ mode }: { mode: Mode }) {
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        {/* Sur réseau lent, un envoi avant l'hydratation part en GET natif :
+            ces champs cachés conservent le rôle et la destination. */}
+        {role === "client" && <input type="hidden" name="role" value="client" />}
+        {searchParams.get("redirect") && (
+          <input type="hidden" name="redirect" value={redirectTo} />
+        )}
         <label className="flex flex-col gap-1.5">
           <span className="text-xs font-medium text-text-muted">
             {t("auth.emailLabel")}

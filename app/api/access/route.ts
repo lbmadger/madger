@@ -9,7 +9,12 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest) {
   // Dix essais par dix minutes et par adresse : le code reste devinable à
   // la main, pas par script.
-  if (!(await rateLimitAllowed("access_code", clientIp(req), 10, 600))) {
+  // Un compteur global en plus : des adresses tournantes ne contournent
+  // pas la limite par adresse.
+  if (
+    !(await rateLimitAllowed("access_code", clientIp(req), 10, 600)) ||
+    !(await rateLimitAllowed("access_code_global", "all", 300, 600))
+  ) {
     return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
   const body = await req.json().catch(() => ({}));

@@ -9,12 +9,12 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 // La déconnexion passe par un POST vers /auth/signout (route serveur).
 
 export default function AccountMenu() {
-  const { email, slug, clientSpace } = useSession();
+  const { email, slug, clientSpace, name } = useSession();
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  const initial = email.charAt(0).toUpperCase();
+  const initial = (name || email).charAt(0).toUpperCase();
 
   // Ferme le menu au clic extérieur et à Escape (focus rendu au bouton).
   useEffect(() => {

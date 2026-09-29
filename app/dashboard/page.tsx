@@ -20,6 +20,8 @@ import { displayInvoiceNumber, type InvoiceRow } from "@/lib/invoices/utils";
 import { createClient } from "@/lib/supabase/server";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { getCoach } from "@/lib/coach/getCoach";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { grantFounderBonus } from "@/lib/subscription/founderBonus";
 import { syncStripeChargesEnabled } from "@/lib/stripe/syncAccount";
 import { isPro, proDaysLeft } from "@/lib/subscription/plan";
 import type { Booking } from "@/lib/bookings/types";
@@ -202,6 +204,15 @@ export default async function OverviewPage() {
       // Profil du coach (objectifs, checklist, salutation, plan).
       getCoach(),
     ]);
+
+  // Mois de Pro offert aux fondateurs : rejoué ici tant que le marqueur est
+  // vide (l'appel de l'onboarding est best-effort et peut se perdre).
+  if (coach && !coach.founder_bonus_granted_at) {
+    const admin = createAdminClient();
+    if (admin) {
+      await grantFounderBonus(admin, coach.id).catch(() => false);
+    }
+  }
 
   const clientsCount = clientsRes.count ?? 0;
   // Séances de la semaine : dérivé de weeksRes (déjà borné < weekEnd et

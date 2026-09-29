@@ -30,6 +30,9 @@ export default function PaymentEmbed() {
       : null;
   const recapLoc = params.get("lo");
   const mountRef = useRef<HTMLDivElement>(null);
+  // Vrai après le premier rendu navigateur (dates locales).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const [error, setError] = useState(false);
 
   useEffect(() => {
@@ -104,18 +107,24 @@ export default function PaymentEmbed() {
                 ) : null}
               </p>
               {(recapAt || recapLoc) && (
-                <p className="mt-0.5 text-xs capitalize text-text-muted">
-                  {recapAt
-                    ? recapAt.toLocaleString(
-                        locale === "en" ? "en-GB" : "fr-FR",
-                        {
-                          weekday: "long",
-                          day: "numeric",
-                          month: "long",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        }
-                      )
+                <p className="mt-0.5 text-xs text-text-muted">
+                  {recapAt && mounted
+                    ? (() => {
+                        // Formaté côté navigateur seulement : le serveur (UTC)
+                        // et le téléphone (Paris) ne donnent pas la même
+                        // heure, ce qui cassait l'hydratation.
+                        const d = recapAt.toLocaleString(
+                          locale === "en" ? "en-GB" : "fr-FR",
+                          {
+                            weekday: "long",
+                            day: "numeric",
+                            month: "long",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          }
+                        );
+                        return d.charAt(0).toUpperCase() + d.slice(1);
+                      })()
                     : null}
                   {recapLoc ? (
                     <span className="normal-case">

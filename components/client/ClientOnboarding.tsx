@@ -149,6 +149,12 @@ export default function ClientOnboarding() {
           /* ignore */
         }
         setProfileCompleted(true);
+        // Profil déjà complet et aucune destination ni modification demandée
+        // (connexion qui atterrit ici par défaut) : direction ses séances.
+        if (!params.get("redirect") && !params.get("edit")) {
+          router.replace("/espace");
+          return;
+        }
       }
       const fromDraft = !p?.completed && applyDraft();
       if (!fromDraft) {

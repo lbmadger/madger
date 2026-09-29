@@ -42,6 +42,7 @@ export default async function OnboardingPage() {
       userId={coach.id}
       initialFirstName={coach.first_name || meta.firstName}
       initialLastName={coach.last_name || meta.lastName}
+      initialSlug={coach.slug}
       initialStep={initialStep}
     />
   );

@@ -34,11 +34,14 @@ export default function OnboardingForm({
   userId,
   initialFirstName,
   initialLastName,
+  initialSlug = null,
   initialStep = 1,
 }: {
   userId: string;
   initialFirstName: string;
   initialLastName: string;
+  // Lien déjà enregistré (retour sur l'étape 1) : conservé tel quel.
+  initialSlug?: string | null;
   // Reprise après un rechargement : la page sait quelles étapes sont déjà
   // en base (nom et lien posés, prestation créée) et ne les refait pas.
   initialStep?: 1 | 2 | 3;
@@ -62,10 +65,11 @@ export default function OnboardingForm({
   // Photo choisie, en attente de recadrage dans le rond.
   const [cropFile, setCropFile] = useState<File | null>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
-  const [slug, setSlug] = useState(
-    slugify(`${initialFirstName} ${initialLastName}`)
+  const autoSlug = slugify(`${initialFirstName} ${initialLastName}`);
+  const [slug, setSlug] = useState(initialSlug || autoSlug);
+  const [slugTouched, setSlugTouched] = useState(
+    Boolean(initialSlug && initialSlug !== autoSlug)
   );
-  const [slugTouched, setSlugTouched] = useState(false);
   const [editingSlug, setEditingSlug] = useState(false);
 
   // Étape 2 : ce que tu proposes

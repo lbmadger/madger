@@ -164,7 +164,7 @@ export default function PublicHeader() {
                     </div>
                     <Link
                       role="menuitem"
-                      href="/onboarding-client"
+                      href="/onboarding-client?edit=1"
                       onClick={() => setMenuOpen(false)}
                       className="block border-b border-border px-4 py-2.5 text-sm text-text-muted transition-colors hover:bg-bg-card hover:text-text-base"
                     >
