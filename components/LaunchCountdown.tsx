@@ -3,6 +3,21 @@
 import { useEffect, useState } from "react";
 import { LAUNCH_AT, LAUNCH_LABEL, launchOpened } from "@/lib/launch";
 
+// Nombre de jours civils (heure de Paris) entre aujourd'hui et une date.
+function calendarDaysUntil(target: Date, now: Date = new Date()): number {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Paris",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const toUtcDay = (d: Date) => {
+    const [y, mo, da] = fmt.format(d).split("-").map(Number);
+    return Date.UTC(y, mo - 1, da);
+  };
+  return Math.round((toUtcDay(target) - toUtcDay(now)) / 86400000);
+}
+
 // Compte à rebours de l'ouverture publique. Disparaît dès l'heure passée
 // (le site s'ouvre à la même minute) ou si le site est déjà ouvert.
 // `floating` : pastille fixée sous la barre de navigation de la landing ;
@@ -24,12 +39,15 @@ export default function LaunchCountdown({
         return;
       }
       const totalMin = Math.floor(ms / 60000);
-      const d = Math.floor(totalMin / 1440);
       const h = Math.floor((totalMin % 1440) / 60);
       const m = totalMin % 60;
-      // Au-delà de 24 h : seulement le nombre de jours. Sous 24 h : les heures
-      // et minutes. Sous 1 h : les minutes.
-      setLeft(d > 0 ? `J-${d}` : h > 0 ? `${h}h${String(m).padStart(2, "0")}` : `${m} min`);
+      // Jours en CALENDRIER de Paris, pas en tranches de 24 h : le 29 au
+      // soir, l'ouverture du 4 est « J-5 » pour tout le monde, même s'il
+      // reste moins de 5 fois 24 h.
+      const d = calendarDaysUntil(new Date(LAUNCH_AT));
+      // À plus d'un jour : seulement le nombre de jours. Sous 24 h : les
+      // heures et minutes. Sous 1 h : les minutes.
+      setLeft(totalMin >= 1440 ? `J-${d}` : h > 0 ? `${h}h${String(m).padStart(2, "0")}` : `${m} min`);
     }
     tick();
     const id = setInterval(tick, 15000);
