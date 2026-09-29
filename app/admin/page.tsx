@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { internalCoachIds } from "@/lib/adminInternal";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isProRow } from "@/lib/subscription/plan";
 import AnimatedStat from "@/components/dashboard/AnimatedStat";
@@ -72,7 +73,7 @@ export default async function AdminOverview() {
       // Abonnements Pro actifs → MRR (mensuel 49 €, annuel 490/12).
       admin
         .from("coaches")
-        .select("subscription_status, subscription_plan")
+        .select("id, subscription_status, subscription_plan")
         .in("subscription_status", ["active", "trialing", "canceling"])
         .limit(2000),
       // Paiements récents : commissions du mois (datées du versement) et
@@ -110,7 +111,10 @@ export default async function AdminOverview() {
     earlyThisMonth = em.count ?? 0;
     earlyPrevMonth = epm.count ?? 0;
 
+    // Abonnements de test de l'équipe exclus (emails admin, @madger.app).
+    const internal = await internalCoachIds(admin);
     for (const s of subs.data ?? []) {
+      if (internal.has(s.id as string)) continue;
       if (s.subscription_plan === "annual") {
         subsAnnual++;
         mrrCents += Math.round(49000 / 12);

@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { internalCoachIds } from "@/lib/adminInternal";
 import { getStripe } from "@/lib/stripe/server";
 import MiniBars, { type BarDatum } from "@/components/dashboard/charts/MiniBars";
 import InfoTip from "@/components/ui/InfoTip";
@@ -141,7 +142,7 @@ export default async function AdminAnalytics() {
       admin.from("coaches").select("id", head).gt("pro_until", nowIso),
       admin
         .from("coaches")
-        .select("subscription_plan")
+        .select("id, subscription_plan")
         .in("subscription_status", ["active", "trialing", "canceling"])
         .limit(2000),
       admin.from("coaches").select("created_at").gte("created_at", since).limit(2000),
@@ -153,7 +154,10 @@ export default async function AdminAnalytics() {
     stripeOn = d.count ?? 0;
     published = e.count ?? 0;
     pro = f.count ?? 0;
+    // Abonnements de test de l'équipe exclus (emails admin, @madger.app).
+    const internal = await internalCoachIds(admin);
     for (const s of subs.data ?? []) {
+      if (internal.has(s.id as string)) continue;
       if (s.subscription_plan === "annual") subsAnnual++;
       else subsMonthly++;
     }

@@ -39,7 +39,7 @@ export default function MiniBars({
   return (
     <div>
       {/* Zone de tracé */}
-      <div className="relative flex h-28 items-end gap-0.5 border-b border-border">
+      <div className="relative flex h-40 items-end gap-0.5 border-b border-border">
         {data.map((d, i) => {
           const hPct = (d.value / max) * 100;
           const isActive = active === i;
@@ -57,7 +57,7 @@ export default function MiniBars({
               {/* Étiquette directe : dernière barre uniquement (ou survol) */}
               {(isActive || (active === null && i === last && d.value > 0)) && (
                 <span className="pointer-events-none absolute -top-1 left-1/2 z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-md border border-border bg-bg-elevated px-1.5 py-0.5 text-[10px] font-semibold text-text-base">
-                  {format(d.value)}
+                  {isActive ? `${d.label} · ${format(d.value)}` : format(d.value)}
                 </span>
               )}
               <span
@@ -79,16 +79,21 @@ export default function MiniBars({
           );
         })}
       </div>
-      {/* Axe X */}
+      {/* Axe X : une étiquette sur N pour rester lisible (jamais tronquée),
+          la première et la dernière toujours ; le survol donne chaque date. */}
       <div className="mt-1.5 flex gap-0.5">
-        {data.map((d, i) => (
-          <span
-            key={i}
-            className="flex-1 truncate text-center text-[9px] text-text-dim"
-          >
-            {d.label}
-          </span>
-        ))}
+        {data.map((d, i) => {
+          const step = Math.max(1, Math.ceil(data.length / 6));
+          const show = i === last || (i % step === 0 && last - i >= step / 2);
+          return (
+            <span
+              key={i}
+              className="flex-1 whitespace-nowrap text-center text-[10px] text-text-dim"
+            >
+              {show ? d.label : ""}
+            </span>
+          );
+        })}
       </div>
     </div>
   );
