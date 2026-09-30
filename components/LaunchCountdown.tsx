@@ -59,8 +59,11 @@ export default function LaunchCountdown({
   const inner = (
     <>
       <span className="glow-dot h-1.5 w-1.5 shrink-0 rounded-full bg-[#CBFF03]" />
-      <span>
-        Ouverture publique {LAUNCH_LABEL}
+      <span className="whitespace-nowrap">
+        {/* Écran étroit (navigateur intégré d'Instagram) : libellé court,
+            une seule ligne, jamais de pastille qui s'étale sur le hero. */}
+        <span className="sm:hidden">Ouverture dim. 4 oct. 18h</span>
+        <span className="hidden sm:inline">Ouverture publique {LAUNCH_LABEL}</span>
         <span className="text-[#CBFF03]"> · {left}</span>
       </span>
     </>
@@ -69,7 +72,7 @@ export default function LaunchCountdown({
   if (floating) {
     return (
       <div className="pointer-events-none fixed left-1/2 top-[76px] z-30 -translate-x-1/2 sm:top-[84px]">
-        <p className="anim-fade-up inline-flex max-w-[calc(100vw-24px)] items-center justify-center gap-2 rounded-full text-center border border-[#CBFF03]/30 bg-[#0A0A0A]/85 px-3.5 py-1.5 text-xs font-semibold text-white shadow-[0_10px_30px_rgba(0,0,0,0.5)] backdrop-blur">
+        <p className="anim-fade-up inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-[#CBFF03]/30 bg-[#0A0A0A]/85 px-3.5 py-1.5 text-xs font-semibold text-white shadow-[0_10px_30px_rgba(0,0,0,0.5)] backdrop-blur">
           {inner}
         </p>
       </div>
