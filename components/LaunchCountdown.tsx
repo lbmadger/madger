@@ -30,6 +30,19 @@ export default function LaunchCountdown({
   floating?: boolean;
 }) {
   const [left, setLeft] = useState<string | null>(null);
+  // Pastille flottante visible sur le hero seulement : passé le repère
+  // #after-hero, elle s'efface au lieu de flotter par-dessus le reste.
+  const [onHero, setOnHero] = useState(true);
+  useEffect(() => {
+    if (!floating) return;
+    const onScroll = () => {
+      const sentinel = document.getElementById("after-hero");
+      setOnHero(sentinel ? sentinel.getBoundingClientRect().top > 120 : window.scrollY < 500);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [floating]);
 
   useEffect(() => {
     function tick() {
@@ -71,7 +84,10 @@ export default function LaunchCountdown({
 
   if (floating) {
     return (
-      <div className="pointer-events-none fixed left-1/2 top-[76px] z-30 -translate-x-1/2 sm:top-[84px]">
+      <div
+        className="pointer-events-none fixed left-1/2 top-[76px] z-30 -translate-x-1/2 transition-opacity duration-300 sm:top-[84px]"
+        style={{ opacity: onHero ? 1 : 0 }}
+      >
         <p className="anim-fade-up inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-[#CBFF03]/30 bg-[#0A0A0A]/85 px-3.5 py-1.5 text-xs font-semibold text-white shadow-[0_10px_30px_rgba(0,0,0,0.5)] backdrop-blur">
           {inner}
         </p>
