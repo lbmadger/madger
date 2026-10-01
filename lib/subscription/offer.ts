@@ -68,11 +68,13 @@ export function launchOfferUntilLabel(locale: string): string {
 export function launchOfferRegularFromLabel(locale: string): string {
   const d = new Date(`${LAUNCH_OFFER.until}T12:00:00+01:00`);
   d.setDate(d.getDate() + 1);
-  return d.toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB", {
+  const label = d.toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB", {
     day: "numeric",
     month: "long",
     year: "numeric",
   });
+  // Le 1er du mois se dit « 1er » en français, jamais « 1 janvier ».
+  return locale === "fr" && d.getDate() === 1 ? label.replace(/^1 /, "1er ") : label;
 }
 
 export function launchOfferDaysLeft(now: Date = new Date()): number {
