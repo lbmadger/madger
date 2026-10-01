@@ -1,12 +1,12 @@
 import { FEE_RATE_BPS } from "@/lib/subscription/plan";
 import {
-  LAUNCH_OFFER,
+  LAUNCH_LINK,
   currentAnnualCents,
   currentMonthlyCents,
   euros,
-  launchOfferActive,
-  launchOfferRegularFromLabel,
-  launchOfferUntilLabel,
+  launchLinkActive,
+  launchLinkDeadlineLabel,
+  launchLinkMonthlyCents,
 } from "@/lib/subscription/offer";
 import { LAUNCH_LABEL } from "@/lib/launch";
 
@@ -28,8 +28,8 @@ export function getFaqs(launched: boolean) {
 }
 
 // Fonction et non constante : les prix du Pro viennent de currentMonthlyCents()
-// et currentAnnualCents() (offre de lancement jusqu'au 31 décembre, tarif
-// normal ensuite), jamais d'un montant en dur figé au build.
+// et currentAnnualCents(), et la question sur l'offre de lancement disparaît
+// d'elle-même à la date limite. Jamais de montant en dur figé au build.
 export function baseFaqs() {
   const monthly = euros(currentMonthlyCents());
   const annual = euros(currentAnnualCents());
@@ -63,12 +63,12 @@ export function baseFaqs() {
     },
   ];
 
-  // Tant que l'offre de lancement court : prix garanti et date du tarif
-  // normal. Disparaît d'elle-même le 1er janvier.
-  if (launchOfferActive()) {
+  // Tant que l'offre de lancement court : -50 % sur le Pro mensuel pendant
+  // trois mois pour tout compte créé avant la date limite.
+  if (launchLinkActive()) {
     faqs.push({
-      q: "Le prix du plan Pro va-t-il augmenter ?",
-      a: `Le tarif de lancement est de ${monthly} par mois, ou ${annual} par an avec 2 mois offerts, jusqu'au ${launchOfferUntilLabel("fr")}. À partir du ${launchOfferRegularFromLabel("fr")}, le Pro passe à ${euros(LAUNCH_OFFER.regularMonthlyCents)} par mois pour les nouveaux abonnés. Si tu t'abonnes avant, tu gardes ${monthly} tant que tu restes abonné, sans condition.`,
+      q: "C'est quoi l'offre de lancement ?",
+      a: `Si tu crées ton compte avant le ${launchLinkDeadlineLabel("fr")}, ton premier abonnement Pro mensuel est à ${euros(launchLinkMonthlyCents())} par mois pendant ${LAUNCH_LINK.months} mois au lieu de ${monthly}, puis ${monthly} par mois, sans engagement. La remise s'applique toute seule au paiement, sans code. Les 7 jours d'essai gratuits restent valables, et l'annuel reste à ${annual} par an avec 2 mois offerts.`,
     });
   }
 

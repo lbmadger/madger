@@ -1,48 +1,17 @@
-// Offre de lancement du plan Pro : 49 € par mois (490 € par an) jusqu'à la
-// date ci-dessous, puis le tarif normal ci-dessous. Le coach abonné avant la
-// date GARDE 49 € tant qu'il reste abonné.
-//
-// Cadre légal (pratiques commerciales, DGCCRF) : le prix barré n'est jamais
-// présenté comme un « ancien prix » (il n'a pas été pratiqué). C'est le
-// TARIF À VENIR, toujours accompagné de sa date d'entrée en vigueur, à côté
-// d'un PRIX DE LANCEMENT daté. Le tarif normal entre RÉELLEMENT en vigueur à
-// cette date : tout ce qui affiche ou facture le Pro passe par
-// currentMonthlyCents() / currentAnnualCents() (jamais un montant en dur).
-export const LAUNCH_OFFER = {
-  enabled: true,
-  // Fin de l'offre (incluse), heure de Paris.
-  until: "2026-12-31",
-  // Tarif normal annoncé après l'offre, en centimes.
-  regularMonthlyCents: 6900,
-  regularAnnualCents: 69000,
-  // Tarif de lancement (celui réellement facturé par /api/stripe/subscription).
-  launchMonthlyCents: 4900,
-  launchAnnualCents: 49000,
+// Prix du plan Pro : 49 € par mois, 490 € par an (deux mois offerts). Un seul
+// tarif, sans date de fin. Tout ce qui affiche ou facture le Pro passe par
+// currentMonthlyCents() / currentAnnualCents(), jamais un montant en dur.
+export const PRO_PRICE = {
+  monthlyCents: 4900,
+  annualCents: 49000,
 } as const;
 
-// Fin de l'offre : dernier instant du 31 décembre, heure d'hiver de Paris
-// (+01:00). Un décalage d'été (+02:00) ferait expirer l'offre à 22:59.
-function offerEnd(): Date {
-  return new Date(`${LAUNCH_OFFER.until}T23:59:59+01:00`);
+export function currentMonthlyCents(): number {
+  return PRO_PRICE.monthlyCents;
 }
 
-export function launchOfferActive(now: Date = new Date()): boolean {
-  if (!LAUNCH_OFFER.enabled) return false;
-  return now.getTime() <= offerEnd().getTime();
-}
-
-// Prix du Pro à cet instant : lancement pendant l'offre, normal ensuite.
-// Source unique pour l'affichage ET la facturation Stripe.
-export function currentMonthlyCents(now: Date = new Date()): number {
-  return launchOfferActive(now)
-    ? LAUNCH_OFFER.launchMonthlyCents
-    : LAUNCH_OFFER.regularMonthlyCents;
-}
-
-export function currentAnnualCents(now: Date = new Date()): number {
-  return launchOfferActive(now)
-    ? LAUNCH_OFFER.launchAnnualCents
-    : LAUNCH_OFFER.regularAnnualCents;
+export function currentAnnualCents(): number {
+  return PRO_PRICE.annualCents;
 }
 
 // « 49 € », « 490 € », « 40,83 € » selon la langue.
@@ -56,101 +25,59 @@ export function euros(cents: number, locale: string = "fr"): string {
   });
 }
 
-export function launchOfferUntilLabel(locale: string): string {
-  return new Date(`${LAUNCH_OFFER.until}T12:00:00+01:00`).toLocaleDateString(
-    locale === "fr" ? "fr-FR" : "en-GB",
-    { day: "numeric", month: "long", year: "numeric" }
-  );
-}
-
-// Premier jour du tarif normal (lendemain de la fin de l'offre), pour
-// étiqueter le prix barré : « tarif à partir du 1er janvier 2027 ».
-export function launchOfferRegularFromLabel(locale: string): string {
-  const d = new Date(`${LAUNCH_OFFER.until}T12:00:00+01:00`);
-  d.setDate(d.getDate() + 1);
-  const label = d.toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-  // Le 1er du mois se dit « 1er » en français, jamais « 1 janvier ».
-  return locale === "fr" && d.getDate() === 1 ? label.replace(/^1 /, "1er ") : label;
-}
-
-export function launchOfferDaysLeft(now: Date = new Date()): number {
-  return Math.max(0, Math.ceil((offerEnd().getTime() - now.getTime()) / 86400000));
-}
-
-// Offre du mois : tant que l'offre de lancement court, elle porte un nom qui
-// change chaque mois (rentrée, automne, Black Friday, Noël). Le compte à
-// rebours, lui, vise la SEULE date à laquelle le prix change vraiment : la
-// fin de l'offre de lancement (49 € jusqu'au 31 décembre, 69 € ensuite).
-// Compter jusqu'à la fin du mois serait une fausse urgence (le prix ne
-// bouge pas le 1er du mois suivant) : interdit.
-const MONTHLY_OFFER_NAMES: Record<number, { fr: string; en: string }> = {
-  1: { fr: "Offre de nouvelle année", en: "New year offer" },
-  2: { fr: "Offre d'hiver", en: "Winter offer" },
-  3: { fr: "Offre de printemps", en: "Spring offer" },
-  4: { fr: "Offre de printemps", en: "Spring offer" },
-  5: { fr: "Offre de mai", en: "May offer" },
-  6: { fr: "Offre d'été", en: "Summer offer" },
-  7: { fr: "Offre d'été", en: "Summer offer" },
-  8: { fr: "Offre de rentrée", en: "Back-to-school offer" },
-  9: { fr: "Offre de rentrée", en: "Back-to-school offer" },
-  10: { fr: "Offre d'automne", en: "Autumn offer" },
-  11: { fr: "Black Friday", en: "Black Friday" },
-  12: { fr: "Offre de Noël", en: "Christmas offer" },
-};
-
-export type MonthlyOffer = {
-  name: string;
-  // Jours restants jusqu'à la fin de l'offre de lancement (1 = dernier jour).
-  daysLeft: number;
-  // Dernier jour de l'offre, formaté (« 31 décembre »).
-  endsLabel: string;
-};
-
-export function monthlyOffer(locale: string = "fr", now: Date = new Date()): MonthlyOffer | null {
-  if (!launchOfferActive(now)) return null;
-  const month = now.getMonth() + 1;
-  const names = MONTHLY_OFFER_NAMES[month];
-  const daysLeft = Math.max(1, launchOfferDaysLeft(now));
-  const endsLabel = offerEnd().toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB", {
-    day: "numeric",
-    month: "long",
-  });
-  return { name: locale === "fr" ? names.fr : names.en, daysLeft, endsLabel };
-}
-
-// ── Lien de lancement ───────────────────────────────────────────────────────
-// madger.app/lancement (stories, DM) : le coach qui crée son compte par ce
-// lien avant la date ci-dessous obtient Pro mensuel à moitié prix pendant
-// trois mois, au moment de son premier abonnement. Le code est mémorisé à
-// l'inscription (localStorage), rattaché au compte à la fin de la première
-// étape d'onboarding (/api/offer/claim) et appliqué par un coupon Stripe
-// dans /api/stripe/subscription. Le prix affiché vient d'ici, jamais en dur.
+// ── Offre de lancement ──────────────────────────────────────────────────────
+// Tout coach dont le compte est créé avant le 11 octobre 2026 (heure de
+// Paris) obtient Pro mensuel à moitié prix pendant trois mois, au moment de
+// son premier abonnement. L'offre est rattachée au compte par le serveur
+// (lib/subscription/launchOffer.ts) d'après la date de création du compte,
+// sans code ni lien particulier, et appliquée par un coupon Stripe dans
+// /api/stripe/subscription. Le prix affiché vient d'ici, jamais en dur.
 export const LAUNCH_LINK = {
   code: "LANCEMENT",
   percentOff: 50,
   months: 3,
-  // Dernier jour (inclus, heure de Paris) pour créer son compte par le lien.
-  claimUntil: "2026-10-31",
+  // Dernier jour (inclus, heure de Paris) pour créer son compte.
+  claimUntil: "2026-10-10",
   // Identifiant du coupon Stripe, créé à la volée s'il n'existe pas.
   stripeCouponId: "LANCEMENT50",
 } as const;
 
+// Fin de l'offre : dernier instant du 10 octobre, heure d'été de Paris
+// (+02:00). Le changement d'heure n'a lieu que le 25 octobre.
+export function launchLinkEnd(): Date {
+  return new Date(`${LAUNCH_LINK.claimUntil}T23:59:59+02:00`);
+}
+
+// Vrai tant qu'on peut encore créer un compte éligible.
 export function launchLinkActive(now: Date = new Date()): boolean {
-  return now.getTime() <= new Date(`${LAUNCH_LINK.claimUntil}T23:59:59+01:00`).getTime();
+  return now.getTime() <= launchLinkEnd().getTime();
+}
+
+// Vrai si un compte créé à cet instant a droit à l'offre.
+export function launchLinkEligible(createdAt: Date | string): boolean {
+  const t = new Date(createdAt).getTime();
+  return Number.isFinite(t) && t <= launchLinkEnd().getTime();
 }
 
 // Mensuel remisé pendant les premiers mois : 24,50 € sur 49 €.
-export function launchLinkMonthlyCents(now: Date = new Date()): number {
-  return Math.round((currentMonthlyCents(now) * (100 - LAUNCH_LINK.percentOff)) / 100);
+export function launchLinkMonthlyCents(): number {
+  return Math.round((currentMonthlyCents() * (100 - LAUNCH_LINK.percentOff)) / 100);
 }
 
+// « 10 octobre » : dernier jour pour créer son compte.
 export function launchLinkUntilLabel(locale: string): string {
-  return new Date(`${LAUNCH_LINK.claimUntil}T12:00:00+01:00`).toLocaleDateString(
+  return new Date(`${LAUNCH_LINK.claimUntil}T12:00:00+02:00`).toLocaleDateString(
     locale === "fr" ? "fr-FR" : "en-GB",
     { day: "numeric", month: "long" }
   );
+}
+
+// « 11 octobre » : premier jour sans l'offre (pour « avant le 11 octobre »).
+export function launchLinkDeadlineLabel(locale: string): string {
+  const d = new Date(`${LAUNCH_LINK.claimUntil}T12:00:00+02:00`);
+  d.setDate(d.getDate() + 1);
+  return d.toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB", {
+    day: "numeric",
+    month: "long",
+  });
 }

@@ -106,7 +106,7 @@ function buildRows(): Row[] {
     { label: "Écran encaissements par client, export clients", essential: false, pro: true },
     { label: "Alerte clients qui décrochent, chaque matin", essential: false, pro: true },
     { label: "Statistiques avancées", essential: false, pro: true },
-    { label: "Prix de lancement gardé tant que tu restes abonné", essential: false, pro: true },
+    { label: "Sans engagement, résiliable en un clic", essential: false, pro: true },
   ];
 }
 

@@ -26,7 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const directoryOpen = (coachCount ?? 0) >= DIRECTORY_MIN_COACHES;
   // Pages légales : date de dernière révision réelle (pas de fraîcheur
   // factice qui changerait à chaque régénération).
-  const legalDate = new Date("2026-09-28");
+  const legalDate = new Date("2026-10-01");
   const fixed: MetadataRoute.Sitemap = [
     { url: "https://madger.app", lastModified: now, changeFrequency: "weekly", priority: 1 },
     { url: "https://madger.app/fonctionnalites", lastModified: now, changeFrequency: "monthly", priority: 0.8 },

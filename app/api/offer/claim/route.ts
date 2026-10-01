@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { LAUNCH_LINK, launchLinkActive } from "@/lib/subscription/offer";
 import { grantFounderBonus } from "@/lib/subscription/founderBonus";
+import { grantLaunchOffer } from "@/lib/subscription/launchOffer";
 
 export const dynamic = "force-dynamic";
 
-// Rattache l'offre de lancement au coach connecté, à partir du code mémorisé
-// au moment de l'inscription (localStorage → corps de la requête). Écrit par
-// le service role : le coach n'a pas le droit d'écrire cette colonne lui-même.
-// Idempotent : rien si le code est inconnu, le lien expiré, ou l'offre déjà
-// posée. Réservé à un coach sans abonnement passé.
+// Rattache l'offre de lancement au coach connecté d'après la date de création
+// de son compte (lib/subscription/launchOffer.ts), pose la source
+// d'acquisition et le mois de Pro fondateur. Écrit par le service role : le
+// coach n'a pas le droit d'écrire ces colonnes lui-même. Idempotent.
 export async function POST(req: NextRequest) {
   const supabase = createClient();
   const {
@@ -18,14 +17,10 @@ export async function POST(req: NextRequest) {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ ok: false }, { status: 401 });
 
-  const { code, source } = (await req.json().catch(() => ({}))) as {
-    code?: string;
-    source?: string;
-  };
-  // Repli : code et source mémorisés sur le compte à l'inscription (le
-  // navigateur de l'onboarding n'est pas toujours celui de l'inscription).
-  const meta = (user.user_metadata ?? {}) as { madger_offer?: string; madger_src?: string };
-  const clean = ((code || meta.madger_offer) ?? "").trim().toUpperCase();
+  const { source } = (await req.json().catch(() => ({}))) as { source?: string };
+  // Repli : source mémorisée sur le compte à l'inscription (le navigateur de
+  // l'onboarding n'est pas toujours celui de l'inscription).
+  const meta = (user.user_metadata ?? {}) as { madger_src?: string };
   const src = ((source || meta.madger_src) ?? "").trim().toLowerCase().slice(0, 40);
 
   const admin = createAdminClient();
@@ -43,25 +38,6 @@ export async function POST(req: NextRequest) {
   // Mois de Pro offert aux fondateurs : indépendant du lien de lancement.
   await grantFounderBonus(admin, user.id, user.email).catch(() => null);
 
-  if (clean !== LAUNCH_LINK.code || !launchLinkActive()) {
-    return NextResponse.json({ ok: false });
-  }
-
-  const { data: me } = await admin
-    .from("coaches")
-    .select("launch_offer, stripe_subscription_id")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (!me || me.launch_offer || me.stripe_subscription_id) {
-    return NextResponse.json({ ok: false });
-  }
-
-  const { error } = await admin
-    .from("coaches")
-    .update({ launch_offer: LAUNCH_LINK.code, launch_offer_claimed_at: new Date().toISOString() })
-    .eq("id", user.id)
-    .is("launch_offer", null);
-  if (error) return NextResponse.json({ ok: false });
-
-  return NextResponse.json({ ok: true });
+  const granted = await grantLaunchOffer(admin, user.id, user.created_at).catch(() => false);
+  return NextResponse.json({ ok: granted });
 }

@@ -10,7 +10,7 @@ import { useI18n } from "@/lib/i18n/I18nProvider";
 import { PASSWORD_RULES, isPasswordStrong } from "@/lib/utils/password";
 import Button from "@/components/ui/Button";
 import { inputClass } from "@/lib/ui/styles";
-import { LAUNCH_LINK, LAUNCH_OFFER, launchLinkActive, launchLinkMonthlyCents, launchLinkUntilLabel, euros } from "@/lib/subscription/offer";
+import { LAUNCH_LINK, launchLinkActive, launchLinkMonthlyCents, launchLinkDeadlineLabel, currentMonthlyCents, euros } from "@/lib/subscription/offer";
 
 type Mode = "login" | "signup";
 
@@ -104,18 +104,17 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     }
   }, [srcParam, role]);
   const [launchOffer, setLaunchOffer] = useState(false);
+  // L'offre vaut pour tout compte coach créé avant la date limite : le
+  // bandeau s'affiche à chaque inscription coach tant qu'elle court. Le code
+  // du lien n'est plus qu'une trace d'acquisition.
   useEffect(() => {
     if (role !== "coach" || !launchLinkActive()) return;
     try {
-      if (offerParam === LAUNCH_LINK.code) {
-        localStorage.setItem("madger_offer", LAUNCH_LINK.code);
-        setLaunchOffer(true);
-      } else if (isSignup && localStorage.getItem("madger_offer") === LAUNCH_LINK.code) {
-        setLaunchOffer(true);
-      }
+      if (offerParam === LAUNCH_LINK.code) localStorage.setItem("madger_offer", LAUNCH_LINK.code);
     } catch {
       /* stockage indisponible */
     }
+    setLaunchOffer(isSignup || offerParam === LAUNCH_LINK.code);
   }, [offerParam, role, isSignup]);
 
   // Préremplissage depuis la simulation de la landing (?email=, ?prenom=,
@@ -359,8 +358,8 @@ export default function AuthForm({ mode }: { mode: Mode }) {
             {t("auth.signup.launchOfferDesc")
               .replace("{price}", euros(launchLinkMonthlyCents(), locale))
               .replace("{months}", String(LAUNCH_LINK.months))
-              .replace("{full}", euros(LAUNCH_OFFER.launchMonthlyCents, locale))
-              .replace("{date}", launchLinkUntilLabel(locale))}
+              .replace("{full}", euros(currentMonthlyCents(), locale))
+              .replace("{date}", launchLinkDeadlineLabel(locale))}
           </p>
         </div>
       )}

@@ -200,11 +200,7 @@ export default async function InvoicesPage() {
             title={dict.plans.upsellInvoicesTitle}
             desc={dict.plans.upsellInvoicesDesc}
             cta={dict.plans.upsellCardCta}
-            offerBadge={dict.plans.offerBadge}
             perMonth={dict.plans.perMonth}
-            offerFrom={dict.plans.offerFrom}
-            offerDaysLeft={dict.plans.offerDaysLeft}
-            offerLastDay={dict.plans.offerLastDay}
           />
         )}
 

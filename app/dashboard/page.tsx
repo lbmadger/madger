@@ -22,6 +22,8 @@ import { getServerDictionary } from "@/lib/i18n/server";
 import { getCoach } from "@/lib/coach/getCoach";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { grantFounderBonus } from "@/lib/subscription/founderBonus";
+import { grantLaunchOffer } from "@/lib/subscription/launchOffer";
+import { launchLinkActive } from "@/lib/subscription/offer";
 import { syncStripeChargesEnabled } from "@/lib/stripe/syncAccount";
 import { isPro, proDaysLeft } from "@/lib/subscription/plan";
 import type { Booking } from "@/lib/bookings/types";
@@ -211,6 +213,16 @@ export default async function OverviewPage() {
     const admin = createAdminClient();
     if (admin) {
       await grantFounderBonus(admin, coach.id).catch(() => false);
+    }
+  }
+  // Offre de lancement (-50 % pendant 3 mois) : rejouée ici tant que la
+  // colonne est vide et que l'offre court, d'après la date de création du
+  // compte. Les coachs inscrits avant la mise en place y ont droit aussi.
+  if (coach && !coach.launch_offer && !coach.stripe_subscription_id && launchLinkActive()) {
+    const admin = createAdminClient();
+    if (admin) {
+      const { data } = await admin.auth.admin.getUserById(coach.id).catch(() => ({ data: null }));
+      await grantLaunchOffer(admin, coach.id, data?.user?.created_at).catch(() => false);
     }
   }
 

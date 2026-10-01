@@ -6,10 +6,6 @@ import { usePathname } from "next/navigation";
 import { useSession } from "@/lib/auth/SessionProvider";
 import { useI18n } from "@/lib/i18n/I18nProvider";
 import Dialog from "@/components/ui/Dialog";
-import {
-  launchOfferActive,
-  monthlyOffer,
-} from "@/lib/subscription/offer";
 import LaunchPrice from "@/components/subscription/LaunchPrice";
 
 const STORAGE_KEY = "madger_pro_modal_until";
@@ -57,8 +53,6 @@ export default function ProUpsellModal() {
   }
 
   if (!open) return null;
-  const offer = launchOfferActive();
-  const month = monthlyOffer(locale);
 
   return (
     <Dialog
@@ -77,12 +71,6 @@ export default function ProUpsellModal() {
         </svg>
       </button>
 
-      {offer && (
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-accent">
-          <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-          {t("plans.offerBadge")}
-        </span>
-      )}
       <h2 className="mt-2 font-display text-xl font-extrabold tracking-tight text-text-base sm:mt-3 sm:text-2xl">
         {t("plans.modalTitle")}
       </h2>
@@ -96,20 +84,8 @@ export default function ProUpsellModal() {
         <LaunchPrice
           locale={locale}
           suffix={t("plans.perMonth")}
-          fromLabel={t("plans.offerFrom")}
         />
-        {offer ? (
-          <p className="mt-2 text-xs font-semibold text-accent">
-            {month &&
-              (month.daysLeft <= 1
-                ? t("plans.offerLastDay")
-                : t("plans.offerDaysLeft").replace("{n}", String(month.daysLeft))
-              ).replace("{name}", month.name)}
-            <span className="block font-normal text-text-muted">{t("plans.offerLocked")}</span>
-          </p>
-        ) : (
-          <p className="mt-1 text-xs text-text-muted">{t("plans.proNote")}</p>
-        )}
+        <p className="mt-1 text-xs text-text-muted">{t("plans.proNote")}</p>
         <ul className="mt-3 flex flex-col gap-1.5 text-[13px] text-text-base sm:text-sm">
           {(trialEligible
             ? dict.plans.modalPoints

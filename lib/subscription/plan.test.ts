@@ -10,12 +10,16 @@ import {
   planOf,
 } from "./plan";
 import {
-  LAUNCH_OFFER,
+  LAUNCH_LINK,
+  PRO_PRICE,
   currentAnnualCents,
   currentMonthlyCents,
   euros,
-  launchOfferActive,
-  launchOfferDaysLeft,
+  launchLinkActive,
+  launchLinkEligible,
+  launchLinkMonthlyCents,
+  launchLinkDeadlineLabel,
+  launchLinkUntilLabel,
 } from "./offer";
 
 const future = new Date(Date.now() + 7 * 86400000).toISOString();
@@ -55,29 +59,31 @@ describe("plans et taux", () => {
   });
 });
 
-describe("offre de lancement", () => {
-  const during = new Date(`${LAUNCH_OFFER.until}T12:00:00+01:00`);
-  const after = new Date(`${LAUNCH_OFFER.until}T23:59:59+01:00`);
-  const afterEnd = new Date(after.getTime() + 1000);
+describe("prix du Pro et offre de lancement", () => {
+  const last = new Date(`${LAUNCH_LINK.claimUntil}T23:59:59+02:00`);
+  const afterEnd = new Date(last.getTime() + 1000);
 
-  it("facture le tarif de lancement jusqu'au dernier instant de l'offre, heure de Paris", () => {
-    expect(launchOfferActive(during)).toBe(true);
-    expect(launchOfferActive(after)).toBe(true);
-    expect(launchOfferActive(afterEnd)).toBe(false);
-    expect(currentMonthlyCents(during)).toBe(LAUNCH_OFFER.launchMonthlyCents);
-    expect(currentAnnualCents(during)).toBe(LAUNCH_OFFER.launchAnnualCents);
-    expect(currentMonthlyCents(afterEnd)).toBe(LAUNCH_OFFER.regularMonthlyCents);
-    expect(currentAnnualCents(afterEnd)).toBe(LAUNCH_OFFER.regularAnnualCents);
+  it("facture 49 € par mois et 490 € par an, sans date de fin", () => {
+    expect(currentMonthlyCents()).toBe(PRO_PRICE.monthlyCents);
+    expect(currentAnnualCents()).toBe(PRO_PRICE.annualCents);
+    expect(PRO_PRICE.annualCents).toBe(PRO_PRICE.monthlyCents * 10);
   });
 
-  it("l'annuel vaut dix mois (deux mois offerts) dans les deux régimes", () => {
-    expect(LAUNCH_OFFER.launchAnnualCents).toBe(LAUNCH_OFFER.launchMonthlyCents * 10);
-    expect(LAUNCH_OFFER.regularAnnualCents).toBe(LAUNCH_OFFER.regularMonthlyCents * 10);
+  it("ouvre l'offre jusqu'au dernier instant du 10 octobre, heure de Paris", () => {
+    expect(launchLinkActive(new Date("2026-10-01T10:00:00+02:00"))).toBe(true);
+    expect(launchLinkActive(last)).toBe(true);
+    expect(launchLinkActive(afterEnd)).toBe(false);
+    expect(launchLinkEligible("2026-09-20T08:00:00Z")).toBe(true);
+    expect(launchLinkEligible(last.toISOString())).toBe(true);
+    expect(launchLinkEligible(afterEnd.toISOString())).toBe(false);
+    expect(launchLinkEligible("n'importe quoi")).toBe(false);
   });
 
-  it("compte les jours restants sans jamais passer sous zéro", () => {
-    expect(launchOfferDaysLeft(afterEnd)).toBe(0);
-    expect(launchOfferDaysLeft(new Date(after.getTime() - 36 * 3_600_000))).toBe(2);
+  it("remise de 50 % sur le mensuel, libellés de date", () => {
+    expect(launchLinkMonthlyCents()).toBe(2450);
+    expect(launchLinkUntilLabel("fr")).toBe("10 octobre");
+    expect(launchLinkDeadlineLabel("fr")).toBe("11 octobre");
+    expect(launchLinkDeadlineLabel("en")).toBe("11 October");
   });
 
   it("formate les euros à la française et à l'anglaise", () => {

@@ -7,7 +7,7 @@ import type Stripe from "stripe";
 export const dynamic = "force-dynamic";
 
 // Abonnement Pro : le coach paie Madger sur le compte PLATEFORME (≠ Connect).
-// Prix du moment (lancement puis tarif normal, lib/subscription/offer.ts).
+// Prix du Pro (lib/subscription/offer.ts).
 // Les prix sont créés en ligne (price_data récurrent), pas besoin de
 // produits pré-créés dans le dashboard Stripe.
 function plans() {
@@ -64,8 +64,8 @@ export async function POST(req: NextRequest) {
     !coach.pro_trial_used_at &&
     coach.subscription_status !== "canceled";
 
-  // Offre de lancement (lien /lancement) : Pro mensuel à moitié prix pendant
-  // trois mois, au premier abonnement seulement. Le coupon Stripe est créé à
+  // Offre de lancement (compte créé avant la date limite) : Pro mensuel à
+  // moitié prix pendant trois mois, au premier abonnement seulement. Le coupon Stripe est créé à
   // la volée s'il manque. Un coupon posé d'office exclut la saisie d'un
   // code promo Stripe (les deux ne se combinent pas).
   const launchDiscount =

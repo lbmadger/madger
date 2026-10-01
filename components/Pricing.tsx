@@ -8,11 +8,11 @@ import CoachAside from "@/components/ui/CoachAside";
 import PricingCalculator from "@/components/PricingCalculator";
 import { FEE_RATE_BPS } from "@/lib/subscription/plan";
 import {
-  LAUNCH_OFFER,
+  LAUNCH_LINK,
   euros,
-  launchOfferActive,
-  monthlyOffer,
-  launchOfferRegularFromLabel,
+  launchLinkActive,
+  launchLinkMonthlyCents,
+  launchLinkDeadlineLabel,
   currentMonthlyCents,
   currentAnnualCents,
 } from "@/lib/subscription/offer";
@@ -97,12 +97,9 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
             <span className="w-1.5 h-1.5 rounded-full bg-accent block" style={{ background: "#CBFF03" }} />
             <span style={{ color: "#CBFF03", fontSize: 12, fontWeight: 600 }}>
               {launched
-                ? (() => {
-                    const o = monthlyOffer("fr");
-                    return o
-                      ? `${o.name} : ${o.daysLeft <= 1 ? "dernier jour" : `plus que ${o.daysLeft} jours`} pour bloquer ${monthly} € par mois`
-                      : `Pro : 7 jours d'essai gratuits, puis ${monthly} € par mois · Résiliable à tout moment`;
-                  })()
+                ? launchLinkActive()
+                  ? `Offre de lancement : compte créé avant le ${launchLinkDeadlineLabel("fr")}, Pro à ${euros(launchLinkMonthlyCents())} par mois pendant ${LAUNCH_LINK.months} mois`
+                  : `Pro : 7 jours d'essai gratuits, puis ${monthly} € par mois · Résiliable à tout moment`
                 : "Accès anticipé · Madger Pro offert 1 mois pour les premiers membres"}
             </span>
           </div>
@@ -216,14 +213,6 @@ export default function Pricing({ launched = false }: { launched?: boolean }) {
               <div className="flex flex-col gap-2 pt-2">
                 <div className="font-extrabold text-white flex flex-wrap items-end gap-x-2" style={{ fontSize: "clamp(22px, 5.5vw, 44px)", letterSpacing: "-0.04em", lineHeight: 1.05 }}>
                   <span>{period === "annual" ? annual : monthly} €</span>
-                  {period === "monthly" && launchOfferActive() && (
-                    <span
-                      aria-label={`${LAUNCH_OFFER.regularMonthlyCents / 100} € à partir du ${launchOfferRegularFromLabel("fr")}`}
-                      style={{ fontSize: "0.5em", fontWeight: 700, color: "#EF4444", textDecoration: "line-through", textDecorationThickness: "2px", marginBottom: "0.1em" }}
-                    >
-                      {LAUNCH_OFFER.regularMonthlyCents / 100} €
-                    </span>
-                  )}
                   <span style={{ fontSize: "0.45em", fontWeight: 700, color: "#9a9a9a" }}>{period === "annual" ? "/ an" : "/ mois"}</span>
                 </div>
                 {/* Le taux juste sous le prix, comme sur la carte Essentiel :
