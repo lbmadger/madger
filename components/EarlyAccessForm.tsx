@@ -335,7 +335,7 @@ export default function EarlyAccessForm({ launched = false }: { launched?: boole
                   {launched
                     ? "Essentiel à 0 € par mois · Pro essayable 7 jours"
                     : full
-                    ? "Accès anticipé complet · liste d'attente ouverte"
+                    ? "Liste d'attente ouverte · Ouverture dimanche 4 octobre à 18h"
                     : "Accès anticipé · Plan Pro offert 1 mois aux premiers membres"}
                 </span>
               </div>
@@ -553,7 +553,7 @@ export default function EarlyAccessForm({ launched = false }: { launched?: boole
                       {alreadyRegistered
                         ? "Cette adresse fait déjà partie de la liste, ta place est bien gardée. On te contacte dès que Madger est disponible."
                         : joinedWaitlist
-                        ? "Les places fondateurs sont parties, mais tu es prioritaire sur la prochaine vague. Tu retrouveras ce résultat dans ta boîte mail."
+                        ? "Tu seras prévenu par email dimanche à 18h, dès l'ouverture. Tu retrouveras ce résultat dans ta boîte mail."
                         : "On te contacte dès que ton accès est prêt. Tu retrouveras ce résultat dans ta boîte mail."}
                     </p>
                   </div>

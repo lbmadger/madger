@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimitAllowed } from "@/lib/rateLimit";
-import { siteLaunched } from "@/lib/launch";
+import { earlyAccessClosed, siteLaunched } from "@/lib/launch";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/resend";
@@ -86,11 +86,17 @@ async function getSignupCount(): Promise<number> {
 
 // Lu par le formulaire au chargement. On n'expose QUE l'état complet/pas
 // complet (booléen) : ni le compte, ni les places restantes, pour que
-// personne ne puisse suivre la progression des inscriptions.
+// personne ne puisse suivre la progression des inscriptions. L'accès
+// anticipé est aussi fermé par date (lib/launch) : liste d'attente jusqu'à
+// l'ouverture.
+async function founderSpotsClosed(): Promise<boolean> {
+  if (earlyAccessClosed()) return true;
+  return (await getSignupCount()) >= FOUNDER_CAP;
+}
+
 export async function GET() {
-  const count = await getSignupCount();
   return NextResponse.json(
-    { full: count >= FOUNDER_CAP },
+    { full: await founderSpotsClosed() },
     { headers: { "Cache-Control": "no-store" } }
   );
 }
@@ -147,7 +153,7 @@ export async function POST(req: NextRequest) {
     const launched = siteLaunched();
     // Au-delà du cap fondateur, l'inscription bascule en liste d'attente.
     // (basé sur l'ordre d'arrivée : pas besoin de colonne dédiée)
-    const waitlist = !launched && (await getSignupCount()) >= FOUNDER_CAP;
+    const waitlist = !launched && (await founderSpotsClosed());
 
     // Déduplication : si l'email est déjà inscrit, on ne ré-insère pas et on
     // ne renvoie pas d'emails, mais on le DIT au formulaire (already) pour
@@ -250,12 +256,12 @@ export async function POST(req: NextRequest) {
     const badgeLabel = launched
       ? "Ton compte t'attend"
       : waitlist
-      ? "Ta place sur la prochaine vague"
+      ? "Ouverture dimanche 4 octobre à 18h"
       : "Ton accès fondateur";
     const badgeText = launched
       ? `Crée ton compte en deux minutes : ton lien est prêt le jour même. Essentiel à <strong style="color:#ffffff;">0 €</strong> tant que tu ne vends pas, Pro essayable 7 jours sans débit.`
       : waitlist
-      ? `Les places fondateurs (plan Pro offert 1 mois) sont déjà toutes prises. Mais tu es <strong style="color:#ffffff;">prioritaire</strong> sur la prochaine vague d'ouverture. On te contacte dès qu'une place se libère.`
+      ? `Madger ouvre à tous <strong style="color:#ffffff;">dimanche 4 octobre à 18h</strong>. Tu recevras un email à l'ouverture : tu crées ton compte et ta page coach est en ligne dans la foulée.`
       : `Plan Pro offert <strong style="color:#ffffff;">1 mois</strong> dès le lancement, réservé aux membres fondateurs. Tu fais partie des premiers coachs sélectionnés. On te contacte directement dès que ton accès est prêt.`;
     const ctaUrl = launched ? signupUrl : "https://madger.app";
     const ctaLabel = launched ? "Créer mon compte →" : "Voir madger.app →";

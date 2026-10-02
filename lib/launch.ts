@@ -3,6 +3,14 @@
 export const LAUNCH_AT = "2026-10-04T16:00:00Z"; // dimanche 4 octobre 2026, 18h à Paris
 export const LAUNCH_LABEL = "dimanche 4 octobre à 18h";
 
+// Fin de l'accès anticipé (places fondateurs) : à partir de cet instant et
+// jusqu'à l'ouverture, le formulaire inscrit en liste d'attente.
+export const EARLY_ACCESS_CLOSED_AT = "2026-10-01T22:00:00Z"; // vendredi 2 octobre 2026, 0h à Paris
+
+export function earlyAccessClosed(now: Date = new Date()): boolean {
+  return now.getTime() >= new Date(EARLY_ACCESS_CLOSED_AT).getTime();
+}
+
 export function launchOpened(now: Date = new Date()): boolean {
   return now.getTime() >= new Date(LAUNCH_AT).getTime();
 }

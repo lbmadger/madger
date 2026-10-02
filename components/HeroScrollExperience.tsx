@@ -392,6 +392,8 @@ export default function HeroScrollExperience({ launched = false }: { launched?: 
               <span style={{ color: "#CBFF03", fontSize: 11, letterSpacing: "0.06em" }}>
                 {launched
                   ? "Inscriptions ouvertes · Essentiel à 0 € par mois"
+                  : full
+                  ? "Liste d'attente · Ouverture dimanche 4 octobre à 18h"
                   : "Accès anticipé · Madger Pro offert 1 mois aux premiers membres"}
               </span>
             </span>

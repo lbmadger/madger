@@ -39,7 +39,7 @@ export function baseFaqs() {
   const faqs: { q: string; a: string }[] = [
     {
       q: "Quand Madger sera-t-il disponible ?",
-      a: `Madger ouvre à tous ${LAUNCH_LABEL}. En attendant, tu peux rejoindre l'accès anticipé : les premiers membres fondateurs reçoivent le plan Pro offert pendant 1 mois dès l'ouverture, et tu es prévenu par email dès que ton accès est prêt. Les places fondateurs sont limitées : une fois complètes, tu passes en liste d'attente prioritaire.`,
+      a: `Madger ouvre à tous ${LAUNCH_LABEL}. En attendant, tu peux rejoindre la liste d'attente : tu es prévenu par email dès l'ouverture, et tu retrouves le résultat de ta simulation dans ta boîte mail.`,
     },
     {
       q: "Comment fonctionne le lien coach ?",
