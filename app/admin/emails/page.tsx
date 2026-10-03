@@ -21,9 +21,10 @@ export default async function AdminEmails() {
   let introLeft = 0;
   let storyLeft = 0;
   let promoLeft = 0;
+  let prospectsLeft = 0;
   if (admin) {
     const head = { count: "exact" as const, head: true };
-    const [a, b, c] = await Promise.all([
+    const [a, b, c, d] = await Promise.all([
       admin.from("early_access").select("id", head).is("intro_sent_at", null),
       admin.from("early_access").select("id", head).is("story_sent_at", null),
       admin
@@ -32,10 +33,12 @@ export default async function AdminEmails() {
         .not("email", "is", null)
         .is("sent_at", null)
         .eq("active", true),
+      admin.from("prospects").select("id", head).is("sent_at", null).is("unsubscribed_at", null),
     ]);
     introLeft = a.error ? -1 : (a.count ?? 0);
     storyLeft = b.error ? -1 : (b.count ?? 0);
     promoLeft = c.error ? -1 : (c.count ?? 0);
+    prospectsLeft = d.error ? -1 : (d.count ?? 0);
   }
 
   return (
@@ -77,6 +80,13 @@ export default async function AdminEmails() {
               remaining: promoLeft,
               endpoint: "/api/admin/send-promo-codes",
               noTest: true,
+            },
+            {
+              key: "prospects",
+              title: "Prospection · Coachs repérés sur leur site",
+              desc: "Signé Léonard depuis l.bondeau@madger.app, réponses dans ta boîte. 60 par clic, un seul envoi par coach.",
+              remaining: prospectsLeft,
+              endpoint: "/api/admin/prospects",
             },
           ]}
         />

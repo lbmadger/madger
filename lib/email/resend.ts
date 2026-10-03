@@ -27,6 +27,8 @@ export async function sendEmail(opts: {
   subject: string;
   html: string;
   replyTo?: string;
+  // Expéditeur explicite (même domaine madger.app) : prospection signée Léonard.
+  from?: string;
   // Pièces jointes (facture PDF…) : contenu encodé en base64.
   attachments?: { filename: string; content: string }[];
 }): Promise<boolean> {
@@ -42,7 +44,7 @@ export async function sendEmail(opts: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: FROM,
+        from: opts.from ?? FROM,
         to: opts.to,
         subject: opts.subject,
         html: opts.html,

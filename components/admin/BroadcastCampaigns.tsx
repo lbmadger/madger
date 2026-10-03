@@ -38,7 +38,7 @@ export default function BroadcastCampaigns({
       const res = await fetch(c.endpoint ?? "/api/admin/broadcast", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: c.endpoint ? undefined : JSON.stringify({ campaign: c.key, test }),
+        body: JSON.stringify({ campaign: c.key, test }),
       });
       const json = (await res.json().catch(() => ({}))) as {
         sent?: number;
