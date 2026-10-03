@@ -21,13 +21,25 @@ function escapeHtml(v: string): string {
   return v.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 }
 
-function template(prenomBrut: string) {
-  const prenom = escapeHtml(prenomBrut.trim().split(/\s+/)[0] || "coach");
-  const slug = prenom
+// Adresse de page comme Madger la crée : prénom-nom, sans accents. Le nom
+// de l'activité entre parenthèses et les surnoms entre guillemets ne
+// comptent pas (« Christophe (Chris Coach Sportif) » donne christophe).
+function slugify(prenom: string, nom: string | null | undefined): string {
+  const nomPropre = (nom ?? "")
+    .replace(/\([^)]*\)/g, " ")
+    .replace(/"[^"]*"/g, " ")
+    .trim();
+  return `${prenom} ${nomPropre}`
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9]+/g, "-");
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function template(prenomBrut: string, nom?: string | null) {
+  const prenom = escapeHtml(prenomBrut.trim().split(/\s+/)[0] || "coach");
+  const slug = slugify(prenom, nom);
   const ouverture = siteLaunched()
     ? "C'est ouvert depuis dimanche."
     : "Ça ouvre dimanche à 18h.";
@@ -59,7 +71,7 @@ export async function POST(req: NextRequest) {
   const body = (await req.json().catch(() => null)) as { test?: boolean } | null;
 
   if (body?.test) {
-    const tpl = template("Léonard");
+    const tpl = template("Léonard", "Bondeau");
     const ok = await sendEmail({
       to: user.email as string,
       from: FROM,
@@ -74,7 +86,7 @@ export async function POST(req: NextRequest) {
   if (!admin) return NextResponse.json({ error: "not_configured" }, { status: 500 });
   const { data: rows, error } = await admin
     .from("prospects")
-    .select("id, prenom, email")
+    .select("id, prenom, nom, email")
     .is("sent_at", null)
     .is("unsubscribed_at", null)
     .order("created_at")
@@ -85,7 +97,7 @@ export async function POST(req: NextRequest) {
 
   let sent = 0;
   for (const r of rows ?? []) {
-    const tpl = template(r.prenom as string);
+    const tpl = template(r.prenom as string, r.nom as string | null);
     const ok = await sendEmail({
       to: (r.email as string).trim(),
       from: FROM,
