@@ -68,7 +68,9 @@ export default function CGV() {
               Le premier abonnement Madger Pro d&apos;un coach débute par 7 jours d&apos;essai
               gratuit, avec enregistrement d&apos;un moyen de paiement ; sauf résiliation avant la
               fin de l&apos;essai, il se poursuit automatiquement au tarif choisi. Un seul essai
-              par coach. Les membres inscrits en accès anticipé bénéficient de Madger Pro
+              par coach. Les coachs invités personnellement par email par Madger lors de
+              l&apos;ouverture bénéficient, sur le compte créé avec l&apos;adresse invitée, d&apos;un
+              essai de 30 jours au lieu de 7, aux mêmes conditions. Les membres inscrits en accès anticipé bénéficient de Madger Pro
               offert pendant 1 mois au lancement. Madger se réserve le droit de modifier ses
               tarifs avec un préavis de 30 jours ; cette faculté ne remet pas en cause le prix
               de lancement garanti ci-dessus tant que l&apos;abonnement reste actif sans
@@ -206,7 +208,7 @@ export default function CGV() {
           </section>
 
           <p style={{ fontSize: 13, color: "#3A3A3A", marginTop: 8 }}>
-            Dernière mise à jour : octobre 2026, version 2026-10a
+            Dernière mise à jour : octobre 2026, version 2026-10b
           </p>
         </div>
       </div>

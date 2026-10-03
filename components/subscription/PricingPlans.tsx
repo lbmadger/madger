@@ -21,6 +21,7 @@ export default function PricingPlans({
   trialEligible = true,
   subscribed,
   launchLink = false,
+  trialDays = 7,
 }: {
   currentPlan: "free" | "pro";
   // Premier abonnement : 7 jours d'essai, rien débité, puis renouvellement
@@ -33,6 +34,8 @@ export default function PricingPlans({
   // Offre de lancement rattachée au compte (lien /lancement) et pas encore
   // consommée : mensuel à moitié prix pendant les premiers mois.
   launchLink?: boolean;
+  // Durée de l'essai du premier abonnement (7 jours, 30 pour un coach invité).
+  trialDays?: number;
 }) {
   const hasSubscription = subscribed ?? currentPlan === "pro";
   const { t, dict, locale } = useI18n();
@@ -203,7 +206,7 @@ export default function PricingPlans({
                 <span className="inline-flex items-center justify-center gap-2">
                   <span>{t("plans.trialButton")}</span>
                   <span aria-hidden className="h-4 w-px bg-black/25" />
-                  <span className="font-medium text-black/70">{t("plans.trialButtonSub")}</span>
+                  <span className="font-medium text-black/70">{p.trialButtonSub.replace("{days}", String(trialDays))}</span>
                 </span>
               ) : (
                 t("plans.upgrade")
@@ -217,10 +220,11 @@ export default function PricingPlans({
               <p className="mt-2 text-center text-[11px] leading-relaxed text-text-dim">
                 {launchLink && period === "monthly"
                   ? p.trialNoteLaunch
+                      .replace("{days}", String(trialDays))
                       .replace("{price}", euros(launchLinkMonthlyCents(), locale))
                       .replace("{months}", String(LAUNCH_LINK.months))
                       .replace("{full}", euros(currentMonthlyCents(), locale))
-                  : (period === "annual" ? p.trialNoteAnnual : p.trialNoteMonthly).replace(
+                  : (period === "annual" ? p.trialNoteAnnual : p.trialNoteMonthly).replace("{days}", String(trialDays)).replace(
                       "{price}",
                       euros(period === "annual" ? currentAnnualCents() : currentMonthlyCents(), locale)
                     )}

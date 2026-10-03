@@ -552,11 +552,11 @@ const fr = {
     ],
     upgrade: "Passer à Pro",
     trialButton: "Essayer Pro",
-    trialButtonSub: "7 jours gratuits",
+    trialButtonSub: "{days} jours gratuits",
     trialNoteMonthly:
-      "Rien n'est débité pendant 7 jours, puis {price} par mois. Tu arrêtes quand tu veux depuis cette page, en un clic.",
+      "Rien n'est débité pendant {days} jours, puis {price} par mois. Tu arrêtes quand tu veux depuis cette page, en un clic.",
     trialNoteAnnual:
-      "Rien n'est débité pendant 7 jours, puis {price} pour l'année. Tu arrêtes quand tu veux depuis cette page, en un clic ; après l'essai, l'année payée va jusqu'à son terme.",
+      "Rien n'est débité pendant {days} jours, puis {price} pour l'année. Tu arrêtes quand tu veux depuis cette page, en un clic ; après l'essai, l'année payée va jusqu'à son terme.",
     upgradeSoon: "Paiement bientôt disponible",
     upgradeError: "Paiement indisponible pour le moment. Réessaie plus tard.",
     manage: "Gérer mon abonnement",
@@ -643,7 +643,7 @@ const fr = {
     launchLinkDesc: "{price} par mois pendant {months} mois, puis {full}. Appliquée automatiquement au paiement.",
     launchLinkAnnualNote: "L'offre de lancement s'applique au mensuel.",
     trialNoteLaunch:
-      "Rien n'est débité pendant 7 jours, puis {price} par mois pendant {months} mois et {full} ensuite. Tu arrêtes quand tu veux depuis cette page, en un clic.",
+      "Rien n'est débité pendant {days} jours, puis {price} par mois pendant {months} mois et {full} ensuite. Tu arrêtes quand tu veux depuis cette page, en un clic.",
     modalTitle: "Pro, c'est ce qui fait rester tes clients",
     modalBody:
       "Laisse l'annulation automatique appliquer tes règles, relance les renouvellements, suis tes encaissements par client et repère ceux qui décrochent. Un no-show évité par mois et Pro est remboursé.",
@@ -2512,11 +2512,11 @@ const en: Dictionary = {
     ],
     upgrade: "Upgrade to Pro",
     trialButton: "Try Pro",
-    trialButtonSub: "7 days free",
+    trialButtonSub: "{days} days free",
     trialNoteMonthly:
-      "Nothing is charged for 7 days, then {price} per month. Stop whenever you want from this page, in one click.",
+      "Nothing is charged for {days} days, then {price} per month. Stop whenever you want from this page, in one click.",
     trialNoteAnnual:
-      "Nothing is charged for 7 days, then {price} for the year. Stop whenever you want from this page, in one click; after the trial, the paid year runs to its end.",
+      "Nothing is charged for {days} days, then {price} for the year. Stop whenever you want from this page, in one click; after the trial, the paid year runs to its end.",
     upgradeSoon: "Payment coming soon",
     upgradeError: "Payment unavailable right now. Please try again later.",
     manage: "Manage subscription",
@@ -2603,7 +2603,7 @@ const en: Dictionary = {
     launchLinkDesc: "{price} per month for {months} months, then {full}. Applied automatically at checkout.",
     launchLinkAnnualNote: "The launch offer applies to the monthly plan.",
     trialNoteLaunch:
-      "Nothing is charged for 7 days, then {price} per month for {months} months and {full} after. Cancel anytime from this page, in one click.",
+      "Nothing is charged for {days} days, then {price} per month for {months} months and {full} after. Cancel anytime from this page, in one click.",
     modalTitle: "Pro is what keeps your clients coming back",
     modalBody:
       "Let automatic cancellation apply your rules, send renewal reminders, track payments per client and spot the ones drifting away. One no-show avoided per month and Pro pays for itself.",

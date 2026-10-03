@@ -5,6 +5,8 @@ import ManageSubscription from "@/components/subscription/ManageSubscription";
 import ReferralCard from "@/components/subscription/ReferralCard";
 import { getCoach } from "@/lib/coach/getCoach";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { trialDaysFor } from "@/lib/subscription/invitedTrial";
 import { getServerDictionary } from "@/lib/i18n/server";
 import { isPro, proDaysLeft } from "@/lib/subscription/plan";
 import { madgerInvoiceNumber, commissionPeriod } from "@/lib/invoices/utils";
@@ -22,6 +24,14 @@ export default async function SubscriptionPage({
 
   const pro = isPro(coach?.pro_until);
   const daysLeft = proDaysLeft(coach?.pro_until);
+  // Essai du premier abonnement : 30 jours pour un coach invité par email.
+  let trialDays = 7;
+  if (coach?.id) {
+    const {
+      data: { user },
+    } = await createClient().auth.getUser();
+    trialDays = await trialDaysFor(createAdminClient(), user?.email);
+  }
 
   // Parrainage : lien du coach + compteurs (filleuls inscrits, récompenses).
   let referred = 0;
@@ -182,6 +192,7 @@ export default async function SubscriptionPage({
         {/* Offres */}
         <PricingPlans
           currentPlan={pro ? "pro" : "free"}
+          trialDays={trialDays}
           launchLink={!!coach?.launch_offer && !coach?.stripe_subscription_id}
           subscribed={["active", "trialing", "canceling", "past_due"].includes(
             coach?.subscription_status ?? ""

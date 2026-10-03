@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe/server";
 import { currentMonthlyCents, currentAnnualCents, LAUNCH_LINK } from "@/lib/subscription/offer";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { trialDaysFor } from "@/lib/subscription/invitedTrial";
 import type Stripe from "stripe";
 
 export const dynamic = "force-dynamic";
@@ -63,6 +65,8 @@ export async function POST(req: NextRequest) {
     !coach.stripe_subscription_id &&
     !coach.pro_trial_used_at &&
     coach.subscription_status !== "canceled";
+  // 30 jours pour un coach invité par email au lancement, 7 sinon.
+  const trialDays = trial ? await trialDaysFor(createAdminClient(), user.email) : 0;
 
   // Offre de lancement (compte créé avant la date limite) : Pro mensuel à
   // moitié prix pendant trois mois, au premier abonnement seulement. Le coupon Stripe est créé à
@@ -107,7 +111,7 @@ export async function POST(req: NextRequest) {
     ],
     subscription_data: {
       metadata: { coach_id: coach.id, plan, launch_offer: launchDiscount ? LAUNCH_LINK.code : "" },
-      ...(trial ? { trial_period_days: 7 } : {}),
+      ...(trial ? { trial_period_days: trialDays } : {}),
     },
     ...(discounts ? { discounts } : {}),
     // Carte demandée même pendant l'essai : c'est ce qui permet le

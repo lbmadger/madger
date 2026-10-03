@@ -35,6 +35,7 @@ function template(prenomBrut: string) {
 ${p(`Bonjour ${prenom},`)}
 ${p("Je suis tombé sur ton site en cherchant des coachs sportifs indépendants, et je me permets de t'écrire parce que j'ai créé un outil pour vous.")}
 ${p(`Ça s'appelle Madger. Tu as une page à ton nom, madger.app/${slug} : tes clients choisissent leur créneau, ils paient en réservant, et la facture part toute seule. Tu n'as plus rien à relancer. C'est gratuit pour commencer. ${ouverture}`)}
+${p(`Comme je te contacte directement, je t'offre le premier mois de Pro, au lieu des 7 jours d'essai habituels : tu crées ton compte avec l'adresse de ce mail, tu enregistres ta carte, rien n'est débité pendant 30 jours. Ensuite c'est 49 € par mois, sans engagement, et tu arrêtes quand tu veux en un clic.`)}
 ${p(`Si tu veux voir à quoi ça ressemble, c'est ici : <a href="https://madger.app" style="color:#111;">madger.app</a>. Et pour suivre l'ouverture et les nouveautés, tu peux suivre la page Instagram : <a href="https://instagram.com/madger.app" style="color:#111;">@madger.app</a>`)}
 ${p("Bonne journée,<br>Léonard Bondeau<br>Fondateur de Madger")}
 <p style="margin:24px 0 0;font-size:12px;color:#777;line-height:1.5;">Tu reçois ce mail parce que ton adresse professionnelle est affichée sur ton site. Si tu ne veux plus recevoir de message de ma part, réponds « stop » et je te retire tout de suite.</p>
