@@ -21,25 +21,8 @@ function escapeHtml(v: string): string {
   return v.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 }
 
-// Adresse de page comme Madger la crée : prénom-nom, sans accents. Le nom
-// de l'activité entre parenthèses et les surnoms entre guillemets ne
-// comptent pas (« Christophe (Chris Coach Sportif) » donne christophe).
-function slugify(prenom: string, nom: string | null | undefined): string {
-  const nomPropre = (nom ?? "")
-    .replace(/\([^)]*\)/g, " ")
-    .replace(/"[^"]*"/g, " ")
-    .trim();
-  return `${prenom} ${nomPropre}`
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
-function template(prenomBrut: string, nom?: string | null) {
+function template(prenomBrut: string) {
   const prenom = escapeHtml(prenomBrut.trim().split(/\s+/)[0] || "coach");
-  const slug = slugify(prenom, nom);
   const ouverture = siteLaunched()
     ? "C'est ouvert depuis dimanche."
     : "Ça ouvre dimanche à 18h.";
@@ -51,7 +34,7 @@ function template(prenomBrut: string, nom?: string | null) {
   const html = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;color:#111;max-width:560px;">
 ${p(`Bonjour ${prenom},`)}
 ${p("Je suis tombé sur ton site en cherchant des coachs sportifs indépendants, et je me permets de t'écrire parce que j'ai créé un outil pour vous.")}
-${p(`Ça s'appelle Madger. Tu as une page à ton nom, madger.app/${slug} : tes clients choisissent leur créneau, ils paient en réservant, et la facture part toute seule. Tu n'as plus rien à relancer. C'est gratuit pour commencer. ${ouverture}`)}
+${p(`Ça s'appelle Madger. Tu as une page à ton nom, madger.app/prénom-nom : tes clients choisissent leur créneau, ils paient en réservant, et la facture part toute seule. Tu n'as plus rien à relancer. C'est gratuit pour commencer. ${ouverture}`)}
 ${p(`Comme je te contacte directement, je t'offre le premier mois de Pro, au lieu des 7 jours d'essai habituels : tu crées ton compte avec l'adresse de ce mail, tu enregistres ta carte, rien n'est débité pendant 30 jours. ${suite}`)}
 ${p(`Si tu veux voir à quoi ça ressemble, c'est ici : <a href="https://madger.app" style="color:#111;">madger.app</a>. Et pour suivre l'ouverture et les nouveautés, tu peux suivre la page Instagram : <a href="https://instagram.com/madger.app" style="color:#111;">@madger.app</a>`)}
 ${p("Bonne journée,<br>Léonard Bondeau<br>Fondateur de Madger")}
@@ -71,7 +54,7 @@ export async function POST(req: NextRequest) {
   const body = (await req.json().catch(() => null)) as { test?: boolean } | null;
 
   if (body?.test) {
-    const tpl = template("Léonard", "Bondeau");
+    const tpl = template("Léonard");
     const ok = await sendEmail({
       to: user.email as string,
       from: FROM,
@@ -86,7 +69,7 @@ export async function POST(req: NextRequest) {
   if (!admin) return NextResponse.json({ error: "not_configured" }, { status: 500 });
   const { data: rows, error } = await admin
     .from("prospects")
-    .select("id, prenom, nom, email")
+    .select("id, prenom, email")
     .is("sent_at", null)
     .is("unsubscribed_at", null)
     .order("created_at")
@@ -97,7 +80,7 @@ export async function POST(req: NextRequest) {
 
   let sent = 0;
   for (const r of rows ?? []) {
-    const tpl = template(r.prenom as string, r.nom as string | null);
+    const tpl = template(r.prenom as string);
     const ok = await sendEmail({
       to: (r.email as string).trim(),
       from: FROM,
