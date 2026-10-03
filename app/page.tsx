@@ -11,8 +11,9 @@ import StickyMobileCTA from "@/components/StickyMobileCTA";
 import { getFaqs } from "@/components/faq-data";
 
 // La landing ne dépend d'aucune donnée utilisateur : servie en statique et
-// régénérée au plus une fois par heure (bascule SITE_LAUNCHED comprise).
-export const revalidate = 3600;
+// régénérée chaque minute, pour que l'ouverture (heure de LAUNCH_AT) et la fin
+// de l'offre de lancement s'affichent à la minute près, sans redéploiement.
+export const revalidate = 60;
 
 // Sections sous la ligne de flottaison : chargées dans des chunks séparés
 // pour alléger le JS initial (le hero GSAP est déjà lourd). Le SSR reste

@@ -7,6 +7,10 @@ import SectionLabel from "@/components/ui/SectionLabel";
 import { FEE_RATE_BPS } from "@/lib/subscription/plan";
 import { currentMonthlyCents } from "@/lib/subscription/offer";
 
+// Contenu qui dépend de l'heure (ouverture, offre de lancement) : régénéré
+// chaque minute au lieu d'être figé au déploiement.
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "Madger · Toutes les fonctionnalités",
   description:
