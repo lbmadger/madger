@@ -78,11 +78,12 @@ export async function POST(req: NextRequest) {
     !coach.stripe_subscription_id;
   let discounts: Stripe.Checkout.SessionCreateParams.Discount[] | undefined;
   if (launchDiscount) {
-    // Stripe compte la durée du coupon depuis la création de l'abonnement,
-    // essai compris : avec 30 jours offerts, un mois de plus pour que les
-    // trois mois remisés soient bien trois mois payés.
-    const extra = trialDays >= 30 ? 1 : 0;
-    const id = extra ? `${LAUNCH_LINK.stripeCouponId}-${LAUNCH_LINK.months + extra}` : LAUNCH_LINK.stripeCouponId;
+    // Coach invité (30 jours offerts) : le mois offert compte dans les trois
+    // mois de lancement, il reste donc deux mois remisés. Stripe compte la
+    // durée d'un coupon depuis la création de l'abonnement, essai compris :
+    // un coupon de deux mois couvre exactement les deux premières factures.
+    const months = trialDays >= 30 ? LAUNCH_LINK.months - 1 : LAUNCH_LINK.months;
+    const id = months === LAUNCH_LINK.months ? LAUNCH_LINK.stripeCouponId : `${LAUNCH_LINK.stripeCouponId}-${months}`;
     try {
       await stripe.coupons.retrieve(id);
     } catch {
@@ -91,7 +92,7 @@ export async function POST(req: NextRequest) {
         name: "Offre de lancement",
         percent_off: LAUNCH_LINK.percentOff,
         duration: "repeating",
-        duration_in_months: LAUNCH_LINK.months + extra,
+        duration_in_months: months,
       });
     }
     discounts = [{ coupon: id }];

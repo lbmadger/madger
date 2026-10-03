@@ -33,7 +33,7 @@ function template(prenomBrut: string) {
     : "Ça ouvre dimanche à 18h.";
   const eur = (c: number) => (c / 100).toLocaleString("fr-FR", { minimumFractionDigits: c % 100 ? 2 : 0 }) + " €";
   const suite = launchLinkActive()
-    ? `Ensuite, si ton compte est créé avant le ${launchLinkDeadlineLabel("fr")}, l'offre de lancement s'ajoute : ${eur(launchLinkMonthlyCents())} par mois pendant ${LAUNCH_LINK.months} mois au lieu de ${eur(currentMonthlyCents())}, puis ${eur(currentMonthlyCents())} par mois. Sans engagement, tu arrêtes quand tu veux en un clic.`
+    ? `Et si ton compte est créé avant le ${launchLinkDeadlineLabel("fr")}, les ${LAUNCH_LINK.months - 1} mois suivants sont à ${eur(launchLinkMonthlyCents())} au lieu de ${eur(currentMonthlyCents())}, puis ${eur(currentMonthlyCents())} par mois. Sans engagement, tu arrêtes quand tu veux en un clic.`
     : `Ensuite c'est ${eur(currentMonthlyCents())} par mois, sans engagement, et tu arrêtes quand tu veux en un clic.`;
   const p = (t: string) => `<p style="margin:0 0 16px;">${t}</p>`;
   const html = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;color:#111;max-width:560px;">
