@@ -78,7 +78,11 @@ export async function POST(req: NextRequest) {
     !coach.stripe_subscription_id;
   let discounts: Stripe.Checkout.SessionCreateParams.Discount[] | undefined;
   if (launchDiscount) {
-    const id = LAUNCH_LINK.stripeCouponId;
+    // Stripe compte la durée du coupon depuis la création de l'abonnement,
+    // essai compris : avec 30 jours offerts, un mois de plus pour que les
+    // trois mois remisés soient bien trois mois payés.
+    const extra = trialDays >= 30 ? 1 : 0;
+    const id = extra ? `${LAUNCH_LINK.stripeCouponId}-${LAUNCH_LINK.months + extra}` : LAUNCH_LINK.stripeCouponId;
     try {
       await stripe.coupons.retrieve(id);
     } catch {
@@ -87,7 +91,7 @@ export async function POST(req: NextRequest) {
         name: "Offre de lancement",
         percent_off: LAUNCH_LINK.percentOff,
         duration: "repeating",
-        duration_in_months: LAUNCH_LINK.months,
+        duration_in_months: LAUNCH_LINK.months + extra,
       });
     }
     discounts = [{ coupon: id }];

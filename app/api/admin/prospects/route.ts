@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { isAdminEmail } from "@/lib/admin";
 import { sendEmail } from "@/lib/email/resend";
 import { siteLaunched } from "@/lib/launch";
+import { LAUNCH_LINK, launchLinkActive, launchLinkDeadlineLabel, launchLinkMonthlyCents, currentMonthlyCents } from "@/lib/subscription/offer";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -30,15 +31,19 @@ function template(prenomBrut: string) {
   const ouverture = siteLaunched()
     ? "C'est ouvert depuis dimanche."
     : "Ça ouvre dimanche à 18h.";
+  const eur = (c: number) => (c / 100).toLocaleString("fr-FR", { minimumFractionDigits: c % 100 ? 2 : 0 }) + " €";
+  const suite = launchLinkActive()
+    ? `Ensuite, si ton compte est créé avant le ${launchLinkDeadlineLabel("fr")}, l'offre de lancement s'ajoute : ${eur(launchLinkMonthlyCents())} par mois pendant ${LAUNCH_LINK.months} mois au lieu de ${eur(currentMonthlyCents())}, puis ${eur(currentMonthlyCents())} par mois. Sans engagement, tu arrêtes quand tu veux en un clic.`
+    : `Ensuite c'est ${eur(currentMonthlyCents())} par mois, sans engagement, et tu arrêtes quand tu veux en un clic.`;
   const p = (t: string) => `<p style="margin:0 0 16px;">${t}</p>`;
   const html = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;color:#111;max-width:560px;">
 ${p(`Bonjour ${prenom},`)}
 ${p("Je suis tombé sur ton site en cherchant des coachs sportifs indépendants, et je me permets de t'écrire parce que j'ai créé un outil pour vous.")}
 ${p(`Ça s'appelle Madger. Tu as une page à ton nom, madger.app/${slug} : tes clients choisissent leur créneau, ils paient en réservant, et la facture part toute seule. Tu n'as plus rien à relancer. C'est gratuit pour commencer. ${ouverture}`)}
-${p(`Comme je te contacte directement, je t'offre le premier mois de Pro, au lieu des 7 jours d'essai habituels : tu crées ton compte avec l'adresse de ce mail, tu enregistres ta carte, rien n'est débité pendant 30 jours. Ensuite c'est 49 € par mois, sans engagement, et tu arrêtes quand tu veux en un clic.`)}
+${p(`Comme je te contacte directement, je t'offre le premier mois de Pro, au lieu des 7 jours d'essai habituels : tu crées ton compte avec l'adresse de ce mail, tu enregistres ta carte, rien n'est débité pendant 30 jours. ${suite}`)}
 ${p(`Si tu veux voir à quoi ça ressemble, c'est ici : <a href="https://madger.app" style="color:#111;">madger.app</a>. Et pour suivre l'ouverture et les nouveautés, tu peux suivre la page Instagram : <a href="https://instagram.com/madger.app" style="color:#111;">@madger.app</a>`)}
 ${p("Bonne journée,<br>Léonard Bondeau<br>Fondateur de Madger")}
-<p style="margin:24px 0 0;font-size:12px;color:#777;line-height:1.5;">Tu reçois ce mail parce que ton adresse professionnelle est affichée sur ton site. Si tu ne veux plus recevoir de message de ma part, réponds « stop » et je te retire tout de suite.</p>
+<p style="margin:24px 0 0;font-size:12px;color:#777;line-height:1.5;">Je t'écris une seule fois, à l'adresse professionnelle affichée sur ton site, et je ne te relancerai pas.</p>
 </div>`;
   return { subject: `Une question sur tes réservations, ${prenom}`, html };
 }
