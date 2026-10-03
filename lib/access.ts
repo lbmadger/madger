@@ -5,5 +5,5 @@
 export const ACCESS_COOKIE = "madger_access";
 
 export function getAccessCode(): string {
-  return process.env.APP_ACCESS_CODE || "madgerleo";
+  return process.env.APP_ACCESS_CODE || "Gaspard15";
 }
